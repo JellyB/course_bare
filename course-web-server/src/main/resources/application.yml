@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: course-web-server
+
+course-service:
+  ribbon:
+    listOfServers: apitk.huatu.com
+
+ribbon:
+  eureka:
+   enabled: false
