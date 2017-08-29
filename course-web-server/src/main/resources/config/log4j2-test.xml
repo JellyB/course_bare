@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="INFO" monitorInterval="60">
+    <!-- -->
+    <appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout charset="UTF-8" pattern="%clr{%d{yyyy-MM-dd HH:mm:ss}}{faint} %clr{%5p} %clr{${sys:PID}}{magenta} %clr{[%15.15t]}{blue} %clr{%C.%M(%L)}{faint} --> %m%n" />
+        </Console>
+        <RollingFile name="INF" fileName="/data/logs/${server_name}/${server_name}_inf.log"
+                     filePattern="/data/logs/${server_name}/$${date:yyyy-MM}/agent_inf-%d{MM-dd-yyyy}-%i.log.gz"
+                     immediateFlush="false">
+            <PatternLayout charset="UTF-8"
+                           pattern="%d{yyyy-MM-dd HH:mm:ss} %clr{%5p}{magenta} %clr{[%15.15t]}{blue} %clr{%C.%M(%L)}{faint}  %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="250 MB"/>
+            </Policies>
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+        </RollingFile>
+        <RollingFile name="ERR" fileName="/data/logs/${server_name}/${server_name}_err.log"
+                     filePattern="/data/logs/${server_name}/$${date:yyyy-MM}/agent_err-%d{MM-dd-yyyy}-%i.log.gz"
+                     immediateFlush="false">
+            <PatternLayout charset="UTF-8"
+                           pattern="%d{yyyy-MM-dd HH:mm:ss} %clr{%5p}{magenta} %clr{[%15.15t]}{blue} %clr{%C.%M(%L)}{faint}  %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
+            </Policies>
+            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+        </RollingFile>
+    </appenders>
+    <Loggers>
+        <!-- 后期可以考虑把需要单独打印的如sql日志使用kakfa appender -->
+        <Root level="INFO">
+            <AppenderRef ref="INF"/>
+        </Root>
+        <Logger name="com.huatu" level="ERROR" additivity="false" includeLocation="true">
+            <AppenderRef ref="ERR"/>
+        </Logger>
+    </Loggers>
+</configuration>

@@ -11,23 +11,54 @@
 
     <artifactId>course-web-server</artifactId>
 
-    <properties></properties>
+    <properties>
+        <!-- filter -->
+        <server_name>course-web-server</server_name>
+    </properties>
 
 
     <dependencies>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- 更换为undertow容器,以及log4j2 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-ribbon</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-undertow</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-feign</artifactId>
@@ -48,13 +79,26 @@
         </dependency>
 
         <dependency>
-            <groupId>com.huatu.commons.sdk</groupId>
-            <artifactId>common-spring-web</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>io.github.openfeign</groupId>
             <artifactId>feign-okhttp</artifactId>
+        </dependency>
+
+        <!-- 第三方jar包 -->
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.lmax</groupId>
+            <artifactId>disruptor</artifactId>
+        </dependency>
+
+
+        <!-- 内部依赖 -->
+        <dependency>
+            <groupId>com.huatu.commons.sdk</groupId>
+            <artifactId>common-spring-web</artifactId>
         </dependency>
 
         <dependency>
@@ -63,4 +107,41 @@
             <version>1.0-${project.environment}-SNAPSHOT</version>
         </dependency>
     </dependencies>
+
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
+
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <finalName>${server_name}</finalName>
+                    <mainClass>cn.jxt.agent.App</mainClass>
+                    <layout>ZIP</layout>
+                    <embeddedLaunchScriptProperties>
+                        <!--默认的就可以-->
+                        <!--<confFolder>/usr/local/msite</confFolder>-->
+                        <!--<pidFolder></pidFolder>-->
+                        <logFolder>/data/logs/${server_name}/${server_name}_inf.log</logFolder>
+                    </embeddedLaunchScriptProperties>
+                    <executable>true</executable>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

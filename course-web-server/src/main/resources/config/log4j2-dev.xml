@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="INFO" monitorInterval="60">
+    <!-- -->
+    <appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout charset="UTF-8" pattern="%clr{%d{yyyy-MM-dd HH:mm:ss}}{faint} %clr{%5p} %clr{${sys:PID}}{magenta} %clr{[%15.15t]}{blue} %clr{%C.%M(%L)}{faint} --> %m%n" />
+        </Console>
+    </appenders>
+    <Loggers>
+        <!-- 后期可以考虑把需要单独打印的如sql日志使用kakfa appender -->
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</configuration>

@@ -1,6 +1,14 @@
+# 通用配置
 spring:
   application:
-    name: course-web-server
+    name: "${server_name}"
+  profiles:
+    active: dev
+  http:
+    encoding:
+      charset: UTF-8
+      force: true
+
 
 course-service:
   ribbon:
@@ -19,5 +27,45 @@ feign:
     enabled: true
 
 
-debug:
-  true
+
+# 自定义配置
+
+wrapper:
+  enabled: true
+
+
+
+
+
+
+# 不同环境的不同配置
+
+---
+spring:
+  profiles: dev
+
+logging:
+  config: "classpath:config/log4j2-dev.xml"
+
+debug: true
+
+---
+spring:
+  profiles: test
+
+logging:
+  config: "classpath:config/log4j2-test.xml"
+
+---
+spring:
+  profiles: release
+
+logging:
+  config: "classpath:config/log4j2-release.xml"
+
+---
+spring:
+  profiles: product
+
+logging:
+  config: "classpath:config/log4j2-product.xml"
