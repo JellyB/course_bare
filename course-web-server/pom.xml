@@ -38,14 +38,29 @@
         </dependency>
 
         <dependency>
+            <groupId>com.huatu.springboot</groupId>
+            <artifactId>spring-boot-starter-restclient</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.huatu.tiku.springboot</groupId>
             <artifactId>spring-boot-starter-users</artifactId>
         </dependency>
 
-        <!--<dependency>
+        <dependency>
+            <groupId>com.huatu.commons.sdk</groupId>
+            <artifactId>common-spring-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-okhttp</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.huatu.tiku</groupId>
             <artifactId>netschool-course-api</artifactId>
             <version>1.0-${project.environment}-SNAPSHOT</version>
-        </dependency>-->
+        </dependency>
     </dependencies>
 </project>

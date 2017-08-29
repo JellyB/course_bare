@@ -4,8 +4,20 @@ spring:
 
 course-service:
   ribbon:
-    listOfServers: apitk.huatu.com
+    IsSecure: true
+    SecurePort: 443
+    listOfServers: https://apitk.huatu.com:443
 
 ribbon:
   eureka:
    enabled: false
+
+feign:
+  httpclient:
+    enabled: false
+  okhttp:
+    enabled: true
+
+
+debug:
+  true
