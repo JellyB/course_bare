@@ -39,7 +39,7 @@ public class NetSchoolUrlConst {
     /**
      * 物流详情接口
      */
-    public static final String LOGISTICS_QUERY = "http://api.huatu.com/msg_comm/getInfo.php";
+    public static final String LOGISTICS_QUERY = "/msg_comm/getInfo.php";
 
 
     /**
@@ -124,5 +124,5 @@ public class NetSchoolUrlConst {
     /**
      * ios内购回调接口
      */
-    public static final String IOS_PAY_VERIFY = "http://api.huatu.com/web_v/pay/notifyPcClassOrder.php?callback=iosPayVerify";
+    public static final String IOS_PAY_VERIFY = "/web_v/pay/notifyPcClassOrder.php?callback=iosPayVerify";
 }

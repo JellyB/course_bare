@@ -24,6 +24,7 @@ public class VersionService {
      * @param catgory 考试类型
      * @return
      */
+    @Deprecated
     public boolean isIosAudit(int catgory,int terminal,String cv) {
         if (terminal == TerminalType.IPHONE || terminal == TerminalType.IPHONE_IPAD) {
             String iosAuditSetKey = VersionRedisKey.getIosAuditSetKey(catgory);

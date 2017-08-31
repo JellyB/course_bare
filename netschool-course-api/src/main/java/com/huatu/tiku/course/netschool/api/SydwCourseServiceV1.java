@@ -2,12 +2,14 @@ package com.huatu.tiku.course.netschool.api;
 
 import com.huatu.tiku.course.netschool.bean.NetSchoolResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
 
+import static com.huatu.tiku.course.netschool.consts.NetSchoolSydwUrlConst.SYDW_ALL_COLLECTION_LIST;
 import static com.huatu.tiku.course.netschool.consts.NetSchoolSydwUrlConst.SYDW_COURSE_DATAIL;
 import static com.huatu.tiku.course.netschool.consts.NetSchoolSydwUrlConst.SYDW_TOTAL_LIST;
 
@@ -22,4 +24,7 @@ public interface SydwCourseServiceV1 {
 
     @RequestMapping(value = SYDW_COURSE_DATAIL,method = RequestMethod.GET)
     NetSchoolResponse courseDetail(@RequestParam Map<String,Object> params);
+
+    @GetMapping(SYDW_ALL_COLLECTION_LIST)
+    NetSchoolResponse allCollectionList(@RequestParam Map<String,Object> params);
 }

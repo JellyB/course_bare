@@ -47,7 +47,7 @@ public class NetSchoolSydwUrlConst {
     /**
      * 事业单位赠送课程
      */
-    public static final String SYDW_LOGIN_COURSE = "http://api.huatu.com/sydw/v2/app_cate/classForDownload.php";
+    public static final String SYDW_LOGIN_COURSE = "/sydw/v2/app_cate/classForDownload.php";
 
 
     /**

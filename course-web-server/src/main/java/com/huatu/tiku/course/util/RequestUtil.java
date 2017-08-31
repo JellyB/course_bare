@@ -15,21 +15,30 @@ import java.util.Map;
 public class RequestUtil {
 
     /**
+     * 组装请求参数
+     * @param parameterMap
+     * @return
+     */
+    public static String expandUrl(Map<String, Object> parameterMap) {
+        if (MapUtils.isEmpty(parameterMap)) {
+            return "";
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        parameterMap.keySet().stream()
+                .filter(key->parameterMap.get(key) != null)
+                .forEach(key -> stringBuilder.append(key + "=" + parameterMap.get(key) + "&"));
+        //去掉最后的&
+        return stringBuilder.substring(0, stringBuilder.length() - 1);
+    }
+
+    /**
      * 对参数进行url展开后加密
      * @param params
      * @return
      */
     public static Map<String,Object> encryptParams(Map<String,Object> params){
         Map<String,Object> result = Maps.newHashMapWithExpectedSize(1);
-        if (MapUtils.isEmpty(params)) {
-            return result;
-        }
-        StringBuilder stringBuilder = new StringBuilder();
-        params.keySet().stream()
-                .filter(key->params.get(key) != null)
-                .forEach(key -> stringBuilder.append(key + "=" + params.get(key) + "&"));
-        //去掉最后的&
-        String paramsUrl = stringBuilder.substring(0, stringBuilder.length() - 1);
+        String paramsUrl = expandUrl(params);
         //加密
         String encryptparams = Crypt3Des.encryptMode(paramsUrl);
         log.info("params={},encrypt={}", params, encryptparams);

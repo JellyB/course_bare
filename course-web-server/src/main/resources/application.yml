@@ -1,20 +1,50 @@
-# 通用配置
+# 通用配置（这些配置是没有必要放到apollo去的固定配置，如果容易变动的配置，最好放到apollo里进行配置）
+
 spring:
+  ### 项目基本信息
   application:
     name: "${server_name}"
   profiles:
     active: dev
+
+  ### http配置
   http:
     encoding:
       charset: UTF-8
       force: true
 
+  ### jackson配置
+  jackson:
+    serialization:
+      write_dates_as_timestamps: false
+      fail_on_empty_beans: false
+    deserialization:
+      fail_on_unknown_properties: false
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    default-property-inclusion: non_null
 
+  ### freemarker配置
+  freemarker:
+    preferFileSystemAccess: true
+    cache: true
+    prefix: classpath:/templates
+    suffix: .ftl
+    content-type: text/html; charset=UTF-8
+    # 这是一个map,注入到factory的settings中
+    # settings:
+
+
+
+## spring cloud相关
 course-service:
   ribbon:
     IsSecure: true
     SecurePort: 443
     listOfServers: https://apitk.huatu.com:443
+o-course-service:
+  ribbon:
+    listOfServers: http://api.huatu.com
 
 ribbon:
   eureka:
@@ -28,14 +58,19 @@ feign:
 
 
 
-# 自定义配置
-
-wrapper:
-  enabled: true
 
 
+## 自定义配置
 
+huatu:
+  wrapper: enabled
 
+### 用来自动生成okhttpclient实例
+restclient:
+  httpclient:
+    enabled: false
+  okhttp:
+    enabled: true
 
 
 # 不同环境的不同配置
@@ -47,7 +82,10 @@ spring:
 logging:
   config: "classpath:config/log4j2-dev.xml"
 
+
 debug: true
+server:
+  port: 80
 
 ---
 spring:

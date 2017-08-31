@@ -2,6 +2,7 @@ package com.huatu.tiku.course.netschool.api;
 
 import com.huatu.tiku.course.netschool.bean.NetSchoolResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -9,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.Map;
 
 import static com.huatu.tiku.course.netschool.consts.NetSchoolSydwUrlConst.SYDW_MY_LIST;
+import static com.huatu.tiku.course.netschool.consts.NetSchoolSydwUrlConst.SYDW_MY_LIVE_SUIT_DETAIL;
+import static com.huatu.tiku.course.netschool.consts.NetSchoolSydwUrlConst.SYDW_MY_LIVE_SUIT_LIST;
 import static com.huatu.tiku.course.netschool.consts.NetSchoolUrlConst.*;
 
 /**
@@ -35,4 +38,14 @@ public interface UserCoursesServiceV1 {
 
     @RequestMapping(method = RequestMethod.GET,value=SHOW_COURSE)
     NetSchoolResponse showCourse(@RequestParam Map<String,Object> params);
+
+
+    @RequestMapping(method = RequestMethod.GET,value=MY_LIVE_SUIT_DETAIL)
+    NetSchoolResponse myCourseDetail(@RequestParam Map<String,Object> params);
+
+    @GetMapping(SYDW_MY_LIVE_SUIT_LIST)
+    NetSchoolResponse mySydwListNew(@RequestParam Map<String,Object> params);
+
+    @GetMapping(SYDW_MY_LIVE_SUIT_DETAIL)
+    NetSchoolResponse mySydwCourseDetail(@RequestParam Map<String,Object> params);
 }

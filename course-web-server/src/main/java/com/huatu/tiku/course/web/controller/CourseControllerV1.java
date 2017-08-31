@@ -239,6 +239,81 @@ public class CourseControllerV1 {
         return ResponseUtil.build(response,true);
     }
 
+    /**
+     * 我的直播课程详情页
+     * 跳转到课程直播页面
+     *
+     * @param courseId 课程id
+     * @param terminal 终端类型，用来区分调用的接口
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "{courseId}/live", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, method = RequestMethod.GET)
+    public Object myCourseDetail(@Token UserSession userSession,
+                                 @PathVariable int courseId,
+                                 @RequestHeader int terminal) throws Exception {
+        String username = userSession.getUname();
+
+        final HashMap<String, Object> parameterMap = Maps.newHashMap();
+        parameterMap.put("username", username);
+        //通过username与网校关联，网校接口的userid不起作用
+        parameterMap.put("userid", -1);
+        parameterMap.put("NetClassId", courseId);
+
+        if (terminal == TerminalType.ANDROID || terminal == TerminalType.ANDROID_IPAD) {
+            return ResponseUtil.build(courseService.myAndroidDetail(RequestUtil.encryptJsonParams(parameterMap)));
+        } else if (terminal == TerminalType.IPHONE || terminal == TerminalType.IPHONE_IPAD) {
+            return ResponseUtil.build(courseService.myIosDetail(RequestUtil.encryptJsonParams(parameterMap)));
+        }
+        return null;
+    }
+
+
+    /**
+     * 课程讲义
+     * @param courseId
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "{courseId}/handouts", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, method = RequestMethod.GET)
+    public Object handout(@PathVariable int courseId) throws Exception {
+        final HashMap<String, Object> parameterMap = Maps.newHashMap();
+        parameterMap.put("rid", courseId);
+        return ResponseUtil.build(courseService.getHandouts(parameterMap),true);
+    }
+
+    /**
+     * 套餐包含的课程
+     * @param courseId
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "{courseId}/suit", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, method = RequestMethod.GET)
+    public Object suitDetail(@PathVariable int courseId,
+                             @Token UserSession userSession) throws Exception {
+        String username = userSession.getUname();
+        final HashMap<String, Object> params = Maps.newHashMap();
+        params.put("rid", courseId);
+        params.put("username", username);
+        return ResponseUtil.build(userCoursesService.myCourseDetail(RequestUtil.encryptJsonParams(params)));
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     //-------------------------------------------------------------------------------------------
