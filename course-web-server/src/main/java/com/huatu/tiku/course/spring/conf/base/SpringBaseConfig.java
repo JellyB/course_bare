@@ -3,10 +3,11 @@ package com.huatu.tiku.course.spring.conf.base;
 import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
 import com.huatu.common.spring.web.converter.FormMessageConverter;
 import com.huatu.tiku.springboot.users.support.EnableUserSessions;
+import feign.Logger;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.core.env.ConfigurableEnvironment;
+
 
 /**
  * @author hanchao
@@ -26,9 +27,14 @@ public class SpringBaseConfig {
         return new FormMessageConverter();
     }
 
-
     @Bean
-    public StringRedisTemplate redisTemplate(JedisConnectionFactory jedisConnectionFactory){
-        return new StringRedisTemplate(jedisConnectionFactory);
+    //@Profile("")
+    public Logger.Level feignLoggerLevel(ConfigurableEnvironment environment){
+        if(environment.acceptsProfiles("product")){ //生产环境使用基本日志，否则使用完整日志
+            return Logger.Level.BASIC;
+        }else{
+            return Logger.Level.FULL;
+        }
     }
+
 }

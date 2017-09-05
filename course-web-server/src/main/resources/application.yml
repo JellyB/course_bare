@@ -1,10 +1,24 @@
 # 通用配置（这些配置是没有必要放到apollo去的固定配置，如果容易变动的配置，最好放到apollo里进行配置）
 
+server:
+  context-path: /c
+  compression:
+      enabled: true
+      mime-types: application/json,application/xml,text/html,text/xml,text/plain
+      min-response-size: 2048
+  undertow:
+    io-threads: 16
+    worker-threads: 248
+    buffer-size: 1024
+
+
+
 spring:
   ### 项目基本信息
   application:
     name: "${server_name}"
   profiles:
+    #### 只有设置active属性，才会在开发环境加载dev的配置，default：dev不会加载下方配置
     active: dev
 
   ### http配置
@@ -73,6 +87,7 @@ restclient:
     enabled: true
 
 
+
 # 不同环境的不同配置
 
 ---
@@ -82,10 +97,11 @@ spring:
 logging:
   config: "classpath:config/log4j2-dev.xml"
 
-
-debug: true
 server:
   port: 80
+
+debug: true
+
 
 ---
 spring:

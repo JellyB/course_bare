@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.web.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import com.huatu.common.ErrorResult;
 import com.huatu.common.exception.BizException;
@@ -10,6 +11,7 @@ import com.huatu.tiku.course.common.ExpressStatus;
 import com.huatu.tiku.course.common.NetSchoolConfig;
 import com.huatu.tiku.course.netschool.api.LogisticsServiceV1;
 import com.huatu.tiku.course.netschool.api.OtherServiceV1;
+import com.huatu.tiku.course.netschool.bean.NetSchoolResponse;
 import com.huatu.tiku.course.util.Crypt3Des;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.springboot.users.bean.UserSession;
@@ -51,10 +53,11 @@ public class LogisticsControllerV1 {
         params.put("categoryid", catgory == CatgoryType.GONG_WU_YUAN ?
                 NetSchoolConfig.CATEGORY_GWY : NetSchoolConfig.CATEGORY_SHIYE);
 
-        ExpressListResponse response = logisticsService.queryList(params);
+        NetSchoolResponse response = logisticsService.queryList(params);
         if (response.getCode() == NetSchoolConfig.SUCCESS_CODE) {
-            response.getData().stream().forEach(item->item.setExpressNo(Crypt3Des.decryptMode(item.getExpressNo())));
-            return response.getData();
+            ExpressListResponse exResponse = JSON.parseObject(JSON.toJSONString(response),ExpressListResponse.class);
+            exResponse.getData().stream().forEach(item->item.setExpressNo(Crypt3Des.decryptMode(item.getExpressNo())));
+            return exResponse.getData();
         }else{
             throw new BizException(ErrorResult.create(response.getCode(), response.getMsg()));
         }

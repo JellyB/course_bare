@@ -1,6 +1,6 @@
 package com.huatu.tiku.course.netschool.api;
 
-import com.huatu.tiku.course.bean.ExpressListResponse;
+import com.huatu.tiku.course.netschool.bean.NetSchoolResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -17,6 +17,6 @@ import static com.huatu.tiku.course.netschool.consts.NetSchoolUrlConst.LOGISTICS
 @FeignClient(value = "course-service")
 public interface LogisticsServiceV1 {
     @RequestMapping(value = LOGISTICS,method = RequestMethod.GET)
-    ExpressListResponse queryList(@RequestParam Map<String,Object> params);
+    NetSchoolResponse queryList(@RequestParam Map<String,Object> params);
 
 }

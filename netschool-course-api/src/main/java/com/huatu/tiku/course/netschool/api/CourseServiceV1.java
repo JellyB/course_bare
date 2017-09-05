@@ -39,4 +39,7 @@ public interface CourseServiceV1 {
 
     @GetMapping(value = HANDOUT_LIST)
     NetSchoolResponse getHandouts(@RequestParam Map<String,Object> params);
+
+    @GetMapping(value = LOGIN_COMMENT_COURSE)
+    NetSchoolResponse sendFree(@RequestParam Map<String,Object> params);
 }

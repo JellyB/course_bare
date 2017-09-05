@@ -9,9 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
 
-import static com.huatu.tiku.course.netschool.consts.NetSchoolSydwUrlConst.SYDW_ALL_COLLECTION_LIST;
-import static com.huatu.tiku.course.netschool.consts.NetSchoolSydwUrlConst.SYDW_COURSE_DATAIL;
-import static com.huatu.tiku.course.netschool.consts.NetSchoolSydwUrlConst.SYDW_TOTAL_LIST;
+import static com.huatu.tiku.course.netschool.consts.NetSchoolSydwUrlConst.*;
 
 /**
  * @author hanchao
@@ -27,4 +25,8 @@ public interface SydwCourseServiceV1 {
 
     @GetMapping(SYDW_ALL_COLLECTION_LIST)
     NetSchoolResponse allCollectionList(@RequestParam Map<String,Object> params);
+
+
+    @GetMapping(SYDW_LOGIN_COURSE)
+    NetSchoolResponse sendFree(@RequestParam Map<String,Object> params);
 }

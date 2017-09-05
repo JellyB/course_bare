@@ -3,7 +3,7 @@
     <!-- -->
     <appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout charset="UTF-8" pattern="%clr{%d{yyyy-MM-dd HH:mm:ss}}{faint} %clr{%5p} %clr{${sys:PID}}{magenta} %clr{[%15.15t]}{blue} %clr{%C.%M(%L)}{faint} --> %m%n" />
+            <PatternLayout charset="UTF-8" pattern="%clr{%d{yyyy-MM-dd HH:mm:ss}}{faint} %clr{%5p} %clr{[%15.15t]}{blue} %clr{%C{1.}.%M(%L)}{cyan} : %m%n" />
         </Console>
     </appenders>
     <Loggers>
@@ -11,5 +11,8 @@
         <Root level="INFO">
             <AppenderRef ref="Console"/>
         </Root>
+        <Logger name="com.huatu.tiku.course.netschool.api" level="DEBUG" additivity="false" includeLocation="true">
+            <AppenderRef ref="Console"/>
+        </Logger>
     </Loggers>
 </configuration>

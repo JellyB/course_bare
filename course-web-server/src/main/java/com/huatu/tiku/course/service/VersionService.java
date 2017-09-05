@@ -1,7 +1,7 @@
 package com.huatu.tiku.course.service;
 
 import com.huatu.common.consts.TerminalType;
-import com.huatu.tiku.common.consts.VersionRedisKey;
+import com.huatu.tiku.course.common.VersionRedisKey;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Component;
 

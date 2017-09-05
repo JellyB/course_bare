@@ -122,4 +122,10 @@ public class Crypt3Des {
         }
         return ret;
     }
+    public static void main(String[] args){
+        String str = "" +
+                "7344D5FBA933AB0CDE5E8490D0A94BB7B44085D0D847DFE544C7A2B03B0BB64ABDF7AD379BBF803F2DF2F26BFEB54D17FACA34699CC4A6FA715114C6244CDF39CE24D6083C5576A2"
+                ;
+        System.out.println(Crypt3Des.decryptMode(str));
+    }
 }
