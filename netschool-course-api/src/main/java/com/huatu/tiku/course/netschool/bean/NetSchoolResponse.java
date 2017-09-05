@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.cglib.beans.ImmutableBean;
 
 /**
  * @author hanchao
@@ -17,7 +18,7 @@ public class NetSchoolResponse {
     /**
      * mock
      */
-    public static final NetSchoolResponse DEFAULT = new NetSchoolResponse(0,"",null);
+    public static final NetSchoolResponse DEFAULT = (NetSchoolResponse) ImmutableBean.create(new NetSchoolResponse(0,"",null));
 
     private int code;
     private String msg;

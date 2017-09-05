@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.netschool.api;
 
+import com.huatu.tiku.course.netschool.api.fall.CourseServiceFallbackFactory;
 import com.huatu.tiku.course.netschool.bean.NetSchoolResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +15,7 @@ import static com.huatu.tiku.course.netschool.consts.NetSchoolUrlConst.*;
  * @author hanchao
  * @date 2017/8/28 23:08
  */
-@FeignClient(value = "course-service")
+@FeignClient(value = "course-service",fallbackFactory = CourseServiceFallbackFactory.class)
 public interface CourseServiceV1 {
     @GetMapping(value = TOTAL_LIST)
     NetSchoolResponse totalList(@RequestParam Map<String,Object> params);
