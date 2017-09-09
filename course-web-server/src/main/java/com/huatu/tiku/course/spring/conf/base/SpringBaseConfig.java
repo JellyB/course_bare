@@ -4,6 +4,7 @@ import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
 import com.huatu.common.spring.web.converter.FormMessageConverter;
 import com.huatu.tiku.springboot.users.support.EnableUserSessions;
 import feign.Logger;
+import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -16,6 +17,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
 @Configuration
 @EnableApolloConfig
 @EnableUserSessions
+@EnableCircuitBreaker
 public class SpringBaseConfig {
 
     /**

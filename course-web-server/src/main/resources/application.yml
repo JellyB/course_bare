@@ -48,7 +48,19 @@ spring:
     # 这是一个map,注入到factory的settings中
     # settings:
 
+## 监控
+info:
+  app:
+    name: "${server_name}"
+    encoding: UTF-8
 
+endpoints:
+  actuator:
+    enabled: true
+management:
+  security:
+    enabled: false
+  context-path: /_monitor
 
 ## spring cloud相关
 course-service:
@@ -72,9 +84,6 @@ feign:
   hystrix:
     enabled: true
 
-
-
-
 ## 自定义配置
 
 huatu:
@@ -86,6 +95,19 @@ restclient:
     enabled: false
   okhttp:
     enabled: true
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
