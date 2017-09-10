@@ -29,10 +29,8 @@
         <!-- 后期可以考虑把需要单独打印的如sql日志使用kakfa appender -->
         <Root level="INFO">
             <AppenderRef ref="INF"/>
-        </Root>
-        <Logger name="com.huatu" level="ERROR" additivity="false" includeLocation="true">
             <AppenderRef ref="ERR"/>
-        </Logger>
+        </Root>
         <Logger name="com.huatu.tiku.course.netschool.api" level="DEBUG" additivity="false" includeLocation="true">
             <AppenderRef ref="INF"/>
         </Logger>
