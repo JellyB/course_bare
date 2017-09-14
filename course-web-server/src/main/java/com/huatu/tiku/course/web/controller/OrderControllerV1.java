@@ -226,6 +226,8 @@ public class OrderControllerV1 {
 
         String data = response.body().string();
 
+        log.info("ios receipt resp: {}",data);
+
         if (StringUtils.isNoneBlank(data)) {
             Map map = JSON.parseObject(data);
             Object status = map.get("status");

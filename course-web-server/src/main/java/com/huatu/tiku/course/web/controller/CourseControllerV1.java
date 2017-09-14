@@ -10,6 +10,7 @@ import com.huatu.tiku.course.netschool.api.CourseServiceV1;
 import com.huatu.tiku.course.netschool.api.SydwCourseServiceV1;
 import com.huatu.tiku.course.netschool.api.UserCoursesServiceV1;
 import com.huatu.tiku.course.netschool.bean.NetSchoolResponse;
+import com.huatu.tiku.course.service.CourseBizService;
 import com.huatu.tiku.course.service.VersionService;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
@@ -43,6 +44,8 @@ public class CourseControllerV1 {
     @Autowired
     private VersionService versionService;
 
+    @Autowired
+    private CourseBizService courseBizService;
     /**
      * 全部直播列表接口
      *
@@ -75,7 +78,20 @@ public class CourseControllerV1 {
         params.put("username", userSession.getUname());
         params.put("shortTitle", shortTitle);
 
-        return ResponseUtil.build(getListByDevice(params,userSession.getCategory(),terminal,cv,shortTitle));
+        int category = userSession.getCategory();
+        if (userSession.getCategory() == CatgoryType.SHI_YE_DAN_WEI) {
+            return ResponseUtil.build(sydwCourseService.sydwTotalList(params));
+        }
+
+        boolean newVersion = isNewVersion(category, terminal, cv);
+        if (newVersion && StringUtils.isBlank(shortTitle)) {
+            //拆分接口
+            return courseBizService.getCourseListV2(userSession.getUname(),params);
+        } else if (newVersion && StringUtils.isNoneBlank(shortTitle)) {
+            return ResponseUtil.build(courseService.collectionDetail(params));
+        } else{
+            return ResponseUtil.build(courseService.totalList(params));
+        }
     }
 
     /**
@@ -230,13 +246,8 @@ public class CourseControllerV1 {
     public Object courseDetail(@PathVariable int courseId,
                                @Token UserSession userSession ) throws Exception {
         String username = userSession.getUname();
-        int catgory = userSession.getCategory();
 
-        final HashMap<String, Object> parameterMap = Maps.newHashMap();
-        parameterMap.put("rid", courseId);
-        parameterMap.put("username", username);
-        NetSchoolResponse response = getCourseDetail(RequestUtil.encryptParams(parameterMap),catgory);
-        return ResponseUtil.build(response,true);
+        return courseBizService.getCourseDetailV2(courseId,username);
     }
 
     /**

@@ -25,6 +25,12 @@ public class CourseServiceFallbackFactory implements FallbackFactory<CourseServi
             }
 
             @Override
+            public NetSchoolResponse collectionList(Map<String, Object> params) {
+                log.error("fall back reason: ",cause);
+                return NetSchoolResponse.DEFAULT;
+            }
+
+            @Override
             public NetSchoolResponse allCollectionList(Map<String, Object> params) {
                 log.error("fall back reason: ",cause);
                 return NetSchoolResponse.DEFAULT;

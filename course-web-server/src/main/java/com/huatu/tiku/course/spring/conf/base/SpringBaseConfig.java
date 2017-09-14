@@ -1,7 +1,6 @@
 package com.huatu.tiku.course.spring.conf.base;
 
 import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
-import com.huatu.common.spring.web.converter.FormMessageConverter;
 import com.huatu.tiku.springboot.users.support.EnableUserSessions;
 import feign.Logger;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
@@ -21,13 +20,12 @@ import org.springframework.core.env.ConfigurableEnvironment;
 public class SpringBaseConfig {
 
     /**
-     * 支持map转url encode
+     * 支持map转url encode，自动注入到了mvc，会引起响应失败
      * @return
      */
-    @Bean
-    public FormMessageConverter formMessageConverter(){
+    /*public FormMessageConverter formMessageConverter(){
         return new FormMessageConverter();
-    }
+    }*/
 
     @Bean
     //@Profile("")

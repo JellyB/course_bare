@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -38,12 +39,15 @@ public class RequestUtil {
      */
     public static Map<String,Object> encryptParams(Map<String,Object> params){
         Map<String,Object> result = Maps.newHashMapWithExpectedSize(1);
+        result.put("p",encrypt(params));
+        return result;
+    }
+
+    public static String encrypt(Map<String,Object> params){
         String paramsUrl = expandUrl(params);
         //加密
         String encryptparams = Crypt3Des.encryptMode(paramsUrl);
-        log.info("params={},encrypt={}", params, encryptparams);
-        result.put("p",encryptparams);
-        return result;
+        return encryptparams;
     }
 
     /**
@@ -56,6 +60,11 @@ public class RequestUtil {
         if (MapUtils.isEmpty(params)) {
             return result;
         }
+        result.put("p",encryptJson(params));
+        return result;
+    }
+
+    public static String encryptJson(Map<String,Object> params){
         JSONObject jsonObject = new JSONObject();
         params.keySet().stream()
                 .filter(key->params.get(key) != null)
@@ -64,8 +73,12 @@ public class RequestUtil {
         String paramsUrl = jsonObject.toString();
         //加密
         String encryptparams = Crypt3Des.encryptMode(paramsUrl);
-        log.info("params={},encrypt={}", params, encryptparams);
-        result.put("p",encryptparams);
-        return result;
+        return encryptparams;
+    }
+
+    public static void main(String[] args){
+        Map m = new HashMap();
+        m.put("div",1);
+        System.out.println(encrypt(m));
     }
 }

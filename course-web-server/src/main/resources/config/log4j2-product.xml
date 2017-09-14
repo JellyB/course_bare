@@ -6,7 +6,7 @@
                      filePattern="/data/logs/${server_name}/$${date:yyyy-MM}/agent_inf-%d{MM-dd-yyyy}-%i.log.gz"
                      immediateFlush="false">
             <PatternLayout charset="UTF-8"
-                           pattern="%d{yyyy-MM-dd HH:mm:ss} %clr{%5p}{magenta} %clr{[%15.15t]}{blue} %clr{%C{1.}.%M(%L)}{cyan} --> %m%n"/>
+                           pattern="%d{yyyy-MM-dd HH:mm:ss} %clr{%5p}{magenta} %clr{[%15.15t]}{blue} %clr{%C.%M(%L)}{cyan} --> %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
                 <SizeBasedTriggeringPolicy size="250 MB"/>
@@ -17,7 +17,7 @@
                      filePattern="/data/logs/${server_name}/$${date:yyyy-MM}/agent_err-%d{MM-dd-yyyy}-%i.log.gz"
                      immediateFlush="false">
             <PatternLayout charset="UTF-8"
-                           pattern="%d{yyyy-MM-dd HH:mm:ss} %clr{%5p}{magenta} %clr{[%15.15t]}{blue} %clr{%C{1.}.%M(%L)}{cyan} --> %m%n"/>
+                           pattern="%d{yyyy-MM-dd HH:mm:ss} %clr{%5p}{magenta} %clr{[%15.15t]}{blue} %clr{%C.%M(%L)}{cyan} --> %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
                 <SizeBasedTriggeringPolicy size="50 MB"/>

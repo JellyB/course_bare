@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.util;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.huatu.common.ErrorResult;
@@ -21,6 +22,8 @@ public class ResponseUtil {
 
     public static Map<String,Object> DEFAULT_RESPONSE = ImmutableMap.<String,Object>builder().put("result", Lists.newArrayList())
             .put("next",0).build();
+
+    public static ErrorResult ERROR_NULL_RESPONSE = ErrorResult.create(0,"数据为空");
 
 
     public static Object build(NetSchoolResponse response) throws BizException {
@@ -57,5 +60,48 @@ public class ResponseUtil {
             }
         }
         return data;
+    }
+
+    /**
+     * 需要解密到对应class的，一般都是需要重新组装的（并行请求）
+     * @param netSchoolResponse
+     * @param clazz
+     * @param needDecrypt
+     * @param <T>
+     * @return
+     */
+    public static <T> T build(NetSchoolResponse netSchoolResponse,Class<T> clazz,boolean needDecrypt){
+        if(netSchoolResponse == null || netSchoolResponse.getCode()!= NetSchoolConfig.SUCCESS_CODE || netSchoolResponse.getData() == null){
+            return null;
+        }
+        Object data = netSchoolResponse.getData();
+        String serialize = "";
+        if(needDecrypt){
+            serialize = Crypt3Des.decryptMode(String.valueOf(data));
+        }else{
+            serialize = JSON.toJSONString(data);
+        }
+        return JSON.parseObject(serialize,clazz);
+    }
+
+    /**
+     * 需要解密到对应class的，一般都是需要重新组装的（并行请求）
+     * 泛型
+     * @param netSchoolResponse
+     * @param type
+     * @param needDecrypt
+     * @param <T>
+     * @return
+     */
+    public static <T> T build(NetSchoolResponse netSchoolResponse, TypeReference<T> type, boolean needDecrypt){
+        if(netSchoolResponse == null || netSchoolResponse.getCode()!= NetSchoolConfig.SUCCESS_CODE || netSchoolResponse.getData() == null){
+            return null;
+        }
+        Object data = netSchoolResponse.getData();
+        if(needDecrypt){
+            return JSON.parseObject(Crypt3Des.decryptMode(String.valueOf(data)),type);
+        }else{
+            return JSON.parseObject(JSON.toJSONString(data),type);
+        }
     }
 }

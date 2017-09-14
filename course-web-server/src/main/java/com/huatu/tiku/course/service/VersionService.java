@@ -16,7 +16,7 @@ import javax.annotation.Resource;
 @Component
 @Deprecated
 public class VersionService {
-    @Resource(name = "redisTemplate")
+    @Resource(name = "stringRedisTemplate")
     private SetOperations<String,String> setOperations;
 
     /**

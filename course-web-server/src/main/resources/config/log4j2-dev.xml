@@ -3,7 +3,7 @@
     <!-- -->
     <appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout charset="UTF-8" pattern="%clr{%d{yyyy-MM-dd HH:mm:ss}}{faint} %clr{%5p} %clr{[%15.15t]}{blue} %clr{%C{1.}.%M(%L)}{cyan} : %m%n" />
+            <PatternLayout charset="UTF-8" pattern="%clr{%d{yyyy-MM-dd HH:mm:ss}}{faint} %clr{%5p} %clr{[%15.15t]}{blue} %clr{%C.%M(%L)}{cyan} : %m%n" />
         </Console>
     </appenders>
     <Loggers>

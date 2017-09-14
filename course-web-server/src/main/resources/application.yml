@@ -1,4 +1,4 @@
-# 通用配置（这些配置是没有必要放到apollo去的固定配置，如果容易变动的配置，最好放到apollo里进行配置）
+# 通用配置（这些配置是没有必要放到apollo去的固定配置[或者增加可读性的配置]，如果容易变动的配置，最好放到apollo里进行配置）
 
 server:
   context-path: /c
@@ -10,7 +10,6 @@ server:
     io-threads: 16
     worker-threads: 248
     buffer-size: 1024
-
 
 
 spring:
@@ -26,6 +25,7 @@ spring:
     encoding:
       charset: UTF-8
       force: true
+
 
   ### jackson配置
   jackson:
@@ -48,6 +48,10 @@ spring:
     # 这是一个map,注入到factory的settings中
     # settings:
 
+  output:
+    ansi:
+      enabled: always
+
 ## 监控
 info:
   app:
@@ -63,14 +67,6 @@ management:
   context-path: /_monitor
 
 ## spring cloud相关
-course-service:
-  ribbon:
-    IsSecure: true
-    SecurePort: 443
-    listOfServers: https://apitk.huatu.com:443
-o-course-service:
-  ribbon:
-    listOfServers: http://api.huatu.com
 
 ribbon:
   eureka:
@@ -84,35 +80,24 @@ feign:
   hystrix:
     enabled: true
 
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 5000
+
 ## 自定义配置
 
-huatu:
-  wrapper: enabled
-
-### 用来自动生成okhttpclient实例
-restclient:
-  httpclient:
-    enabled: false
-  okhttp:
-    enabled: true
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+htonline:
+  wrapper.enabled: true
+  httpclient.enabled: false
+  okhttp.enabled: true
+  executor.enabled: true
 
 
 # 不同环境的不同配置
-
 ---
 spring:
   profiles: dev
