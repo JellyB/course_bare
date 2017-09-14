@@ -11,13 +11,13 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Slf4j
-public class HtmlServiceFallbackFactory implements FallbackFactory<HtmlServiceV1> {
+public class HtmlServiceV1FallbackFactory implements FallbackFactory<HtmlServiceV1> {
     @Override
     public HtmlServiceV1 create(Throwable cause) {
         return new HtmlServiceV1() {
             @Override
             public String courseDetail(int rid) {
-                log.error("fall back reason: ",cause);
+                log.error("html service v1 fallback,params: {}, fall back reason: ",rid,cause);
                 return "服务器人太多了....";
             }
         };

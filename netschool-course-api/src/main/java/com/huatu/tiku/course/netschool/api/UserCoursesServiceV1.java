@@ -48,4 +48,8 @@ public interface UserCoursesServiceV1 {
 
     @GetMapping(SYDW_MY_LIVE_SUIT_DETAIL)
     NetSchoolResponse mySydwCourseDetail(@RequestParam Map<String,Object> params);
+
+
+    //----------------------------------
+
 }

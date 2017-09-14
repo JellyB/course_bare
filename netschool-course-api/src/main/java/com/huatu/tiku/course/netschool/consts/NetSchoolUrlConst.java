@@ -27,6 +27,11 @@ public class NetSchoolUrlConst {
     public static final String COURSE_DATAIL_V2 = "/v2/Class_Details_Buy.php";
 
     /**
+     * 课程详情页接口v2
+     */
+    public static final String COURSE_DATAIL_V2_SP = "/v2/Class_Details_Buy_new.php";
+
+    /**
      * 添加免费课程
      */
     public static final String FREE_COURSE = "/freeOrder.php";
@@ -105,6 +110,11 @@ public class NetSchoolUrlConst {
      * 课程合集接口
      */
     public static final String ALL_COLLECTION_LIST = "/v2/collectionClassSearch.php";
+
+    /**
+     * 拆分使用的课程合集接口
+     */
+    public static final String ALL_COLLECTION_LIST_SP = "/v2/collectionClassSearch_new.php";
 
     /**
      * 合集包含的课程接口

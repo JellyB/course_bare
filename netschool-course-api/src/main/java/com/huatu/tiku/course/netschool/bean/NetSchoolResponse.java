@@ -14,7 +14,7 @@ import org.springframework.cglib.beans.ImmutableBean;
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
 @Builder
-public class NetSchoolResponse {
+public class NetSchoolResponse<T> {
     /**
      * mock
      */
@@ -22,5 +22,5 @@ public class NetSchoolResponse {
 
     private int code;
     private String msg;
-    private Object data;
+    private T data;
 }

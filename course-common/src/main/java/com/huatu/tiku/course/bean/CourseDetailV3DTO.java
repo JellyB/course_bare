@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.bean;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -10,7 +11,7 @@ import java.util.List;
  * @date 2017/9/14 15:19
  */
 @Data
-public class CourseDetailV3DTP implements Serializable{
+public class CourseDetailV3DTO implements Serializable{
     private static final long serialVersionUID = 1L;
     /**
      * classInfo : {"stopTime":"","limitStatus":9,"TimeLength":"136","limitUserCount":0,"rid":"53306","TypeName":"套餐方案","limitTimes":0,"Title":"2017年江苏省公务员考试红领全程套餐A","scaleimg":"http://upload.htexam.net/classimg/class/1467601327.jpg","startTime":1,"ActualPrice":3180,"total":"350","studyDate":"9月23日-1月1日","isBuy":0}
@@ -27,16 +28,20 @@ public class CourseDetailV3DTP implements Serializable{
 
         private String stopTime;
         private int limitStatus;
+        @JsonProperty
         private String TimeLength;
-        private int limitUserCount;
+        private Integer limitUserCount;
         private String rid;
+        @JsonProperty
         private String TypeName;
         private int limitTimes;
+        @JsonProperty
         private String Title;
         private String scaleimg;
-        private int startTime;
+        private String startTime;
+        @JsonProperty
         private int ActualPrice;
-        private String total;
+        private Integer total;
         private String studyDate;
         private int isBuy;
 
