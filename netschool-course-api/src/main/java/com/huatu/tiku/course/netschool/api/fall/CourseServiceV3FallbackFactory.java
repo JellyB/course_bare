@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class CourseServiceV3FallbackFactory implements FallbackFactory<CourseServiceV3> {
     @Override
-    public CourseServiceV3 create(Throwable cause) {
+    public CourseServiceV3 create(final Throwable cause) {
         return null;
     }
 }

@@ -18,7 +18,7 @@ public class CourseServiceV1FallbackFactory implements FallbackFactory<CourseSer
     //TODO
     //增加javassist自动生成代理类来实现简单fallback,并记录fallback原因，该类只需注入即可
     @Override
-    public CourseServiceV1 create(Throwable cause) {
+    public CourseServiceV1 create(final Throwable cause) {
         return new CourseServiceV1() {
             @Override
             public NetSchoolResponse totalList(Map<String, Object> params) {

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class HtmlServiceV1FallbackFactory implements FallbackFactory<HtmlServiceV1> {
     @Override
-    public HtmlServiceV1 create(Throwable cause) {
+    public HtmlServiceV1 create(final Throwable cause) {
         return new HtmlServiceV1() {
             @Override
             public String courseDetail(int rid) {
