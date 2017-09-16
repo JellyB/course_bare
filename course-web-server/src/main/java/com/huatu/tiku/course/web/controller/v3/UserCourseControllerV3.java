@@ -44,7 +44,7 @@ public class UserCourseControllerV3 {
         return ResponseUtil.build(userCoursesServiceV3.findUserCourses(params));
     }
 
-    /**
+     /**
      * 我的课程列表(隐藏课程列表)
      * @param userSession
      * @param type

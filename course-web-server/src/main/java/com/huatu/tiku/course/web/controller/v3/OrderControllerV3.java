@@ -2,6 +2,7 @@ package com.huatu.tiku.course.web.controller.v3;
 
 import com.google.common.collect.Maps;
 import com.huatu.common.exception.BizException;
+import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.course.netschool.api.v3.OrderServiceV3;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
@@ -52,10 +53,52 @@ public class OrderControllerV3 {
                               @RequestParam String fromuser,
                               @RequestParam String tjCode,
                               @RequestHeader int terminal,
-                              @Token UserSession userSession){
+                              @Token UserSession userSession) throws BizException {
         Map<String,Object> params = Maps.newHashMap();
         params.put("action","createOrder");
-        return null;
+        params.put("addressid",addressid);
+        params.put("fromuser",fromuser);
+        params.put("rid",rid);
+        params.put("source",(terminal == 4 || terminal == 5)?'I':'A');//不是ios，就传android
+        params.put("tjCode",tjCode);
+        params.put("username",userSession.getUname());
+
+        return ResponseUtil.build(orderServiceV3.createOrder(RequestUtil.encrypt(params)),true);
     }
+
+    /**
+     * 订单详情
+     * @param orderNo
+     * @return
+     * @throws BizException
+     */
+    @PostMapping("/{orderNo}")
+    public Object getOrderDetail(@PathVariable String orderNo,
+                                 @RequestParam String type) throws BizException {
+        Map<String,Object> params = HashMapBuilder.<String,Object>newBuilder()
+                .put("action","orderDetail")
+                .put("ordernum",orderNo)
+                .put("type",type)
+                .build();
+        return ResponseUtil.build(orderServiceV3.getOrderDetail(RequestUtil.encrypt(params)),true);
+    }
+
+
+    /**
+     * 取消订单
+     * @param orderNo
+     * @return
+     * @throws BizException
+     */
+    @PostMapping("/{orderNo}/cancel")
+    public Object cancelOrder(@PathVariable String orderNo) throws BizException {
+        Map<String,Object> params = HashMapBuilder.<String,Object>newBuilder()
+                .put("action","cancel")
+                .put("ordernum",orderNo)
+                .build();
+        return ResponseUtil.build(orderServiceV3.createOrder(RequestUtil.encrypt(params)),true);
+    }
+
+
 
 }

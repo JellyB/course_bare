@@ -14,6 +14,7 @@
     <properties>
         <!-- filter -->
         <server_name>course-web-server</server_name>
+        <log_dir>/data/logs/${server_name}</log_dir>
     </properties>
 
 
@@ -139,20 +140,32 @@
 
 
         <plugins>
+
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>deploy/*</exclude>
+                        <exclude>deploy</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <finalName>${server_name}</finalName>
                     <mainClass>cn.jxt.agent.App</mainClass>
-                    <layout>ZIP</layout>
+                    <layout>DIR</layout>
                     <embeddedLaunchScriptProperties>
                         <!--默认的就可以-->
                         <!--<confFolder>/usr/local/msite</confFolder>-->
-                        <!--<pidFolder></pidFolder>-->
-                        <logFolder>/data/logs/${server_name}/${server_name}_inf.log</logFolder>
+                        <pidFolder>${log_dir}/</pidFolder>
+                        <logFolder>${log_dir}/${server_name}_inf.log</logFolder>
                     </embeddedLaunchScriptProperties>
                     <executable>true</executable>
+                    <excludeArtifactIds>lombok</excludeArtifactIds>
                 </configuration>
                 <executions>
                     <execution>
@@ -162,6 +175,28 @@
                     </execution>
                 </executions>
             </plugin>
+
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <finalName>${server_name}</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <descriptors>
+                        <descriptor>src/main/resources/deploy/assembly.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 </project>

@@ -2,27 +2,27 @@
 <configuration status="INFO" monitorInterval="60">
     <!-- -->
     <appenders>
-        <RollingFile name="INF" fileName="/data/logs/${server_name}/${server_name}_inf.log"
-                     filePattern="/data/logs/${server_name}/$${date:yyyy-MM}/agent_inf-%d{MM-dd-yyyy}-%i.log.gz"
+        <RollingFile name="INF" fileName="${log_dir}/${server_name}_inf.log"
+                     filePattern="${log_dir}/pack/agent_inf-%d{yyyy-MM-dd}.log.gz"
                      immediateFlush="false">
             <PatternLayout charset="UTF-8"
                            pattern="%d{yyyy-MM-dd HH:mm:ss} %clr{%5p}{magenta} %clr{[%15.15t]}{blue} %clr{%C.%M(%L)}{cyan} --> %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
-                <SizeBasedTriggeringPolicy size="250 MB"/>
             </Policies>
             <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <DefaultRolloverStrategy max="30"></DefaultRolloverStrategy>
         </RollingFile>
-        <RollingFile name="ERR" fileName="/data/logs/${server_name}/${server_name}_err.log"
-                     filePattern="/data/logs/${server_name}/$${date:yyyy-MM}/agent_err-%d{MM-dd-yyyy}-%i.log.gz"
+        <RollingFile name="ERR" fileName="${log_dir}/${server_name}_err.log"
+                     filePattern="${log_dir}/pack/agent_err-%d{yyyy-MM-dd}.log.gz"
                      immediateFlush="false">
             <PatternLayout charset="UTF-8"
                            pattern="%d{yyyy-MM-dd HH:mm:ss} %clr{%5p}{magenta} %clr{[%15.15t]}{blue} %clr{%C.%M(%L)}{cyan} --> %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
-                <SizeBasedTriggeringPolicy size="50 MB"/>
             </Policies>
             <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            <DefaultRolloverStrategy max="30"></DefaultRolloverStrategy>
         </RollingFile>
     </appenders>
     <Loggers>

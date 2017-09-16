@@ -3,6 +3,7 @@ package com.huatu.tiku.course.spring.conf.base;
 import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
 import com.huatu.common.spring.serializer.KryoRedisSerializer;
 import com.huatu.common.spring.serializer.StringRedisKeySerializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
@@ -16,10 +17,12 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 @EnableApolloConfig("tiku.redis-cluster")
 @Configuration
 public class RedisClusterConfig {
+    @Value("${spring.application.name:unknown}")
+    private String applicationName;
 
     @Bean
     public StringRedisKeySerializer stringRedisKeySerializer(){
-        return new StringRedisKeySerializer("course-server");
+        return new StringRedisKeySerializer(applicationName);
     }
 
     @Bean
