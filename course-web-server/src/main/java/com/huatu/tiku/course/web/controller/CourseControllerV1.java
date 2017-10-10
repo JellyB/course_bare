@@ -2,14 +2,15 @@ package com.huatu.tiku.course.web.controller;
 
 import com.google.common.collect.Maps;
 import com.huatu.common.ErrorResult;
+import com.huatu.common.Result;
 import com.huatu.common.consts.TerminalType;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.common.consts.CatgoryType;
+import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.common.NetSchoolConfig;
 import com.huatu.tiku.course.netschool.api.CourseServiceV1;
 import com.huatu.tiku.course.netschool.api.SydwCourseServiceV1;
 import com.huatu.tiku.course.netschool.api.UserCoursesServiceV1;
-import com.huatu.tiku.course.netschool.bean.NetSchoolResponse;
 import com.huatu.tiku.course.service.CourseBizService;
 import com.huatu.tiku.course.service.VersionService;
 import com.huatu.tiku.course.util.RequestUtil;
@@ -195,8 +196,8 @@ public class CourseControllerV1 {
         int catgory = userSession.getCategory();
 
         if (versionService.isIosAudit(catgory, terminal, cv)) {
-            ErrorResult errorResult = ErrorResult.create(0, "数据为空");
-            errorResult.setData(ResponseUtil.DEFAULT_RESPONSE);
+            ErrorResult errorResult = ErrorResult.create(Result.SUCCESS_CODE, "数据为空");
+            errorResult.setData(ResponseUtil.MOCK_PAGE_RESPONSE);
             throw new BizException(errorResult);
         }
 
@@ -329,7 +330,7 @@ public class CourseControllerV1 {
 
     //-------------------------------------------------------------------------------------------
 
-    private NetSchoolResponse getCourseDetail(Map<String,Object>params,int catgory){
+    private NetSchoolResponse getCourseDetail(Map<String,Object>params, int catgory){
         return catgory == CatgoryType.GONG_WU_YUAN ?
                 courseService.courseDetail(params) : sydwCourseService.courseDetail(params);
     }

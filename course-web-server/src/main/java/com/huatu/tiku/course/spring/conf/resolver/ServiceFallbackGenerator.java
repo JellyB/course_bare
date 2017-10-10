@@ -4,7 +4,7 @@ import com.google.common.collect.Maps;
 import com.huatu.common.utils.proxy.InterfaceHandler;
 import com.huatu.common.utils.scan.IScan;
 import com.huatu.common.utils.scan.PackageLoaderScan;
-import com.huatu.tiku.course.netschool.bean.NetSchoolResponse;
+import com.huatu.tiku.course.bean.NetSchoolResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.netflix.feign.FeignClient;
 
@@ -18,8 +18,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @date 2017/9/13 9:06
  */
 @Slf4j
+@Deprecated
 public class ServiceFallbackGenerator {
-    private static AtomicBoolean _lock = new AtomicBoolean(true);
+    private static AtomicBoolean initLock = new AtomicBoolean(true);
     private static Map<Class,Object> fallbacks = Maps.newHashMap();
 
 
@@ -27,19 +28,19 @@ public class ServiceFallbackGenerator {
 
 
     static{
-        if(_lock.compareAndSet(true,false)){
+        if(initLock.compareAndSet(true,false)){
             IScan scan = new PackageLoaderScan();
             Set<Class<?>> inters = scan.scan("com.huatu.tiku.course.netschool.api", FeignClient.class);
 
-            Map<Class,String> _mapping = Maps.newHashMap();
-            _mapping.put(NetSchoolResponse.class," com.huatu.tiku.course.netschool.bean.NetSchoolResponse.DEFAULT ");
+            Map<Class,String> responseMapiing = Maps.newHashMap();
+            responseMapiing.put(NetSchoolResponse.class," com.huatu.tiku.course.netschool.bean.NetSchoolResponse.DEFAULT ");
 
             for (Class<?> inter : inters) {
-                Object _instance = load(inter,_mapping);
-                if(_instance == null){
+                Object instance = load(inter,responseMapiing);
+                if(instance == null){
                     continue;
                 }
-                fallbacks.put(inter,_instance);
+                fallbacks.put(inter,instance);
             }
         }else{
             log.warn("proxy already started...");

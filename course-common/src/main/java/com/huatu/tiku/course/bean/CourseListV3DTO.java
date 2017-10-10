@@ -1,62 +1,23 @@
 package com.huatu.tiku.course.bean;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.huatu.common.bean.CacheableValue;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author hanchao
  * @date 2017/9/14 14:14
  */
 @Data
-public class CourseListV3DTO implements Serializable{
-    private static final long serialVersionUID = 1L;
+public class CourseListV3DTO extends CacheableValue{
+
+    public static final String KEY_SALE_START = "saleStart";
+    public static final String KEY_SALE_END = "saleEnd";
+
 
     private int next;
-    private List<CourseInfo> result;
+    private List<Map> result;
 
-    @Data
-    public static class CourseInfo implements Serializable{
-        private static final long serialVersionUID = 1L;
-
-        @JsonProperty
-        private String StartDate;
-        @JsonProperty
-        private String SubjectName;
-        private int isRushOut;
-        private int isverify;
-        private String tuijian;
-        private int isSaleOut;
-        private int isCollect;
-        private int iszhibo;
-        private String buyNum;
-        @JsonProperty
-        private String ActualPrice;
-        private String rid;
-        private String title;
-        private String activeEnd;
-        private String saleEnd;
-        private String activeStart;
-        @JsonProperty
-        private String TeacherDesc;
-        @JsonProperty
-        private String ClassNo;
-        private int isNormal;
-        private String zhibo;
-        private String count;
-        private int isRushClass;
-        @JsonProperty
-        private String NetClassId;
-        private String endDate;
-        @JsonProperty
-        private String CourseLength;
-        private String scaleimg;
-        private String limitUserCount;
-        private String hitsNum;
-        private String saleStart;
-        private Integer isBuy;
-
-    }
 }

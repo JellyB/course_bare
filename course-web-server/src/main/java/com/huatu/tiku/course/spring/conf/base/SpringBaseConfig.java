@@ -1,12 +1,14 @@
 package com.huatu.tiku.course.spring.conf.base;
 
 import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
-import com.huatu.tiku.springboot.users.support.EnableUserSessions;
+import com.huatu.springboot.web.tools.converter.FormMessageConverter;
 import feign.Logger;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 
 /**
@@ -15,17 +17,20 @@ import org.springframework.core.env.ConfigurableEnvironment;
  */
 @Configuration
 @EnableApolloConfig
-@EnableUserSessions
+@EnableAsync
 @EnableCircuitBreaker
+@EnableScheduling
 public class SpringBaseConfig {
 
     /**
-     * 支持map转url encode，自动注入到了mvc，会引起响应失败
+     * 支持map转url encode，可以用于post body而不是放在url上
+     * feign decoder默认使用了全局的httpmessageconverters
      * @return
      */
-    /*public FormMessageConverter formMessageConverter(){
+    @Bean
+    public FormMessageConverter formMessageConverter(){
         return new FormMessageConverter();
-    }*/
+    }
 
     @Bean
     //@Profile("")

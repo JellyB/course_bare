@@ -5,10 +5,12 @@ package com.huatu.tiku.course.common;
  */
 public class NetSchoolConfig {
 
+
     /**
+     * 改为大于等于0，都视为成功
      * 网校接口成功请求code
      */
-    public static final int SUCCESS_CODE = 1;
+    public static final int SUCCESS_CODE = 0;
 
     /**
      * IOS审核值

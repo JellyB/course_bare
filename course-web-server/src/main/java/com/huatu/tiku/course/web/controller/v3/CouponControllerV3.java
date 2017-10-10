@@ -41,7 +41,6 @@ public class CouponControllerV3 {
      * @param userSession
      * @param terminal
      * @return
-     * @throws BizException
      */
     @GetMapping("/list")
     public Object findCouponList(@Token UserSession userSession,
@@ -60,8 +59,10 @@ public class CouponControllerV3 {
         if(couponList == null || !couponList.containsKey("voucher")){
             throw new BizException(ResponseUtil.ERROR_NULL_RESPONSE);
         }
-        for (CouponV3DTO coupon : couponList.get("voucher")) {
-            coupon.setSales(Optional.ofNullable(couponSaleNums.get(coupon.getVoucherid())).orElse(0));
+        if(couponSaleNums != null){
+            for (CouponV3DTO coupon : couponList.get("voucher")) {
+                coupon.setSales(Optional.ofNullable(couponSaleNums.get(coupon.getVoucherid())).orElse(0));
+            }
         }
         return couponList;
     }

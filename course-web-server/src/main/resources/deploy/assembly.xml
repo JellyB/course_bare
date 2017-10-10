@@ -13,7 +13,7 @@
                 <include>*.sh</include>
             </includes>
             <lineEnding>unix</lineEnding>
-            <outputDirectory>bin</outputDirectory>
+            <outputDirectory>/</outputDirectory>
             <fileMode>0755</fileMode>
         </fileSet>
         <fileSet>

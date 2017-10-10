@@ -5,16 +5,19 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.huatu.tiku.common.consts.CatgoryType;
+import com.huatu.common.utils.encode.CharsetConsts;
 import com.huatu.tiku.course.common.AuditListType;
 import com.huatu.tiku.course.common.NetSchoolConfig;
 import com.huatu.tiku.course.netschool.api.UserCoursesServiceV1;
-import org.apache.commons.io.FileUtils;
+import com.huatu.tiku.springboot.basic.subject.SubjectEnum;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -23,6 +26,7 @@ import java.util.*;
  * @date 2017/8/30 10:18
  */
 @Service
+@Slf4j
 public class IosBffService {
     private final static int DEFAULT_ORDER = 1000;
 
@@ -37,17 +41,21 @@ public class IosBffService {
 
     static {
         try {
-            String courseTempalte = FileUtils.readFileToString(new File(IosBffService.class.getResource("/templates/mock/ios_audit_list.json").getFile()));
+            //new File(IosBffService.class.getClassLoader().getResource("templates/mock/ios_audit_list.json").getFile())
+            String courseTempalte = IOUtils.toString(IosBffService.class.getClassLoader().getResourceAsStream("templates/mock/ios_audit_list.json"), CharsetConsts.DEFAULT_ENCODING);
+            log.info(">>> read mock data,{}",courseTempalte.length());
             JSONObject json = JSON.parseObject(courseTempalte);
             COURSE_LIST_MOCK = json;
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     static {
         try {
-            String courseTempalte = FileUtils.readFileToString(new File(IosBffService.class.getResource("/templates/mock/ios_audit_book_list.json").getFile()));
+            //new File(IosBffService.class.getClassLoader().getResource("templates/mock/ios_audit_book_list.json").getFile())
+            String courseTempalte = IOUtils.toString(IosBffService.class.getClassLoader().getResourceAsStream("templates/mock/ios_audit_book_list.json"),CharsetConsts.DEFAULT_ENCODING);
+            log.info(">>> read mock data,{}",courseTempalte.length());
             JSONObject json = JSON.parseObject(courseTempalte);
             BOOK_LIST_MOCK = json;
 
@@ -56,16 +64,18 @@ public class IosBffService {
                     BOOK_IDS.add(((JSONObject) data).getInteger("rid"));
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     static {
         try {
-            File [] templates = new File(IosBffService.class.getResource("/templates/mock").toURI()).listFiles(f -> f.getName().endsWith(".html"));
-            for (File template : templates) {
-                DETAIL_FILES.put(template.getName(),FileUtils.readFileToString(template));
+            ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
+            Resource[] resources = resourcePatternResolver.getResources("classpath:templates/mock/*.html");
+            for (Resource resource : resources) {
+                log.info(">>> find resource,{}",resource.getURI());
+                DETAIL_FILES.put(resource.getFilename(), IOUtils.toString(resource.getInputStream(),CharsetConsts.DEFAULT_ENCODING));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -91,7 +101,7 @@ public class IosBffService {
         final HashMap<String, Object> params = Maps.newHashMap();
         params.put("username", username);
         params.put("order", order);
-        params.put("categoryid", catgory == CatgoryType.GONG_WU_YUAN ?
+        params.put("categoryid", catgory == SubjectEnum.GONGWUYUAN.code() ?
                 NetSchoolConfig.CATEGORY_GWY : NetSchoolConfig.CATEGORY_SHIYE);
         LinkedHashMap data = (LinkedHashMap)userCoursesService.myList(params).getData() ;
         return filterData(data, listType);

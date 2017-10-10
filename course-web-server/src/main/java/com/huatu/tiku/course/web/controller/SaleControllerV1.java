@@ -23,7 +23,7 @@ import java.util.Map;
 @RequestMapping(value = "v1/sales")
 public class SaleControllerV1 {
 
-    private static final Map productIdMap = new HashMap();
+    protected static final Map productIdMap = new HashMap();
     static {
         productIdMap.put(57713, "com.huatu.BrickQuestions.product57713");
         productIdMap.put(57461, "com.huatu.BrickQuestions.product57461");

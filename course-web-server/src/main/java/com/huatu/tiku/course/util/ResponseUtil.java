@@ -5,10 +5,11 @@ import com.alibaba.fastjson.TypeReference;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.huatu.common.ErrorResult;
+import com.huatu.common.Result;
 import com.huatu.common.SuccessMessage;
 import com.huatu.common.exception.BizException;
+import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.common.NetSchoolConfig;
-import com.huatu.tiku.course.netschool.bean.NetSchoolResponse;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
@@ -20,25 +21,27 @@ import java.util.Map;
  */
 public class ResponseUtil {
 
-    public static Map<String,Object> DEFAULT_RESPONSE = ImmutableMap.<String,Object>builder().put("result", Lists.newArrayList())
+    public static ErrorResult ERROR_NULL_RESPONSE = ErrorResult.create(Result.SUCCESS_CODE,"数据为空");
+
+    public static Map<String,Object> MOCK_PAGE_RESPONSE = ImmutableMap.<String,Object>builder().put("result", Lists.newArrayList())
             .put("next",0).build();
 
-    public static ErrorResult ERROR_NULL_RESPONSE = ErrorResult.create(0,"数据为空");
+    public static ErrorResult ERROR_PAGE_RESPONSE = ErrorResult.create(Result.SUCCESS_CODE,"数据为空",MOCK_PAGE_RESPONSE);
 
 
-    public static Object build(NetSchoolResponse response) throws BizException {
+    public static Object build(NetSchoolResponse response) {
         return build(response,false);
     }
+
 
     /**
      * 查看日志不存在非json的响应，碰到再进行调整
      * @param netSchoolResponse
      * @return
-     * @throws BizException
      */
-    public static Object build (NetSchoolResponse netSchoolResponse,boolean needDecrypt) throws BizException {
+    public static Object build (NetSchoolResponse netSchoolResponse,boolean needDecrypt) {
         Object data = null;
-        if (netSchoolResponse.getCode() != NetSchoolConfig.SUCCESS_CODE) {
+        if (isFailure(netSchoolResponse)) {
             final ErrorResult errorResult = ErrorResult.create(netSchoolResponse.getCode(), netSchoolResponse.getMsg());
             if (netSchoolResponse.getData() != null) {
                 errorResult.setData(netSchoolResponse.getData());
@@ -56,7 +59,7 @@ public class ResponseUtil {
             //需要解密的
             if (needDecrypt) {
                 String json = Crypt3Des.decryptMode(String.valueOf(data));
-                data = JSON.parseObject(json,Map.class);
+                data = JSON.parse(json);
             }
         }
         return data;
@@ -71,7 +74,7 @@ public class ResponseUtil {
      * @return
      */
     public static <T> T build(NetSchoolResponse netSchoolResponse,Class<T> clazz,boolean needDecrypt){
-        if(netSchoolResponse == null || netSchoolResponse.getCode()!= NetSchoolConfig.SUCCESS_CODE || netSchoolResponse.getData() == null){
+        if(isFailure(netSchoolResponse) || netSchoolResponse.getData() == null){
             return null;
         }
         Object data = netSchoolResponse.getData();
@@ -94,7 +97,7 @@ public class ResponseUtil {
      * @return
      */
     public static <T> T build(NetSchoolResponse netSchoolResponse, TypeReference<T> type, boolean needDecrypt){
-        if(netSchoolResponse == null || netSchoolResponse.getCode()!= NetSchoolConfig.SUCCESS_CODE || netSchoolResponse.getData() == null){
+        if(isFailure(netSchoolResponse) || netSchoolResponse.getData() == null){
             return null;
         }
         Object data = netSchoolResponse.getData();
@@ -103,5 +106,30 @@ public class ResponseUtil {
         }else{
             return JSON.parseObject(JSON.toJSONString(data),type);
         }
+    }
+
+
+    /**
+     * 是否失败的响应
+     * @param response
+     * @return
+     */
+    public static boolean isFailure(NetSchoolResponse response){
+        if(response == null || response.getCode() < NetSchoolConfig.SUCCESS_CODE){
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 0是介于之间的
+     * @param response
+     * @return
+     */
+    public static boolean isSuccess(NetSchoolResponse response){
+        if(response != null && response.getCode() > NetSchoolConfig.SUCCESS_CODE){
+            return true;
+        }
+        return false;
     }
 }

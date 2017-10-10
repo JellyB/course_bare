@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.web.controller;
 
 import com.huatu.common.ErrorResult;
+import com.huatu.common.Result;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.common.AuditListType;
 import com.huatu.tiku.course.service.IosBffService;
@@ -53,8 +54,8 @@ public class CourseAuditControllerV1 {
             if (page == 1) {
                 return bffService.getList(username, catgory, listType);
             } else {
-                ErrorResult errorResult = ErrorResult.create(0, "数据为空");
-                errorResult.setData(ResponseUtil.DEFAULT_RESPONSE);
+                ErrorResult errorResult = ErrorResult.create(Result.SUCCESS_CODE, "数据为空");
+                errorResult.setData(ResponseUtil.MOCK_PAGE_RESPONSE);
                 throw new BizException(errorResult);
             }
         }

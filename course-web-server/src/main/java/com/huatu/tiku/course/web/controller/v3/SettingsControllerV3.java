@@ -1,9 +1,12 @@
 package com.huatu.tiku.course.web.controller.v3;
 
-import com.huatu.common.exception.BizException;
-import com.huatu.tiku.common.consts.CatgoryType;
+import com.huatu.common.SuccessResponse;
+import com.huatu.common.spring.cache.Cached;
 import com.huatu.tiku.course.netschool.api.v3.CourseSettingServiceV3;
+import com.huatu.tiku.course.service.ConfigBizService;
 import com.huatu.tiku.course.util.ResponseUtil;
+import com.huatu.tiku.springboot.basic.subject.SubjectEnum;
+import com.huatu.tiku.springboot.basic.subject.SubjectService;
 import com.huatu.tiku.springboot.users.bean.UserSession;
 import com.huatu.tiku.springboot.users.support.Token;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +19,8 @@ import javax.annotation.Resource;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.huatu.tiku.course.util.CourseCKConst.LIVE_SETTINGS;
-import static com.huatu.tiku.course.util.CourseCKConst.RECORDING_SETTINGS;
+import static com.huatu.tiku.course.util.CourseCacheKey.LIVE_SETTINGS;
+import static com.huatu.tiku.course.util.CourseCacheKey.RECORDING_SETTINGS;
 
 /**
  * @author hanchao
@@ -30,15 +33,28 @@ public class SettingsControllerV3 {
     private ValueOperations valueOperations;
     @Autowired
     private CourseSettingServiceV3 courseSettingServiceV3;
+    @Autowired
+    private ConfigBizService configBizService;
+    @Autowired
+    private SubjectService subjectService;
+
+
+    @GetMapping("/address/_settings")
+    public Object getAddressSettings(){
+        Map config = configBizService.getConfig();
+        //直接返回result,可以减少wrapper的拦截流程
+        return new SuccessResponse(config);
+    }
 
     /**
      * 获取直播查询配置
      * @param userSession
      * @return
-     * @throws BizException
      */
+    @Cached(name = "直播查询条件",
+            key = "T(com.huatu.tiku.course.util.CourseCacheKey).LIVE_SETTINGS")
     @GetMapping("/live/query/_settings")
-    public Object getLiveSettings(@Token UserSession userSession) throws BizException {
+    public Object getLiveSettings(@Token UserSession userSession) {
         String cacheKey = LIVE_SETTINGS;
         Object result = valueOperations.get(cacheKey);
         if(result == null){
@@ -52,41 +68,35 @@ public class SettingsControllerV3 {
      * 获取录播查询配置
      * @param userSession
      * @return
-     * @throws BizException
      */
+    @Cached(name = "录播查询条件",
+            key = "T(com.huatu.tiku.course.util.CourseCacheKey).RECORDING_SETTINGS")
     @GetMapping("/recording/query/_settings")
-    public Object getRecordingSettings(@Token UserSession userSession) throws BizException {
+    public Object getRecordingSettings(@Token UserSession userSession) {
         String cacheKey = RECORDING_SETTINGS;
-        Object result = valueOperations.get(cacheKey);
-        if(result == null){
-            Map settings = (Map) ResponseUtil.build(courseSettingServiceV3.getRecordingSettings());
-            Map<String,Object> categories = (Map<String, Object>) settings.get("category");
-            String selKey = "";
-            switch (userSession.getCategory()){
-                case CatgoryType.GONG_WU_YUAN:
-                    selKey = "公务员";
-                    break;
-                case CatgoryType.SHI_YE_DAN_WEI:
-                    selKey = "事业单位";
-                    break;
-                case CatgoryType.JIAO_SHI:
-                    selKey = "教师";
-                    break;
-                case CatgoryType.JIN_RONG:
-                    selKey = "金融";
-                    break;
-                case CatgoryType.YI_LIAO:
-                    selKey = "医疗";
-                    break;
-            }
-            settings.put("category",categories.get(selKey));
+        Map<String,Object> settings = (Map<String, Object>) valueOperations.get(cacheKey);
+        if(settings == null){
+            settings = (Map) ResponseUtil.build(courseSettingServiceV3.getRecordingSettings());
             settings.remove("province");//省份的由用户自己选择
-
             valueOperations.set(cacheKey,settings,1,TimeUnit.DAYS);
-
-            return settings;
         }
-        return result;
+        int subject = userSession.getSubject();
+        int top = subjectService.top(subject);
+
+        SubjectEnum[] enums = SubjectEnum.values();
+        String selKey = "";
+        for (SubjectEnum subjectEnum : enums) {
+            if(subjectEnum.code() == top){
+                selKey = subjectEnum.meaning();
+                break;
+            }
+        }
+
+        Map<String,Object> categories = (Map<String, Object>) settings.get("category");
+        Map<String,Object> subjects = (Map<String, Object>) settings.get("subject");
+        settings.put("category",categories.get(selKey));
+        settings.put("subject",subjects.get(selKey));
+        return settings;
     }
 
 }

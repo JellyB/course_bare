@@ -1,7 +1,6 @@
 package com.huatu.tiku.course.web.controller.v3;
 
 import com.google.common.collect.Maps;
-import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.netschool.api.v3.SupportServiceV3;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.bean.UserSession;
@@ -31,12 +30,11 @@ public class SupportControllerV3 {
      * @param netclassid
      * @param userSession
      * @return
-     * @throws BizException
      */
     @PostMapping("/course/checkin")
     public Object checkin(@RequestParam int lessionid,
                           @RequestParam int netclassid,
-                          @Token UserSession userSession) throws BizException {
+                          @Token UserSession userSession) {
         Map<String,Object> params = Maps.newHashMap();
         params.put("action","checkin");
         params.put("lessionid",lessionid);
@@ -50,13 +48,14 @@ public class SupportControllerV3 {
      * @param lessionid
      * @param userSession
      * @return
-     * @throws BizException
      */
     @PostMapping("/course/checkout")
     public Object checkout(@RequestParam int lessionid,
-                          @Token UserSession userSession) throws BizException {
+                          @RequestParam int netclassid,
+                          @Token UserSession userSession) {
         Map<String,Object> params = Maps.newHashMap();
         params.put("action","checkout ");
+        params.put("netclassid",netclassid);
         params.put("lessionid",lessionid);
         params.put("username",userSession.getUname());
         return ResponseUtil.build(supportServiceV3.checkInOut(params));

@@ -14,6 +14,7 @@ import com.huatu.tiku.course.netschool.api.CourseServiceV1;
 import com.huatu.tiku.course.util.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -42,44 +43,92 @@ public class CourseBizService {
 
     /**
      * 获取直播列表 v3
+     *
      * @param username
      * @param params
      * @return
      * @throws ExecutionException
      * @throws InterruptedException
-     * @throws BizException
      */
-    public CourseListV3DTO getCourseListV3(String username,Map<String,Object> params) throws ExecutionException, InterruptedException, BizException {
+    public CourseListV3DTO getCourseListV3(String username, Map<String, Object> params) throws ExecutionException, InterruptedException, BizException {
         TimeMark timeMark = TimeMark.newInstance();
         ListenableFuture<CourseListV3DTO> courseListFuture = courseAsyncService.getCourseListV3(params);
         ListenableFuture<Set<Integer>> userBuyFuture = courseAsyncService.getUserBuy(username);
 
         CourseListV3DTO courseList = courseListFuture.get();
         Set<Integer> userBuy = userBuyFuture.get();
-        log.info(">>>>>>>>> courseListV3: concurent request complete,used {} mills,total cost {} mills...",timeMark.mills(),timeMark.totalMills());
+        log.info(">>>>>>>>> courseListV3: concurent request complete,used {} mills,total cost {} mills...", timeMark.mills(), timeMark.totalMills());
 
-        if(courseList == null){
-            throw new BizException(ResponseUtil.ERROR_NULL_RESPONSE);
+        if (courseList == null) {
+            throw new BizException(ResponseUtil.ERROR_PAGE_RESPONSE);
         }
 
-        if(CollectionUtils.isNotEmpty(courseList.getResult())){
-            for (CourseListV3DTO.CourseInfo courseInfo : courseList.getResult()) {
-                courseInfo.setIsBuy(userBuy.contains(courseInfo.getRid())?1:0);//设置是否购买的状态
+        //包装数据
+        long timestamp = courseList.getCacheTimestamp();
+        if (CollectionUtils.isNotEmpty(courseList.getResult())) {
+            long current = System.currentTimeMillis();
+            for (Map item : courseList.getResult()) {
+                if (courseList.isCache()) {
+                    //产生异常直接放弃，用默认的
+                    try {
+                        int passed = (int) ((current - timestamp) / 1000);
+                        do {
+                            if (!item.containsKey(CourseListV3DTO.KEY_SALE_START)) {
+                                break;
+                            }
+                            String tmpStr = String.valueOf(item.get(CourseListV3DTO.KEY_SALE_START));
+                            if (StringUtils.isBlank(tmpStr)) {
+                                break;
+                            }
+                            Integer saleStart = Ints.tryParse(tmpStr);
+                            if (saleStart == null || saleStart <= 0) {
+                                break;
+                            }
+                            saleStart = (saleStart.compareTo(passed) > 0) ? (saleStart - passed) : 0;
+                            item.put(CourseListV3DTO.KEY_SALE_START, String.valueOf(saleStart));
+                        } while (false);
+
+                        do {
+                            if (!item.containsKey(CourseListV3DTO.KEY_SALE_END)) {
+                                break;
+                            }
+                            String tmpStr = String.valueOf(item.get(CourseListV3DTO.KEY_SALE_END));
+                            if (StringUtils.isBlank(tmpStr)) {
+                                break;
+                            }
+                            Integer saleEnd = Ints.tryParse(tmpStr);
+                            if (saleEnd == null || saleEnd <= 0) {
+                                break;
+                            }
+                            saleEnd = (saleEnd.compareTo(passed) > 0) ? (saleEnd - passed) : 0;
+                            item.put(CourseListV3DTO.KEY_SALE_END, String.valueOf(saleEnd));
+                        } while (false);
+
+                    } catch (Exception e) {
+                        log.error("try to decorate course list error...", e);
+                    }
+                }
+
+                if ("0".equals(String.valueOf(item.get("isCollect"))) && item.containsKey("rid")) {
+                    int rid = Optional.ofNullable(Ints.tryParse(String.valueOf(item.get("rid")))).orElse(-1);
+                    item.put("isBuy", userBuy.contains(rid) ? 1 : 0);
+                }
             }
         }
-        log.info(">>>>>>>>> courseListV3: build response data complete,used {} mills,total cost {} mills...",timeMark.mills(),timeMark.totalMills());
+
+        log.info(">>>>>>>>> courseListV3: build response data complete,used {} mills,total cost {} mills...", timeMark.mills(), timeMark.totalMills());
         return courseList;
     }
 
 
     /**
      * 获取课程详情 v3
+     *
      * @param courseId
      * @param username
      * @return
      * @throws InterruptedException
      * @throws ExecutionException
-     * @throws BizException
      */
     public CourseDetailV3DTO getCourseDetailV3(int courseId, String username) throws InterruptedException, ExecutionException, BizException {
         TimeMark timeMark = TimeMark.newInstance();
@@ -95,103 +144,124 @@ public class CourseBizService {
 
         countDownLatch.await(10, TimeUnit.SECONDS);//最多10秒等待
 
-        log.info(">>>>>>>>> courseDetail: concurent request complete,used {} mills...",timeMark.millsWithMark());
+        log.info(">>>>>>>>> courseDetail: concurent request complete,used {} mills...", timeMark.millsWithMark());
 
         CourseDetailV3DTO courseDetail = courseDetailFuture.get();
-        if(courseDetail == null){
-            throw new BizException(ResponseUtil.ERROR_NULL_RESPONSE);
+        if (courseDetail == null) {
+            throw new BizException(ResponseUtil.ERROR_PAGE_RESPONSE);
         }
         CourseDetailV3DTO.ClassInfo classInfo = courseDetail.getClassInfo();
 
         int current = TimestampUtil.currentUnixTimeStamp();
         int totalNum = Integer.MAX_VALUE;//限制人数
-        if(classInfo.getLimitUserCount() != null && classInfo.getLimitUserCount() != 0){
+        if (classInfo.getLimitUserCount() != null && classInfo.getLimitUserCount() != 0) {
             totalNum = classInfo.getLimitUserCount();
         }
 
         int buyNum = 0;
         Map<Integer, Integer> courseLimit = courseLimitFuture.get();
-        if(courseLimit.containsKey(courseId)){
+        if (courseLimit.containsKey(courseId)) {
             buyNum = courseLimit.get(courseId);
         }
 
         classInfo.setTotal(buyNum);
 
         //获取开始时间和结束时间
-        int startTime = Optional.ofNullable(Ints.tryParse(classInfo.getStartTime())).orElse((int) (DateUtil.addDay(-1).getTime()/1000));
-        int stopTime = Optional.ofNullable(Ints.tryParse(classInfo.getStopTime())).orElse((int) (DateUtil.addDay(1).getTime()/1000));
+        int startTime = Optional.ofNullable(Ints.tryParse(classInfo.getStartTime())).orElse((int) (DateUtil.addDay(-1).getTime() / 1000));
+        int stopTime = Optional.ofNullable(Ints.tryParse(classInfo.getStopTime())).orElse((int) (DateUtil.addDay(1).getTime() / 1000));
 
         int limitStatus = 0;
 
-        if(startTime>current){
-            classInfo.setLimitTimes(startTime- current);
-            limitStatus = 2;//未开始
-        }else if(current>=startTime && current< stopTime){
-            classInfo.setLimitTimes(stopTime-current);
-            if(totalNum > buyNum){
-                limitStatus = 3;//抢购中，未售罄
-            }else{
-                limitStatus = 4;
+        //获取课程销售状态
+        do {
+            if (startTime == stopTime && startTime == 0) {
+                //不限时，并且不限量
+                if(classInfo.getLimitUserCount() != null && classInfo.getLimitUserCount() == 0){
+                    limitStatus = 7; //不限时不限量
+                    break;
+                }
+                if(totalNum > buyNum){
+                    limitStatus = 7; //不限时限量，未售罄
+                }else{
+                    limitStatus = 8; //不限时限量，已售罄
+                }
+                break;
             }
-        }else{
-            classInfo.setLimitTimes(0);
-            if(totalNum <= buyNum){
-                limitStatus = 8;//抢购结束
-            }else{
-                limitStatus = 7;
+            if (startTime > current) {
+                classInfo.setLimitTimes(startTime - current);
+                limitStatus = 2;//未开始
+            } else if (current >= startTime && current < stopTime) {
+                classInfo.setLimitTimes(stopTime - current);
+                if (totalNum > buyNum) {
+                    limitStatus = 3;//抢购中，未售罄
+                } else {
+                    limitStatus = 4;//抢购中，已售罄
+                }
+            } else {
+                classInfo.setLimitTimes(0);
+                if (totalNum <= buyNum) {
+                    limitStatus = 5;//抢购结束
+                } else {
+                    limitStatus = 6;
+                }
             }
-        }
+
+        } while (false);
+
+
 
         classInfo.setLimitStatus(limitStatus);
-        classInfo.setStartTime(DateFormatUtil.DEFAULT_FORMAT.format(startTime*1000L));
-        classInfo.setStopTime(DateFormatUtil.DEFAULT_FORMAT.format(stopTime*1000L));
+        classInfo.setStartTime(DateFormatUtil.DEFAULT_FORMAT.format(startTime * 1000L));
+        classInfo.setStopTime(DateFormatUtil.DEFAULT_FORMAT.format(stopTime * 1000L));
 
-        log.info(">>>>>>>>> courseDetail: build response data complete,used {} mills,total cost {} mills...",timeMark.mills(),timeMark.totalMills());
+        log.info(">>>>>>>>> courseDetail: build response data complete,used {} mills,total cost {} mills...", timeMark.mills(), timeMark.totalMills());
 
         return courseDetail;
     }
 
 
-
     /**
      * 老版本获取课程列表
+     *
      * @param username
      * @param params
      * @return
      * @throws ExecutionException
      * @throws InterruptedException
-     * @throws BizException
      */
-    public CourseListV2DTO getCourseListV2(String username,Map<String,Object> params) throws ExecutionException, InterruptedException, BizException {
+    public CourseListV2DTO getCourseListV2(String username, Map<String, Object> params) throws ExecutionException, InterruptedException, BizException {
         TimeMark timeMark = TimeMark.newInstance();
         ListenableFuture<CourseListV2DTO> courseListFuture = courseAsyncService.getCourseListV2(params);
         ListenableFuture<Set<Integer>> userBuyFuture = courseAsyncService.getUserBuy(username);
 
         CourseListV2DTO courseList = courseListFuture.get();
         Set<Integer> userBuy = userBuyFuture.get();
-        log.info(">>>>>>>>> courseList: concurent request complete,used {} mills,total cost {} mills...",timeMark.mills(),timeMark.totalMills());
-        if(courseList == null){
-            throw new BizException(ResponseUtil.ERROR_NULL_RESPONSE);
+        log.info(">>>>>>>>> courseList: concurent request complete,used {} mills,total cost {} mills...", timeMark.mills(), timeMark.totalMills());
+        if (courseList == null) {
+            throw new BizException(ResponseUtil.ERROR_PAGE_RESPONSE);
         }
-        if(CollectionUtils.isNotEmpty(courseList.getResult())){
-            for (CourseListV2DTO.CourseInfo courseInfo : courseList.getResult()) {
-                courseInfo.setIsBuy(userBuy.contains(courseInfo.getRid())?1:0);//设置是否购买的状态
+        if (CollectionUtils.isNotEmpty(courseList.getResult())) {
+            for (Map course : courseList.getResult()) {
+                if ("0".equals(String.valueOf(course.get("isCollect"))) && course.containsKey("rid")) {
+                    Integer courseId = Integer.parseInt(String.valueOf(course.get("rid")));
+                    course.put("isBuy", userBuy.contains(String.valueOf(courseId)) ? 1 : 0);
+                }//设置是否购买的状态
             }
         }
-        log.info(">>>>>>>>> courseList: build response data complete,used {} mills,total cost {} mills...",timeMark.mills(),timeMark.totalMills());
+        log.info(">>>>>>>>> courseList: build response data complete,used {} mills,total cost {} mills...", timeMark.mills(), timeMark.totalMills());
         return courseList;
     }
 
     /**
      * 老版本获取课程详情
+     *
      * @param courseId
      * @param username
      * @return
      * @throws InterruptedException
      * @throws ExecutionException
-     * @throws BizException
      */
-    public CourseDetailV2DTO getCourseDetailV2(int courseId,String username) throws InterruptedException, ExecutionException, BizException {
+    public CourseDetailV2DTO getCourseDetailV2(int courseId, String username) throws InterruptedException, ExecutionException, BizException {
         TimeMark timeMark = TimeMark.newInstance();
 
         ListenableFuture<CourseDetailV2DTO> courseDetailFuture = courseAsyncService.getCourseDetailV2(courseId);
@@ -205,75 +275,90 @@ public class CourseBizService {
 
         countDownLatch.await(10, TimeUnit.SECONDS);//最多10秒等待
 
-        log.info(">>>>>>>>> courseDetail: concurent request complete,used {} mills...",timeMark.millsWithMark());
+        log.info(">>>>>>>>> courseDetail: concurent request complete,used {} mills...", timeMark.millsWithMark());
 
         CourseDetailV2DTO courseDetail = courseDetailFuture.get();
-        if(courseDetail == null){
-            throw new BizException(ResponseUtil.ERROR_NULL_RESPONSE);
+        if (courseDetail == null) {
+            throw new BizException(ResponseUtil.ERROR_PAGE_RESPONSE);
         }
         CourseDetailV2DTO.ClassInfo classInfo = courseDetail.getClassInfo();
 
         int current = TimestampUtil.currentUnixTimeStamp();
         int totalNum = Integer.MAX_VALUE;//限制人数
-        if(classInfo.getLimitUserCount() != null && classInfo.getLimitUserCount() != 0){
+        if (classInfo.getLimitUserCount() != null && classInfo.getLimitUserCount() != 0) {
             totalNum = classInfo.getLimitUserCount();
         }
 
         int buyNum = 0;
         Map<Integer, Integer> courseLimit = courseLimitFuture.get();
-        if(courseLimit.containsKey(courseId)){
+        if (courseLimit.containsKey(courseId)) {
             buyNum = courseLimit.get(courseId);
         }
 
         classInfo.setTotal(buyNum);
 
-        int startTime = Optional.ofNullable(Ints.tryParse(classInfo.getStartTime())).orElse((int) (DateUtil.addDay(-1).getTime()/1000));
-        int stopTime = Optional.ofNullable(Ints.tryParse(classInfo.getStopTime())).orElse((int) (DateUtil.addDay(1).getTime()/1000));
+        int startTime = Optional.ofNullable(Ints.tryParse(classInfo.getStartTime())).orElse((int) (DateUtil.addDay(-1).getTime() / 1000));
+        int stopTime = Optional.ofNullable(Ints.tryParse(classInfo.getStopTime())).orElse((int) (DateUtil.addDay(1).getTime() / 1000));
 
         int limitStatus = 0;
-        if(startTime>current){
-            classInfo.setLimitTimes(startTime- current);
-            limitStatus = 2;//未开始
-        }else if(current>=startTime && current< stopTime){
-            classInfo.setLimitTimes(stopTime-current);
-            if(totalNum > buyNum){
-                limitStatus = 3;//抢购中，未售罄
-            }else{
-                limitStatus = 4;
+        //获取课程销售状态
+        do {
+            if (startTime == stopTime && startTime == 0) {
+                //不限时，并且不限量
+                if(classInfo.getLimitUserCount() != null && classInfo.getLimitUserCount() == 0){
+                    limitStatus = 7; //不限时不限量
+                    break;
+                }
+                if(totalNum > buyNum){
+                    limitStatus = 7; //不限时限量，未售罄
+                }else{
+                    limitStatus = 8; //不限时限量，已售罄
+                }
+                break;
             }
-        }else{
-            classInfo.setLimitTimes(0);
-            if(totalNum <= buyNum){
-                limitStatus = 8;//抢购结束
-            }else{
-                limitStatus = 7;
+            if (startTime > current) {
+                classInfo.setLimitTimes(startTime - current);
+                limitStatus = 2;//未开始
+            } else if (current >= startTime && current < stopTime) {
+                classInfo.setLimitTimes(stopTime - current);
+                if (totalNum > buyNum) {
+                    limitStatus = 3;//抢购中，未售罄
+                } else {
+                    limitStatus = 4;//抢购中，已售罄
+                }
+            } else {
+                classInfo.setLimitTimes(0);
+                if (totalNum <= buyNum) {
+                    limitStatus = 5;//抢购结束
+                } else {
+                    limitStatus = 6;
+                }
             }
-        }
+
+        } while (false);
         classInfo.setLimitStatus(limitStatus);
-        classInfo.setStartTime(DateFormatUtil.DEFAULT_FORMAT.format(startTime*1000L));
-        classInfo.setStopTime(DateFormatUtil.DEFAULT_FORMAT.format(stopTime*1000L));
+        classInfo.setStartTime(DateFormatUtil.DEFAULT_FORMAT.format(startTime * 1000L));
+        classInfo.setStopTime(DateFormatUtil.DEFAULT_FORMAT.format(stopTime * 1000L));
         courseDetail.setTeacher_informatioin(classInfo);
         courseDetail.setClassInfo(null);
 
-        log.info(">>>>>>>>> courseDetail: build response data complete,used {} mills,total cost {} mills...",timeMark.mills(),timeMark.totalMills());
+        log.info(">>>>>>>>> courseDetail: build response data complete,used {} mills,total cost {} mills...", timeMark.mills(), timeMark.totalMills());
 
         return courseDetail;
     }
-
-
 
 
     @Slf4j
     private static class RequestCountDownFutureCallback implements ListenableFutureCallback {
         private CountDownLatch countDownLatch;
 
-        public RequestCountDownFutureCallback(CountDownLatch countDownLatch){
+        public RequestCountDownFutureCallback(CountDownLatch countDownLatch) {
             this.countDownLatch = countDownLatch;
         }
 
         @Override
         public void onFailure(Throwable ex) {
-            log.error("request async error...",ex);
+            log.error("request async error...", ex);
             countDownLatch.countDown();
         }
 

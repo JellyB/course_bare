@@ -9,14 +9,13 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <groupId>com.huatu.tiku</groupId>
-    <artifactId>ztk-course</artifactId>
+    <artifactId>course-server</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
         <module>course-common</module>
         <module>course-web-server</module>
-        <module>netschool-course-api</module>
     </modules>
 
 </project>

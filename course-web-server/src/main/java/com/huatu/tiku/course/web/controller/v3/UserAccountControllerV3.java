@@ -1,7 +1,6 @@
 package com.huatu.tiku.course.web.controller.v3;
 
 import com.google.common.collect.Maps;
-import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.netschool.api.v3.UserAccountServiceV3;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
@@ -27,11 +26,10 @@ public class UserAccountControllerV3 {
      * @param type 1，可用 2，不可用
      * @param userSession
      * @return
-     * @throws BizException
      */
     @GetMapping("/coupons")
     public Object findUserCoupons(@RequestParam int type,
-                                  @Token UserSession userSession) throws BizException {
+                                  @Token UserSession userSession) {
         Map<String,Object> params = Maps.newHashMap();
         params.put("action",type);
         params.put("username",userSession.getUname());
@@ -46,7 +44,7 @@ public class UserAccountControllerV3 {
      * @return
      */
     @GetMapping("/point")
-    public Object getUserPointLeft(@Token UserSession userSession) throws BizException {
+    public Object getUserPointLeft(@Token UserSession userSession) {
         Map<String,Object> params = Maps.newHashMap();
         params.put("action",1);//积分余额默认
         params.put("username",userSession.getUname());
@@ -61,7 +59,7 @@ public class UserAccountControllerV3 {
      */
     @GetMapping("/point/records")
     public Object findUserPointRecords(@Token UserSession userSession,
-                                       @RequestParam int page) throws BizException {
+                                       @RequestParam int page) {
         Map<String,Object> params = Maps.newHashMap();
         params.put("action",2);//积分余额默认
         params.put("username",userSession.getUname());
@@ -81,7 +79,7 @@ public class UserAccountControllerV3 {
     @PostMapping("/point/exchangeCoupon")
     public Object exchangeCoupon(@Token UserSession userSession,
                                  @RequestParam String integrat,
-                                 @RequestParam String voucherid) throws BizException {
+                                 @RequestParam String voucherid) {
         Map<String,Object> params = Maps.newHashMap();
         params.put("integrat",integrat);//积分余额默认
         params.put("username",userSession.getUname());
@@ -100,7 +98,7 @@ public class UserAccountControllerV3 {
     @GetMapping("/records")
     public Object findAccountRecords(@RequestParam int type,
                                      @RequestParam int page,
-                                     @Token UserSession userSession) throws BizException {
+                                     @Token UserSession userSession) {
         Map<String,Object> params = Maps.newHashMap();
         params.put("action",type == 1 ? 2:3);//
         params.put("username",userSession.getUname());
@@ -116,12 +114,28 @@ public class UserAccountControllerV3 {
      * @return
      */
     @GetMapping("/balance")
-    public Object getBalance(@Token UserSession userSession) throws BizException {
+    public Object getBalance(@Token UserSession userSession) {
         Map<String,Object> params = Maps.newHashMap();
         params.put("action",1);//
         params.put("username",userSession.getUname());
 
         return ResponseUtil.build(userAccountServiceV3.getAccountBalance(RequestUtil.encrypt(params)),true);
+    }
+
+
+    /**
+     * 学习币充值
+     */
+    @PostMapping("/charge")
+    public Object charge(@Token UserSession userSession,
+                         @RequestParam String Amount,
+                         @RequestParam String payType) {
+        Map<String,Object> params = Maps.newHashMap();
+        //params.put("action","recharge");
+        params.put("username",userSession.getUname());
+        params.put("Amount",Amount);
+        params.put("payType",payType);
+        return ResponseUtil.build(userAccountServiceV3.chargeAccount(params),true);
     }
 
 }

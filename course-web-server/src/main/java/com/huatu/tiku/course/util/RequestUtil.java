@@ -2,11 +2,12 @@ package com.huatu.tiku.course.util;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
+import com.huatu.common.utils.encrypt.SignUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @author hanchao
@@ -76,9 +77,15 @@ public class RequestUtil {
         return encryptparams;
     }
 
-    public static void main(String[] args){
-        Map m = new HashMap();
-        m.put("div",1);
-        System.out.println(encrypt(m));
+    /**
+     * 获取参数签名
+     * @param params
+     * @return
+     */
+    public static String getParamSign(Map<String,Object> params){
+        TreeMap treeMap = Maps.newTreeMap();
+        treeMap.putAll(params);
+        return SignUtil.getPaySign(treeMap,null);
     }
+
 }

@@ -7,11 +7,11 @@ import com.huatu.common.exception.BizException;
 import com.huatu.tiku.common.consts.CatgoryType;
 import com.huatu.tiku.course.bean.ExpressListResponse;
 import com.huatu.tiku.course.bean.ExpressResult;
+import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.common.ExpressStatus;
 import com.huatu.tiku.course.common.NetSchoolConfig;
 import com.huatu.tiku.course.netschool.api.LogisticsServiceV1;
 import com.huatu.tiku.course.netschool.api.OtherServiceV1;
-import com.huatu.tiku.course.netschool.bean.NetSchoolResponse;
 import com.huatu.tiku.course.util.Crypt3Des;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.springboot.users.bean.UserSession;
@@ -54,7 +54,7 @@ public class LogisticsControllerV1 {
                 NetSchoolConfig.CATEGORY_GWY : NetSchoolConfig.CATEGORY_SHIYE);
 
         NetSchoolResponse response = logisticsService.queryList(params);
-        if (response.getCode() == NetSchoolConfig.SUCCESS_CODE) {
+        if (response.getCode() >= NetSchoolConfig.SUCCESS_CODE) {
             ExpressListResponse exResponse = JSON.parseObject(JSON.toJSONString(response),ExpressListResponse.class);
             exResponse.getData().stream().forEach(item->item.setExpressNo(Crypt3Des.decryptMode(item.getExpressNo())));
             return exResponse.getData();
@@ -80,7 +80,7 @@ public class LogisticsControllerV1 {
         parameterMap.put("num", id);
         ExpressResult result = otherService.detail(RequestUtil.encryptParams(parameterMap));
 
-        if (result.getCode() == NetSchoolConfig.SUCCESS_CODE) {
+        if (result.getCode() >= NetSchoolConfig.SUCCESS_CODE) {
             //运单号
             model.addAttribute("num", id);
             //运单状态描述

@@ -4,11 +4,12 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import com.huatu.tiku.common.consts.CatgoryType;
 import com.huatu.tiku.course.bean.FreeCourseBean;
+import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.common.RabbitQueueConsts;
 import com.huatu.tiku.course.netschool.api.CourseServiceV1;
 import com.huatu.tiku.course.netschool.api.SydwCourseServiceV1;
-import com.huatu.tiku.course.netschool.bean.NetSchoolResponse;
 import com.huatu.tiku.course.util.RequestUtil;
+import com.huatu.tiku.springboot.basic.subject.SubjectEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
@@ -50,7 +51,7 @@ public class SendFreeCourseListener {
             log.info(">>> send free course,username is {},source is {},tag is {}",bean.getUsername(),bean.getSource(),bean.getTag());
 
             NetSchoolResponse response = null;
-            if(bean.getCatgory() == CatgoryType.GONG_WU_YUAN){
+            if(bean.getCatgory() == CatgoryType.GONG_WU_YUAN || bean.getCatgory() == SubjectEnum.GONGWUYUAN.code()){
                 response = courseService.sendFree(RequestUtil.encryptJsonParams(parameterMap));
             }else{
                 response = sydwCourseService.sendFree(RequestUtil.encryptJsonParams(parameterMap));

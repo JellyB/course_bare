@@ -1,21 +1,17 @@
 package com.huatu.tiku.course.service;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.huatu.common.exception.BizException;
+import com.huatu.common.spring.cache.Cached;
 import com.huatu.common.utils.cache.NullHolder;
 import com.huatu.common.utils.encrypt.SignUtil;
-import com.huatu.tiku.course.bean.CourseDetailV2DTO;
-import com.huatu.tiku.course.bean.CourseDetailV3DTO;
-import com.huatu.tiku.course.bean.CourseListV2DTO;
-import com.huatu.tiku.course.bean.CourseListV3DTO;
-import com.huatu.tiku.course.common.NetSchoolConfig;
+import com.huatu.tiku.course.bean.*;
 import com.huatu.tiku.course.netschool.api.CourseServiceV1;
+import com.huatu.tiku.course.netschool.api.fall.CourseServiceV3Fallback;
 import com.huatu.tiku.course.netschool.api.v3.CourseServiceV3;
 import com.huatu.tiku.course.netschool.api.v3.UserCoursesServiceV3;
-import com.huatu.tiku.course.netschool.bean.NetSchoolResponse;
-import com.huatu.tiku.course.util.CourseCKConst;
+import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +49,9 @@ public class CourseAsyncService {
 
     @Resource(name = "redisTemplate")
     private ValueOperations valueOperations;
+
+    @Autowired
+    private CourseServiceV3Fallback courseServiceV3Fallback;
 
 
     /**
@@ -103,7 +102,7 @@ public class CourseAsyncService {
      */
     @Async
     public ListenableFuture<CourseDetailV2DTO> getCourseDetailV2(int courseId){
-        String cacheKey = String.format(CourseCKConst.COURSE_DETAIL_V2,courseId);
+        String cacheKey = CourseCacheKey.courseDetailV2(courseId);
         CourseDetailV2DTO result = null;
         Object object = valueOperations.get(cacheKey);
         if(object instanceof NullHolder){
@@ -124,8 +123,7 @@ public class CourseAsyncService {
                 return new AsyncResult<>(null);
             }
             try {
-                String serialize = JSON.toJSONString(ResponseUtil.build(response,true));
-                result = JSON.parseObject(serialize,CourseDetailV2DTO.class);
+                result = ResponseUtil.build(response,CourseDetailV2DTO.class,true);
                 valueOperations.set(cacheKey,result,300, TimeUnit.SECONDS);
             } catch (BizException e) {
                 log.error("catch BizException,{}", ExceptionUtils.getFullStackTrace(e));
@@ -145,15 +143,14 @@ public class CourseAsyncService {
     @Async
     public ListenableFuture<CourseListV2DTO> getCourseListV2(Map<String,Object> params){
         params.remove("username");
-        String cacheKey = String.format(CourseCKConst.COURSE_LIST_V2, buildMapKey(params));
+        String cacheKey = CourseCacheKey.courseListV2(buildMapKey(params));
         CourseListV2DTO result = (CourseListV2DTO) valueOperations.get(cacheKey);
         if(result == null){
             NetSchoolResponse response = courseServiceV1.collectionList(params);
-            if(response == null || response.getCode() != NetSchoolConfig.SUCCESS_CODE || response.getData() == null){
-                return new AsyncResult<>(null);
+            result = ResponseUtil.build(response,CourseListV2DTO.class,false);
+            if(result != null){
+                valueOperations.set(cacheKey,result,10, TimeUnit.SECONDS);
             }
-            result = JSON.parseObject(JSON.toJSONString(response.getData()),CourseListV2DTO.class);
-            valueOperations.set(cacheKey,result,10, TimeUnit.SECONDS);
         }
         return new AsyncResult<>(result);
     }
@@ -164,19 +161,29 @@ public class CourseAsyncService {
      * @param params
      * @return 会有null
      */
+
+    @Cached(name = "课程列表v3",
+            key = "T(com.huatu.tiku.course.util.CourseCacheKey).courseListV3(T(com.huatu.common.utils.web.RequestUtil).getParamSign(#map))",
+            params = {@Cached.Param(name="查询参数",value = "map",type = Map.class)})
     @Async
     public ListenableFuture<CourseListV3DTO> getCourseListV3(Map<String,Object> params){
         params.remove("username");
 
-        String cacheKey = String.format(CourseCKConst.COURSE_LIST_V3, buildMapKey(params));
+        String cacheKey = CourseCacheKey.courseListV3(buildMapKey(params));
         CourseListV3DTO result = (CourseListV3DTO) valueOperations.get(cacheKey);
         if(result == null){
             NetSchoolResponse response = courseServiceV3.findLiveList(params);
-            if(response == null || response.getCode() != NetSchoolConfig.SUCCESS_CODE || response.getData() == null){
-                return new AsyncResult<>(null);
+            result = ResponseUtil.build(response,CourseListV3DTO.class,false);
+            if(result != null){
+                result.setCacheTimestamp(System.currentTimeMillis());
+                valueOperations.set(cacheKey,result,10, TimeUnit.SECONDS);
             }
-            result = JSON.parseObject(JSON.toJSONString(response.getData()),CourseListV3DTO.class);
-            valueOperations.set(cacheKey,result,10, TimeUnit.SECONDS);
+            //非fallback获取到，设置到fallback缓存
+            if(!result.isCache()){
+                courseServiceV3Fallback.setLiveList(params,response);
+            }
+        }else{
+            result.setCache(true);
         }
         return new AsyncResult<>(result);
     }
@@ -187,9 +194,12 @@ public class CourseAsyncService {
      * @param courseId
      * @return 会有null情况，需判断
      */
+    @Cached(name = "课程详情v3",
+            key = "T(com.huatu.tiku.course.util.CourseCacheKey).getCourseDetail(#rid)",
+            params = {@Cached.Param(name="课程ID",value = "rid",type = Integer.class)})
     @Async
     public ListenableFuture<CourseDetailV3DTO> getCourseDetailV3(int courseId){
-        String cacheKey = String.format(CourseCKConst.COURSE_DETAIL_V3,courseId);
+        String cacheKey = CourseCacheKey.courseDetailV3(courseId);
         CourseDetailV3DTO result = null;
         Object object = valueOperations.get(cacheKey);
         if(object instanceof NullHolder){
@@ -209,6 +219,7 @@ public class CourseAsyncService {
             }
             result = ResponseUtil.build(response,CourseDetailV3DTO.class,false);
             valueOperations.set(cacheKey,result,300, TimeUnit.SECONDS);
+            courseServiceV3Fallback.setCourseDetail(courseId,response);
         }else{
             result = (CourseDetailV3DTO) object;
         }

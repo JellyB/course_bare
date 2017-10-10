@@ -2,15 +2,15 @@
 
 server:
   context-path: /c
+  port: 10917
   compression:
       enabled: true
       mime-types: application/json,application/xml,text/html,text/xml,text/plain
       min-response-size: 2048
   undertow:
-    io-threads: 16
+    io-threads: 8
     worker-threads: 248
     buffer-size: 1024
-
 
 spring:
   ### 项目基本信息
@@ -26,10 +26,6 @@ spring:
       charset: UTF-8
       force: true
 
-logging:
-  config: "classpath:config/log4j2-${spring.profiles.active}.xml"
-
-
   ### jackson配置
   jackson:
     serialization:
@@ -41,6 +37,12 @@ logging:
     time-zone: GMT+8
     default-property-inclusion: non_null
 
+  mvc:
+    throw-exception-if-no-handler-found: true
+    #### 只允许通过static目录静态资源访问，这样不会有默认的RecourseHandler,而导致无法正常404抛出异常
+    #### 使用之后，springboot默认的资源根路径，都需要添加/static前缀
+    static-path-pattern: /static/**
+
   ### freemarker配置
   freemarker:
     preferFileSystemAccess: true
@@ -48,12 +50,14 @@ logging:
     prefix: classpath:/templates
     suffix: .ftl
     content-type: text/html; charset=UTF-8
-    # 这是一个map,注入到factory的settings中
-    # settings:
+    # settings:  # 这是一个map,注入到factory的settings中
 
   output:
     ansi:
       enabled: always
+
+logging:
+  config: "classpath:config/log4j2-${spring.profiles.active}.xml"
 
 ## 监控
 info:
@@ -61,13 +65,8 @@ info:
     name: "${server_name}"
     encoding: UTF-8
 
-endpoints:
-  actuator:
-    enabled: true
-management:
-  security:
-    enabled: false
-  context-path: /_monitor
+# 部分监控指标配置已移到配置中心，方便后期统一管理
+
 
 ## spring cloud相关
 
@@ -84,12 +83,17 @@ feign:
     enabled: true
 
 hystrix:
+  threadpool:
+    default:
+      coreSize: 100
+      maximumSize: 100
+      maxQueueSize: -1
   command:
     default:
       execution:
         isolation:
           thread:
-            timeoutInMilliseconds: 5000
+            timeoutInMilliseconds: 5000 # 默认超时时间
 
 ## 自定义配置
 
@@ -98,6 +102,11 @@ htonline:
   httpclient.enabled: false
   okhttp.enabled: true
   executor.enabled: true
+  cache-manage:
+    enabled: true
+    basePackage: com.huatu.tiku
+    prefix:
+      redis: "${spring.application.name}"
 
 
 # 不同环境的不同配置，也可以放在apollo，除了开发使用的特殊debug等配置，一般不建议放在这里
