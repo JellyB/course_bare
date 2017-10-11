@@ -79,7 +79,7 @@ public interface UserCoursesServiceV3 {
      * @return
      */
     @PostMapping(value="/v3/oneToOne.php",consumes = MediaType.APPLICATION_FORM_URLENCODED_UTF8_VALUE)
-    NetSchoolResponse save1V1Table(@RequestParam("p")String p);
+    NetSchoolResponse save1V1Table(Map<String,Object> p);
 
     /**
      * 获取1v1报名表

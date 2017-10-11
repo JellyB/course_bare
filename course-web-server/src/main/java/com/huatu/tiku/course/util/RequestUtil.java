@@ -51,6 +51,7 @@ public class RequestUtil {
         return encryptparams;
     }
 
+
     /**
      * 对参数进行json序列化后加密
      * @param params

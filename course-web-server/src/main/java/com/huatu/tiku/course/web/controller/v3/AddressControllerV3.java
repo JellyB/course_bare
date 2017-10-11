@@ -51,7 +51,7 @@ public class AddressControllerV3 {
         Map<String, Object> params = BeanUtil.toMap(address);
         params.put("action","addAddress");
         params.put("username",userSession.getUname());
-        return ResponseUtil.build(addressServiceV3.createAddress(RequestUtil.encrypt(params)));
+        return ResponseUtil.build(addressServiceV3.createAddress(RequestUtil.encryptParams(params)));
     }
 
     /**
@@ -67,7 +67,7 @@ public class AddressControllerV3 {
         params.put("action","modifyAddress");
         params.put("username",userSession.getUname());
         params.put("id",id);
-        return ResponseUtil.build(addressServiceV3.updateAddress(RequestUtil.encrypt(params)));
+        return ResponseUtil.build(addressServiceV3.updateAddress(RequestUtil.encryptParams(params)));
     }
 
     /**

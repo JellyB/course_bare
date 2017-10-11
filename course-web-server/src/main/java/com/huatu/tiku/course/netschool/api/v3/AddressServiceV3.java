@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.Map;
+
 /**
  * @author hanchao
  * @date 2017/9/19 14:00
@@ -24,11 +26,11 @@ public interface AddressServiceV3 {
 
     /**
      * 创建地址 action->addAddress
-     * @param p
+     * @param params
      * @return
      */
     @PostMapping(value = "/v3/order/order.php",consumes = MediaType.APPLICATION_FORM_URLENCODED_UTF8_VALUE)
-    NetSchoolResponse createAddress(@RequestParam("p")String p);
+    NetSchoolResponse createAddress(Map<String,Object> params);
 
     /**
      * 修改地址 action->modifyAddress
@@ -36,7 +38,7 @@ public interface AddressServiceV3 {
      * @return
      */
     @PostMapping(value = "/v3/order/order.php",consumes = MediaType.APPLICATION_FORM_URLENCODED_UTF8_VALUE)
-    NetSchoolResponse updateAddress(@RequestParam("p")String p);
+    NetSchoolResponse updateAddress(Map<String,Object> p);
 
     /**
      * 删除地址 action->delAddress

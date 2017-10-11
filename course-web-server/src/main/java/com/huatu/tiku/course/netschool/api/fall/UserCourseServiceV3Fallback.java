@@ -54,7 +54,7 @@ public class UserCourseServiceV3Fallback implements UserCoursesServiceV3 {
     }
 
     @Override
-    public NetSchoolResponse save1V1Table(String p) {
+    public NetSchoolResponse save1V1Table(Map<String,Object> p) {
         return NetSchoolResponse.DEFAULT_ERROR;
     }
 

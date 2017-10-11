@@ -106,7 +106,7 @@ public class UserCourseControllerV3 {
         params.put("action","saveInfo");
         params.put("username",userSession.getUname());
         params.put("rid",courseId);
-        return ResponseUtil.build(userCoursesServiceV3.save1V1Table(RequestUtil.encrypt(params)));
+        return ResponseUtil.build(userCoursesServiceV3.save1V1Table(RequestUtil.encryptParams(params)));
     }
 
 

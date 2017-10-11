@@ -43,8 +43,8 @@ public class One2OneFormDTO implements Serializable{
     private String UserReName;
     @JsonProperty("ViewRate")
     private String ViewRate;
-    @JsonProperty("orderNum")
-    private String orderNum;
+    @JsonProperty("OrderNum")
+    private String OrderNum;
     @JsonProperty("rid")
     private String rid;
     @JsonProperty("score")
