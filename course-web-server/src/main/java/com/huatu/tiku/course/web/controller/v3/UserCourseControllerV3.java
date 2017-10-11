@@ -2,7 +2,7 @@ package com.huatu.tiku.course.web.controller.v3;
 
 import com.google.common.collect.Maps;
 import com.huatu.common.utils.collection.HashMapBuilder;
-import com.huatu.common.utils.reflect.BeanUtil;
+import com.huatu.common.utils.reflect.ClassUtils;
 import com.huatu.tiku.course.bean.One2OneFormDTO;
 import com.huatu.tiku.course.netschool.api.v3.UserCoursesServiceV3;
 import com.huatu.tiku.course.util.RequestUtil;
@@ -102,7 +102,7 @@ public class UserCourseControllerV3 {
     public Object save1V1Table(@RequestBody One2OneFormDTO dto,
                                @Token UserSession userSession,
                                @PathVariable int courseId) {
-        Map<String,Object> params = BeanUtil.toMap(dto);
+        Map<String,Object> params = ClassUtils.getBeanProperties(dto);
         params.put("action","saveInfo");
         params.put("username",userSession.getUname());
         params.put("rid",courseId);

@@ -1,7 +1,7 @@
 package com.huatu.tiku.course.web.controller.v3;
 
 import com.huatu.common.utils.collection.HashMapBuilder;
-import com.huatu.common.utils.reflect.BeanUtil;
+import com.huatu.common.utils.reflect.ClassUtils;
 import com.huatu.tiku.course.bean.AddressFormDTO;
 import com.huatu.tiku.course.netschool.api.v3.AddressServiceV3;
 import com.huatu.tiku.course.util.RequestUtil;
@@ -48,7 +48,7 @@ public class AddressControllerV3 {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE,produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public Object createAddress(@RequestBody @Valid AddressFormDTO address,
                                 @Token UserSession userSession) {
-        Map<String, Object> params = BeanUtil.toMap(address);
+        Map<String, Object> params = ClassUtils.getBeanProperties(address);
         params.put("action","addAddress");
         params.put("username",userSession.getUname());
         return ResponseUtil.build(addressServiceV3.createAddress(RequestUtil.encryptParams(params)));
@@ -63,7 +63,7 @@ public class AddressControllerV3 {
     public Object updateAddress(@RequestBody AddressFormDTO address,
                                 @PathVariable int id,
                                 @Token UserSession userSession) {
-        Map<String, Object> params = BeanUtil.toMap(address);
+        Map<String, Object> params = ClassUtils.getBeanProperties(address);
         params.put("action","modifyAddress");
         params.put("username",userSession.getUname());
         params.put("id",id);
