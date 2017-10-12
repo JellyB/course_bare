@@ -68,6 +68,7 @@ public class EvaluateControllerV3 {
                                @RequestParam("courseRemark")String courseRemark,
                                @RequestParam("coursescore")int coursescore,
                                @RequestParam("lessionid")int lessionid,
+                               @RequestParam int type,
                                @Token UserSession userSession) {
         Map<String,Object> params = HashMapBuilder.<String,Object>newBuilder()
                 .put("classid",classid)

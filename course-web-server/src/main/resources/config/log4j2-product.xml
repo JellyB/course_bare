@@ -25,7 +25,7 @@
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
             </Policies>
-            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="ACCEPT"/>
+            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
             <DefaultRolloverStrategy max="30"></DefaultRolloverStrategy>
         </RollingFile>
     </appenders>

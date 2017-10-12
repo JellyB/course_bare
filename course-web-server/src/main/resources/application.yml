@@ -83,11 +83,6 @@ feign:
     enabled: true
 
 hystrix:
-  threadpool:
-    default:
-      coreSize: 100
-      maximumSize: 100
-      maxQueueSize: -1
   command:
     default:
       execution:

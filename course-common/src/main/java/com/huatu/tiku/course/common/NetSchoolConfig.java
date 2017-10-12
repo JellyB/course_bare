@@ -48,4 +48,6 @@ public class NetSchoolConfig {
      * 安全校验码
      */
     public static final String IOS_PAY_VERIFY_SECURITY_CODE = "h2xtuapm1yeqmsueiwtrxiz70okmnhy6";
+
+    public static final String API_KEY = "";
 }

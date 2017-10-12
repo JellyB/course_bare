@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import static com.huatu.tiku.course.common.RabbitQueueConsts.QUEUE_SEND_FREE_COURSE;
+import static com.huatu.tiku.course.common.RabbitQueueConsts.QUEUE_USER_NICK_UPDATE;
 
 /**
  * @author hanchao
@@ -31,4 +32,8 @@ public class RabbitMqConfig {
         return new Queue(QUEUE_SEND_FREE_COURSE);
     }
 
+    @Bean
+    public Queue userNickUpdateQueue(){
+        return new Queue(QUEUE_USER_NICK_UPDATE);
+    }
 }

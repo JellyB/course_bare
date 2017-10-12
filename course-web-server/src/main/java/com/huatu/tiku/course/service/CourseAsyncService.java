@@ -5,7 +5,6 @@ import com.google.common.collect.Sets;
 import com.huatu.common.exception.BizException;
 import com.huatu.common.spring.cache.Cached;
 import com.huatu.common.utils.cache.NullHolder;
-import com.huatu.common.utils.encrypt.SignUtil;
 import com.huatu.tiku.course.bean.*;
 import com.huatu.tiku.course.netschool.api.CourseServiceV1;
 import com.huatu.tiku.course.netschool.api.fall.CourseServiceV3Fallback;
@@ -27,7 +26,6 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -143,7 +141,7 @@ public class CourseAsyncService {
     @Async
     public ListenableFuture<CourseListV2DTO> getCourseListV2(Map<String,Object> params){
         params.remove("username");
-        String cacheKey = CourseCacheKey.courseListV2(buildMapKey(params));
+        String cacheKey = CourseCacheKey.courseListV2(com.huatu.common.utils.web.RequestUtil.getParamSign(params));
         CourseListV2DTO result = (CourseListV2DTO) valueOperations.get(cacheKey);
         if(result == null){
             NetSchoolResponse response = courseServiceV1.collectionList(params);
@@ -169,7 +167,7 @@ public class CourseAsyncService {
     public ListenableFuture<CourseListV3DTO> getCourseListV3(Map<String,Object> params){
         params.remove("username");
 
-        String cacheKey = CourseCacheKey.courseListV3(buildMapKey(params));
+        String cacheKey = CourseCacheKey.courseListV3(com.huatu.common.utils.web.RequestUtil.getParamSign(params));
         CourseListV3DTO result = (CourseListV3DTO) valueOperations.get(cacheKey);
         if(result == null){
             NetSchoolResponse response = courseServiceV3.findLiveList(params);
@@ -227,16 +225,6 @@ public class CourseAsyncService {
     }
 
 
-    /**
-     * 参数排序md5后作为redis key
-     * @param params
-     * @return
-     */
-    private String buildMapKey(Map<String,Object> params){
-        TreeMap treeMap = Maps.newTreeMap();
-        treeMap.putAll(params);
-        return SignUtil.getPaySign(treeMap,null);
-    }
 
 
 }
