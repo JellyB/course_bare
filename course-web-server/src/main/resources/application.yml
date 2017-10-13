@@ -82,6 +82,7 @@ feign:
   hystrix:
     enabled: true
 
+
 hystrix:
   command:
     default:
@@ -125,4 +126,3 @@ spring:
 ---
 spring:
   profiles: product
-
