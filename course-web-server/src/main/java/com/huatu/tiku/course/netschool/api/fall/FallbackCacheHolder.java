@@ -3,9 +3,13 @@ package com.huatu.tiku.course.netschool.api.fall;
 import com.huatu.common.serialize.Serializer;
 import com.huatu.common.serialize.kryo.KryoSerializer;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * @author hanchao
@@ -29,9 +33,12 @@ public class FallbackCacheHolder {
             // a factory method that returns a RocksDB instance
             final Options options = new Options().setCreateIfMissing(true)
                     .optimizeForPointLookup(2048);
+            FileUtils.forceMkdir(new File(PATH_TO_DB));
             db = RocksDB.open(options,PATH_TO_DB);
 
         } catch (RocksDBException e) {
+            throw new RuntimeException("open rocksdb fail.",e);
+        } catch (IOException e) {
             throw new RuntimeException("open rocksdb fail.",e);
         }
     }

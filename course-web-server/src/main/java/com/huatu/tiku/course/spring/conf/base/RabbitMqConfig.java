@@ -2,7 +2,7 @@ package com.huatu.tiku.course.spring.conf.base;
 
 import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.huatu.tiku.course.mq.listeners.RewardActionListener;
+import com.huatu.tiku.course.mq.listeners.RewardMessageListener;
 import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -43,24 +43,22 @@ public class RabbitMqConfig {
 
 
     @Bean
-    public Queue rewardActionQueue(){
-        return new Queue(QUEUE_REWARD_ACTION);
-    }
-
-    @Bean
-    public SimpleMessageListenerContainer manualRabbitContainer(@Autowired ConnectionFactory connectionFactory,
-                                                                @Autowired RewardActionListener rewardActionUpdateListener,
-                                                                @Autowired(required = false) ThreadPoolTaskExecutor threadPoolTaskExecutor){
+    public Queue rewardActionQueue(@Autowired ConnectionFactory connectionFactory,
+                                   @Autowired(required = false) ThreadPoolTaskExecutor threadPoolTaskExecutor){
+        Queue rewardActionQueue = new Queue(QUEUE_REWARD_ACTION);
         SimpleMessageListenerContainer manualRabbitContainer = new SimpleMessageListenerContainer();
+        manualRabbitContainer.setQueues(rewardActionQueue);
         manualRabbitContainer.setConnectionFactory(connectionFactory);
         if(threadPoolTaskExecutor != null){
             manualRabbitContainer.setTaskExecutor(threadPoolTaskExecutor);
         }
         manualRabbitContainer.setAcknowledgeMode(AcknowledgeMode.MANUAL);
-        manualRabbitContainer.setConcurrentConsumers(threadPoolTaskExecutor.getCorePoolSize()/2);
-        manualRabbitContainer.setMaxConcurrentConsumers(threadPoolTaskExecutor.getCorePoolSize()/2);
-        manualRabbitContainer.setMessageListener(rewardActionUpdateListener);
-        return manualRabbitContainer;
+        //manualRabbitContainer.setConcurrentConsumers(threadPoolTaskExecutor.getCorePoolSize()/4);
+        //manualRabbitContainer.setMaxConcurrentConsumers(threadPoolTaskExecutor.getCorePoolSize()/4);
+        manualRabbitContainer.setMessageListener(new RewardMessageListener());
+        manualRabbitContainer.start();
+        return rewardActionQueue;
     }
+
 
 }

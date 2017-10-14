@@ -5,6 +5,7 @@ import com.huatu.common.spring.cache.Cached;
 import com.huatu.tiku.course.netschool.api.v3.CourseSettingServiceV3;
 import com.huatu.tiku.course.service.ConfigBizService;
 import com.huatu.tiku.course.util.ResponseUtil;
+import com.huatu.tiku.springboot.basic.reward.RewardActionService;
 import com.huatu.tiku.springboot.basic.subject.SubjectEnum;
 import com.huatu.tiku.springboot.basic.subject.SubjectService;
 import com.huatu.tiku.springboot.users.bean.UserSession;
@@ -37,6 +38,8 @@ public class SettingsControllerV3 {
     private ConfigBizService configBizService;
     @Autowired
     private SubjectService subjectService;
+    @Autowired
+    private RewardActionService rewardActionService;
 
 
     @GetMapping("/address/_settings")
@@ -44,6 +47,12 @@ public class SettingsControllerV3 {
         Map config = configBizService.getConfig();
         //直接返回result,可以减少wrapper的拦截流程
         return new SuccessResponse(config);
+    }
+
+
+    @GetMapping("/reward/_settings")
+    public Object getRewardSettings(){
+        return rewardActionService.all();
     }
 
     /**

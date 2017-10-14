@@ -49,5 +49,5 @@ public class NetSchoolConfig {
      */
     public static final String IOS_PAY_VERIFY_SECURITY_CODE = "h2xtuapm1yeqmsueiwtrxiz70okmnhy6";
 
-    public static final String API_KEY = "";
+    public static final String API_KEY = "0987654321!#%&(@$^*";
 }

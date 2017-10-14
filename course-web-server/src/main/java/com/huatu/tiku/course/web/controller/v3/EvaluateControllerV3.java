@@ -1,8 +1,12 @@
 package com.huatu.tiku.course.web.controller.v3;
 
+import com.huatu.common.spring.event.EventPublisher;
 import com.huatu.common.utils.collection.HashMapBuilder;
+import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v3.EvaluateServiceV3;
 import com.huatu.tiku.course.util.ResponseUtil;
+import com.huatu.tiku.springboot.basic.reward.RewardAction;
+import com.huatu.tiku.springboot.basic.reward.event.RewardActionEvent;
 import com.huatu.tiku.springboot.users.bean.UserSession;
 import com.huatu.tiku.springboot.users.support.Token;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +23,8 @@ import java.util.Map;
 public class EvaluateControllerV3 {
     @Autowired
     private EvaluateServiceV3 evaluateServiceV3;
+    @Autowired
+    private EventPublisher eventPublisher;
 
     /**
      * 获取某个课程的评价列表
@@ -77,6 +83,14 @@ public class EvaluateControllerV3 {
                 .put("courseRemark",courseRemark)
                 .put("coursescore",coursescore)
                 .build();
-        return ResponseUtil.build(evaluateServiceV3.saveEvaluate(params));
+        NetSchoolResponse response = evaluateServiceV3.saveEvaluate(params);
+
+        if(ResponseUtil.isSuccess(response)){
+            eventPublisher.publishEvent(RewardActionEvent.class,
+                    this,
+                    (event) -> event.setAction(type == 1 ? RewardAction.ActionType.EVALUATE_AFTER: RewardAction.ActionType.EVALUATE));
+        }
+
+        return ResponseUtil.build(response);
     }
 }

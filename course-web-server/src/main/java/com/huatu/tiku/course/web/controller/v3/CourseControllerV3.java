@@ -2,6 +2,7 @@ package com.huatu.tiku.course.web.controller.v3;
 
 import com.google.common.collect.Maps;
 import com.huatu.common.exception.BizException;
+import com.huatu.common.spring.event.EventPublisher;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.common.bean.AreaConstants;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
@@ -11,6 +12,8 @@ import com.huatu.tiku.course.netschool.api.v3.UserCoursesServiceV3;
 import com.huatu.tiku.course.service.CourseBizService;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
+import com.huatu.tiku.springboot.basic.reward.RewardAction;
+import com.huatu.tiku.springboot.basic.reward.event.RewardActionEvent;
 import com.huatu.tiku.springboot.basic.subject.SubjectEnum;
 import com.huatu.tiku.springboot.basic.subject.SubjectService;
 import com.huatu.tiku.springboot.users.bean.UserSession;
@@ -41,6 +44,8 @@ public class CourseControllerV3 {
     private CourseServiceV3Fallback courseServiceV3Fallback;
     @Autowired
     private SubjectService subjectService;
+    @Autowired
+    private EventPublisher eventPublisher;
 
     /**
      * 课程合集详情
@@ -164,7 +169,21 @@ public class CourseControllerV3 {
         params.put("fatherId",fatherId);
         params.put("isTrial",isTrial);
 
-        return ResponseUtil.build(courseServiceV3.getCourseSecrInfo(params),true);
+        NetSchoolResponse netSchoolResponse = courseServiceV3.getCourseSecrInfo(params);
+        Object response = ResponseUtil.build(netSchoolResponse, true);
+
+        //发布事件
+        if(ResponseUtil.isSuccess(netSchoolResponse) && response instanceof Map && ((Map) response).containsKey("course")){
+            Object courseDetail = ((Map) response).get("CourseDetail");
+            if(courseDetail instanceof Map && ((Map) courseDetail).containsKey("free") && "1".equals(String.valueOf(((Map) courseDetail).get("free")))){
+                //收费课
+                eventPublisher.publishEvent(RewardActionEvent.class,this,(event) -> event.setAction(RewardAction.ActionType.WATCH_PAY));
+            }else{
+                //免费课
+                eventPublisher.publishEvent(RewardActionEvent.class,this,(event) -> event.setAction(RewardAction.ActionType.WATCH_FREE));
+            }
+        }
+        return response;
     }
 
 
