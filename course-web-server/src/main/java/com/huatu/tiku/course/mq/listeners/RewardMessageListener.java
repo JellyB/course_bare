@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.core.ChannelAwareMessageListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Map;
@@ -28,6 +29,7 @@ import java.util.Map;
  * @date 2017/10/13 13:02
  */
 @Slf4j
+@Component
 public class RewardMessageListener implements ChannelAwareMessageListener{
 
     @Autowired

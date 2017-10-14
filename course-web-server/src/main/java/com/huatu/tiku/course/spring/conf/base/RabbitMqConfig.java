@@ -44,7 +44,8 @@ public class RabbitMqConfig {
 
     @Bean
     public Queue rewardActionQueue(@Autowired ConnectionFactory connectionFactory,
-                                   @Autowired(required = false) ThreadPoolTaskExecutor threadPoolTaskExecutor){
+                                   @Autowired(required = false) ThreadPoolTaskExecutor threadPoolTaskExecutor,
+                                   @Autowired RewardMessageListener rewardMessageListener){
         Queue rewardActionQueue = new Queue(QUEUE_REWARD_ACTION);
         SimpleMessageListenerContainer manualRabbitContainer = new SimpleMessageListenerContainer();
         manualRabbitContainer.setQueues(rewardActionQueue);
@@ -55,7 +56,7 @@ public class RabbitMqConfig {
         manualRabbitContainer.setAcknowledgeMode(AcknowledgeMode.MANUAL);
         //manualRabbitContainer.setConcurrentConsumers(threadPoolTaskExecutor.getCorePoolSize()/4);
         //manualRabbitContainer.setMaxConcurrentConsumers(threadPoolTaskExecutor.getCorePoolSize()/4);
-        manualRabbitContainer.setMessageListener(new RewardMessageListener());
+        manualRabbitContainer.setMessageListener(rewardMessageListener);
         manualRabbitContainer.start();
         return rewardActionQueue;
     }
