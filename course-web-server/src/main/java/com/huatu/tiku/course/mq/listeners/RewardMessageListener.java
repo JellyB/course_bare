@@ -3,7 +3,7 @@ package com.huatu.tiku.course.mq.listeners;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huatu.common.utils.encrypt.SignUtil;
 import com.huatu.common.utils.reflect.BeanUtil;
-import com.huatu.tiku.common.bean.RewardMessage;
+import com.huatu.tiku.common.bean.reward.RewardMessage;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.common.NetSchoolConfig;
 import com.huatu.tiku.course.netschool.api.v3.GoldChargeService;

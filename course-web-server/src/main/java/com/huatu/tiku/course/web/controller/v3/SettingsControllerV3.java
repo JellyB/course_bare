@@ -3,6 +3,7 @@ package com.huatu.tiku.course.web.controller.v3;
 import com.huatu.common.SuccessResponse;
 import com.huatu.common.spring.cache.Cached;
 import com.huatu.tiku.course.netschool.api.v3.CourseSettingServiceV3;
+import com.huatu.tiku.course.netschool.api.v3.UserLevelServiceV3;
 import com.huatu.tiku.course.service.ConfigBizService;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.basic.reward.RewardActionService;
@@ -20,6 +21,7 @@ import javax.annotation.Resource;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static com.huatu.tiku.course.util.CourseCacheKey.LEVEL_SETTINGS;
 import static com.huatu.tiku.course.util.CourseCacheKey.LIVE_SETTINGS;
 import static com.huatu.tiku.course.util.CourseCacheKey.RECORDING_SETTINGS;
 
@@ -40,6 +42,8 @@ public class SettingsControllerV3 {
     private SubjectService subjectService;
     @Autowired
     private RewardActionService rewardActionService;
+    @Autowired
+    private UserLevelServiceV3 userLevelServiceV3;
 
 
     @GetMapping("/address/_settings")
@@ -47,6 +51,19 @@ public class SettingsControllerV3 {
         Map config = configBizService.getConfig();
         //直接返回result,可以减少wrapper的拦截流程
         return new SuccessResponse(config);
+    }
+
+    @Cached(name = "等级特权说明",
+            key = "T(com.huatu.tiku.course.util.CourseCacheKey).LEVEL_SETTINGS")
+    @GetMapping("/level/_settings")
+    public Object getLevelSettings(){
+        String cacheKey = LEVEL_SETTINGS;
+        Object result = valueOperations.get(cacheKey);
+        if(result == null){
+            result = ResponseUtil.build(userLevelServiceV3.getLevelSettings());
+            valueOperations.set(cacheKey,result,1,TimeUnit.DAYS);
+        }
+        return result;
     }
 
 

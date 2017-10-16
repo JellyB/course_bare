@@ -18,6 +18,7 @@ public class CourseCacheKey {
      */
     public static final String RECORDING_SETTINGS = "recording_settings";
     public static final String LIVE_SETTINGS = "live_settings";
+    public static final String LEVEL_SETTINGS = "level_settings";
 
     /**
      * 下单失败的队列

@@ -1,6 +1,6 @@
 package com.huatu.tiku.course.handler.reward;
 
-import com.huatu.tiku.common.bean.RewardMessage;
+import com.huatu.tiku.common.bean.reward.RewardMessage;
 import com.huatu.tiku.course.common.RabbitQueueConsts;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
 import com.huatu.tiku.springboot.basic.reward.event.AbstractRewardActionEventHandler;
