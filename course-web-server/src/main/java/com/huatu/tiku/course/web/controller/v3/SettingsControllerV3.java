@@ -21,9 +21,7 @@ import javax.annotation.Resource;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.huatu.tiku.course.util.CourseCacheKey.LEVEL_SETTINGS;
-import static com.huatu.tiku.course.util.CourseCacheKey.LIVE_SETTINGS;
-import static com.huatu.tiku.course.util.CourseCacheKey.RECORDING_SETTINGS;
+import static com.huatu.tiku.course.util.CourseCacheKey.*;
 
 /**
  * @author hanchao

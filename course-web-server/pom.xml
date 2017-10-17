@@ -103,6 +103,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.huatu.springboot</groupId>
+            <artifactId>spring-boot-starter-degrade</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.huatu.tiku.springboot</groupId>
             <artifactId>spring-boot-starter-users</artifactId>
         </dependency>

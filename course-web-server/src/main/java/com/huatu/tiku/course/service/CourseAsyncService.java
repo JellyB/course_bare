@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import com.huatu.common.exception.BizException;
 import com.huatu.common.spring.cache.Cached;
 import com.huatu.common.utils.cache.NullHolder;
+import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.bean.*;
 import com.huatu.tiku.course.netschool.api.CourseServiceV1;
 import com.huatu.tiku.course.netschool.api.fall.CourseServiceV3Fallback;
@@ -58,6 +59,7 @@ public class CourseAsyncService {
      * @return
      */
     @Async
+    @Degrade(key = "userBuy",name="用户已购课程")
     public ListenableFuture<Set<Integer>> getUserBuy(String username){
         Map<String,Object> params = Maps.newHashMapWithExpectedSize(1);
         params.put("username",username);
@@ -72,6 +74,11 @@ public class CourseAsyncService {
         }
     }
 
+    //用户已购课程降级方法
+    public ListenableFuture<Set<Integer>> getUserBuyDegrade(String username){
+        return new AsyncResult<>(Sets.newHashSet());
+    }
+
 
     /**
      * 获取产品数量限额
@@ -79,6 +86,7 @@ public class CourseAsyncService {
      * @return
      */
     @Async
+    @Degrade(key = "courseLimit",name = "课程已购数量")
     public ListenableFuture<Map<Integer,Integer>> getCourseLimit(int courseId){
         Map<String,Object> params = Maps.newHashMapWithExpectedSize(2);
         params.put("rid", courseId);
@@ -91,6 +99,11 @@ public class CourseAsyncService {
             Map<Integer,Integer> result = data.keySet().stream().collect(Collectors.toMap(Integer::parseInt,(k)-> Integer.parseInt(data.get(k))));
             return new AsyncResult(result);
         }
+    }
+
+    //课程已购数量降级方法
+    public ListenableFuture<Map<Integer,Integer>> getCourseLimitDegrade(int courseId){
+        return new AsyncResult(Maps.newHashMap());
     }
 
     /**
