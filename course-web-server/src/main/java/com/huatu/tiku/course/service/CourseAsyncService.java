@@ -5,7 +5,7 @@ import com.google.common.collect.Sets;
 import com.huatu.common.exception.BizException;
 import com.huatu.common.spring.cache.Cached;
 import com.huatu.common.utils.cache.NullHolder;
-import com.huatu.common.utils.encrypt.SignUtil;
+import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.bean.*;
 import com.huatu.tiku.course.netschool.api.CourseServiceV1;
 import com.huatu.tiku.course.netschool.api.fall.CourseServiceV3Fallback;
@@ -27,7 +27,6 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -60,6 +59,7 @@ public class CourseAsyncService {
      * @return
      */
     @Async
+    @Degrade(key = "userBuy",name="用户已购课程")
     public ListenableFuture<Set<Integer>> getUserBuy(String username){
         Map<String,Object> params = Maps.newHashMapWithExpectedSize(1);
         params.put("username",username);
@@ -74,6 +74,11 @@ public class CourseAsyncService {
         }
     }
 
+    //用户已购课程降级方法
+    public ListenableFuture<Set<Integer>> getUserBuyDegrade(String username){
+        return new AsyncResult<>(Sets.newHashSet());
+    }
+
 
     /**
      * 获取产品数量限额
@@ -81,6 +86,7 @@ public class CourseAsyncService {
      * @return
      */
     @Async
+    @Degrade(key = "courseLimit",name = "课程已购数量")
     public ListenableFuture<Map<Integer,Integer>> getCourseLimit(int courseId){
         Map<String,Object> params = Maps.newHashMapWithExpectedSize(2);
         params.put("rid", courseId);
@@ -93,6 +99,11 @@ public class CourseAsyncService {
             Map<Integer,Integer> result = data.keySet().stream().collect(Collectors.toMap(Integer::parseInt,(k)-> Integer.parseInt(data.get(k))));
             return new AsyncResult(result);
         }
+    }
+
+    //课程已购数量降级方法
+    public ListenableFuture<Map<Integer,Integer>> getCourseLimitDegrade(int courseId){
+        return new AsyncResult(Maps.newHashMap());
     }
 
     /**
@@ -143,7 +154,7 @@ public class CourseAsyncService {
     @Async
     public ListenableFuture<CourseListV2DTO> getCourseListV2(Map<String,Object> params){
         params.remove("username");
-        String cacheKey = CourseCacheKey.courseListV2(buildMapKey(params));
+        String cacheKey = CourseCacheKey.courseListV2(com.huatu.common.utils.web.RequestUtil.getParamSign(params));
         CourseListV2DTO result = (CourseListV2DTO) valueOperations.get(cacheKey);
         if(result == null){
             NetSchoolResponse response = courseServiceV1.collectionList(params);
@@ -169,7 +180,7 @@ public class CourseAsyncService {
     public ListenableFuture<CourseListV3DTO> getCourseListV3(Map<String,Object> params){
         params.remove("username");
 
-        String cacheKey = CourseCacheKey.courseListV3(buildMapKey(params));
+        String cacheKey = CourseCacheKey.courseListV3(com.huatu.common.utils.web.RequestUtil.getParamSign(params));
         CourseListV3DTO result = (CourseListV3DTO) valueOperations.get(cacheKey);
         if(result == null){
             NetSchoolResponse response = courseServiceV3.findLiveList(params);
@@ -227,16 +238,6 @@ public class CourseAsyncService {
     }
 
 
-    /**
-     * 参数排序md5后作为redis key
-     * @param params
-     * @return
-     */
-    private String buildMapKey(Map<String,Object> params){
-        TreeMap treeMap = Maps.newTreeMap();
-        treeMap.putAll(params);
-        return SignUtil.getPaySign(treeMap,null);
-    }
 
 
 }

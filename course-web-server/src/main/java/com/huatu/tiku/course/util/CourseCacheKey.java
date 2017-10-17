@@ -18,6 +18,7 @@ public class CourseCacheKey {
      */
     public static final String RECORDING_SETTINGS = "recording_settings";
     public static final String LIVE_SETTINGS = "live_settings";
+    public static final String LEVEL_SETTINGS = "level_settings";
 
     /**
      * 下单失败的队列
@@ -37,6 +38,8 @@ public class CourseCacheKey {
     private static final String COURSE_LIST_V2 = "live_list$%s";
     private static final String COURSE_LIST_V3 = "live_list_v3$%s";
 
+    private static final String REWARD_RECORD = "reward_record$%s$%s";
+
     public static String courseDetailV2(Integer courseId){
         return String.format(COURSE_DETAIL_V2,courseId);
     }
@@ -53,6 +56,9 @@ public class CourseCacheKey {
         return String.format(COURSE_LIST_V3,sign);
     }
 
+    public static String rewardRecord(String action,int uid){
+        return String.format(REWARD_RECORD,action,uid);
+    }
 
 
 }

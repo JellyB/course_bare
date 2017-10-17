@@ -11,7 +11,7 @@ import java.util.Map;
  * @date 2017/9/14 14:14
  */
 @Data
-public class CourseListV3DTO extends CacheableValue{
+public class CourseListV3DTO extends CacheableValue {
 
     public static final String KEY_SALE_START = "saleStart";
     public static final String KEY_SALE_END = "saleEnd";
@@ -19,5 +19,5 @@ public class CourseListV3DTO extends CacheableValue{
 
     private int next;
     private List<Map> result;
-
+    private boolean degrade;
 }

@@ -103,6 +103,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.huatu.springboot</groupId>
+            <artifactId>spring-boot-starter-degrade</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.huatu.tiku.springboot</groupId>
             <artifactId>spring-boot-starter-users</artifactId>
         </dependency>
@@ -141,6 +146,19 @@
             <artifactId>disruptor</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.rocksdb</groupId>
+            <artifactId>rocksdbjni</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.esotericsoftware</groupId>
+            <artifactId>kryo</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>de.javakaffee</groupId>
+            <artifactId>kryo-serializers</artifactId>
+        </dependency>
 
     </dependencies>
 

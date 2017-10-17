@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.test;
 
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.huatu.common.exception.BizException;
@@ -23,7 +24,7 @@ import java.util.concurrent.ExecutionException;
  * @date 2017/9/23 10:38
  */
 @Slf4j
-public class CouponTest extends BaseWebTest{
+public class CouponTest extends BaseWebTest {
     @Autowired
     private CouponBizService couponBizService;
     @Test

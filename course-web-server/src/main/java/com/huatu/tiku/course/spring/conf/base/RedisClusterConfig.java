@@ -10,11 +10,13 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
+import static com.huatu.common.consts.ApolloConfigConsts.NAMESPACE_TIKU_REDIS;
+
 /**
  * @author hanchao
  * @date 2017/9/4 14:42
  */
-@EnableApolloConfig("tiku.redis-cluster")
+@EnableApolloConfig(NAMESPACE_TIKU_REDIS)
 @Configuration
 public class RedisClusterConfig {
     @Value("${spring.application.name:unknown}")

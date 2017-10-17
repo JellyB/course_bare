@@ -1,10 +1,10 @@
 package com.huatu.tiku.course.netschool.api.fall;
 
 import com.google.common.collect.Maps;
+import com.huatu.common.utils.web.RequestUtil;
 import com.huatu.tiku.course.bean.CourseListV3DTO;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v3.CourseServiceV3;
-import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -27,28 +27,28 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
     public void setLiveList(Map<String,Object> params,NetSchoolResponse response){
         String key = "_mock_live_list$"+ RequestUtil.getParamSign(params);
         if(ResponseUtil.isSuccess(response)){
-            FallbackCache.put(key,response);
+            FallbackCacheHolder.put(key,response);
         }
     }
 
     public void setCourseDetail(int rid,NetSchoolResponse response){
         String key = "_mock_course_detail$"+ rid;
         if(ResponseUtil.isSuccess(response)){
-            FallbackCache.put(key,response);
+            FallbackCacheHolder.put(key,response);
         }
     }
 
     public void setCourseH5(int rid,String response){
         String key = "_mock_course_h5$"+ rid;
         if(StringUtils.isNotBlank(response)){
-            FallbackCache.put(key,response);
+            FallbackCacheHolder.put(key,response);
         }
     }
 
     public void setRecordingList(Map<String,Object> params,NetSchoolResponse response){
         String key = "_mock_recoding_list$"+ RequestUtil.getParamSign(params);
         if(ResponseUtil.isSuccess(response)){
-            FallbackCache.put(key,response);
+            FallbackCacheHolder.put(key,response);
         }
     }
 
@@ -56,7 +56,7 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
     public void setCollectionDetail(String shortTitle, String username, int page,NetSchoolResponse response){
         String key = "_mock_collection_detail$"+ shortTitle+"$"+username+"$"+page;
         if(ResponseUtil.isSuccess(response)){
-            FallbackCache.put(key,response);
+            FallbackCacheHolder.put(key,response);
         }
     }
 
@@ -64,7 +64,7 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
     @Override
     public NetSchoolResponse getCollectionDetail(String shortTitle, String username, int page) {
         String key = "_mock_collection_detail$"+ shortTitle+"$"+username+"$"+page;
-        NetSchoolResponse response = FallbackCache.get(key);
+        NetSchoolResponse response = FallbackCacheHolder.get(key);
         if(response == null){
             return NetSchoolResponse.DEFAULT;
         }else{
@@ -82,7 +82,7 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
     @Override
     public NetSchoolResponse findRecordingList(Map<String, Object> params) {
         String key = "_mock_recoding_list$"+ RequestUtil.getParamSign(params);
-        NetSchoolResponse response = FallbackCache.get(key);
+        NetSchoolResponse response = FallbackCacheHolder.get(key);
         if(response == null){
             return NetSchoolResponse.DEFAULT;
         }else{
@@ -93,7 +93,7 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
     @Override
     public NetSchoolResponse findLiveList(Map<String, Object> params) {
         String key = "_mock_live_list$"+ RequestUtil.getParamSign(params);
-        NetSchoolResponse response = FallbackCache.get(key);
+        NetSchoolResponse response = FallbackCacheHolder.get(key);
         if(response == null){
             return NetSchoolResponse.DEFAULT;
         }else{
@@ -106,7 +106,7 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
     @Override
     public NetSchoolResponse getCourseDetail(int rid) {
         String key = "_mock_course_detail$"+ rid;
-        NetSchoolResponse response = FallbackCache.get(key);
+        NetSchoolResponse response = FallbackCacheHolder.get(key);
         if(response == null){
             return NetSchoolResponse.DEFAULT;
         }else{
@@ -117,7 +117,7 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
     @Override
     public String getCourseHtml(int rid) {
         String key = "_mock_course_h5$"+ rid;
-        String response = FallbackCache.get(key);
+        String response = FallbackCacheHolder.get(key);
         if(StringUtils.isNotBlank(response)){
             return response;
         }else{

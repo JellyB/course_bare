@@ -2,6 +2,7 @@ package com.huatu.tiku.course.netschool.api.v3;
 
 import com.huatu.common.spring.web.MediaType;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.netschool.api.fall.UserCourseServiceV3Fallback;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,7 +12,7 @@ import java.util.Map;
  * @author hanchao
  * @date 2017/9/13 16:37
  */
-@FeignClient(value = "course-service")
+@FeignClient(value = "course-service",fallback = UserCourseServiceV3Fallback.class)
 public interface UserCoursesServiceV3 {
     /**
      * 获取用户购买的所有课程id集合

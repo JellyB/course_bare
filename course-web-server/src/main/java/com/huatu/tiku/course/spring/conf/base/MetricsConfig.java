@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.spring.conf.base;
 
 import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
+import com.huatu.common.consts.ApolloConfigConsts;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -8,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
  * @date 2017/9/22 15:26
  */
 @Configuration
-@EnableApolloConfig("htonline.metrics")
+@EnableApolloConfig(ApolloConfigConsts.NAMESPACE_HT_METRICS)
 public class MetricsConfig {
 
 }
