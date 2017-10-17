@@ -98,6 +98,7 @@ htonline:
   httpclient.enabled: false
   okhttp.enabled: true
   executor.enabled: true
+  degrade.basePackage: com.huatu.tiku
   cache-manage:
     enabled: true
     basePackage: com.huatu.tiku

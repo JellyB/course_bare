@@ -1,6 +1,5 @@
 package com.huatu.tiku.course.spring.conf.web;
 
-import com.huatu.springboot.web.tools.exception.GlobalExceptionHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
@@ -11,15 +10,6 @@ import org.springframework.validation.beanvalidation.MethodValidationPostProcess
  */
 @Configuration
 public class WebConfig {
-    /**
-     * 统一异常处理
-     * @return
-     */
-    @Bean
-    public GlobalExceptionHandler globalExceptionHandler(){
-        return new GlobalExceptionHandler();
-    }
-
     /**
      * 方法级别的验证
      * @return

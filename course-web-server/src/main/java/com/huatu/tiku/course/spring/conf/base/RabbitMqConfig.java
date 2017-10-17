@@ -13,13 +13,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+import static com.huatu.common.consts.ApolloConfigConsts.NAMESPACE_TIKU_RABBIT;
 import static com.huatu.tiku.course.common.RabbitQueueConsts.*;
 
 /**
  * @author hanchao
  * @date 2017/9/4 14:05
  */
-@EnableApolloConfig("tiku.rabbitmq")
+@EnableApolloConfig(NAMESPACE_TIKU_RABBIT)
 @Configuration
 public class RabbitMqConfig {
     @Bean
