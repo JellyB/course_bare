@@ -7,6 +7,8 @@ import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 import com.huatu.common.consts.ApolloConfigConsts;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.netschool.api.fall.CourseServiceV3Fallback;
+import com.huatu.tiku.course.netschool.api.v3.CourseServiceV3;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.basic.support.ConfigSubscriber;
 import lombok.Data;
@@ -39,13 +41,10 @@ public class PromoteBizService implements ConfigSubscriber{
     private static final String MOCK_UNAME = "app_ztk768618662";
 
     @Autowired
-    private CourseBizService courseBizService;
-
+    private CourseServiceV3 courseServiceV3;
     @Autowired
-    private CourseAsyncService courseAsyncService;
+    private CourseServiceV3Fallback courseServiceV3Fallback;
 
-    @Autowired
-    private CourseCollectionBizService courseCollectionBizService;
 
 
 
@@ -99,8 +98,11 @@ public class PromoteBizService implements ConfigSubscriber{
             //预热所有的课程数据
             for (Integer promoteCourseId : promoteCourseIds) {
                 try {
-                    courseAsyncService.getCourseDetailV3(promoteCourseId).get();
-                    courseBizService.getCourseHtml(promoteCourseId);
+                    NetSchoolResponse courseDetail = courseServiceV3.getCourseDetail(promoteCourseId);
+                    courseServiceV3Fallback.setCourseDetail(promoteCourseId,courseDetail);
+
+                    String courseHtml = courseServiceV3.getCourseHtml(promoteCourseId);
+                    courseServiceV3Fallback.setCourseH5(promoteCourseId,courseHtml);
                 } catch(Exception e){
                     e.printStackTrace();
                 }
@@ -111,7 +113,8 @@ public class PromoteBizService implements ConfigSubscriber{
                 try {
                     int page = 1;
                     for (;;){
-                        NetSchoolResponse collectionCourse = courseCollectionBizService.getCollectionCourse(title, MOCK_UNAME, page++);
+                        NetSchoolResponse collectionCourse = courseServiceV3.getCollectionDetail(title, MOCK_UNAME, page++);
+                        courseServiceV3Fallback.setCollectionDetail(title,page,collectionCourse);
                         if(! ResponseUtil.isSuccess(collectionCourse)){
                             break;
                         }
