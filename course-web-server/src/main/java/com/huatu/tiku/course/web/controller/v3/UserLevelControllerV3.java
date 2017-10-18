@@ -19,7 +19,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/v3/my")
-public class UserLevelController {
+public class UserLevelControllerV3 {
     @Autowired
     private RewardBizService rewardBizService;
     @Autowired
@@ -47,6 +47,6 @@ public class UserLevelController {
                 .put("username",userSession.getUname())
                 .put("action",1)
                 .buildUnsafe();
-        return ResponseUtil.build(userLevelServiceV3.getUserLevel(RequestUtil.encryptParams(params)));
+        return ResponseUtil.build(userLevelServiceV3.getUserLevel(RequestUtil.encryptParams(params)),true);
     }
 }
