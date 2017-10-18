@@ -10,7 +10,6 @@ import com.huatu.tiku.course.bean.CourseDetailV2DTO;
 import com.huatu.tiku.course.bean.CourseDetailV3DTO;
 import com.huatu.tiku.course.bean.CourseListV2DTO;
 import com.huatu.tiku.course.bean.CourseListV3DTO;
-import com.huatu.tiku.course.netschool.api.CourseServiceV1;
 import com.huatu.tiku.course.util.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -34,8 +33,6 @@ import java.util.concurrent.TimeUnit;
 @Service
 @Slf4j
 public class CourseBizService {
-    @Autowired
-    private CourseServiceV1 courseServiceV1;
 
     @Autowired
     private CourseAsyncService courseAsyncService;

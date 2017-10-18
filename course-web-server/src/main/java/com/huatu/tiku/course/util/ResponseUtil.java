@@ -11,6 +11,7 @@ import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.common.NetSchoolConfig;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.cglib.beans.ImmutableBean;
 
 import java.util.Map;
 
@@ -28,6 +29,7 @@ public class ResponseUtil {
 
     public static ErrorResult ERROR_PAGE_RESPONSE = ErrorResult.create(Result.SUCCESS_CODE,"数据为空",MOCK_PAGE_RESPONSE);
 
+    public static final NetSchoolResponse DEFAULT_PAGE_EMPTY = (NetSchoolResponse) ImmutableBean.create(new NetSchoolResponse(-1000000,"服务器繁忙",MOCK_PAGE_RESPONSE));
 
     public static Object build(NetSchoolResponse response) {
         return build(response,false);

@@ -7,6 +7,7 @@ import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.consts.NetschoolTerminalType;
 import com.huatu.tiku.course.netschool.api.v3.OrderServiceV3;
+import com.huatu.tiku.course.netschool.api.v3.PromoteCoreServiceV3;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.bean.UserSession;
@@ -32,6 +33,8 @@ import java.util.Map;
 public class OrderControllerV3 {
     @Autowired
     private OrderServiceV3 orderServiceV3;
+    @Autowired
+    private PromoteCoreServiceV3 promoteCoreServiceV3;
 
     @Autowired
     private OkHttpClient okHttpClient;
@@ -55,7 +58,7 @@ public class OrderControllerV3 {
         params.put("rid",rid);
         params.put("action","placeOrder");
         params.put("username",userSession.getUname());
-        return ResponseUtil.build(orderServiceV3.getPrevInfo(RequestUtil.encrypt(params)),true);
+        return ResponseUtil.build(promoteCoreServiceV3.getPrevInfo(RequestUtil.encrypt(params)),true);
     }
 
     /**
@@ -108,7 +111,7 @@ public class OrderControllerV3 {
         params.put("tjCode",tjCode);
         params.put("username",userSession.getUname());
 
-        return ResponseUtil.build(orderServiceV3.createOrder(RequestUtil.encrypt(params)),true);
+        return ResponseUtil.build(promoteCoreServiceV3.createOrder(RequestUtil.encrypt(params)),true);
     }
 
     /**
@@ -124,7 +127,7 @@ public class OrderControllerV3 {
                 .put("ordernum",orderNo)
                 .put("type",type)
                 .build();
-        return ResponseUtil.build(orderServiceV3.getOrderDetail(RequestUtil.encrypt(params)),true);
+        return ResponseUtil.build(promoteCoreServiceV3.getOrderDetail(RequestUtil.encrypt(params)),true);
     }
 
 
@@ -177,7 +180,7 @@ public class OrderControllerV3 {
                 .put("payment",payment)
                 .put("username",session.getUname())
                 .build();
-        return ResponseUtil.build(orderServiceV3.payOrder(RequestUtil.encrypt(params)),true);
+        return ResponseUtil.build(promoteCoreServiceV3.payOrder(RequestUtil.encrypt(params)),true);
     }
 
 

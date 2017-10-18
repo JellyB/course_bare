@@ -61,15 +61,19 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
     }
 
 
+    //----------------------------------------------------------------
+
+
     @Override
     public NetSchoolResponse getCollectionDetail(String shortTitle, String username, int page) {
         String key = "_mock_collection_detail$"+ shortTitle+"$"+username+"$"+page;
         NetSchoolResponse response = FallbackCacheHolder.get(key);
         if(response == null){
-            return NetSchoolResponse.DEFAULT;
+            return NetSchoolResponse.DEFAULT_ERROR;
         }else{
             CourseListV3DTO courseListV3DTO = ResponseUtil.build(response, CourseListV3DTO.class, false);
             courseListV3DTO.setCache(true);
+            response.setData(courseListV3DTO);
             return response;
         }
     }
@@ -84,7 +88,7 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
         String key = "_mock_recoding_list$"+ RequestUtil.getParamSign(params);
         NetSchoolResponse response = FallbackCacheHolder.get(key);
         if(response == null){
-            return NetSchoolResponse.DEFAULT;
+            return NetSchoolResponse.DEFAULT_ERROR;
         }else{
             return response;
         }
@@ -95,10 +99,11 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
         String key = "_mock_live_list$"+ RequestUtil.getParamSign(params);
         NetSchoolResponse response = FallbackCacheHolder.get(key);
         if(response == null){
-            return NetSchoolResponse.DEFAULT;
+            return NetSchoolResponse.DEFAULT_ERROR;
         }else{
             CourseListV3DTO courseListV3DTO = ResponseUtil.build(response, CourseListV3DTO.class, false);
             courseListV3DTO.setCache(true);
+            response.setData(courseListV3DTO);
             return response;
         }
     }

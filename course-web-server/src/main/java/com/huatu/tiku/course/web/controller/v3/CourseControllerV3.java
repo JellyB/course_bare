@@ -10,6 +10,7 @@ import com.huatu.tiku.course.netschool.api.fall.CourseServiceV3Fallback;
 import com.huatu.tiku.course.netschool.api.v3.CourseServiceV3;
 import com.huatu.tiku.course.netschool.api.v3.UserCoursesServiceV3;
 import com.huatu.tiku.course.service.CourseBizService;
+import com.huatu.tiku.course.service.CourseCollectionBizService;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
@@ -45,6 +46,8 @@ public class CourseControllerV3 {
     @Autowired
     private SubjectService subjectService;
     @Autowired
+    private CourseCollectionBizService courseCollectionBizService;
+    @Autowired
     private EventPublisher eventPublisher;
 
     /**
@@ -56,9 +59,7 @@ public class CourseControllerV3 {
     public Object getCollectionDetail(@RequestParam String shorttitle,
                                       @RequestParam int page,
                                       @Token UserSession userSession) {
-        NetSchoolResponse collectionDetail = courseServiceV3.getCollectionDetail(shorttitle, userSession.getUname(), page);
-        courseServiceV3Fallback.setCollectionDetail(shorttitle,userSession.getUname(), page,collectionDetail);
-        return ResponseUtil.build(collectionDetail);
+        return courseCollectionBizService.getCollectionCourse(shorttitle,userSession.getUname(),page);
     }
 
     /**
