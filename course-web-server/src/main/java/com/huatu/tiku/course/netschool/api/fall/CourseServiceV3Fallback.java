@@ -6,10 +6,13 @@ import com.huatu.tiku.course.bean.CourseListV3DTO;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v3.CourseServiceV3;
 import com.huatu.tiku.course.util.ResponseUtil;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+
+import static com.huatu.tiku.course.bean.NetSchoolResponse.DEFAULT_ERROR;
 
 /**
  * @author hanchao
@@ -53,9 +56,10 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
     }
 
 
-    public void setCollectionDetail(String shortTitle, String username, int page,NetSchoolResponse response){
-        String key = "_mock_collection_detail$"+ shortTitle+"$"+username+"$"+page;
+    public void setCollectionDetail(String shortTitle, int page,NetSchoolResponse response){
+        String key = "_mock_collection_detail$"+ shortTitle+"$"+page;
         if(ResponseUtil.isSuccess(response)){
+            response.getData();
             FallbackCacheHolder.put(key,response);
         }
     }
@@ -66,13 +70,21 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
 
     @Override
     public NetSchoolResponse getCollectionDetail(String shortTitle, String username, int page) {
-        String key = "_mock_collection_detail$"+ shortTitle+"$"+username+"$"+page;
+        String key = "_mock_collection_detail$"+ shortTitle+"$"+page;
         NetSchoolResponse response = FallbackCacheHolder.get(key);
         if(response == null){
-            return NetSchoolResponse.DEFAULT_ERROR;
+            return DEFAULT_ERROR;
         }else{
             CourseListV3DTO courseListV3DTO = ResponseUtil.build(response, CourseListV3DTO.class, false);
             courseListV3DTO.setCache(true);
+            //洗掉之前数据和所属用户的关联信息
+            if (CollectionUtils.isNotEmpty(courseListV3DTO.getResult())) {
+                for (Map item : courseListV3DTO.getResult()) {
+                    if ("0".equals(String.valueOf(item.get("isCollect"))) && item.containsKey("rid")) {
+                        item.put("isBuy", 0);
+                    }
+                }
+            }
             response.setData(courseListV3DTO);
             return response;
         }
@@ -88,7 +100,7 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
         String key = "_mock_recoding_list$"+ RequestUtil.getParamSign(params);
         NetSchoolResponse response = FallbackCacheHolder.get(key);
         if(response == null){
-            return NetSchoolResponse.DEFAULT_ERROR;
+            return DEFAULT_ERROR;
         }else{
             return response;
         }
@@ -99,7 +111,7 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
         String key = "_mock_live_list$"+ RequestUtil.getParamSign(params);
         NetSchoolResponse response = FallbackCacheHolder.get(key);
         if(response == null){
-            return NetSchoolResponse.DEFAULT_ERROR;
+            return DEFAULT_ERROR;
         }else{
             CourseListV3DTO courseListV3DTO = ResponseUtil.build(response, CourseListV3DTO.class, false);
             courseListV3DTO.setCache(true);
@@ -113,7 +125,7 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
         String key = "_mock_course_detail$"+ rid;
         NetSchoolResponse response = FallbackCacheHolder.get(key);
         if(response == null){
-            return NetSchoolResponse.DEFAULT;
+            return DEFAULT_ERROR;
         }else{
             return response;
         }
@@ -126,27 +138,27 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
         if(StringUtils.isNotBlank(response)){
             return response;
         }else{
-            return "人太多了，服务器要休息一会儿~";
+            return "";
         }
     }
 
     @Override
     public NetSchoolResponse getCourseSecrInfo(Map<String, Object> params) {
-        return NetSchoolResponse.DEFAULT_ERROR;
+        return DEFAULT_ERROR;
     }
 
     @Override
     public NetSchoolResponse findTeachersByCourse(int rid) {
-        return NetSchoolResponse.DEFAULT_ERROR;
+        return DEFAULT_ERROR;
     }
 
     @Override
     public NetSchoolResponse findTimetable(int rid) {
-        return NetSchoolResponse.DEFAULT_ERROR;
+        return DEFAULT_ERROR;
     }
 
     @Override
     public NetSchoolResponse getHandouts(Map<String, Object> params) {
-        return null;
+        return DEFAULT_ERROR;
     }
 }

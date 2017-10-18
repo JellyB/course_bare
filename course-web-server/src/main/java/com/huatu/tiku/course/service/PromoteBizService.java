@@ -6,7 +6,8 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 import com.huatu.common.consts.ApolloConfigConsts;
-import com.huatu.tiku.course.netschool.api.v3.OrderServiceV3;
+import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.basic.support.ConfigSubscriber;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,8 +35,19 @@ public class PromoteBizService implements ConfigSubscriber{
     private Set<Integer> promoteCourseIds = Sets.newHashSet();
     private Set<String> promoteCollections = Sets.newHashSet();
 
+    private volatile static boolean initializing = false;
+    private static final String MOCK_UNAME = "app_ztk768618662";
+
     @Autowired
-    private OrderServiceV3 orderServiceV3;
+    private CourseBizService courseBizService;
+
+    @Autowired
+    private CourseAsyncService courseAsyncService;
+
+    @Autowired
+    private CourseCollectionBizService courseCollectionBizService;
+
+
 
     @Override
     public void update(ConfigChange configChange) {
@@ -76,6 +89,47 @@ public class PromoteBizService implements ConfigSubscriber{
                 promoteCollections = promoteCollectionsTemp;
             }
         }
+        initHotData();//预热
+    }
+
+    private void initHotData(){
+        initializing = true;
+        log.info("初始化促销热点数据...");
+        try {
+            //预热所有的课程数据
+            for (Integer promoteCourseId : promoteCourseIds) {
+                try {
+                    courseAsyncService.getCourseDetailV3(promoteCourseId).get();
+                    courseBizService.getCourseHtml(promoteCourseId);
+                } catch(Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+            //预热所有定义的合集
+            for (String title : promoteCollections) {
+                try {
+                    int page = 1;
+                    for (;;){
+                        NetSchoolResponse collectionCourse = courseCollectionBizService.getCollectionCourse(title, MOCK_UNAME, page++);
+                        if(! ResponseUtil.isSuccess(collectionCourse)){
+                            break;
+                        }
+                        if(collectionCourse.getData() instanceof Map && "0".equals(String.valueOf(((Map) collectionCourse.getData()).get("next")))){
+                            break;
+                        }
+                    }
+
+                } catch(Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        log.info("初始化促销热点数据完毕...");
+        initializing = false;
     }
 
     @Override
@@ -94,8 +148,8 @@ public class PromoteBizService implements ConfigSubscriber{
     }
 
     public boolean isPromoteOn(){
-        //存在促销产品和促销套餐课，则认为促销开关开启，平时请将此项清空
-        return CollectionUtils.isNotEmpty(promoteCourseIds) || CollectionUtils.isNotEmpty(promoteCollections);
+        //存在促销产品和促销套餐课，则认为促销开关开启，平时请将此项配置清空
+        return (CollectionUtils.isNotEmpty(promoteCourseIds) || CollectionUtils.isNotEmpty(promoteCollections)) && !initializing;
     }
 
     @Data
