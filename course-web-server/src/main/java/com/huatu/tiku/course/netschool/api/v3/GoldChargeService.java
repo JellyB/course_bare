@@ -13,6 +13,6 @@ import java.util.Map;
  */
 @FeignClient("o-course-service")
 public interface GoldChargeService {
-    @PostMapping( value = "/v3/order/actionremark.php",consumes = MediaType.APPLICATION_FORM_URLENCODED_UTF8_VALUE)
+    @PostMapping( value = "/web_v/order/actionRemark.php",consumes = MediaType.APPLICATION_FORM_URLENCODED_UTF8_VALUE)
     NetSchoolResponse chargeGold(Map<String,Object> params);
 }
