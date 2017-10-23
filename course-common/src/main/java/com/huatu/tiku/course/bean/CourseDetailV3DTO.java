@@ -41,6 +41,7 @@ public class CourseDetailV3DTO implements Serializable{
         private String startTime;
         @JsonProperty
         private int ActualPrice;
+        private String price;
         private Integer total;
         private String studyDate;
         private int isBuy;
