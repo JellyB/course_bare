@@ -19,9 +19,11 @@ public interface OrderServiceV3 {
 
     /**
      * 下单页面获取信息（action固定传placeOrder）
+     * 使用coreservice下的
      * @param p (action  username rid )
      * @return
      */
+    @Deprecated
     @PostMapping("/v3/order/order.php")
     NetSchoolResponse getPrevInfo(@RequestParam("p") String p);
 
@@ -30,6 +32,7 @@ public interface OrderServiceV3 {
      * @param p
      * @return
      */
+    @Deprecated
     @PostMapping("/v3/order/order.php")
     NetSchoolResponse getOrderDetail(@RequestParam("p") String p);
 
@@ -38,6 +41,7 @@ public interface OrderServiceV3 {
      * @param p
      * @return
      */
+    @Deprecated
     @PostMapping("/v3/order/order.php")
     NetSchoolResponse createOrder(@RequestParam("p") String p);
 
@@ -63,13 +67,13 @@ public interface OrderServiceV3 {
      * @param p
      * @return
      */
+    @Deprecated
     @PostMapping("/v3/order/pay.php")
     NetSchoolResponse payOrder(@RequestParam("p") String p);
 
 
     /**
      * 免费课程
-     * @param p
      * @return
      */
     @PostMapping("/v3/freeOrder.php")

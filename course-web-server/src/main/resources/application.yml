@@ -94,6 +94,7 @@ hystrix:
 ## 自定义配置
 
 htonline:
+  ex-handler: gateway
   wrapper.enabled: true
   httpclient.enabled: false
   okhttp.enabled: true

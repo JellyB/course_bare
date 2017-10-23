@@ -10,6 +10,7 @@ import com.huatu.tiku.course.netschool.api.fall.CourseServiceV3Fallback;
 import com.huatu.tiku.course.netschool.api.v3.CourseServiceV3;
 import com.huatu.tiku.course.netschool.api.v3.UserCoursesServiceV3;
 import com.huatu.tiku.course.service.CourseBizService;
+import com.huatu.tiku.course.service.CourseCollectionBizService;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
@@ -45,6 +46,8 @@ public class CourseControllerV3 {
     @Autowired
     private SubjectService subjectService;
     @Autowired
+    private CourseCollectionBizService courseCollectionBizService;
+    @Autowired
     private EventPublisher eventPublisher;
 
     /**
@@ -56,9 +59,7 @@ public class CourseControllerV3 {
     public Object getCollectionDetail(@RequestParam String shorttitle,
                                       @RequestParam int page,
                                       @Token UserSession userSession) {
-        NetSchoolResponse collectionDetail = courseServiceV3.getCollectionDetail(shorttitle, userSession.getUname(), page);
-        courseServiceV3Fallback.setCollectionDetail(shorttitle,userSession.getUname(), page,collectionDetail);
-        return ResponseUtil.build(collectionDetail);
+        return ResponseUtil.build(courseCollectionBizService.getCollectionCourse(shorttitle,userSession.getUname(),page));
     }
 
     /**
@@ -134,7 +135,7 @@ public class CourseControllerV3 {
      */
     @GetMapping(value="/{rid}",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public Object getCourseDetail(@Token UserSession userSession,
-                                      @PathVariable int rid) throws BizException, ExecutionException, InterruptedException {
+                                  @PathVariable int rid) throws BizException, ExecutionException, InterruptedException {
         return courseBizService.getCourseDetailV3(rid,userSession.getUname());
     }
 
@@ -145,9 +146,7 @@ public class CourseControllerV3 {
      */
     @GetMapping(value="/{rid}",produces = MediaType.TEXT_HTML_VALUE+";charset=utf-8")
     public Object getCourseHtml(@PathVariable int rid) throws BizException, ExecutionException, InterruptedException {
-        String data = courseServiceV3.getCourseHtml(rid);
-        courseServiceV3Fallback.setCourseH5(rid,data);
-        return data;
+        return courseBizService.getCourseHtml(rid);
     }
 
 

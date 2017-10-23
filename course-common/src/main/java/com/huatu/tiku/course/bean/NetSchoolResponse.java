@@ -25,6 +25,7 @@ public class NetSchoolResponse<T> {
      */
     public static final NetSchoolResponse DEFAULT_ERROR = (NetSchoolResponse) ImmutableBean.create(new NetSchoolResponse(-1000,"服务器繁忙",null));
 
+
     private int code;
     private String msg;
     private T data;

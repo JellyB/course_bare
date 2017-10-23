@@ -1,6 +1,6 @@
 package com.huatu.tiku.course.task;
 
-import com.huatu.tiku.course.netschool.api.v3.OrderServiceV3;
+import com.huatu.tiku.course.netschool.api.v3.PromoteCoreServiceV3;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +21,7 @@ public class OrderPushTask implements Runnable,InitializingBean {
     @Resource(name = "redisTemplate")
     private ListOperations<String,String> listOperations;
     @Autowired
-    private OrderServiceV3 orderServiceV3;
+    private PromoteCoreServiceV3 promoteCoreServiceV3;
 
     private volatile boolean running = true;
 
@@ -35,7 +35,7 @@ public class OrderPushTask implements Runnable,InitializingBean {
                     //如果任务已经处理完，一秒后重新尝试
                     TimeUnit.SECONDS.sleep(1);
                 }else{
-                    orderServiceV3.createOrder(params);//如果此处fallback,那么fallback会将此任务重新入队
+                    promoteCoreServiceV3.createOrder(params);//如果此处fallback,那么fallback会将此任务重新入队
                 }
             } catch(Exception e){
                 e.printStackTrace();

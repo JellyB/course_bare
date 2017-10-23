@@ -55,4 +55,6 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
         converters.add(stringHttpMessageConverter);
         converters.add(new ByteArrayHttpMessageConverter());
     }
+
+
 }

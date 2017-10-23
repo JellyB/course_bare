@@ -2,15 +2,18 @@ package com.huatu.tiku.course.service;
 
 import com.google.common.primitives.Ints;
 import com.huatu.common.exception.BizException;
+import com.huatu.common.utils.concurrent.ConcurrentBizLock;
 import com.huatu.common.utils.date.DateFormatUtil;
 import com.huatu.common.utils.date.DateUtil;
 import com.huatu.common.utils.date.TimeMark;
 import com.huatu.common.utils.date.TimestampUtil;
+import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.bean.CourseDetailV2DTO;
 import com.huatu.tiku.course.bean.CourseDetailV3DTO;
 import com.huatu.tiku.course.bean.CourseListV2DTO;
 import com.huatu.tiku.course.bean.CourseListV3DTO;
-import com.huatu.tiku.course.netschool.api.CourseServiceV1;
+import com.huatu.tiku.course.netschool.api.fall.CourseServiceV3Fallback;
+import com.huatu.tiku.course.netschool.api.v3.CourseServiceV3;
 import com.huatu.tiku.course.util.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -34,11 +37,15 @@ import java.util.concurrent.TimeUnit;
 @Service
 @Slf4j
 public class CourseBizService {
-    @Autowired
-    private CourseServiceV1 courseServiceV1;
 
     @Autowired
     private CourseAsyncService courseAsyncService;
+    @Autowired
+    private CourseServiceV3 courseServiceV3;
+    @Autowired
+    private CourseServiceV3Fallback courseServiceV3Fallback;
+    @Autowired
+    private PromoteBizService promoteBizService;
 
 
     /**
@@ -348,6 +355,35 @@ public class CourseBizService {
     }
 
 
+    @Degrade(key = "courseHtml",name="课程详情HTML")
+    public String getCourseHtml(int rid){
+        if(promoteBizService.isPromoteOn()){
+            return getCourseHtmlDegrade(rid);
+        }
+        String data = courseServiceV3.getCourseHtml(rid);
+        courseServiceV3Fallback.setCourseH5(rid,data);
+        return data;
+    }
+
+    public String getCourseHtmlDegrade(int rid){
+        String data = courseServiceV3Fallback.getCourseHtml(rid);
+        if(StringUtils.isBlank(data)){
+            String key = "_mock_course_h5$"+ rid;
+            if (ConcurrentBizLock.tryLock(key)) {
+                try {
+                    data = courseServiceV3.getCourseHtml(rid);
+                    courseServiceV3Fallback.setCourseH5(rid, data);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    ConcurrentBizLock.releaseLock(key);
+                }
+            }
+        }
+        return data;
+    }
+
+
     @Slf4j
     private static class RequestCountDownFutureCallback implements ListenableFutureCallback {
         private CountDownLatch countDownLatch;
@@ -367,4 +403,6 @@ public class CourseBizService {
             countDownLatch.countDown();
         }
     }
+
+
 }

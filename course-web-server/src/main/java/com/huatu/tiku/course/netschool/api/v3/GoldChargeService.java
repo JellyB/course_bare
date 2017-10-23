@@ -11,8 +11,8 @@ import java.util.Map;
  * @author hanchao
  * @date 2017/10/14 11:08
  */
-@FeignClient("course-service")
+@FeignClient("o-course-service")
 public interface GoldChargeService {
-    @PostMapping( value = "/v3/order/actionremark.php",consumes = MediaType.APPLICATION_FORM_URLENCODED_UTF8_VALUE)
+    @PostMapping( value = "/web_v/order/actionRemark.php",consumes = MediaType.APPLICATION_FORM_URLENCODED_UTF8_VALUE)
     NetSchoolResponse chargeGold(Map<String,Object> params);
 }
