@@ -49,6 +49,8 @@ public class RewardMessageListener implements ChannelAwareMessageListener{
         try {
             RewardMessage rewardMessage = objectMapper.readValue(message.getBody(), RewardMessage.class);
 
+            log.info("get reward message,{}",rewardMessage);
+
             //消息合法性检查
             if(rewardMessage == null || StringUtils.isBlank(rewardMessage.getAction())){
                 throw new IllegalArgumentException("get a reward message with action empty," + rewardMessage);
@@ -67,6 +69,8 @@ public class RewardMessageListener implements ChannelAwareMessageListener{
             //处理逻辑
             Map<String,Object> params = BeanUtil.toMap(rewardMessage);
             params.remove("uid");
+            params.put("origin",2);//来源,app为2
+
 
             String sign = SignUtil.getPaySign(params, NetSchoolConfig.API_KEY);
             params.put("sign",sign);

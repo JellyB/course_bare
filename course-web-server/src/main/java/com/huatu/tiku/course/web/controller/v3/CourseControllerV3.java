@@ -176,10 +176,20 @@ public class CourseControllerV3 {
             Object courseDetail = ((Map) response).get("CourseDetail");
             if(courseDetail instanceof Map && ((Map) courseDetail).containsKey("free") && "1".equals(String.valueOf(((Map) courseDetail).get("free")))){
                 //收费课
-                eventPublisher.publishEvent(RewardActionEvent.class,this,(event) -> event.setAction(RewardAction.ActionType.WATCH_PAY));
+                eventPublisher.publishEvent(RewardActionEvent.class,
+                        this,
+                        (event) -> event.setAction(RewardAction.ActionType.WATCH_PAY)
+                        .setUname(userSession.getUname())
+                        .setUid(userSession.getId())
+                );
             }else{
                 //免费课
-                eventPublisher.publishEvent(RewardActionEvent.class,this,(event) -> event.setAction(RewardAction.ActionType.WATCH_FREE));
+                eventPublisher.publishEvent(RewardActionEvent.class,
+                        this,
+                        (event) -> event.setAction(RewardAction.ActionType.WATCH_FREE)
+                                .setUname(userSession.getUname())
+                                .setUid(userSession.getId())
+                );
             }
         }
         return response;

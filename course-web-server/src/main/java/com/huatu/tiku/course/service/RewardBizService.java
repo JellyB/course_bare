@@ -14,6 +14,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author hanchao
@@ -82,7 +83,7 @@ public class RewardBizService {
             default:
                 break;
         }
-        redisTemplate.expireAt(cacheKey,expireTime);
+        redisTemplate.expire(cacheKey,expireTime.getTime()-System.currentTimeMillis(), TimeUnit.MILLISECONDS);
 
     }
 }

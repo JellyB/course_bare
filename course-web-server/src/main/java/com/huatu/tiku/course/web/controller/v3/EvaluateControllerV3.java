@@ -88,7 +88,10 @@ public class EvaluateControllerV3 {
         if(ResponseUtil.isSuccess(response)){
             eventPublisher.publishEvent(RewardActionEvent.class,
                     this,
-                    (event) -> event.setAction(type == 1 ? RewardAction.ActionType.EVALUATE_AFTER: RewardAction.ActionType.EVALUATE));
+                    (event) -> event.setAction(type == 1 ? RewardAction.ActionType.EVALUATE_AFTER: RewardAction.ActionType.EVALUATE)
+                                .setUid(userSession.getId())
+                                .setUname(userSession.getUname())
+                    );
         }
 
         return ResponseUtil.build(response);

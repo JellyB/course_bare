@@ -1,7 +1,6 @@
 package com.huatu.tiku.course.spring.conf.base;
 
 import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
-import com.huatu.common.spring.serializer.KryoRedisSerializer;
 import com.huatu.common.spring.serializer.StringRedisKeySerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -9,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 
 import static com.huatu.common.consts.ApolloConfigConsts.NAMESPACE_TIKU_REDIS;
 
@@ -32,18 +32,38 @@ public class RedisClusterConfig {
         return new StringRedisTemplate(jedisConnectionFactory);
     }
 
+//    @Bean
+//    public KryoRedisSerializer kryoRedisSerializer(){
+//        return new KryoRedisSerializer();
+//    }
+
+    /**
+     * 增加可读性
+     * @return
+     */
+//    @Bean
+//    public FastJsonRedisSerializer fastJsonRedisSerializer(){
+//        return new FastJsonRedisSerializer();
+//    }
+
+
+    /**
+     * 使用官方的，防止踩坑
+     * @return
+     */
     @Bean
-    public KryoRedisSerializer kryoRedisSerializer(){
-        return new KryoRedisSerializer();
+    public GenericJackson2JsonRedisSerializer genericJackson2JsonRedisSerializer(){
+        return new GenericJackson2JsonRedisSerializer();
     }
 
     @Bean
-    public RedisTemplate redisTemplate(StringRedisKeySerializer stringRedisKeySerializer,KryoRedisSerializer kryoSerializer,JedisConnectionFactory jedisConnectionFactory){
+    public RedisTemplate redisTemplate(StringRedisKeySerializer stringRedisKeySerializer,GenericJackson2JsonRedisSerializer genericJackson2JsonRedisSerializer,JedisConnectionFactory jedisConnectionFactory){
         RedisTemplate redisTemplate = new RedisTemplate();
         redisTemplate.setConnectionFactory(jedisConnectionFactory);
         redisTemplate.setKeySerializer(stringRedisKeySerializer);
         redisTemplate.setHashKeySerializer(stringRedisKeySerializer);
-        redisTemplate.setDefaultSerializer(kryoSerializer);
+        redisTemplate.setDefaultSerializer(genericJackson2JsonRedisSerializer);
         return redisTemplate;
     }
+
 }

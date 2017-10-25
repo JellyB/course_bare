@@ -12,6 +12,7 @@ server:
     worker-threads: 248
     buffer-size: 1024
 
+
 spring:
   ### 项目基本信息
   application:
@@ -94,7 +95,6 @@ hystrix:
 ## 自定义配置
 
 htonline:
-  ex-handler: gateway
   wrapper.enabled: true
   httpclient.enabled: false
   okhttp.enabled: true
@@ -114,13 +114,15 @@ spring:
 
 server:
   port: 80
-
+  error:
+    include-stacktrace: always
 debug: true
 
 ---
 spring:
   profiles: test
-
+  error:
+    include-stacktrace: always
 ---
 spring:
   profiles: release
