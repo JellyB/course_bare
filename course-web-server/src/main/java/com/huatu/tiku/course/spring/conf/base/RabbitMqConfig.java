@@ -4,8 +4,10 @@ import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huatu.tiku.course.mq.listeners.RewardMessageListener;
 import org.springframework.amqp.core.AcknowledgeMode;
+import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,10 +48,14 @@ public class RabbitMqConfig {
     @Bean
     public Queue rewardActionQueue(@Autowired ConnectionFactory connectionFactory,
                                    @Autowired(required = false) ThreadPoolTaskExecutor threadPoolTaskExecutor,
-                                   @Autowired RewardMessageListener rewardMessageListener){
+                                   @Autowired RewardMessageListener rewardMessageListener,
+                                   @Autowired AmqpAdmin amqpAdmin){
         Queue rewardActionQueue = new Queue(QUEUE_REWARD_ACTION);
         SimpleMessageListenerContainer manualRabbitContainer = new SimpleMessageListenerContainer();
         manualRabbitContainer.setQueues(rewardActionQueue);
+        if(amqpAdmin instanceof RabbitAdmin){
+            manualRabbitContainer.setRabbitAdmin((RabbitAdmin) amqpAdmin);
+        }
         manualRabbitContainer.setConnectionFactory(connectionFactory);
         if(threadPoolTaskExecutor != null){
             manualRabbitContainer.setTaskExecutor(threadPoolTaskExecutor);
