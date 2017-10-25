@@ -14,8 +14,8 @@
     <properties>
         <!-- filter -->
         <server_name>course-web-server</server_name>
-        <base_log_dir>/app/logs</base_log_dir>
-        <log_dir>${base_log_dir}/${server_name}</log_dir>
+        <log_dir>/app/logs/${server_name}</log_dir>
+        <pid_dir>/app/data/run</pid_dir>
     </properties>
 
 
@@ -195,7 +195,7 @@
                         <!--默认的就可以-->
                         <confFolder>./conf</confFolder>
                         <logFolder>${log_dir}/</logFolder>
-                        <pidFolder>${base_log_dir}/</pidFolder>
+                        <pidFolder>${pid_dir}/</pidFolder>
                         <logFilename>${server_name}_inf.log</logFilename>
                     </embeddedLaunchScriptProperties>
                     <executable>true</executable>
