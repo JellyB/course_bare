@@ -55,7 +55,7 @@ public class ResponseUtil {
 
             //code为1，但是没有data或者data为空字符串
             if (data == null || (data != null && StringUtils.isBlank(data.toString()))) {
-                return SuccessMessage.create(netSchoolResponse.getMsg());
+                return SuccessMessage.create(StringUtils.isEmpty(netSchoolResponse.getMsg()) ? " ":netSchoolResponse.getMsg());
             }
 
             //需要解密的
