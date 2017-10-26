@@ -46,17 +46,23 @@ public class RabbitMqConfig {
 
 
     @Bean
-    public Queue rewardActionQueue(@Autowired ConnectionFactory connectionFactory,
-                                   @Autowired(required = false) ThreadPoolTaskExecutor threadPoolTaskExecutor,
-                                   @Autowired RewardMessageListener rewardMessageListener,
-                                   @Autowired AmqpAdmin amqpAdmin){
+    public Queue rewardActionQueue(){
         Queue rewardActionQueue = new Queue(QUEUE_REWARD_ACTION);
+        return rewardActionQueue;
+    }
+
+
+    @Bean
+    public SimpleMessageListenerContainer rewardMessageListenerContainer(@Autowired ConnectionFactory connectionFactory,
+                                                                         @Autowired(required = false) ThreadPoolTaskExecutor threadPoolTaskExecutor,
+                                                                         @Autowired RewardMessageListener rewardMessageListener,
+                                                                         @Autowired AmqpAdmin amqpAdmin){
         SimpleMessageListenerContainer manualRabbitContainer = new SimpleMessageListenerContainer();
-        manualRabbitContainer.setQueues(rewardActionQueue);
+        manualRabbitContainer.setQueueNames(QUEUE_REWARD_ACTION);
+        manualRabbitContainer.setConnectionFactory(connectionFactory);
         if(amqpAdmin instanceof RabbitAdmin){
             manualRabbitContainer.setRabbitAdmin((RabbitAdmin) amqpAdmin);
         }
-        manualRabbitContainer.setConnectionFactory(connectionFactory);
         if(threadPoolTaskExecutor != null){
             manualRabbitContainer.setTaskExecutor(threadPoolTaskExecutor);
         }
@@ -64,8 +70,7 @@ public class RabbitMqConfig {
         //manualRabbitContainer.setConcurrentConsumers(threadPoolTaskExecutor.getCorePoolSize()/4);
         //manualRabbitContainer.setMaxConcurrentConsumers(threadPoolTaskExecutor.getCorePoolSize()/4);
         manualRabbitContainer.setMessageListener(rewardMessageListener);
-        manualRabbitContainer.start();
-        return rewardActionQueue;
+        return manualRabbitContainer;
     }
 
 
