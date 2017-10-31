@@ -51,8 +51,8 @@ public class RabbitMqConfig {
     @Bean
     public Queue rewardActionQueue(){
         Map<String, Object> arguments = Maps.newHashMap();
-        arguments.put("x-dead-letter-exchange",DLX);
-        arguments.put("x-dead-letter-routing-key",DLK);
+        arguments.put(ARG_DLX,DLX_DEFAULT);
+        arguments.put(ARG_DLK,DLK_DEFAULT);
         Queue rewardActionQueue = new Queue(QUEUE_REWARD_ACTION,true,false,false,arguments);
         return rewardActionQueue;
     }
