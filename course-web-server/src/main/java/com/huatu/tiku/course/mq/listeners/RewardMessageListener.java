@@ -89,7 +89,11 @@ public class RewardMessageListener implements ChannelAwareMessageListener{
         } catch(Exception e){
             //处理异常重新入队
             log.error("consume message caused an error...",e);
-            channel.basicNack(message.getMessageProperties().getDeliveryTag(),false,true);
+            if(message.getMessageProperties().isRedelivered()){
+                channel.basicNack(message.getMessageProperties().getDeliveryTag(),false,false);
+            }else{
+                channel.basicNack(message.getMessageProperties().getDeliveryTag(),false,true);
+            }
         }
     }
 }

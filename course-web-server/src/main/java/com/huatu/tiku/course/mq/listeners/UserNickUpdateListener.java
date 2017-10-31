@@ -2,7 +2,7 @@ package com.huatu.tiku.course.mq.listeners;
 
 import com.huatu.common.utils.encrypt.SignUtil;
 import com.huatu.tiku.course.common.NetSchoolConfig;
-import com.huatu.tiku.course.common.RabbitQueueConsts;
+import com.huatu.tiku.course.common.RabbitConsts;
 import com.huatu.tiku.course.netschool.api.v3.UserServiceV3;
 import com.huatu.tiku.course.util.RequestUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ public class UserNickUpdateListener {
     @Autowired
     private MessageConverter messageConverter;
 
-    @RabbitListener(queues = RabbitQueueConsts.QUEUE_USER_NICK_UPDATE)
+    @RabbitListener(queues = RabbitConsts.QUEUE_USER_NICK_UPDATE)
     public void onMessage(Message message){
         try {
             Map<String,Object> map = (Map<String, Object>) messageConverter.fromMessage(message);

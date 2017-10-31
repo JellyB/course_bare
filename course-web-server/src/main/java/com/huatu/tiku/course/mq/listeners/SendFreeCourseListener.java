@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import com.huatu.tiku.common.consts.CatgoryType;
 import com.huatu.tiku.course.bean.FreeCourseBean;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
-import com.huatu.tiku.course.common.RabbitQueueConsts;
+import com.huatu.tiku.course.common.RabbitConsts;
 import com.huatu.tiku.course.netschool.api.CourseServiceV1;
 import com.huatu.tiku.course.netschool.api.SydwCourseServiceV1;
 import com.huatu.tiku.course.util.RequestUtil;
@@ -39,7 +39,7 @@ public class SendFreeCourseListener {
      * 送课
      * @param message
      */
-    @RabbitListener(queues = RabbitQueueConsts.QUEUE_SEND_FREE_COURSE)
+    @RabbitListener(queues = RabbitConsts.QUEUE_SEND_FREE_COURSE)
     public void onMessage(Message message) {
         try {
             FreeCourseBean bean = (FreeCourseBean) messageConverter.fromMessage(message);

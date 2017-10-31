@@ -1,7 +1,7 @@
 package com.huatu.tiku.course.handler.reward;
 
 import com.huatu.tiku.common.bean.reward.RewardMessage;
-import com.huatu.tiku.course.common.RabbitQueueConsts;
+import com.huatu.tiku.course.common.RabbitConsts;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
 import com.huatu.tiku.springboot.basic.reward.event.AbstractRewardActionEventHandler;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -22,7 +22,7 @@ public class DefaultRewardEventHandler extends AbstractRewardActionEventHandler 
     private RedisTemplate redisTemplate;
     @Override
     public void dealMessage(RewardMessage rewardMessage) {
-        rabbitTemplate.convertAndSend(RabbitQueueConsts.QUEUE_REWARD_ACTION,rewardMessage);
+        rabbitTemplate.convertAndSend(RabbitConsts.QUEUE_REWARD_ACTION,rewardMessage);
     }
 
     /**

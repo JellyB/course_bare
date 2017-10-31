@@ -2,6 +2,7 @@ package com.huatu.tiku.course.spring.conf.base;
 
 import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
 import com.huatu.tiku.course.mq.listeners.RewardMessageListener;
 import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.core.AmqpAdmin;
@@ -15,8 +16,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+import java.util.Map;
+
 import static com.huatu.common.consts.ApolloConfigConsts.NAMESPACE_TIKU_RABBIT;
-import static com.huatu.tiku.course.common.RabbitQueueConsts.*;
+import static com.huatu.tiku.course.common.RabbitConsts.*;
 
 /**
  * @author hanchao
@@ -47,7 +50,10 @@ public class RabbitMqConfig {
 
     @Bean
     public Queue rewardActionQueue(){
-        Queue rewardActionQueue = new Queue(QUEUE_REWARD_ACTION);
+        Map<String, Object> arguments = Maps.newHashMap();
+        arguments.put("x-dead-letter-exchange",DLX);
+        arguments.put("x-dead-letter-routing-key",DLK);
+        Queue rewardActionQueue = new Queue(QUEUE_REWARD_ACTION,true,false,false,arguments);
         return rewardActionQueue;
     }
 

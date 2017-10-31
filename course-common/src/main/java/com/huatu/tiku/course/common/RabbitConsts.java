@@ -4,7 +4,12 @@ package com.huatu.tiku.course.common;
  * @author hanchao
  * @date 2017/9/4 17:27
  */
-public class RabbitQueueConsts {
+public class RabbitConsts {
+    public static final String DLX = "dead_letter_exchange";
+    public static final String DLQ = "dead_letter_queue_default";
+    public static final String DLK = "dead_letter_route_default";
+
+
     /**
      * 免费课赠送
      */
