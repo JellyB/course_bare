@@ -121,6 +121,8 @@ debug: true
 ---
 spring:
   profiles: test
+
+server:
   error:
     include-stacktrace: always
 ---

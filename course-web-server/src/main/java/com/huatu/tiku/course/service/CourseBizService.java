@@ -41,6 +41,8 @@ public class CourseBizService {
     @Autowired
     private CourseAsyncService courseAsyncService;
     @Autowired
+    private CourseListService courseListService;
+    @Autowired
     private CourseServiceV3 courseServiceV3;
     @Autowired
     private CourseServiceV3Fallback courseServiceV3Fallback;
@@ -59,7 +61,7 @@ public class CourseBizService {
     public CourseListV3DTO getCourseListV3(Map<String, Object> params) throws ExecutionException, InterruptedException, BizException {
         TimeMark timeMark = TimeMark.newInstance();
 
-        CourseListV3DTO courseList = courseAsyncService.getCourseListV3(params);
+        CourseListV3DTO courseList = courseListService.getCourseListV3(params);
         log.info(">>>>>>>>> courseListV3: concurent request complete,used {} mills,total cost {} mills...", timeMark.mills(), timeMark.totalMills());
 
         if (courseList == null) {
