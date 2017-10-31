@@ -26,7 +26,7 @@ public interface UserCoursesServiceV3 {
      * 获取用户购买的所有课程id集合
      * @return
      */
-    @PostMapping("/v3/checkIsBuyWithId.php")
+    @PostMapping("/v3/checkIsBuyByUserName.php")
     NetSchoolResponse getProductIsBuy(@RequestParam Map<String,Object> params);
     /**
      * 我的课程列表
