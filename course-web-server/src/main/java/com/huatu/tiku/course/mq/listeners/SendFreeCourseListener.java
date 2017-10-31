@@ -3,9 +3,9 @@ package com.huatu.tiku.course.mq.listeners;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import com.huatu.tiku.common.consts.CatgoryType;
+import com.huatu.tiku.common.consts.RabbitConsts;
 import com.huatu.tiku.course.bean.FreeCourseBean;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
-import com.huatu.tiku.course.common.RabbitConsts;
 import com.huatu.tiku.course.netschool.api.CourseServiceV1;
 import com.huatu.tiku.course.netschool.api.SydwCourseServiceV1;
 import com.huatu.tiku.course.util.RequestUtil;
@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+
 
 /**
  * 赠送课程任务

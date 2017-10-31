@@ -1,8 +1,8 @@
 package com.huatu.tiku.course.mq.listeners;
 
 import com.huatu.common.utils.encrypt.SignUtil;
+import com.huatu.tiku.common.consts.RabbitConsts;
 import com.huatu.tiku.course.common.NetSchoolConfig;
-import com.huatu.tiku.course.common.RabbitConsts;
 import com.huatu.tiku.course.netschool.api.v3.UserServiceV3;
 import com.huatu.tiku.course.util.RequestUtil;
 import lombok.extern.slf4j.Slf4j;

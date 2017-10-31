@@ -1,7 +1,7 @@
 package com.huatu.tiku.course.handler.reward;
 
 import com.huatu.tiku.common.bean.reward.RewardMessage;
-import com.huatu.tiku.course.common.RabbitConsts;
+import com.huatu.tiku.common.consts.RabbitConsts;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
 import com.huatu.tiku.springboot.basic.reward.event.AbstractRewardActionEventHandler;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
