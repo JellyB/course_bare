@@ -46,7 +46,7 @@ public class CourseDetailV3DTO implements Serializable{
         private String studyDate;
         private int isBuy;
         private int courseType;
-
+        private String isSuit;
     }
 
     @Data

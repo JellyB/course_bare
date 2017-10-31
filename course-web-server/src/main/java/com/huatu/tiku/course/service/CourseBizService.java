@@ -51,19 +51,15 @@ public class CourseBizService {
     /**
      * 获取直播列表 v3
      *
-     * @param username
      * @param params
      * @return
      * @throws ExecutionException
      * @throws InterruptedException
      */
-    public CourseListV3DTO getCourseListV3(String username, Map<String, Object> params) throws ExecutionException, InterruptedException, BizException {
+    public CourseListV3DTO getCourseListV3(Map<String, Object> params) throws ExecutionException, InterruptedException, BizException {
         TimeMark timeMark = TimeMark.newInstance();
-        ListenableFuture<CourseListV3DTO> courseListFuture = courseAsyncService.getCourseListV3(params);
-        ListenableFuture<Set<Integer>> userBuyFuture = courseAsyncService.getUserBuy(username);
 
-        CourseListV3DTO courseList = courseListFuture.get();
-        Set<Integer> userBuy = userBuyFuture.get();
+        CourseListV3DTO courseList = courseAsyncService.getCourseListV3(params);
         log.info(">>>>>>>>> courseListV3: concurent request complete,used {} mills,total cost {} mills...", timeMark.mills(), timeMark.totalMills());
 
         if (courseList == null) {
@@ -117,8 +113,7 @@ public class CourseBizService {
                 }
 
                 if ("0".equals(String.valueOf(item.get("isCollect"))) && item.containsKey("rid")) {
-                    int rid = Optional.ofNullable(Ints.tryParse(String.valueOf(item.get("rid")))).orElse(-1);
-                    item.put("isBuy", userBuy.contains(rid) ? 1 : 0);
+                    item.put("isBuy", 0);
                 }
             }
         }
@@ -141,7 +136,7 @@ public class CourseBizService {
         TimeMark timeMark = TimeMark.newInstance();
 
         ListenableFuture<CourseDetailV3DTO> courseDetailFuture = courseAsyncService.getCourseDetailV3(courseId);
-        ListenableFuture<Set<Integer>> userBuyFuture = courseAsyncService.getUserBuy(username);
+        ListenableFuture<Set<Integer>> userBuyFuture = courseAsyncService.hasBuy(courseId,username);
         ListenableFuture<Map<Integer, Integer>> courseLimitFuture = courseAsyncService.getCourseLimit(courseId);
 
         CountDownLatch countDownLatch = new CountDownLatch(3);
@@ -215,7 +210,8 @@ public class CourseBizService {
 
         } while (false);
 
-
+        Set<Integer> userBuy = userBuyFuture.get();
+        classInfo.setIsBuy(userBuy.contains(courseId) ? 1 : 0);
 
         classInfo.setLimitStatus(limitStatus);
         classInfo.setStartTime(DateFormatUtil.DEFAULT_FORMAT.format(startTime * 1000L));

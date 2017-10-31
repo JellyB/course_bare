@@ -19,6 +19,11 @@ public class UserCourseServiceV3Fallback implements UserCoursesServiceV3 {
     }
 
     @Override
+    public NetSchoolResponse getProductIsBuy(Map<String, Object> params) {
+        return NetSchoolResponse.newInstance(Lists.newArrayList());
+    }
+
+    @Override
     public NetSchoolResponse findUserCourses(Map<String, Object> params) {
         return NetSchoolResponse.DEFAULT_ERROR;
     }

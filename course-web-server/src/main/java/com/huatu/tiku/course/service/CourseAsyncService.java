@@ -57,14 +57,10 @@ public class CourseAsyncService {
     private PromoteBizService promoteBizService;
 
 
-    /**
-     * 获取用户购买课程
-     *
-     * @param username
-     * @return
-     */
+
     @Async
     @Degrade(key = "userBuy", name = "用户已购课程")
+    @Deprecated
     public ListenableFuture<Set<Integer>> getUserBuy(String username) {
         //促销开始，直接走降级方法
         if (promoteBizService.isPromoteOn()) {
@@ -84,8 +80,31 @@ public class CourseAsyncService {
     }
 
     //用户已购课程降级方法
+    @Deprecated
     public ListenableFuture<Set<Integer>> getUserBuyDegrade(String username) {
         return new AsyncResult<>(Sets.newHashSet());
+    }
+
+
+    /**
+     * 获取用户是否购买
+     *
+     * @param username
+     * @return
+     */
+    public ListenableFuture<Set<Integer>> hasBuy(int rid,String username) {
+        Map<String, Object> params = Maps.newHashMapWithExpectedSize(1);
+        params.put("username", username);
+        params.put("rid",rid);
+        //默认返回，list，里面包含了字符串的产品id
+        NetSchoolResponse response = userCoursesServiceV3.getProductIsBuy(RequestUtil.encryptParams(params));
+        if (response == null || response.getData() == null) {
+            return new AsyncResult(Sets.newHashSet());
+        } else {
+            List<String> data = (List<String>) response.getData();
+            Set<Integer> result = data.stream().map(Integer::parseInt).collect(Collectors.toSet());
+            return new AsyncResult(result);
+        }
     }
 
 
@@ -195,8 +214,7 @@ public class CourseAsyncService {
             key = "T(com.huatu.tiku.course.util.CourseCacheKey).courseListV3(T(com.huatu.common.utils.web.RequestUtil).getParamSign(#map))",
             params = {@Cached.Param(name = "查询参数", value = "map", type = Map.class)})
     @Degrade(name = "课程列表v3", key = "courseListV3")
-    @Async
-    public ListenableFuture<CourseListV3DTO> getCourseListV3(Map<String, Object> params) {
+    public CourseListV3DTO getCourseListV3(Map<String, Object> params) {
 
         if (promoteBizService.isPromoteOn()) {
             return getCourseListV3Degrade(params);
@@ -219,7 +237,7 @@ public class CourseAsyncService {
         } else {
             result.setCache(true);
         }
-        return new AsyncResult<>(result);
+        return result;
     }
 
     /**
@@ -228,7 +246,7 @@ public class CourseAsyncService {
      * @param params
      * @return
      */
-    public ListenableFuture<CourseListV3DTO> getCourseListV3Degrade(Map<String, Object> params) {
+    public CourseListV3DTO getCourseListV3Degrade(Map<String, Object> params) {
         params.remove("username");
 
         NetSchoolResponse liveList = courseServiceV3Fallback.findLiveList(params);
@@ -249,7 +267,7 @@ public class CourseAsyncService {
         if (result != null) {
             result.setCache(true);
         }
-        return new AsyncResult<>(result);
+        return result;
     }
 
 

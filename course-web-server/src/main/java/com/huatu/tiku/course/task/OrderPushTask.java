@@ -5,18 +5,19 @@ import com.huatu.tiku.course.util.CourseCacheKey;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ListOperations;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * TODO  待定的订单失败处理逻辑
  * 异步处理订单的问题
  * @author hanchao
  * @date 2017/10/5 11:35
  */
-@Service
+//@Service
+@Deprecated
 public class OrderPushTask implements Runnable,InitializingBean {
     @Resource(name = "redisTemplate")
     private ListOperations<String,String> listOperations;

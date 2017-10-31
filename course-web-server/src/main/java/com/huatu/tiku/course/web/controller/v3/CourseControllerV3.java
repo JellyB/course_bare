@@ -122,7 +122,7 @@ public class CourseControllerV3 {
                 .put("keywords",keywords)
                 .put("categoryid",categoryid)
                 .put("priceid",priceid).build();
-        return courseBizService.getCourseListV3(userSession.getUname(),params);
+        return courseBizService.getCourseListV3(params);
     }
 
 
