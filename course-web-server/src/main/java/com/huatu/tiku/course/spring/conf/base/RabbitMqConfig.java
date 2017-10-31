@@ -19,7 +19,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import java.util.Map;
 
 import static com.huatu.common.consts.ApolloConfigConsts.NAMESPACE_TIKU_RABBIT;
-import static com.huatu.tiku.course.common.RabbitConsts.*;
+import static com.huatu.tiku.common.consts.RabbitConsts.*;
 
 /**
  * @author hanchao
