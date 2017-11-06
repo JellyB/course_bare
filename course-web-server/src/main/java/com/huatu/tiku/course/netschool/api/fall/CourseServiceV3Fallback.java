@@ -21,7 +21,6 @@ import static com.huatu.tiku.course.bean.NetSchoolResponse.DEFAULT_ERROR;
 @Component
 public class CourseServiceV3Fallback implements CourseServiceV3 {
 
-
     /**
      * 添加课程缓存
      * @param params
@@ -159,6 +158,11 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
 
     @Override
     public NetSchoolResponse getHandouts(Map<String, Object> params) {
+        return DEFAULT_ERROR;
+    }
+
+    @Override
+    public NetSchoolResponse findBookList(Map<String, Object> params) {
         return DEFAULT_ERROR;
     }
 }

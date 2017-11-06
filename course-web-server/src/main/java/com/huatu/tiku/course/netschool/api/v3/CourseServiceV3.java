@@ -100,4 +100,12 @@ public interface CourseServiceV3 {
      */
     @GetMapping(value = "/v3/handouts.php")
     NetSchoolResponse getHandouts(@RequestParam Map<String,Object> params);
+
+    /**
+     * 图书列表
+     * @param params
+     * @return
+     */
+    @GetMapping(value="/v3/classSearch.php?books=1")
+    NetSchoolResponse findBookList(@RequestParam Map<String,Object> params);
 }

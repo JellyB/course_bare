@@ -63,6 +63,34 @@ public class CourseControllerV3 {
     }
 
     /**
+     * 图书列表
+     * @param categoryid
+     * @param orderid
+     * @param page
+     * @param userSession
+     * @return
+     */
+    @GetMapping("/books")
+    public Object bookList(@RequestParam(required = false,defaultValue = "1001") int categoryid,
+                        @RequestParam(required = false,defaultValue = "1") int orderid,
+                        @RequestParam int page,
+                        @RequestParam(required = false,defaultValue = "") String keywords,
+                        @RequestParam(required = false,defaultValue = "1000") int subjectid,
+                        @Token UserSession userSession) {
+        int provinceId = AreaConstants.getNetSchoolProvinceId(userSession.getArea());
+        Map<String,Object> params = HashMapBuilder.<String,Object>newBuilder()
+                .put("categoryid",categoryid)
+                .put("username",userSession.getUname())
+                .put("orderid",orderid)
+                .put("page",page)
+                .put("subjectid",subjectid)
+                .put("keywords",keywords)
+                .put("provinceid",provinceId).build();
+        NetSchoolResponse bookList = courseServiceV3.findBookList(params);
+        return ResponseUtil.build(bookList);
+    }
+
+    /**
      * 录播课程列表
      * @param categoryid
      * @param orderid
