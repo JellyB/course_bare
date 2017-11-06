@@ -140,7 +140,7 @@ public class IosBffService {
 
         //查询我的直播
         LinkedHashMap myList = getMyList(username, DEFAULT_ORDER, catgory, listType);
-        ArrayList<Map> myListResult = (ArrayList<Map>)myList.get("result");
+        List<Map> myListResult = (List<Map>)myList.get("result");
         //已经购买的图书或者课程id
         ArrayList<Integer> buyIds = new ArrayList<>();
         for (Map item : myListResult) {
@@ -148,7 +148,7 @@ public class IosBffService {
             buyIds.add(netClassId);
         }
 
-        ArrayList<Map> listResult = (ArrayList<Map>)listDataMap.get("result");
+        List<Map> listResult = (List<Map>)listDataMap.get("result");
         ArrayList<Map> newResult = new ArrayList<>();
         for (Map item : listResult) {
             Integer netClassId = Integer.valueOf(item.get("NetClassId").toString());
@@ -174,7 +174,7 @@ public class IosBffService {
      * @throws Exception
      */
     private LinkedHashMap filterData(LinkedHashMap data, int listType) throws Exception{
-        ArrayList<Map> result = (ArrayList<Map>)data.get("result");
+        List<Map> result = (List<Map>)data.get("result");
 
         ArrayList<Map> newResult = new ArrayList<>();
         for (Map item : result) {
