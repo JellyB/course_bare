@@ -157,7 +157,7 @@ public class CourseControllerV3 {
                 .put("priceid",priceid).build();
         // add by hanchao,2017-11-08
         // 为了ios审核，过一周后可以去掉
-        if(versionService.isIosAudit(userSession.getCategory(),terminal,cv)){
+        if(versionService.isIosAudit(terminal,cv)){
             params.put("test","11");
         }
         return courseBizService.getCourseListV3(params);
