@@ -11,6 +11,7 @@ import com.huatu.tiku.course.netschool.api.v3.CourseServiceV3;
 import com.huatu.tiku.course.netschool.api.v3.UserCoursesServiceV3;
 import com.huatu.tiku.course.service.CourseBizService;
 import com.huatu.tiku.course.service.CourseCollectionBizService;
+import com.huatu.tiku.course.service.VersionService;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
@@ -49,6 +50,8 @@ public class CourseControllerV3 {
     private CourseCollectionBizService courseCollectionBizService;
     @Autowired
     private EventPublisher eventPublisher;
+    @Autowired
+    private VersionService versionService;
 
     /**
      * 课程合集详情
@@ -134,6 +137,8 @@ public class CourseControllerV3 {
                            @RequestParam int page,
                            @RequestParam(required = false,defaultValue = "1000") int priceid,
                            @RequestParam(required = false,defaultValue = "") String keywords,
+                           @RequestHeader int terminal,
+                           @RequestHeader String cv,
                            @Token UserSession userSession) throws InterruptedException, ExecutionException, BizException {
         int top = subjectService.top(userSession.getSubject());
         int categoryid = 1000;
@@ -150,6 +155,11 @@ public class CourseControllerV3 {
                 .put("keywords",keywords)
                 .put("categoryid",categoryid)
                 .put("priceid",priceid).build();
+        // add by hanchao,2017-11-08
+        // 为了ios审核，过一周后可以去掉
+        if(versionService.isIosAudit(userSession.getCategory(),terminal,cv)){
+            params.put("test","11");
+        }
         return courseBizService.getCourseListV3(params);
     }
 
