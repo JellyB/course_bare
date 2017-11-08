@@ -32,4 +32,12 @@ public class VersionService {
         }
         return false;
     }
+
+    public boolean isIosAudit(int terminal,String cv){
+        if (terminal == TerminalType.IPHONE || terminal == TerminalType.IPHONE_IPAD) {
+            String iosAuditSetKey = VersionRedisKey.getIosAuditSetKey();
+            return setOperations.isMember(iosAuditSetKey, cv);
+        }
+        return false;
+    }
 }

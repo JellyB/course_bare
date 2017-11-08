@@ -26,4 +26,8 @@ public class VersionRedisKey {
     public static String getIosAuditSetKey(int catgory) {
         return "ios_audit_versions_" + catgory;
     }
+
+    public static String getIosAuditSetKey(){
+        return "ios_audit_versions";
+    }
 }
