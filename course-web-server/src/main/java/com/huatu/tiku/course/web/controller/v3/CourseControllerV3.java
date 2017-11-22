@@ -267,9 +267,11 @@ public class CourseControllerV3 {
      * @throws Exception
      */
     @RequestMapping(value = "{rid}/handouts", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, method = RequestMethod.GET)
-    public Object handout(@PathVariable int rid) throws Exception {
+    public Object handout(@PathVariable int rid,
+                          @Token UserSession userSession) throws Exception {
         final HashMap<String, Object> parameterMap = Maps.newHashMap();
         parameterMap.put("rid", rid);
+        parameterMap.put("username",userSession.getUname());
         return ResponseUtil.build(courseServiceV3.getHandouts(parameterMap),true);
     }
 
