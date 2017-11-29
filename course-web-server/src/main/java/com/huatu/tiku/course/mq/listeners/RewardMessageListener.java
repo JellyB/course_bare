@@ -79,9 +79,11 @@ public class RewardMessageListener implements ChannelAwareMessageListener{
 
             if(ResponseUtil.isSuccess(response)){
                 rewardBizService.addRewardAction(rewardActionService.get(rewardMessage.getAction()),rewardMessage.getUid(),rewardMessage.getBizId());
+                channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
+            }else{
+                throw new IllegalStateException("对方处理失败");
             }
 
-            channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
         } catch(IOException | ClassCastException | IllegalArgumentException e){
             //转换异常丢弃消息
             log.error("convert error,message is wrong ? {},{}",message.getMessageProperties(),String.valueOf(message.getBody()),e);
