@@ -3,6 +3,7 @@ package com.huatu.tiku.course.web.controller.v3;
 import com.google.common.collect.Maps;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.common.utils.reflect.ClassUtils;
+import com.huatu.tiku.course.bean.HighEndCsFormDTO;
 import com.huatu.tiku.course.bean.One2OneFormDTO;
 import com.huatu.tiku.course.netschool.api.v3.UserCoursesServiceV3;
 import com.huatu.tiku.course.util.RequestUtil;
@@ -125,6 +126,25 @@ public class UserCourseControllerV3 {
                 .put("rid",courseId)
                 .buildUnsafe();
         return ResponseUtil.build(userCoursesServiceV3.get1V1Table(RequestUtil.encrypt(params)));
+    }
+
+
+    @GetMapping("/highend")
+    public Object getHighEndInfo(@Token UserSession userSession){
+        Map<String,Object> params = HashMapBuilder.newBuilder()
+                .put("username",userSession.getUname())
+                .put("action","getinfo")
+                .buildUnsafe();
+        return ResponseUtil.build(userCoursesServiceV3.getHighEndInfo(RequestUtil.encrypt(params)));
+    }
+
+    @PostMapping("/highend")
+    public Object setHighEndInfo(@RequestBody HighEndCsFormDTO highEndCsFormDTO,
+                                 @Token UserSession userSession){
+        Map<String,Object> params = ClassUtils.getBeanProperties(highEndCsFormDTO);
+        params.put("action","saveinfo");
+        params.put("username",userSession.getUname());
+        return ResponseUtil.build(userCoursesServiceV3.setHighEndInfo(RequestUtil.encryptParams(params)));
     }
 
 }

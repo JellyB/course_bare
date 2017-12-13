@@ -67,4 +67,14 @@ public class UserCourseServiceV3Fallback implements UserCoursesServiceV3 {
     public NetSchoolResponse get1V1Table(String p) {
         return NetSchoolResponse.DEFAULT_ERROR;
     }
+
+    @Override
+    public NetSchoolResponse getHighEndInfo(String p) {
+        return NetSchoolResponse.DEFAULT_ERROR;
+    }
+
+    @Override
+    public NetSchoolResponse setHighEndInfo(Map<String, Object> params) {
+        return NetSchoolResponse.DEFAULT_ERROR;
+    }
 }

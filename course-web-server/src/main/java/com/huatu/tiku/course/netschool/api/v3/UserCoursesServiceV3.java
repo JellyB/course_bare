@@ -95,4 +95,16 @@ public interface UserCoursesServiceV3 {
      */
     @GetMapping("/v3/oneToOne.php")
     NetSchoolResponse get1V1Table(@RequestParam("p")String p);
+
+    /**
+     * 获取高端面试课信息
+     */
+    @GetMapping("/v3/order/gdmsinfo.php")
+    NetSchoolResponse getHighEndInfo(@RequestParam("p")String p);
+
+    /**
+     * b奥村高端面试课信息
+     */
+    @PostMapping(value = "/v3/order/gdmsinfo.php",consumes = MediaType.APPLICATION_FORM_URLENCODED_UTF8_VALUE)
+    NetSchoolResponse setHighEndInfo(Map<String,Object> params);
 }
