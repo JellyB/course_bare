@@ -11,7 +11,7 @@ import lombok.Data;
 public class HighEndCsFormDTO {
     @JsonProperty("sn")
     private String SN;
-    @JsonProperty("admissionStudent")
+    @JsonProperty("admission_student")
     private String admission_student;
     private String identifyID;
     private String nickName;
