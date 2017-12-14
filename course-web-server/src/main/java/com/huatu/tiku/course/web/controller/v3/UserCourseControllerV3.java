@@ -144,7 +144,7 @@ public class UserCourseControllerV3 {
         Map<String,Object> params = ClassUtils.getBeanProperties(highEndCsFormDTO);
         params.put("action","saveinfo");
         params.put("username",userSession.getUname());
-        return ResponseUtil.build(userCoursesServiceV3.setHighEndInfo(RequestUtil.encryptParams(params)));
+        return ResponseUtil.build(userCoursesServiceV3.setHighEndInfo(RequestUtil.encryptParams(params)),true);
     }
 
 }
