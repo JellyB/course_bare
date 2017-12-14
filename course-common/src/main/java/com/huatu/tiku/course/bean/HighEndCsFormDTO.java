@@ -9,7 +9,7 @@ import lombok.Data;
  */
 @Data
 public class HighEndCsFormDTO {
-    @JsonProperty("sn")
+    @JsonProperty("SN")
     private String SN;
     @JsonProperty("admission_student")
     private String admission_student;
