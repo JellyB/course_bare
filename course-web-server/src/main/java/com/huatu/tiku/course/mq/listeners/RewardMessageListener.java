@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.mq.listeners;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Sets;
 import com.huatu.common.utils.encrypt.SignUtil;
 import com.huatu.common.utils.reflect.BeanUtil;
 import com.huatu.tiku.common.bean.reward.RewardMessage;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 处理金币任务消息
@@ -44,6 +46,8 @@ public class RewardMessageListener implements ChannelAwareMessageListener{
     @Autowired
     private GoldChargeService goldChargeService;
 
+    public static final Set<Integer> excludeUser = Sets.newHashSet(947136);
+
     @Override
     public void onMessage(Message message, Channel channel) throws Exception{
         try {
@@ -54,6 +58,10 @@ public class RewardMessageListener implements ChannelAwareMessageListener{
             //消息合法性检查
             if(rewardMessage == null || StringUtils.isBlank(rewardMessage.getAction())){
                 throw new IllegalArgumentException("get a reward message with action empty," + rewardMessage);
+            }
+
+            if(filter(rewardMessage)){
+                return;
             }
 
             //如果客户端未设置成长值或者金币，根据配置自动设置
@@ -97,5 +105,12 @@ public class RewardMessageListener implements ChannelAwareMessageListener{
                 channel.basicNack(message.getMessageProperties().getDeliveryTag(),false,true);
             }
         }
+    }
+
+    private boolean filter(RewardMessage rewardMessage){
+        if(excludeUser.contains(rewardMessage.getUid())){
+            return true;
+        }
+        return false;
     }
 }
