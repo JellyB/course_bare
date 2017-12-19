@@ -196,8 +196,7 @@ public class CourseControllerV1 {
         int catgory = userSession.getCategory();
 
         if (versionService.isIosAudit(catgory, terminal, cv)) {
-            ErrorResult errorResult = ErrorResult.create(Result.SUCCESS_CODE, "数据为空");
-            errorResult.setData(ResponseUtil.MOCK_PAGE_RESPONSE);
+            ErrorResult errorResult = ErrorResult.create(Result.SUCCESS_CODE, "数据为空",ResponseUtil.MOCK_PAGE_RESPONSE);
             throw new BizException(errorResult);
         }
 

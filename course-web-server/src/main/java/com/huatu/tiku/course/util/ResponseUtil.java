@@ -44,10 +44,7 @@ public class ResponseUtil {
     public static Object build (NetSchoolResponse netSchoolResponse,boolean needDecrypt) {
         Object data = null;
         if (isFailure(netSchoolResponse)) {
-            final ErrorResult errorResult = ErrorResult.create(netSchoolResponse.getCode(), netSchoolResponse.getMsg());
-            if (netSchoolResponse.getData() != null) {
-                errorResult.setData(netSchoolResponse.getData());
-            }
+            final ErrorResult errorResult = ErrorResult.create(netSchoolResponse.getCode(), netSchoolResponse.getMsg(),netSchoolResponse.getData());
             throw new BizException(errorResult);
         } else {
             //只取data部分
