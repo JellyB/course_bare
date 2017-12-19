@@ -5,6 +5,7 @@ import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.common.utils.reflect.ClassUtils;
 import com.huatu.tiku.course.bean.HighEndCsFormDTO;
 import com.huatu.tiku.course.bean.One2OneFormDTO;
+import com.huatu.tiku.course.consts.NetschoolTerminalType;
 import com.huatu.tiku.course.netschool.api.v3.UserCoursesServiceV3;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
@@ -145,6 +146,17 @@ public class UserCourseControllerV3 {
         params.put("action","saveinfo");
         params.put("username",userSession.getUname());
         return ResponseUtil.build(userCoursesServiceV3.setHighEndInfo(RequestUtil.encryptParams(params)),true);
+    }
+
+    @PostMapping("/highend/receive")
+    public Object receiveHighEndCourse(@RequestHeader int terminal,
+                                 @Token UserSession userSession){
+        int netschoolTerminal = NetschoolTerminalType.transform(terminal);
+        Map<String,Object> params = HashMapBuilder.newBuilder()
+                .put("username",userSession.getUname())
+                .put("source",netschoolTerminal)
+                .buildUnsafe();
+        return ResponseUtil.build(userCoursesServiceV3.highendRecieve(RequestUtil.encrypt(params)));
     }
 
 }

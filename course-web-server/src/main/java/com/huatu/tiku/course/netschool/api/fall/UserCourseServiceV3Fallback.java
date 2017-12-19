@@ -77,4 +77,9 @@ public class UserCourseServiceV3Fallback implements UserCoursesServiceV3 {
     public NetSchoolResponse setHighEndInfo(Map<String, Object> params) {
         return NetSchoolResponse.DEFAULT_ERROR;
     }
+
+    @Override
+    public NetSchoolResponse highendRecieve(String p) {
+        return NetSchoolResponse.DEFAULT_ERROR;
+    }
 }

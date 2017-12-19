@@ -107,4 +107,10 @@ public interface UserCoursesServiceV3 {
      */
     @PostMapping(value = "/v3/order/gdmsinfo.php",consumes = MediaType.APPLICATION_FORM_URLENCODED_UTF8_VALUE)
     NetSchoolResponse setHighEndInfo(Map<String,Object> params);
+
+    /**
+     * 高端面试课赠送
+     */
+    @GetMapping(value = "/v3/gdmsZengsong.php")
+    NetSchoolResponse highendRecieve(@RequestParam("p")String p);
 }
