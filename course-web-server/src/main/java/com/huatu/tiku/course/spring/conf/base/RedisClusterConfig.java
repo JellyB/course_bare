@@ -61,7 +61,7 @@ public class RedisClusterConfig {
         RedisTemplate redisTemplate = new RedisTemplate();
         redisTemplate.setConnectionFactory(jedisConnectionFactory);
         redisTemplate.setKeySerializer(stringRedisKeySerializer);
-        redisTemplate.setHashKeySerializer(stringRedisKeySerializer);
+        redisTemplate.setHashKeySerializer(new StringRedisKeySerializer());
         redisTemplate.setDefaultSerializer(genericJackson2JsonRedisSerializer);
         return redisTemplate;
     }

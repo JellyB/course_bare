@@ -211,7 +211,7 @@ public class CourseAsyncService {
      * @return 会有null情况，需判断
      */
     @Cached(name = "课程详情v3",
-            key = "T(com.huatu.tiku.course.util.CourseCacheKey).getCourseDetail(#rid)",
+            key = "T(com.huatu.tiku.course.util.CourseCacheKey).courseDetailV3(#rid)",
             params = {@Cached.Param(name = "课程ID", value = "rid", type = Integer.class)})
     @Degrade(name = "课程详情v3", key = "courseDetailV3")
     @Async
