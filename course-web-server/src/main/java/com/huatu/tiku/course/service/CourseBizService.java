@@ -421,7 +421,4 @@ public class CourseBizService {
         }
     }
 
-    public static void main(String[] args){
-
-    }
 }
