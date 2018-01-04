@@ -355,9 +355,6 @@ public class CourseBizService {
 
     @Degrade(key = "courseHtml",name="课程详情HTML")
     public String getCourseHtml(int rid){
-        if(promoteBizService.isPromoteOn()){
-            return getCourseHtmlDegrade(rid);
-        }
         String data = courseServiceV3.getCourseHtml(rid);
         courseServiceV3Fallback.setCourseH5(rid,data);
         return data;

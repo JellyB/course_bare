@@ -150,6 +150,10 @@ public class PromoteBizService implements ConfigSubscriber{
         return true;
     }
 
+    /**
+     * 判断是否在促销中
+     * @return
+     */
     public boolean isPromoteOn(){
         //存在促销产品和促销套餐课，则认为促销开关开启，平时请将此项配置清空
         return (CollectionUtils.isNotEmpty(promoteCourseIds) || CollectionUtils.isNotEmpty(promoteCollections)) && !initializing;

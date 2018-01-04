@@ -62,10 +62,6 @@ public class CourseAsyncService {
     @Degrade(key = "userBuy", name = "用户已购课程")
     @Deprecated
     public ListenableFuture<Set<Integer>> getUserBuy(String username) {
-        //促销开始，直接走降级方法
-        if (promoteBizService.isPromoteOn()) {
-            return getUserBuyDegrade(username);
-        }
         Map<String, Object> params = Maps.newHashMapWithExpectedSize(1);
         params.put("username", username);
         //默认返回，list，里面包含了字符串的产品id
@@ -117,10 +113,6 @@ public class CourseAsyncService {
     @Async
     @Degrade(key = "courseLimit", name = "课程已购数量")
     public ListenableFuture<Map<Integer, Integer>> getCourseLimit(int courseId) {
-
-        if (promoteBizService.isPromoteOn()) {
-            return getCourseLimitDegrade(courseId);
-        }
 
         Map<String, Object> params = Maps.newHashMapWithExpectedSize(2);
         params.put("rid", courseId);
@@ -216,10 +208,6 @@ public class CourseAsyncService {
     @Degrade(name = "课程详情v3", key = "courseDetailV3")
     @Async
     public ListenableFuture<CourseDetailV3DTO> getCourseDetailV3(int courseId) {
-
-        if(promoteBizService.isPromoteOn()){
-            return getCourseDetailV3Degrade(courseId);
-        }
 
         String cacheKey = CourseCacheKey.courseDetailV3(courseId);
         CourseDetailV3DTO result = null;

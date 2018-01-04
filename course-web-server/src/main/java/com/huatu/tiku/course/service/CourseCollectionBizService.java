@@ -24,9 +24,6 @@ public class CourseCollectionBizService {
     @Degrade(key = "collectionCourse",name = "课程合集")
     public NetSchoolResponse getCollectionCourse(String shorttitle,String uname,int page){
         //如果促销状态开启，默认直接降级
-        if (promoteBizService.isPromoteOn()) {
-            return getCollectionCourseDegrade(shorttitle,uname,page);
-        }
         NetSchoolResponse collectionDetail = courseServiceV3.getCollectionDetail(shorttitle, uname, page);
         courseServiceV3Fallback.setCollectionDetail(shorttitle,page,collectionDetail);
         return collectionDetail;

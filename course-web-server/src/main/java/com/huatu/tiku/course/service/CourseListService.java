@@ -49,10 +49,6 @@ public class CourseListService {
     @Degrade(name = "课程列表v3", key = "courseListV3")
     public CourseListV3DTO getCourseListV3(Map<String, Object> params) {
 
-        if (promoteBizService.isPromoteOn()) {
-            return getCourseListV3Degrade(params);
-        }
-
         params.remove("username");
         String cacheKey = CourseCacheKey.courseListV3(com.huatu.common.utils.web.RequestUtil.getParamSign(params));
         CourseListV3DTO result = (CourseListV3DTO) valueOperations.get(cacheKey);
