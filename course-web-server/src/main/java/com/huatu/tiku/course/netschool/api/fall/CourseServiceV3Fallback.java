@@ -63,6 +63,13 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
         }
     }
 
+    public void setTimetable(int rid,NetSchoolResponse response){
+        String key = "_mock_course_timetable$"+ rid;
+        if(ResponseUtil.isSuccess(response)){
+            FallbackCacheHolder.put(key,response);
+        }
+    }
+
 
     //----------------------------------------------------------------
 
@@ -153,7 +160,13 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
 
     @Override
     public NetSchoolResponse findTimetable(int rid) {
-        return DEFAULT_ERROR;
+        String key = "_mock_course_timetable$"+ rid;
+        NetSchoolResponse response = FallbackCacheHolder.get(key);
+        if(response == null){
+            return DEFAULT_ERROR;
+        }else{
+            return response;
+        }
     }
 
     @Override

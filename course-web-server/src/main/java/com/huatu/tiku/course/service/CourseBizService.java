@@ -8,10 +8,7 @@ import com.huatu.common.utils.date.DateUtil;
 import com.huatu.common.utils.date.TimeMark;
 import com.huatu.common.utils.date.TimestampUtil;
 import com.huatu.springboot.degrade.core.Degrade;
-import com.huatu.tiku.course.bean.CourseDetailV2DTO;
-import com.huatu.tiku.course.bean.CourseDetailV3DTO;
-import com.huatu.tiku.course.bean.CourseListV2DTO;
-import com.huatu.tiku.course.bean.CourseListV3DTO;
+import com.huatu.tiku.course.bean.*;
 import com.huatu.tiku.course.netschool.api.fall.CourseServiceV3Fallback;
 import com.huatu.tiku.course.netschool.api.v3.CourseServiceV3;
 import com.huatu.tiku.course.util.ResponseUtil;
@@ -378,6 +375,31 @@ public class CourseBizService {
         return data;
     }
 
+    @Degrade(key = "courseTimetable",name="课程大纲")
+    public NetSchoolResponse getCourseTimetable(int rid){
+        NetSchoolResponse timetable = courseServiceV3.findTimetable(rid);
+        courseServiceV3Fallback.setTimetable(rid,timetable);
+        return timetable;
+    }
+
+    public NetSchoolResponse getCourseTimetableDegrade(int rid){
+        NetSchoolResponse response = courseServiceV3Fallback.findTimetable(rid);
+        if(response.getCode() == NetSchoolResponse.DEFAULT_ERROR.getCode()){
+            String key = "_mock_course_timetable$"+ rid;
+            if (ConcurrentBizLock.tryLock(key)) {
+                try {
+                    response = courseServiceV3.findTimetable(rid);
+                    courseServiceV3Fallback.setCourseDetail(rid, response);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    ConcurrentBizLock.releaseLock(key);
+                }
+            }
+        }
+        return response;
+    }
+
 
     @Slf4j
     private static class RequestCountDownFutureCallback implements ListenableFutureCallback {
@@ -399,5 +421,7 @@ public class CourseBizService {
         }
     }
 
+    public static void main(String[] args){
 
+    }
 }
