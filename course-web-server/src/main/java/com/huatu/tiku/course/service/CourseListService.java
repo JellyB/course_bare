@@ -123,6 +123,10 @@ public class CourseListService {
                 Map params = requestQueue.get(key);
                 NetSchoolResponse response = courseServiceV3.findLiveList(params);
                 CourseListV3DTO result = ResponseUtil.build(response, CourseListV3DTO.class, false);
+                // 缓存时间戳
+                if (result != null) {
+                    result.setCacheTimestamp(System.currentTimeMillis());
+                }
                 //非fallback获取到，设置到fallback缓存
                 if (!result.isCache()) {
                     courseServiceV3Fallback.setLiveList(params, response);
