@@ -29,6 +29,10 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
     public void setLiveList(Map<String,Object> params,NetSchoolResponse response){
         String key = "_mock_live_list$"+ RequestUtil.getParamSign(params);
         if(ResponseUtil.isSuccess(response)){
+            if(response.getData() instanceof Map){
+                Map result = (Map) response.getData();
+                result.put("cacheTimestamp",System.currentTimeMillis());
+            }
             FallbackCacheHolder.put(key,response);
         }
     }
