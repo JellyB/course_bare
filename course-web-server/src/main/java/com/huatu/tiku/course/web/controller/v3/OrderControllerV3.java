@@ -107,7 +107,7 @@ public class OrderControllerV3 {
         params.put("FreeCardID",FreeCardID);
         params.put("fromuser",fromuser);
         params.put("rid",rid);
-        params.put("source",(terminal == 4 || terminal == 5)?'I':'A');//不是ios，就传android
+        params.put("source",(terminal == 2 || terminal == 5)?'I':'A');//不是ios，就传android
         params.put("tjCode",tjCode);
         params.put("username",userSession.getUname());
 
