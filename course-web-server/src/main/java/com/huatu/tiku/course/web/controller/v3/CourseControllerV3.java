@@ -18,7 +18,7 @@ import com.huatu.tiku.springboot.basic.reward.RewardAction;
 import com.huatu.tiku.springboot.basic.reward.event.RewardActionEvent;
 import com.huatu.tiku.springboot.basic.subject.SubjectEnum;
 import com.huatu.tiku.springboot.basic.subject.SubjectService;
-import com.huatu.tiku.springboot.users.bean.UserSession;
+import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.springboot.users.support.Token;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;

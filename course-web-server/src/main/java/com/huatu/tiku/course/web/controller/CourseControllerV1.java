@@ -15,7 +15,7 @@ import com.huatu.tiku.course.service.CourseBizService;
 import com.huatu.tiku.course.service.VersionService;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
-import com.huatu.tiku.springboot.users.bean.UserSession;
+import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.springboot.users.support.Token;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;

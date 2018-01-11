@@ -14,7 +14,7 @@ import com.huatu.tiku.course.netschool.api.LogisticsServiceV1;
 import com.huatu.tiku.course.netschool.api.OtherServiceV1;
 import com.huatu.tiku.course.util.Crypt3Des;
 import com.huatu.tiku.course.util.RequestUtil;
-import com.huatu.tiku.springboot.users.bean.UserSession;
+import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.springboot.users.support.Token;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;

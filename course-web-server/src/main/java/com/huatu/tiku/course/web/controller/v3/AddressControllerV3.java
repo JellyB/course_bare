@@ -6,7 +6,7 @@ import com.huatu.tiku.course.bean.AddressFormDTO;
 import com.huatu.tiku.course.netschool.api.v3.AddressServiceV3;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
-import com.huatu.tiku.springboot.users.bean.UserSession;
+import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.springboot.users.support.Token;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;

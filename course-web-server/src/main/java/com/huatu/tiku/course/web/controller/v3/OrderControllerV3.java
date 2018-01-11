@@ -10,7 +10,7 @@ import com.huatu.tiku.course.netschool.api.v3.OrderServiceV3;
 import com.huatu.tiku.course.netschool.api.v3.PromoteCoreServiceV3;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
-import com.huatu.tiku.springboot.users.bean.UserSession;
+import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.springboot.users.support.Token;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

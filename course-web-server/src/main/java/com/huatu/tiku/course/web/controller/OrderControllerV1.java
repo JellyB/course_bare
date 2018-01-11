@@ -15,7 +15,7 @@ import com.huatu.tiku.course.netschool.api.OtherServiceV1;
 import com.huatu.tiku.course.service.VersionService;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
-import com.huatu.tiku.springboot.users.bean.UserSession;
+import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
