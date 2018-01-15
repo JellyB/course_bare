@@ -12,6 +12,7 @@ import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -60,7 +61,7 @@ public class RabbitMqConfig {
 
     @Bean
     public SimpleMessageListenerContainer rewardMessageListenerContainer(@Autowired ConnectionFactory connectionFactory,
-                                                                         @Autowired(required = false) ThreadPoolTaskExecutor threadPoolTaskExecutor,
+                                                                         @Autowired(required = false) @Qualifier("coreThreadPool") ThreadPoolTaskExecutor threadPoolTaskExecutor,
                                                                          @Autowired RewardMessageListener rewardMessageListener,
                                                                          @Autowired AmqpAdmin amqpAdmin){
         SimpleMessageListenerContainer manualRabbitContainer = new SimpleMessageListenerContainer();

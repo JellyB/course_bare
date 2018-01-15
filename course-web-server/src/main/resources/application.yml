@@ -105,6 +105,10 @@ htonline:
     basePackage: com.huatu.tiku
     prefix:
       redis: "${spring.application.name}"
+tiku:
+  report:
+    web:
+      async: true
 
 
 # 不同环境的不同配置，也可以放在apollo，除了开发使用的特殊debug等配置，一般不建议放在这里

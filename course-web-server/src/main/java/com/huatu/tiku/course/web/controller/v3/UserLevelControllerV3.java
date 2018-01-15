@@ -1,11 +1,13 @@
 package com.huatu.tiku.course.web.controller.v3;
 
 import com.huatu.common.utils.collection.HashMapBuilder;
+import com.huatu.springboot.report.annotation.WebReport;
+import com.huatu.tiku.common.bean.user.UserSession;
+import com.huatu.tiku.course.handler.extra.LevelExtraDataHandler;
 import com.huatu.tiku.course.netschool.api.v3.UserLevelServiceV3;
 import com.huatu.tiku.course.service.RewardBizService;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
-import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.springboot.users.support.Token;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,6 +44,7 @@ public class UserLevelControllerV3 {
      * @return
      */
     @RequestMapping("/level")
+    @WebReport(value = "用户等级" , extraHandler = LevelExtraDataHandler.class)
     public Object getUserLevel(@Token UserSession userSession){
         Map<String,Object> params = HashMapBuilder.newBuilder()
                 .put("username",userSession.getUname())
@@ -49,4 +52,6 @@ public class UserLevelControllerV3 {
                 .buildUnsafe();
         return ResponseUtil.build(userLevelServiceV3.getUserLevel(RequestUtil.encryptParams(params)),true);
     }
+
+
 }
