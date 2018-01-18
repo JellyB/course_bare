@@ -48,7 +48,6 @@ spring:
   freemarker:
     preferFileSystemAccess: true
     cache: true
-    prefix: classpath:/templates
     suffix: .ftl
     content-type: text/html; charset=UTF-8
     # settings:  # 这是一个map,注入到factory的settings中
