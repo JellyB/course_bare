@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.web.controller;
 
+import com.huatu.common.exception.UnauthorizedException;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.springboot.report.annotation.WebReport;
 import com.huatu.springboot.report.product.ExtraDataHandler;
@@ -28,6 +29,10 @@ public class ForTestController {
         return HashMapBuilder.newBuilder().put("llll","llsdfdfd").buildUnsafe();
     }
 
+    @GetMapping("/exm")
+    public void exMessage(){
+        throw new UnauthorizedException("测试异常");
+    }
 
     @Component
     public static class TestReportExtraHandler implements ExtraDataHandler {
