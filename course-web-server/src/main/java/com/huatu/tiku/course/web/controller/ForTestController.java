@@ -6,6 +6,8 @@ import com.huatu.springboot.report.annotation.WebReport;
 import com.huatu.springboot.report.product.ExtraDataHandler;
 import com.huatu.tiku.common.bean.report.ReportMessage;
 import com.huatu.tiku.common.bean.report.WebReportMessage;
+import com.huatu.tiku.common.bean.user.UserSession;
+import com.huatu.tiku.springboot.users.support.Token;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +27,7 @@ public class ForTestController {
 
     @WebReport(value = "test",extraHandler = TestReportExtraHandler.class)
     @RequestMapping("/report")
-    public Object report(){
+    public Object report(@Token UserSession session){
         return HashMapBuilder.newBuilder().put("llll","llsdfdfd").buildUnsafe();
     }
 
