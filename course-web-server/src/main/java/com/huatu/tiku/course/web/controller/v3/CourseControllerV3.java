@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.web.controller.v3;
 
 import com.google.common.collect.Maps;
+import com.google.common.primitives.Ints;
 import com.huatu.common.exception.BizException;
 import com.huatu.common.spring.event.EventPublisher;
 import com.huatu.common.utils.collection.HashMapBuilder;
@@ -20,12 +21,14 @@ import com.huatu.tiku.springboot.basic.subject.SubjectEnum;
 import com.huatu.tiku.springboot.basic.subject.SubjectService;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.springboot.users.support.Token;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -137,17 +140,22 @@ public class CourseControllerV3 {
                            @RequestParam int page,
                            @RequestParam(required = false,defaultValue = "1000") int priceid,
                            @RequestParam(required = false,defaultValue = "") String keywords,
-                           @RequestHeader int terminal,
-                           @RequestHeader String cv,
+                           @RequestParam(required = false,defaultValue = "") String category,//老版本的从session中映射，新版本的需要客户端自己传过来，直接做适配即可
                            @Token UserSession userSession) throws InterruptedException, ExecutionException, BizException {
         int top = subjectService.top(userSession.getSubject());
         int categoryid = 1000;
-        SubjectEnum[] enums = SubjectEnum.values();
-        for (SubjectEnum subjectEnum : enums) {
-            if(subjectEnum.code() == top){
-                categoryid = subjectEnum.categoryid();
-                break;
+        if(StringUtils.isBlank(category) || !StringUtils.isNumeric(category)){
+            //老版本未传递category
+            SubjectEnum[] enums = SubjectEnum.values();
+            for (SubjectEnum subjectEnum : enums) {
+                if(subjectEnum.code() == top){
+                    categoryid = subjectEnum.categoryid();
+                    break;
+                }
             }
+        }else{
+            //新版本直接解析客户端传递过来的值
+            categoryid = Optional.ofNullable(Ints.tryParse(category)).orElse(1000);
         }
         Map<String,Object> params = HashMapBuilder.<String,Object>newBuilder()
                 .put("orderid",orderid)
@@ -157,9 +165,9 @@ public class CourseControllerV3 {
                 .put("priceid",priceid).build();
         // add by hanchao,2017-11-08
         // 为了ios审核，过一周后可以去掉
-        if(versionService.isIosAudit(terminal,cv)){
-            params.put("test","11");
-        }
+//        if(versionService.isIosAudit(terminal,cv)){
+//            params.put("test","11");
+//        }
         return courseBizService.getCourseListV3(params);
     }
 
@@ -336,4 +344,5 @@ public class CourseControllerV3 {
         params.put("rid", courseId);
         return ResponseUtil.build(userCoursesServiceV3.getMyPackCourseDetail(RequestUtil.encryptJsonParams(params)));
     }
+
 }

@@ -24,4 +24,5 @@ public interface CourseSettingServiceV3 {
      */
     @GetMapping("/v3/classSearch.php?do=list")
     NetSchoolResponse getRecordingSettings();
+
 }
