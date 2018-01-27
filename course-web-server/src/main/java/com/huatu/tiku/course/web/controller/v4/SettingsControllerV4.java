@@ -41,4 +41,29 @@ public class SettingsControllerV4 {
                                   String categories){
         return ResponseUtil.build(courseSettingServiceV4.setLiveSettings(userSession.getUname(),categories));
     }
+
+    /**
+     * 获取直播查询配置
+     * @param userSession
+     * @return
+     */
+    @GetMapping("/recording/query/_settings")
+    public Object getRecordingSettings(@Token UserSession userSession) {
+        return ResponseUtil.build(courseSettingServiceV4.getRecordingSettings(userSession.getUname()));
+    }
+
+    /**
+     * 保存直播配置
+     * @param userSession
+     * @param categories
+     * @return
+     */
+    @PostMapping("/recording/query/_settings")
+    public Object setRecordingSettings(@Token UserSession userSession,
+                                  String categories){
+        return ResponseUtil.build(courseSettingServiceV4.setRecordingSettings(userSession.getUname(),categories));
+    }
+
+
+
 }

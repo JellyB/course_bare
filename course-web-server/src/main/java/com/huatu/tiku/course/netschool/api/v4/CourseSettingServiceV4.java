@@ -27,4 +27,18 @@ public interface CourseSettingServiceV4 {
     @PostMapping("/v3/collectionClassSearch.php?do=set")
     NetSchoolResponse setLiveSettings(@RequestParam("userName") String userName,@RequestParam("setList") String categories);
 
+    /**
+     * 获取录播筛选条件
+     * @return
+     */
+    @GetMapping("/v3/classSearch.php?do=cateList")
+    NetSchoolResponse getRecordingSettings(@RequestParam("userName") String userName);
+
+
+    /**
+     * 设置录播筛选条件
+     * @return
+     */
+    @GetMapping("/v3/classSearch.php?do=set")
+    NetSchoolResponse setRecordingSettings(@RequestParam("userName") String userName,@RequestParam("setList") String categories);
 }
