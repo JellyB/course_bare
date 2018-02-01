@@ -44,7 +44,26 @@ public class CourseBizService {
     @Autowired
     private CourseServiceV3Fallback courseServiceV3Fallback;
     @Autowired
+    private CourseCollectionBizService courseCollectionBizService;
+    @Autowired
     private PromoteBizService promoteBizService;
+
+
+    /**
+     * 获取直播合集列表，类似直播外层列表
+     * @param shorttitle
+     * @param uname
+     * @param page
+     * @return
+     */
+    public CourseListV3DTO getCollectionList(String shorttitle,String uname,int page){
+
+        CourseListV3DTO courseList = courseCollectionBizService.getCollectionCourse(shorttitle,uname,page);
+
+        decorateLiveList(courseList);
+
+        return courseList;
+    }
 
 
     /**
@@ -61,61 +80,7 @@ public class CourseBizService {
         CourseListV3DTO courseList = courseListService.getCourseListV3(params);
         log.info(">>>>>>>>> courseListV3: concurent request complete,used {} mills,total cost {} mills...", timeMark.mills(), timeMark.totalMills());
 
-        if (courseList == null) {
-            throw new BizException(ResponseUtil.ERROR_PAGE_RESPONSE);
-        }
-
-        //包装数据
-        long timestamp = courseList.getCacheTimestamp();
-        if (CollectionUtils.isNotEmpty(courseList.getResult())) {
-            long current = System.currentTimeMillis();
-            for (Map item : courseList.getResult()) {
-                if (courseList.isCache()) {
-                    //产生异常直接放弃，用默认的
-                    try {
-                        int passed = (int) ((current - timestamp) / 1000);
-                        do {
-                            if (!item.containsKey(CourseListV3DTO.KEY_SALE_START)) {
-                                break;
-                            }
-                            String tmpStr = String.valueOf(item.get(CourseListV3DTO.KEY_SALE_START));
-                            if (StringUtils.isBlank(tmpStr)) {
-                                break;
-                            }
-                            Integer saleStart = Ints.tryParse(tmpStr);
-                            if (saleStart == null || saleStart <= 0) {
-                                break;
-                            }
-                            saleStart = (saleStart.compareTo(passed) > 0) ? (saleStart - passed) : 0;
-                            item.put(CourseListV3DTO.KEY_SALE_START, String.valueOf(saleStart));
-                        } while (false);
-
-                        do {
-                            if (!item.containsKey(CourseListV3DTO.KEY_SALE_END)) {
-                                break;
-                            }
-                            String tmpStr = String.valueOf(item.get(CourseListV3DTO.KEY_SALE_END));
-                            if (StringUtils.isBlank(tmpStr)) {
-                                break;
-                            }
-                            Integer saleEnd = Ints.tryParse(tmpStr);
-                            if (saleEnd == null || saleEnd <= 0) {
-                                break;
-                            }
-                            saleEnd = (saleEnd.compareTo(passed) > 0) ? (saleEnd - passed) : 0;
-                            item.put(CourseListV3DTO.KEY_SALE_END, String.valueOf(saleEnd));
-                        } while (false);
-
-                    } catch (Exception e) {
-                        log.error("try to decorate course list error...", e);
-                    }
-                }
-
-                if ("0".equals(String.valueOf(item.get("isCollect"))) && item.containsKey("rid")) {
-                    item.put("isBuy", 0);
-                }
-            }
-        }
+        decorateLiveList(courseList);
 
         log.info(">>>>>>>>> courseListV3: build response data complete,used {} mills,total cost {} mills...", timeMark.mills(), timeMark.totalMills());
         return courseList;
@@ -418,6 +383,64 @@ public class CourseBizService {
         @Override
         public void onSuccess(Object result) {
             countDownLatch.countDown();
+        }
+    }
+
+
+    private void decorateLiveList(CourseListV3DTO courseList) {
+        if (courseList == null) {
+            throw new BizException(ResponseUtil.ERROR_PAGE_RESPONSE);
+        }
+
+        //包装数据
+        long timestamp = courseList.getCacheTimestamp();
+        if (CollectionUtils.isNotEmpty(courseList.getResult())) {
+            long current = System.currentTimeMillis();
+            for (Map item : courseList.getResult()) {
+                if (courseList.isCache()) {
+                    try {
+                        int passed = (int) ((current - timestamp) / 1000);
+                        do {
+                            if (!item.containsKey(CourseListV3DTO.KEY_SALE_START)) {
+                                break;
+                            }
+                            String tmpStr = String.valueOf(item.get(CourseListV3DTO.KEY_SALE_START));
+                            if (StringUtils.isBlank(tmpStr)) {
+                                break;
+                            }
+                            Integer saleStart = Ints.tryParse(tmpStr);
+                            if (saleStart == null || saleStart <= 0) {
+                                break;
+                            }
+                            saleStart = (saleStart.compareTo(passed) > 0) ? (saleStart - passed) : 0;
+                            item.put(CourseListV3DTO.KEY_SALE_START, String.valueOf(saleStart));
+                        } while (false);
+
+                        do {
+                            if (!item.containsKey(CourseListV3DTO.KEY_SALE_END)) {
+                                break;
+                            }
+                            String tmpStr = String.valueOf(item.get(CourseListV3DTO.KEY_SALE_END));
+                            if (StringUtils.isBlank(tmpStr)) {
+                                break;
+                            }
+                            Integer saleEnd = Ints.tryParse(tmpStr);
+                            if (saleEnd == null || saleEnd <= 0) {
+                                break;
+                            }
+                            saleEnd = (saleEnd.compareTo(passed) > 0) ? (saleEnd - passed) : 0;
+                            item.put(CourseListV3DTO.KEY_SALE_END, String.valueOf(saleEnd));
+                        } while (false);
+
+                    } catch (Exception e) {
+                        log.error("try to decorate course list error...", e);
+                    }
+                }
+
+                if ("0".equals(String.valueOf(item.get("isCollect"))) && item.containsKey("rid")) {
+                    item.put("isBuy", 0);
+                }
+            }
         }
     }
 

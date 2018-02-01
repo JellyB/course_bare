@@ -62,7 +62,10 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
     public void setCollectionDetail(String shortTitle, int page,NetSchoolResponse response){
         String key = "_mock_collection_detail$"+ shortTitle+"$"+page;
         if(ResponseUtil.isSuccess(response)){
-            response.getData();
+            if(response.getData() instanceof Map){
+                Map result = (Map) response.getData();
+                result.put("cacheTimestamp",System.currentTimeMillis());
+            }
             FallbackCacheHolder.put(key,response);
         }
     }
