@@ -4,9 +4,9 @@ server:
   context-path: /c
   port: 10917
   compression:
-      enabled: true
-      mime-types: application/json,application/xml,text/html,text/xml,text/plain
-      min-response-size: 2048
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+    min-response-size: 2048
   undertow:
     io-threads: 8
     worker-threads: 248
