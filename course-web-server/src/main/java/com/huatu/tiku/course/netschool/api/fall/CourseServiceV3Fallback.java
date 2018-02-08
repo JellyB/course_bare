@@ -82,7 +82,7 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
 
 
     @Override
-    public NetSchoolResponse getCollectionDetail(String shortTitle, String username, int page) {
+    public NetSchoolResponse getCollectionDetail(String shortTitle, int page) {
         String key = "_mock_collection_detail$"+ shortTitle+"$"+page;
         NetSchoolResponse response = FallbackCacheHolder.get(key);
         if(response == null){

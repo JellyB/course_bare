@@ -113,7 +113,7 @@ public class PromoteBizService implements ConfigSubscriber{
                 try {
                     int page = 1;
                     for (;;){
-                        NetSchoolResponse collectionCourse = courseServiceV3.getCollectionDetail(title, MOCK_UNAME, page++);
+                        NetSchoolResponse collectionCourse = courseServiceV3.getCollectionDetail(title, page++);
                         courseServiceV3Fallback.setCollectionDetail(title,page,collectionCourse);
                         if(! ResponseUtil.isSuccess(collectionCourse)){
                             break;

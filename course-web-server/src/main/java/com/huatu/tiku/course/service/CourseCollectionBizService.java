@@ -39,9 +39,9 @@ public class CourseCollectionBizService {
     private Map<String,CollectionParam> requestQueue = new ConcurrentHashMap<>();
 
     @Degrade(key = "collectionCourse",name = "课程合集")
-    public CourseListV3DTO getCollectionCourse(String shorttitle, String uname, int page){
+    public CourseListV3DTO getCollectionCourse(String shorttitle,int page){
         //如果促销状态开启，默认直接降级
-        NetSchoolResponse collectionDetail = courseServiceV3.getCollectionDetail(shorttitle, uname, page);
+        NetSchoolResponse collectionDetail = courseServiceV3.getCollectionDetail(shorttitle, page);
         courseServiceV3Fallback.setCollectionDetail(shorttitle,page,collectionDetail);
         return ResponseUtil.build(collectionDetail,CourseListV3DTO.class,false);
     }
@@ -49,11 +49,10 @@ public class CourseCollectionBizService {
     /**
      * 课程合集降级方法
      * @param shorttitle
-     * @param uname
      * @param page
      * @return
      */
-    public CourseListV3DTO getCollectionCourseDegrade(String shorttitle,String uname,int page){
+    public CourseListV3DTO getCollectionCourseDegrade(String shorttitle,int page){
 
         //begin 为了补偿
         String key = "_mock_collection_detail$"+ shorttitle+"$"+page;
@@ -64,11 +63,11 @@ public class CourseCollectionBizService {
         // end
 
 
-        NetSchoolResponse collectionDetail = courseServiceV3Fallback.getCollectionDetail(shorttitle, uname, page);
+        NetSchoolResponse collectionDetail = courseServiceV3Fallback.getCollectionDetail(shorttitle, page);
         if(collectionDetail.getCode() == NetSchoolResponse.DEFAULT_ERROR.getCode()){ //说明数据是mock过来的，放单个线程过去构建此数据
             if(ConcurrentBizLock.tryLock(key)){
                 try {
-                    collectionDetail = courseServiceV3.getCollectionDetail(shorttitle,uname,page);
+                    collectionDetail = courseServiceV3.getCollectionDetail(shorttitle,page);
                     courseServiceV3Fallback.setCollectionDetail(shorttitle,page,collectionDetail);
                 } catch(Exception e){
                     e.printStackTrace();
@@ -88,13 +87,13 @@ public class CourseCollectionBizService {
     /**
      * 降级过程中的合集列表补偿
      */
-    @Scheduled(cron = "0/10 * * * * ?")
+    @Scheduled(cron = "0/3 * * * * ?")
     public void collectionListDegradeCompensate(){
         Set<String> keys = requestQueue.keySet();
         for (String key : keys) {
             try {
                 CollectionParam params = requestQueue.get(key);
-                this.getCollectionCourse(params.getShorttitle(),MOCK_UNAME,params.getPage());
+                this.getCollectionCourse(params.getShorttitle(),params.getPage());
             } catch(Exception e){
                 log.error("定时补偿合集列表缓存失败");
             } finally {

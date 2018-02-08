@@ -115,7 +115,7 @@ public class CourseListService {
     /**
      * 降级过程中的课程列表补偿
      */
-    @Scheduled(cron = "0/10 * * * * ?")
+    @Scheduled(cron = "0/3 * * * * ?")
     public void courseListDegradeCompensate(){
         Set<String> keys = requestQueue.keySet();
         for (String key : keys) {

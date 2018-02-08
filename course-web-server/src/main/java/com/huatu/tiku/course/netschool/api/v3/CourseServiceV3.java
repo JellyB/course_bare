@@ -22,7 +22,7 @@ public interface CourseServiceV3 {
      * @return
      */
     @PostMapping(value="/v3/ztkClassSearch.php")
-    NetSchoolResponse getCollectionDetail(@RequestParam("shortTitle")String shortTitle,@RequestParam("username")String username,@RequestParam("page")int page);
+    NetSchoolResponse getCollectionDetail(@RequestParam("shortTitle")String shortTitle,@RequestParam("page")int page);
 
     /**
      * 获取商品购买量

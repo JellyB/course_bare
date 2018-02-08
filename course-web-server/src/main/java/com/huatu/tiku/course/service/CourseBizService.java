@@ -52,13 +52,12 @@ public class CourseBizService {
     /**
      * 获取直播合集列表，类似直播外层列表
      * @param shorttitle
-     * @param uname
      * @param page
      * @return
      */
-    public CourseListV3DTO getCollectionList(String shorttitle,String uname,int page){
+    public CourseListV3DTO getCollectionList(String shorttitle,int page){
 
-        CourseListV3DTO courseList = courseCollectionBizService.getCollectionCourse(shorttitle,uname,page);
+        CourseListV3DTO courseList = courseCollectionBizService.getCollectionCourse(shorttitle,page);
 
         decorateLiveList(courseList);
 

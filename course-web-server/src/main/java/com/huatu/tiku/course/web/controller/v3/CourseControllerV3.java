@@ -65,7 +65,7 @@ public class CourseControllerV3 {
     public Object getCollectionDetail(@RequestParam String shorttitle,
                                       @RequestParam int page,
                                       @Token UserSession userSession) {
-        return courseBizService.getCollectionList(shorttitle,userSession.getUname(),page);
+        return courseBizService.getCollectionList(shorttitle,page);
     }
 
     /**
