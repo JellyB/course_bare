@@ -65,7 +65,7 @@ public class CourseListService {
             result = ResponseUtil.build(response, CourseListV3DTO.class, false);
             if (result != null) {
                 result.setCacheTimestamp(System.currentTimeMillis());
-                valueOperations.set(cacheKey, result, 10, TimeUnit.SECONDS);
+                valueOperations.set(cacheKey, result, 1, TimeUnit.MINUTES);
             }
             //非fallback获取到，设置到fallback缓存
             if (!result.isCache()) {
