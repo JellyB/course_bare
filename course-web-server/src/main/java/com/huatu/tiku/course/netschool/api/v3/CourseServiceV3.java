@@ -37,7 +37,7 @@ public interface CourseServiceV3 {
      * @param params
      * @return
      */
-    @GetMapping("/v3/classSearch.php")
+    @GetMapping("/v3/classSearch_new.php")
     NetSchoolResponse findRecordingList(@RequestParam Map<String,Object> params);
 
 
