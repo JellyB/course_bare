@@ -48,7 +48,7 @@ public class CourseControllerV4 {
                 .put("username",userSession.getUname())
                 .put("orderid",orderid)
                 .put("page",page)
-                .put("subjectid",subjectid)
+                .put("subjectid",1000)//临时写死
                 .put("keywords",keywords)
                 .put("provinceid",provinceId).build();
         NetSchoolResponse recordingList = courseServiceV4.findRecordingList(params);
