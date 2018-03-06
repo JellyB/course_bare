@@ -31,7 +31,7 @@ public interface CourseSettingServiceV4 {
      * 获取录播筛选条件
      * @return
      */
-    @GetMapping("/v3/classSearch.php?do=cateList")
+    @GetMapping("/v3/classSearch_new.php?do=cateList")
     NetSchoolResponse getRecordingSettings(@RequestParam("userName") String userName);
 
 
@@ -39,6 +39,6 @@ public interface CourseSettingServiceV4 {
      * 设置录播筛选条件
      * @return
      */
-    @GetMapping("/v3/classSearch.php?do=set")
+    @GetMapping("/v3/classSearch_new.php?do=set")
     NetSchoolResponse setRecordingSettings(@RequestParam("userName") String userName,@RequestParam("setList") String categories);
 }
