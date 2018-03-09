@@ -4,6 +4,10 @@ import com.huatu.common.exception.UnauthorizedException;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.springboot.report.annotation.WebReport;
 import com.huatu.springboot.report.product.ExtraDataHandler;
+import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
+import com.huatu.springboot.web.version.mapping.annotation.ClientVersion;
+import com.huatu.springboot.web.version.mapping.annotation.TerminalVersion;
+import com.huatu.springboot.web.version.mapping.core.VersionOperator;
 import com.huatu.tiku.common.bean.report.ReportMessage;
 import com.huatu.tiku.common.bean.report.WebReportMessage;
 import com.huatu.tiku.common.bean.user.UserSession;
@@ -19,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RequestMapping("/test")
 @RestController
+@ApiVersion("4")
 public class ForTestController {
     @GetMapping("/ex")
     public void exceptionTest(){
@@ -50,4 +55,36 @@ public class ForTestController {
         }
     }
 
+
+    @RequestMapping(value="/get")
+    public String get1 (){
+        return "旧接口";
+    }
+
+
+    @RequestMapping(value= "/get",params = "data=tree")
+    @ApiVersion("4.1")
+    //method的apiversion会优先于class上的,方便升级小版本
+    public String get2(){
+        return "新数据";
+    }
+
+
+    @GetMapping("/c")
+    @ClientVersion(expression = {"1>6.0.0","2>6.0.0"})
+    public String cvcheck1(){return "6.0.0以上版本的1类型";}
+
+    @GetMapping("/c")
+    @ClientVersion({@TerminalVersion(terminals = 2,op= VersionOperator.GT,version = "6.0.0")})
+    public String cvcheck2(){return "6.0.0以上版本的2类型";}
+
+
+    @GetMapping("/c")
+    @ClientVersion({@TerminalVersion(terminals = 2,op= VersionOperator.LTE,version = "6.0.0")})
+    public String cvcheck3(){return "6.0.0以下版本的2类型";}
+
+
+    public String c(){
+        return "aaaa";
+    }
 }
