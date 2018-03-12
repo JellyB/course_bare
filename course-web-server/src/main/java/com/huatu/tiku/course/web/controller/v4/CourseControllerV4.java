@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.web.controller.v4;
 
 import com.huatu.common.utils.collection.HashMapBuilder;
+import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.AreaConstants;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
@@ -21,7 +22,8 @@ import java.util.Map;
  * @date 2018/3/6 15:15
  */
 @RestController
-@RequestMapping(value = "v4/courses")
+@RequestMapping(value = "/courses")
+@ApiVersion("v4")
 public class CourseControllerV4 {
     @Autowired
     private CourseServiceV4 courseServiceV4;

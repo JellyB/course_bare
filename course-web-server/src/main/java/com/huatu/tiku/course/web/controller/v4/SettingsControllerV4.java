@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.web.controller.v4;
 
+import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.netschool.api.v4.CourseSettingServiceV4;
 import com.huatu.tiku.course.util.ResponseUtil;
@@ -15,7 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2018/1/26 15:59
  */
 @RestController
-@RequestMapping("/v4")
+@RequestMapping("/")
+@ApiVersion("v4")
 public class SettingsControllerV4 {
     @Autowired
     private CourseSettingServiceV4 courseSettingServiceV4;
