@@ -11,6 +11,7 @@ import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.springboot.users.support.Token;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -104,6 +105,9 @@ public class UserCourseControllerV3 {
     public Object save1V1Table(@RequestBody One2OneFormDTO dto,
                                @Token UserSession userSession,
                                @PathVariable int courseId) {
+        if(StringUtils.isNotBlank(dto.getViewRate())){
+            dto.setViewRatio(dto.getViewRate());//适配之前字段错误的问题
+        }
         Map<String,Object> params = ClassUtils.getBeanProperties(dto);
         params.put("action","saveInfo");
         params.put("username",userSession.getUname());
