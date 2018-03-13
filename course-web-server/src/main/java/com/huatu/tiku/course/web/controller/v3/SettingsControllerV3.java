@@ -2,7 +2,6 @@ package com.huatu.tiku.course.web.controller.v3;
 
 import com.huatu.common.SuccessResponse;
 import com.huatu.common.spring.cache.Cached;
-import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.netschool.api.v3.CourseSettingServiceV3;
 import com.huatu.tiku.course.netschool.api.v3.UserLevelServiceV3;
 import com.huatu.tiku.course.service.ConfigBizService;
@@ -10,8 +9,8 @@ import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.basic.reward.RewardActionService;
 import com.huatu.tiku.springboot.basic.subject.SubjectEnum;
 import com.huatu.tiku.springboot.basic.subject.SubjectService;
+import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.springboot.users.support.Token;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +29,6 @@ import static com.huatu.tiku.course.util.CourseCacheKey.*;
  */
 @RestController
 @RequestMapping("/v3")
-@Slf4j
 public class SettingsControllerV3 {
     @Resource(name = "redisTemplate")
     private ValueOperations valueOperations;
@@ -106,7 +104,6 @@ public class SettingsControllerV3 {
             settings.remove("province");//省份的由用户自己选择
             valueOperations.set(cacheKey,settings,1,TimeUnit.DAYS);
         }
-        log.info("recording/query/_settings={}", settings);
         int subject = userSession.getSubject();
         int top = subjectService.top(subject);
 

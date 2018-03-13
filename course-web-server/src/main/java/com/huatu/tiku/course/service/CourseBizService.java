@@ -15,7 +15,6 @@ import com.huatu.tiku.course.util.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.core.util.JsonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -75,7 +74,6 @@ public class CourseBizService {
      * @throws InterruptedException
      */
     public CourseListV3DTO getCourseListV3(Map<String, Object> params) throws ExecutionException, InterruptedException, BizException {
-        log.info(">>>>>>>> courseListV3: params = {} ", params);
         TimeMark timeMark = TimeMark.newInstance();
 
         CourseListV3DTO courseList = courseListService.getCourseListV3(params);
