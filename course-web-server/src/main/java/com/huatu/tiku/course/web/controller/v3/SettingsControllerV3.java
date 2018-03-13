@@ -102,12 +102,11 @@ public class SettingsControllerV3 {
         String cacheKey = RECORDING_SETTINGS;
         Map<String,Object> settings = (Map<String, Object>) valueOperations.get(cacheKey);
         if(settings == null){
-            log.info("recording/query/_settings={}", settings
-            );
             settings = (Map) ResponseUtil.build(courseSettingServiceV3.getRecordingSettings());
             settings.remove("province");//省份的由用户自己选择
             valueOperations.set(cacheKey,settings,1,TimeUnit.DAYS);
         }
+        log.info("recording/query/_settings={}", settings);
         int subject = userSession.getSubject();
         int top = subjectService.top(subject);
 
