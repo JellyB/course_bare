@@ -112,14 +112,6 @@ public class CourseControllerV3 {
                              @RequestParam(required = false,defaultValue = "1000") int subjectid,
                              @Token UserSession userSession) {
         int provinceId = AreaConstants.getNetSchoolProvinceId(userSession.getArea());
-        int top = subjectService.top(userSession.getSubject());
-        SubjectEnum[] enums = SubjectEnum.values();
-        for (SubjectEnum subjectEnum : enums) {
-            if(subjectEnum.code() == top){
-                categoryid = subjectEnum.categoryid();
-                break;
-            }
-        }
         Map<String,Object> params = HashMapBuilder.<String,Object>newBuilder()
                 .put("categoryid",categoryid)
                 .put("username",userSession.getUname())
