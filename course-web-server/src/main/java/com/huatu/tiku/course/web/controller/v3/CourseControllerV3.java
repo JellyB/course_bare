@@ -120,7 +120,6 @@ public class CourseControllerV3 {
                 break;
             }
         }
-        subjectid = categoryid;
         Map<String,Object> params = HashMapBuilder.<String,Object>newBuilder()
                 .put("categoryid",categoryid)
                 .put("username",userSession.getUname())
