@@ -22,7 +22,7 @@ public interface CourseSettingServiceV3 {
      * 获取录播筛选条件
      * @return
      */
-    @GetMapping("/v3/classSearch.php?do=List")
+    @GetMapping("/v3/classSearch.php?do=list")
     NetSchoolResponse getRecordingSettings();
 
 }
