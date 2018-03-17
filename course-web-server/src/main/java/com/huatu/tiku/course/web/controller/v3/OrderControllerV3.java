@@ -2,7 +2,6 @@ package com.huatu.tiku.course.web.controller.v3;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
-import com.huatu.common.SuccessMessage;
 import com.huatu.common.spring.web.MediaType;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
@@ -17,7 +16,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -82,11 +80,7 @@ public class OrderControllerV3 {
                 .put("userid", -1)
                 .put("rid", courseId)
                 .buildUnsafe();
-
-       // return ResponseUtil.build(orderServiceV3.getFree(RequestUtil.encryptJsonParams(parameterMap)));
-        orderServiceV3.getFree(RequestUtil.encryptJsonParams(parameterMap));
-        return SuccessMessage.create("下单成功");
-
+        return ResponseUtil.build(orderServiceV3.getFree(RequestUtil.encryptJsonParams(parameterMap)));
     }
 
 
