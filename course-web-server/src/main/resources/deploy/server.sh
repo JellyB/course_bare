@@ -4,6 +4,7 @@ cd `dirname $0`
 
 # 使用自己的conf文件传递到spring启动脚本种
 source ./conf/run.conf
+source ./conf/run_${ENV}.conf
 
 
 DEPLOY_DIR=`pwd`
