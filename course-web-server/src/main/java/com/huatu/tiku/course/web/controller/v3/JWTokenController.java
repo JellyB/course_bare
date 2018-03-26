@@ -1,5 +1,8 @@
 package com.huatu.tiku.course.web.controller.v3;
 
+import com.huatu.common.jwt.bean.JWTUser;
+import com.huatu.common.jwt.resolver.JWToken;
+import com.huatu.common.jwt.util.JWTUtil;
 import com.huatu.common.utils.code.UUIDTools;
 import com.huatu.common.utils.date.DateUtil;
 import com.huatu.springboot.web.version.mapping.annotation.VersionMapping;
@@ -11,6 +14,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.DefaultClaims;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,7 +28,6 @@ import java.util.Date;
 @RestController
 @VersionMapping(value = "/jwt", apiVersion = "v3")
 public class JWTokenController {
-    public static final byte[] JWT_KEY = new byte[]{2, 0, 1, 8, 0, 3, 2, 6};//base64编码后是AgABCAADAgY=
     public static final String ISSUER = "ht-course-server";
     public static final long DATE_BETWEEN = 1000 * 60 * 60 * 24;//1d
 
@@ -46,7 +49,7 @@ public class JWTokenController {
                 break;
             }
             try {
-                Jwt parse = Jwts.parser().setSigningKey(JWT_KEY).parse(oldToken);
+                Jwt parse = Jwts.parser().setSigningKey(JWTUtil.JWT_KEY).parse(oldToken);
                 if (!(parse.getBody() instanceof DefaultClaims)) {
                     break;
                 }
@@ -61,15 +64,12 @@ public class JWTokenController {
         } while (false);
         if(result == null){
             JwtBuilder jwtBuilder = Jwts.builder()
-                    .claim("ssoId",userSession.getSsoId())
-                    .claim("username",userSession.getUname())
-                    .claim("uid",userSession.getId())
-                    .claim("nick",userSession.getNick())
+                    .addClaims(JWTUtil.createPayload(userSession))
                     .setExpiration(DateUtil.addDay(7))
                     .setIssuedAt(new Date())
                     .setIssuer(ISSUER)
                     .setId(UUIDTools.create())
-                    .signWith(SignatureAlgorithm.HS256,JWT_KEY);
+                    .signWith(SignatureAlgorithm.HS256,JWTUtil.JWT_KEY);
             result = jwtBuilder.compact();
             jwtBuilder = null;
         }

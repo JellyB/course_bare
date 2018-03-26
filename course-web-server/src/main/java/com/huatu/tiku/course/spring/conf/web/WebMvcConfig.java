@@ -1,7 +1,8 @@
 package com.huatu.tiku.course.spring.conf.web;
 
-import com.huatu.tiku.springboot.users.support.TokenMethodArgumentResolver;
+import com.huatu.common.jwt.resolver.JWTUserMethodArgumentResolver;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
@@ -22,10 +23,8 @@ import java.util.List;
 @ServletComponentScan("com.huatu")//servlet扫描配置
 public class WebMvcConfig extends WebMvcConfigurerAdapter {
 
-
     @Autowired
-    private TokenMethodArgumentResolver tokenMethodArgumentResolver;
-
+    private ConfigurableBeanFactory beanFactory;
     /**
      * 为了方便定义消息处理器的顺序，理论上处理器越少，处理中，需要循环遍历判断的次数也越少
      */
@@ -37,7 +36,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
-        argumentResolvers.add(tokenMethodArgumentResolver);//用户session参数装配
+        argumentResolvers.add(new JWTUserMethodArgumentResolver(beanFactory));//用户session参数装配
         super.addArgumentResolvers(argumentResolvers);
     }
 
