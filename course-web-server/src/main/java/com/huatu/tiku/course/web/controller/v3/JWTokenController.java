@@ -37,7 +37,7 @@ public class JWTokenController {
      * @return
      */
     @PostMapping
-    public Object getToken(@RequestParam(value = "jwtToken", required = false) String oldToken,
+    public Object getToken(@RequestParam(value = "token", required = false) String oldToken,
                            @Token UserSession userSession) {
         //只要通过token验证，可以直接颁发jwt token
         String result = null;
