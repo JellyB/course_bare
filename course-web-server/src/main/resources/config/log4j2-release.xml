@@ -37,6 +37,7 @@
         </Root>
         <Logger name="com.huatu.tiku.course.netschool.api" level="DEBUG" additivity="false" includeLocation="true">
             <AppenderRef ref="INF"/>
+            <AppenderRef ref="ERR"/>
         </Logger>
     </Loggers>
 </configuration>
