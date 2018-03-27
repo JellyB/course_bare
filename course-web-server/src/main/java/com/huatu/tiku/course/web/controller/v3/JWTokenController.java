@@ -1,7 +1,5 @@
 package com.huatu.tiku.course.web.controller.v3;
 
-import com.huatu.common.jwt.bean.JWTUser;
-import com.huatu.common.jwt.resolver.JWToken;
 import com.huatu.common.jwt.util.JWTUtil;
 import com.huatu.common.utils.code.UUIDTools;
 import com.huatu.common.utils.date.DateUtil;
@@ -14,7 +12,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.DefaultClaims;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
