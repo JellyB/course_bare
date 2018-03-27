@@ -15,7 +15,11 @@
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
             </Policies>
-            <DefaultRolloverStrategy max="30"></DefaultRolloverStrategy>
+            <DefaultRolloverStrategy>
+                <Delete basePath="${log_dir}/pack/">
+                    <IfLastModified age="30d" />
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
         <RollingFile name="ERR" fileName="${log_dir}/${server_name}_err.log"
                      filePattern="${log_dir}/pack/${server_name}_err-%d{yyyy-MM-dd}.log.zip"
@@ -26,7 +30,11 @@
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
             </Policies>
             <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
-            <DefaultRolloverStrategy max="30" ></DefaultRolloverStrategy>
+            <DefaultRolloverStrategy>
+                <Delete basePath="${log_dir}/pack/">
+                    <IfLastModified age="30d" />
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
     </appenders>
     <Loggers>
