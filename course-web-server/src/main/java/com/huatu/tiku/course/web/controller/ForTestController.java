@@ -30,7 +30,7 @@ public class ForTestController {
         throw new NullPointerException("抛出了一个空指针！");
     }
 
-    @WebReport(value = "test",extraHandler = TestReportExtraHandler.class)
+    @WebReport(value = "test",extraHandler = TestReportExtraHandler.class,holdResult = true)
     @RequestMapping("/report")
     public Object report(@Token UserSession session){
         return HashMapBuilder.newBuilder().put("llll","llsdfdfd").buildUnsafe();

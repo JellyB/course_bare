@@ -1,7 +1,7 @@
 package com.huatu.tiku.course.spring.conf.base;
 
 import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
-import com.huatu.springboot.web.tools.converter.FormMessageConverter;
+import com.huatu.common.spring.conventer.FormMessageConverter;
 import feign.Logger;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.context.annotation.Bean;
