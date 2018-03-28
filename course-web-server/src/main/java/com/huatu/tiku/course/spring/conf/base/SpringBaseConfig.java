@@ -2,6 +2,7 @@ package com.huatu.tiku.course.spring.conf.base;
 
 import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
 import com.huatu.common.spring.conventer.FormMessageConverter;
+import com.huatu.springboot.report.product.extend.EnableWebResultHolder;
 import feign.Logger;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +21,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableAsync
 @EnableCircuitBreaker
 @EnableScheduling
+@EnableWebResultHolder
 public class SpringBaseConfig {
 
     /**
