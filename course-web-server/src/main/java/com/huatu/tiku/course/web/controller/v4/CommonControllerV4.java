@@ -22,9 +22,19 @@ import java.util.HashMap;
 @ApiVersion("v4")
 public class CommonControllerV4 {
 
-
     @Autowired
     private CommonServiceV4 commonServiceV4;
+
+    /**
+     * 面试状元0元赠送课程
+     */
+    @GetMapping("/champion/sendnetclasslist")
+    public Object sendnetclasslist(
+            @Token UserSession userSession
+    ) {
+        String userName = userSession.getUname();
+        return ResponseUtil.build(commonServiceV4.sendnetclasslist(userName));
+    }
 
     /**
      * 面试状元封闭集训营
@@ -36,12 +46,12 @@ public class CommonControllerV4 {
             @Token UserSession userSession,
             @RequestParam(value = "admissionTicket", required = true) String admissionTicket,
             @RequestParam(value = "areaId", required = true) String areaId,
-            @RequestParam(value = "examNum", required = true) Integer examNum,
+            @RequestParam(value = "examNum", required = true) String examNum,
             @RequestParam(value = "examSort", required = false, defaultValue = "0") Integer examSort,
             @RequestParam(value = "name", required = true) String name
     ) {
         final HashMap<String, Object> params = Maps.newHashMap();
-        params.put("userName",userSession.getUname());
+        params.put("userName", userSession.getUname());
         params.put("admissionticket", admissionTicket);
         params.put("area_id", areaId);
         params.put("exam_num", examNum);
@@ -66,5 +76,13 @@ public class CommonControllerV4 {
         paramMap.put("phone", phone);
         paramMap.put("sid", sid);
         return ResponseUtil.build(commonServiceV4.championUpdate(paramMap));
+    }
+
+    /**
+     * 面试状元赠送课程列表接口
+     */
+    @GetMapping("/championclasslist")
+    public Object championClassList() {
+        return ResponseUtil.build(commonServiceV4.championClassList());
     }
 }

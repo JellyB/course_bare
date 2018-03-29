@@ -13,6 +13,13 @@ import java.util.Map;
 @FeignClient(value = "o-course-service")
 public interface CommonServiceV4 {
 
+
+    /**
+     * 面试状元0元赠送课程
+     */
+    @GetMapping("/lumenapi/v4/common/champion/sendnetclasslist")
+    NetSchoolResponse sendnetclasslist(@RequestParam("userName") String userName);
+
     /**
      * 面试状元封闭集训营
      */
@@ -24,5 +31,11 @@ public interface CommonServiceV4 {
      */
     @GetMapping("/lumenapi/v4/common/championupdate")
     NetSchoolResponse championUpdate(@RequestParam Map<String, Object> params);
+
+    /**
+     * 面试状元赠送课程列表接口
+     */
+    @GetMapping("/lumenapi/v4/common/championclasslist")
+    NetSchoolResponse championClassList();
 
 }
