@@ -54,7 +54,8 @@ public class CourseDetailV3DTO implements Serializable{
         private int isTermined;
         private String terminedDesc;
         private int isProvincialFaceToFace;
-
+        
+        @JsonProperty
         private int Province;
     }
 
