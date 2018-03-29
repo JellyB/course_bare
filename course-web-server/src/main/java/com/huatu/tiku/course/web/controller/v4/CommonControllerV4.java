@@ -59,7 +59,7 @@ public class CommonControllerV4 {
     public Object championUpdate(
             @RequestParam(value = "hid", required = true) Integer hid,
             @RequestParam(value = "phone", required = true) String phone,
-            @RequestParam(value = "sid", required = true) Integer sid
+            @RequestParam(value = "sid", required = true) String sid
     ) {
         final HashMap<String, Object> paramMap = Maps.newHashMap();
         paramMap.put("hid", hid);
