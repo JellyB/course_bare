@@ -39,6 +39,7 @@ public class CourseControllerV4 {
      */
     @GetMapping("/recordings")
     public Object recordingList(@RequestParam(required = false,defaultValue = "1001") int categoryid,
+                                @RequestParam(required = false) String cv,
                                 @RequestParam(required = false,defaultValue = "1") int orderid,
                                 @RequestParam int page,
                                 @RequestParam(required = false,defaultValue = "") String keywords,
@@ -52,6 +53,7 @@ public class CourseControllerV4 {
                 .put("page",page)
                 .put("subjectid",1000)//临时写死
                 .put("keywords",keywords)
+                .put("cv",cv)
                 .put("provinceid",provinceId).build();
         NetSchoolResponse recordingList = courseServiceV4.findRecordingList(params);
         courseServiceV4Fallback.setRecordingList(params,recordingList);
