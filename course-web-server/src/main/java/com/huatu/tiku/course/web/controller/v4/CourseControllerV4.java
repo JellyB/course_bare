@@ -10,10 +10,7 @@ import com.huatu.tiku.course.netschool.api.v4.CourseServiceV4;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -38,13 +35,14 @@ public class CourseControllerV4 {
      * @return
      */
     @GetMapping("/recordings")
-    public Object recordingList(@RequestParam(required = false,defaultValue = "1001") int categoryid,
-                                @RequestParam(required = false) String cv,
-                                @RequestParam(required = false,defaultValue = "1") int orderid,
-                                @RequestParam int page,
-                                @RequestParam(required = false,defaultValue = "") String keywords,
-                                @RequestParam(required = false,defaultValue = "1000") int subjectid,
-                                @Token UserSession userSession) {
+    public Object recordingList(
+            @RequestHeader(required = false) String cv,
+            @RequestParam(required = false, defaultValue = "1001") int categoryid,
+            @RequestParam(required = false, defaultValue = "1") int orderid,
+            @RequestParam int page,
+            @RequestParam(required = false, defaultValue = "") String keywords,
+            @RequestParam(required = false, defaultValue = "1000") int subjectid,
+            @Token UserSession userSession) {
         int provinceId = AreaConstants.getNetSchoolProvinceId(userSession.getArea());
         Map<String,Object> params = HashMapBuilder.<String,Object>newBuilder()
                 .put("categoryid",categoryid)

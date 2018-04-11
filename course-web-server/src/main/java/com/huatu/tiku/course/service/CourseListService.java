@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import javax.annotation.Resource;
 import java.util.Map;
@@ -55,9 +57,13 @@ public class CourseListService {
             key = "T(com.huatu.tiku.course.util.CourseCacheKey).courseListV3(T(com.huatu.common.utils.web.RequestUtil).getParamSign(#map))",
             params = {@Cached.Param(name = "查询参数", value = "map", type = Map.class)})
     @Degrade(name = "课程列表v3", key = "courseListV3")
-    public CourseListV3DTO getCourseListV3(Map<String, Object> params) {
+    public CourseListV3DTO getCourseListV3(
+            @RequestHeader("cv") String cv,
+            @RequestBody Map<String, Object> params
+    ) {
 
         params.remove("username");
+        params.put("cv",cv);
         String cacheKey = CourseCacheKey.courseListV3(com.huatu.common.utils.web.RequestUtil.getParamSign(params));
         CourseListV3DTO result = (CourseListV3DTO) valueOperations.get(cacheKey);
         if (result == null) {
