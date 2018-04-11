@@ -136,12 +136,14 @@ public class CourseControllerV3 {
      * @throws ExecutionException
      */
     @GetMapping("/lives")
-    public Object liveList(@RequestParam(required = false,defaultValue = "0") int orderid,
-                           @RequestParam int page,
-                           @RequestParam(required = false,defaultValue = "1000") int priceid,
-                           @RequestParam(required = false,defaultValue = "") String keywords,
-                           @RequestParam(required = false,defaultValue = "") String category,//老版本的从session中映射，新版本的需要客户端自己传过来，直接做适配即可
-                           @Token UserSession userSession) throws InterruptedException, ExecutionException, BizException {
+    public Object liveList(
+            @RequestHeader("cv") String cv,
+            @RequestParam(required = false,defaultValue = "0") int orderid,
+            @RequestParam int page,
+            @RequestParam(required = false,defaultValue = "1000") int priceid,
+            @RequestParam(required = false,defaultValue = "") String keywords,
+            @RequestParam(required = false,defaultValue = "") String category,//老版本的从session中映射，新版本的需要客户端自己传过来，直接做适配即可
+            @Token UserSession userSession) throws InterruptedException, ExecutionException, BizException {
         int top = subjectService.top(userSession.getSubject());
         int categoryid = 1000;
         if(StringUtils.isBlank(category) || !StringUtils.isNumeric(category)){
@@ -168,7 +170,7 @@ public class CourseControllerV3 {
 //        if(versionService.isIosAudit(terminal,cv)){
 //            params.put("test","11");
 //        }
-        return courseBizService.getCourseListV3(params);
+        return courseBizService.getCourseListV3(cv,params);
     }
 
 
