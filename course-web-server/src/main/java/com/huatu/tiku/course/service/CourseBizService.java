@@ -73,10 +73,10 @@ public class CourseBizService {
      * @throws ExecutionException
      * @throws InterruptedException
      */
-    public CourseListV3DTO getCourseListV3(String cv,Map<String, Object> params) throws ExecutionException, InterruptedException, BizException {
+    public CourseListV3DTO getCourseListV3(String cv,int terminal,Map<String, Object> params) throws ExecutionException, InterruptedException, BizException {
         TimeMark timeMark = TimeMark.newInstance();
 
-        CourseListV3DTO courseList = courseListService.getCourseListV3(cv,params);
+        CourseListV3DTO courseList = courseListService.getCourseListV3(cv,terminal,params);
         log.info(">>>>>>>>> courseListV3: concurent request complete,used {} mills,total cost {} mills...", timeMark.mills(), timeMark.totalMills());
 
         decorateLiveList(courseList);

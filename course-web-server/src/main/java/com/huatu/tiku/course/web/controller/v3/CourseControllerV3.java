@@ -138,6 +138,7 @@ public class CourseControllerV3 {
     @GetMapping("/lives")
     public Object liveList(
             @RequestHeader("cv") String cv,
+            @RequestHeader("terminal") int terminal,
             @RequestParam(required = false,defaultValue = "0") int orderid,
             @RequestParam int page,
             @RequestParam(required = false,defaultValue = "1000") int priceid,
@@ -170,7 +171,7 @@ public class CourseControllerV3 {
 //        if(versionService.isIosAudit(terminal,cv)){
 //            params.put("test","11");
 //        }
-        return courseBizService.getCourseListV3(cv,params);
+        return courseBizService.getCourseListV3(cv,terminal,params);
     }
 
 
