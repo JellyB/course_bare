@@ -37,6 +37,7 @@ public class CourseControllerV4 {
     @GetMapping("/recordings")
     public Object recordingList(
             @RequestHeader(required = false) String cv,
+            @RequestHeader(required = false) int terminal,
             @RequestParam(required = false, defaultValue = "1001") int categoryid,
             @RequestParam(required = false, defaultValue = "1") int orderid,
             @RequestParam int page,
@@ -46,6 +47,7 @@ public class CourseControllerV4 {
         int provinceId = AreaConstants.getNetSchoolProvinceId(userSession.getArea());
         Map<String,Object> params = HashMapBuilder.<String,Object>newBuilder()
                 .put("categoryid",categoryid)
+                .put("terminal",terminal)
                 .put("username",userSession.getUname())
                 .put("orderid",orderid)
                 .put("page",page)
