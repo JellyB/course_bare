@@ -59,11 +59,13 @@ public class CourseListService {
     @Degrade(name = "课程列表v3", key = "courseListV3")
     public CourseListV3DTO getCourseListV3(
             @RequestHeader("cv") String cv,
+            @RequestHeader(required = false) int terminal,
             @RequestBody Map<String, Object> params
     ) {
 
         params.remove("username");
         params.put("cv",cv);
+        params.put("terminal",terminal);
         String cacheKey = CourseCacheKey.courseListV3(com.huatu.common.utils.web.RequestUtil.getParamSign(params));
         CourseListV3DTO result = (CourseListV3DTO) valueOperations.get(cacheKey);
         if (result == null) {
