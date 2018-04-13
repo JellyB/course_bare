@@ -165,13 +165,16 @@ public class CourseControllerV3 {
                 .put("page",page)
                 .put("keywords",keywords)
                 .put("categoryid",categoryid)
-                .put("priceid",priceid).build();
+                .put("priceid",priceid)
+                .put("cv",cv)
+                .put("terminal",terminal)
+                .build();
         // add by hanchao,2017-11-08
         // 为了ios审核，过一周后可以去掉
 //        if(versionService.isIosAudit(terminal,cv)){
 //            params.put("test","11");
 //        }
-        return courseBizService.getCourseListV3(cv,terminal,params);
+        return courseBizService.getCourseListV3(params);
     }
 
 
