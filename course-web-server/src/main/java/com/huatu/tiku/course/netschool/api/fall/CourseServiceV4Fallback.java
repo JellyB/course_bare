@@ -19,6 +19,7 @@ public class CourseServiceV4Fallback implements CourseServiceV4 {
 
     @Override
     public NetSchoolResponse findRecordingList(Map<String, Object> params) {
+        params.remove("username");
         String key = "_mock_recoding_listV4$"+ RequestUtil.getParamSign(params);
         NetSchoolResponse response = FallbackCacheHolder.get(key);
         if(response == null){
@@ -29,6 +30,7 @@ public class CourseServiceV4Fallback implements CourseServiceV4 {
     }
 
     public void setRecordingList(Map<String,Object> params,NetSchoolResponse response){
+        params.remove("username");
         String key = "_mock_recoding_listV4$"+ RequestUtil.getParamSign(params);
         if(ResponseUtil.isSuccess(response)){
             FallbackCacheHolder.put(key,response);
