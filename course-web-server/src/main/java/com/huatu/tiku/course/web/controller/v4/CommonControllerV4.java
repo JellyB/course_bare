@@ -7,10 +7,7 @@ import com.huatu.tiku.course.netschool.api.v4.CommonServiceV4;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 
@@ -84,5 +81,72 @@ public class CommonControllerV4 {
     @GetMapping("/championclasslist")
     public Object championClassList() {
         return ResponseUtil.build(commonServiceV4.championClassList());
+    }
+
+
+    /**
+     * 修改或添加协议的用户信息
+     */
+    @GetMapping("/protocol/userProtocolInfo")
+    public Object getUserProtocolInfo(
+            @Token UserSession userSession,
+            @RequestParam("examCertifacteNo") String examCertifacteNo,
+            @RequestParam("feeAccountName") String feeAccountName,
+            @RequestParam("feeAccountNo") String feeAccountNo,
+            @RequestParam("feeBank") String feeBank,
+            @RequestParam("dCard") String idCard,
+            @RequestParam("studentName") String studentName,
+            @RequestParam("telNo") String telNo,
+            @RequestParam("forExam") String forExam,
+            @RequestParam("nation") String nation,
+                @RequestParam("protocolId") Long protocolId,
+            @RequestParam("rid") Long rid,
+            @RequestParam("sex") Integer sex
+    ) {
+        final HashMap<String, Object> params = new HashMap<String, Object>() {{
+            put("ExamCertifacteNo", examCertifacteNo);
+            put("FeeAccountName", feeAccountName);
+            put("FeeAccountNo", feeAccountNo);
+            put("FeeBank", feeBank);
+            put("IdCard", idCard);
+            put("StudentName", studentName);
+            put("TelNo", telNo);
+            put("forExam", forExam);
+            put("nation", nation);
+            put("protocolId", protocolId);
+            put("rid", rid);
+            put("sex", sex);
+            put("userName", userSession.getUname());
+        }};
+        return ResponseUtil.build(commonServiceV4.userProtocolInfo(params));
+    }
+
+    /**
+     * 获取协议内容h5地址
+     */
+    @GetMapping("/protocol/protocolInfo")
+    public Object protocolInfo(
+            @Token UserSession userSession,
+            @RequestParam("protocolId") String protocolId
+    ) {
+        final HashMap<String, Object> params = new HashMap<String, Object>() {{
+            put("protocolId", protocolId);
+            put("userName", userSession.getUname());
+        }};
+        return ResponseUtil.build(commonServiceV4.protocolInfo(params));
+    }
+
+    /**
+     * 获取用户签订协议填写的信息
+     */
+    @PostMapping("/protocol/userProtocolInfo")
+    public Object userProtocolInfo(
+            @Token UserSession userSession,
+            @RequestParam("protocolId") String protocolId) {
+        final HashMap<String, Object> params = new HashMap<String, Object>() {{
+            put("protocolId", protocolId);
+            put("userName", userSession.getUname());
+        }};
+        return ResponseUtil.build(commonServiceV4.getUserProtocolInfo(params));
     }
 }
