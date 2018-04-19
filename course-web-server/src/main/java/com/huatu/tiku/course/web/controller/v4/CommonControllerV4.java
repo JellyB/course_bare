@@ -87,7 +87,7 @@ public class CommonControllerV4 {
     /**
      * 修改或添加协议的用户信息
      */
-    @GetMapping("/protocol/userProtocolInfo")
+    @PostMapping("/protocol/userProtocolInfo")
     public Object getUserProtocolInfo(
             @Token UserSession userSession,
             @RequestParam("examCertifacteNo") String examCertifacteNo,
@@ -99,7 +99,7 @@ public class CommonControllerV4 {
             @RequestParam("telNo") String telNo,
             @RequestParam("forExam") String forExam,
             @RequestParam("nation") String nation,
-                @RequestParam("protocolId") Long protocolId,
+            @RequestParam("protocolId") Long protocolId,
             @RequestParam("rid") Long rid,
             @RequestParam("sex") Integer sex
     ) {
@@ -139,7 +139,7 @@ public class CommonControllerV4 {
     /**
      * 获取用户签订协议填写的信息
      */
-    @PostMapping("/protocol/userProtocolInfo")
+    @GetMapping("/protocol/userProtocolInfo")
     public Object userProtocolInfo(
             @Token UserSession userSession,
             @RequestParam("protocolId") String protocolId) {
