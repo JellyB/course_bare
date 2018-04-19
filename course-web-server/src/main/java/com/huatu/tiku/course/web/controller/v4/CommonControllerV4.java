@@ -94,7 +94,7 @@ public class CommonControllerV4 {
             @RequestParam(value = "feeAccountName",required = false) String feeAccountName,
             @RequestParam(value = "feeAccountNo",required = false) String feeAccountNo,
             @RequestParam(value = "feeBank",required = false) String feeBank,
-            @RequestParam("dCard") String idCard,
+            @RequestParam("idCard") String idCard,
             @RequestParam("studentName") String studentName,
             @RequestParam("telNo") String telNo,
             @RequestParam("forExam") String forExam,
