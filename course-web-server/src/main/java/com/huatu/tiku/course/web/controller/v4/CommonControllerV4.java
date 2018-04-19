@@ -91,14 +91,14 @@ public class CommonControllerV4 {
     public Object getUserProtocolInfo(
             @Token UserSession userSession,
             @RequestParam("examCertifacteNo") String examCertifacteNo,
-            @RequestParam("feeAccountName") String feeAccountName,
-            @RequestParam("feeAccountNo") String feeAccountNo,
-            @RequestParam("feeBank") String feeBank,
+            @RequestParam(value = "feeAccountName",required = false) String feeAccountName,
+            @RequestParam(value = "feeAccountNo",required = false) String feeAccountNo,
+            @RequestParam(value = "feeBank",required = false) String feeBank,
             @RequestParam("dCard") String idCard,
             @RequestParam("studentName") String studentName,
             @RequestParam("telNo") String telNo,
             @RequestParam("forExam") String forExam,
-            @RequestParam("nation") String nation,
+            @RequestParam(value = "nation",required = false) String nation,
             @RequestParam("protocolId") Long protocolId,
             @RequestParam("rid") Long rid,
             @RequestParam("sex") Integer sex
