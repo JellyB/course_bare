@@ -94,13 +94,13 @@ public class CommonControllerV4 {
             @RequestParam(value = "feeAccountName",required = false) String feeAccountName,
             @RequestParam(value = "feeAccountNo",required = false) String feeAccountNo,
             @RequestParam(value = "feeBank",required = false) String feeBank,
-            @RequestParam("idCard") String idCard,
+            @RequestParam("dCard") String idCard,
             @RequestParam("studentName") String studentName,
             @RequestParam("telNo") String telNo,
             @RequestParam("forExam") String forExam,
             @RequestParam(value = "nation",required = false) String nation,
             @RequestParam("protocolId") Long protocolId,
-            @RequestParam("rid") Long rid,
+            @RequestParam(value = "rid",required = false) Long rid,
             @RequestParam("sex") Integer sex
     ) {
         final HashMap<String, Object> params = new HashMap<String, Object>() {{
