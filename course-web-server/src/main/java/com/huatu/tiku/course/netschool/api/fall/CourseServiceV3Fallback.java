@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.netschool.api.fall;
 
 import com.google.common.collect.Maps;
+import com.huatu.common.spring.cache.Cached;
 import com.huatu.common.utils.web.RequestUtil;
 import com.huatu.tiku.course.bean.CourseListV3DTO;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
@@ -134,6 +135,8 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
     }
 
     @Override
+    @Cached(name="课程详情降级缓存",key = "@courseServiceV3Fallback.getCourseDetail(#rid)",sourceType = Cached.DataScourseType.GETINSIDE,
+            params = {@Cached.Param(name = "课程id", value = "rid", type = Integer.class)})
     public NetSchoolResponse getCourseDetail(int rid) {
         String key = "_mock_course_detail$"+ rid;
         NetSchoolResponse response = FallbackCacheHolder.get(key);
