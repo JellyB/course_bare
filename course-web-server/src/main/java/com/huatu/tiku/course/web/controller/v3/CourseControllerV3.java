@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
+import static com.huatu.tiku.course.util.ResponseUtil.MOCK_PAGE_RESPONSE;
+
 /**
  * @author hanchao
  * @date 2017/9/13 15:41
@@ -93,7 +95,9 @@ public class CourseControllerV3 {
                 .put("keywords",keywords)
                 .put("provinceid",provinceId).build();
         NetSchoolResponse bookList = courseServiceV3.findBookList(params);
-        return ResponseUtil.build(bookList);
+        
+       // return ResponseUtil.build(bookList);
+        return MOCK_PAGE_RESPONSE;
     }
 
     /**
