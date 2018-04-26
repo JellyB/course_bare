@@ -40,6 +40,11 @@ public class CourseCacheKey {
 
     private static final String REWARD_RECORD = "reward_record$%s$%s";
 
+    /**
+     * IOS 内侧版本信息
+     */
+    public static final String IOS_AUDIT_VERSION = "ios_audit_versions";
+
     public static String courseDetailV2(Integer courseId){
         return String.format(COURSE_DETAIL_V2,courseId);
     }
