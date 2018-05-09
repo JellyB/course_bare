@@ -420,14 +420,17 @@ public class CourseControllerV3 {
      * @param id                用户id
      */
     private void addStudyProcessIntoRecordList(NetSchoolResponse netSchoolResponse,int id){
-        List<Map> dataList = (List<Map>) (netSchoolResponse.getData());
-        List<Map> mapList = dataList.parallelStream()
-                .map(data -> {
-                    //TODO: 获取当前课程的学习进度
-                    data.put("process", 50);
-                    return data;
-                })
-                .collect(Collectors.toList());
-        netSchoolResponse.setData(mapList);
+        if (null != netSchoolResponse && null != netSchoolResponse.getData()&& netSchoolResponse.getData() instanceof List){
+            List<Map> dataList = (List<Map>) (netSchoolResponse.getData());
+            List<Map> mapList = dataList.parallelStream()
+                    .map(data -> {
+                        //TODO: 获取当前课程的学习进度
+                        data.put("process", 50);
+                        return data;
+                    })
+                    .collect(Collectors.toList());
+            netSchoolResponse.setData(mapList);
+        }
+
     }
 }
