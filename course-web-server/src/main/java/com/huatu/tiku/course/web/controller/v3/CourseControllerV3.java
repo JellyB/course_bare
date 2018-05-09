@@ -8,6 +8,7 @@ import com.huatu.common.spring.event.EventPublisher;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.common.bean.AreaConstants;
 import com.huatu.tiku.common.bean.user.UserSession;
+import com.huatu.tiku.course.bean.CourseListV3DTO;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.fall.CourseServiceV3Fallback;
 import com.huatu.tiku.course.netschool.api.v3.CourseServiceV3;
@@ -23,6 +24,7 @@ import com.huatu.tiku.springboot.basic.reward.event.RewardActionEvent;
 import com.huatu.tiku.springboot.basic.subject.SubjectEnum;
 import com.huatu.tiku.springboot.basic.subject.SubjectService;
 import com.huatu.tiku.springboot.users.support.Token;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -30,9 +32,11 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import static com.huatu.tiku.course.util.ResponseUtil.MOCK_PAGE_RESPONSE;
 
@@ -146,6 +150,8 @@ public class CourseControllerV3 {
                 .put("provinceid", provinceId).build();
         NetSchoolResponse recordingList = courseServiceV3.findRecordingList(params);
         courseServiceV3Fallback.setRecordingList(params, recordingList);
+        //添加播放记录
+        addStudyProcessIntoRecordList(recordingList,userSession.getId());
         return ResponseUtil.build(recordingList);
     }
 
@@ -199,7 +205,9 @@ public class CourseControllerV3 {
 //        if(versionService.isIosAudit(terminal,cv)){
 //            params.put("test","11");
 //        }
-        return courseBizService.getCourseListV3(params);
+        CourseListV3DTO courseListV3 = courseBizService.getCourseListV3(params);
+        addStudyProcessIntoLiveList(courseListV3,userSession.getId());
+        return courseListV3;
     }
 
 
@@ -380,4 +388,46 @@ public class CourseControllerV3 {
         return ResponseUtil.build(userCoursesServiceV3.getMyPackCourseDetail(RequestUtil.encryptJsonParams(params)));
     }
 
+    /**
+     * 在直播课程列表中新增学习进度
+     *
+     * @param courseList
+     * @param id         用户id
+     */
+    private void addStudyProcessIntoLiveList(CourseListV3DTO courseList, int id) {
+        if (courseList == null) {
+            throw new BizException(ResponseUtil.ERROR_PAGE_RESPONSE);
+        }
+        if (CollectionUtils.isNotEmpty(courseList.getResult())) {
+            List<Map> collect = courseList.getResult().parallelStream()//此处使用异步流
+                    .map(data -> {
+                        if (null == data.get("rid") || StringUtils.isBlank(data.get("rid").toString())) {
+                            data.put("process", 0);
+                        } else {
+                            //TODO:获取当前课程的学习进度
+                            data.put("process", 50);
+                        }
+                        return data;
+                    })
+                    .collect(Collectors.toList());
+            courseList.setResult(collect);
+        }
+    }
+
+    /**
+     * 在录播课程列表中新增学习进度
+     * @param netSchoolResponse 录播信息
+     * @param id                用户id
+     */
+    private void addStudyProcessIntoRecordList(NetSchoolResponse netSchoolResponse,int id){
+        List<Map> dataList = (List<Map>) netSchoolResponse.getData();
+        List<Map> mapList = dataList.parallelStream()
+                .map(data -> {
+                    //TODO: 获取当前课程的学习进度
+                    data.put("process", 50);
+                    return data;
+                })
+                .collect(Collectors.toList());
+        netSchoolResponse.setData(mapList);
+    }
 }
