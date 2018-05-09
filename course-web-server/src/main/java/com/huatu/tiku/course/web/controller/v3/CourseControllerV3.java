@@ -31,10 +31,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -420,17 +417,18 @@ public class CourseControllerV3 {
      * @param id                用户id
      */
     private void addStudyProcessIntoRecordList(NetSchoolResponse netSchoolResponse,int id){
-        if (null != netSchoolResponse && null != netSchoolResponse.getData()&& netSchoolResponse.getData() instanceof List){
-            List<Map> dataList = (List<Map>) (netSchoolResponse.getData());
-            List<Map> mapList = dataList.parallelStream()
+        LinkedHashMap result = (LinkedHashMap)(ResponseUtil.build(netSchoolResponse, false));
+        Object resultList = result.get("result");
+        if (null != resultList){
+            List<Map> list = ((List<Map>) resultList).parallelStream()
                     .map(data -> {
                         //TODO: 获取当前课程的学习进度
                         data.put("process", 50);
                         return data;
                     })
                     .collect(Collectors.toList());
-            netSchoolResponse.setData(mapList);
+            result.replace("result",list);
+            netSchoolResponse.setData(result);
         }
-
     }
 }
