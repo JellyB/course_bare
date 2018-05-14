@@ -394,10 +394,7 @@ public class CourseControllerV3 {
      * @param id         用户id
      */
     private void addStudyProcessIntoLiveList(CourseListV3DTO courseList, int id) {
-        if (courseList == null) {
-            throw new BizException(ResponseUtil.ERROR_PAGE_RESPONSE);
-        }
-        if (CollectionUtils.isNotEmpty(courseList.getResult())) {
+        if (courseList != null && CollectionUtils.isNotEmpty(courseList.getResult())) {
             List<Map> collect = courseList.getResult().parallelStream()//此处使用异步流
                     .map(data -> {
                         if (null == data.get("rid") || StringUtils.isBlank(data.get("rid").toString())) {
@@ -420,18 +417,20 @@ public class CourseControllerV3 {
      * @param id                用户id
      */
     private void addStudyProcessIntoRecordList(NetSchoolResponse netSchoolResponse, int id) {
-        LinkedHashMap result = (LinkedHashMap) (ResponseUtil.build(netSchoolResponse, false));
-        Object resultList = result.get("result");
-        if (null != resultList) {
-            List<Map> list = ((List<Map>) resultList).parallelStream()
-                    .map(data -> {
-                        //TODO: 获取当前课程的学习进度
-                        data.put("process", 50);
-                        return data;
-                    })
-                    .collect(Collectors.toList());
-            result.replace("result", list);
-            netSchoolResponse.setData(result);
+        if (null != netSchoolResponse){
+            LinkedHashMap result = (LinkedHashMap) (ResponseUtil.build(netSchoolResponse, false));
+            Object resultList = result.get("result");
+            if (null != resultList) {
+                List<Map> list = ((List<Map>) resultList).parallelStream()
+                        .map(data -> {
+                            //TODO: 获取当前课程的学习进度
+                            data.put("process", 50);
+                            return data;
+                        })
+                        .collect(Collectors.toList());
+                result.replace("result", list);
+                netSchoolResponse.setData(result);
+            }
         }
     }
 
@@ -442,17 +441,19 @@ public class CourseControllerV3 {
      * @param id       用户id
      */
     private void addStudyProcessIntoSecrInfo(Object response, int id) {
-        JSONObject result = (JSONObject)response;
-        Object resultList = result.get("lession");
-        if (null != resultList) {
-            List<Map> list = ((List<Map>) resultList).parallelStream()
-                    .map(data -> {
-                        //TODO: 获取当前课程的学习进度
-                        data.put("process", 50);
-                        return data;
-                    })
-                    .collect(Collectors.toList());
-            result.replace("result", list);
+        if (null != response){
+            JSONObject result = (JSONObject)response;
+            Object resultList = result.get("lession");
+            if (null != resultList) {
+                List<Map> list = ((List<Map>) resultList).parallelStream()
+                        .map(data -> {
+                            //TODO: 获取当前课程的学习进度
+                            data.put("process", 50);
+                            return data;
+                        })
+                        .collect(Collectors.toList());
+                result.replace("result", list);
+            }
         }
     }
 }
