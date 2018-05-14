@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.web.controller.v3;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
 import com.huatu.common.consts.TerminalType;
@@ -148,7 +149,7 @@ public class CourseControllerV3 {
         NetSchoolResponse recordingList = courseServiceV3.findRecordingList(params);
         courseServiceV3Fallback.setRecordingList(params, recordingList);
         //添加播放记录
-        addStudyProcessIntoRecordList(recordingList,userSession.getId());
+        addStudyProcessIntoRecordList(recordingList, userSession.getId());
         return ResponseUtil.build(recordingList);
     }
 
@@ -203,7 +204,7 @@ public class CourseControllerV3 {
 //            params.put("test","11");
 //        }
         CourseListV3DTO courseListV3 = courseBizService.getCourseListV3(params);
-        addStudyProcessIntoLiveList(courseListV3,userSession.getId());
+        addStudyProcessIntoLiveList(courseListV3, userSession.getId());
         return courseListV3;
     }
 
@@ -275,6 +276,7 @@ public class CourseControllerV3 {
                 );
             }
         }
+        addStudyProcessIntoSecrInfo(response,userSession.getId());
         return response;
     }
 
@@ -413,13 +415,14 @@ public class CourseControllerV3 {
 
     /**
      * 在录播课程列表中新增学习进度
+     *
      * @param netSchoolResponse 录播信息
      * @param id                用户id
      */
-    private void addStudyProcessIntoRecordList(NetSchoolResponse netSchoolResponse,int id){
-        LinkedHashMap result = (LinkedHashMap)(ResponseUtil.build(netSchoolResponse, false));
+    private void addStudyProcessIntoRecordList(NetSchoolResponse netSchoolResponse, int id) {
+        LinkedHashMap result = (LinkedHashMap) (ResponseUtil.build(netSchoolResponse, false));
         Object resultList = result.get("result");
-        if (null != resultList){
+        if (null != resultList) {
             List<Map> list = ((List<Map>) resultList).parallelStream()
                     .map(data -> {
                         //TODO: 获取当前课程的学习进度
@@ -427,8 +430,29 @@ public class CourseControllerV3 {
                         return data;
                     })
                     .collect(Collectors.toList());
-            result.replace("result",list);
+            result.replace("result", list);
             netSchoolResponse.setData(result);
+        }
+    }
+
+    /**
+     * 在播放列表添加播放进去
+     *
+     * @param response 播放列表信息
+     * @param id       用户id
+     */
+    private void addStudyProcessIntoSecrInfo(Object response, int id) {
+        JSONObject result = (JSONObject)response;
+        Object resultList = result.get("lession");
+        if (null != resultList) {
+            List<Map> list = ((List<Map>) resultList).parallelStream()
+                    .map(data -> {
+                        //TODO: 获取当前课程的学习进度
+                        data.put("process", 50);
+                        return data;
+                    })
+                    .collect(Collectors.toList());
+            result.replace("result", list);
         }
     }
 }
