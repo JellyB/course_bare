@@ -104,7 +104,7 @@ public class CourseControllerV3 {
         if (terminal == TerminalType.IPHONE || terminal == TerminalType.IPHONE_IPAD) {
             member = redisTemplate.opsForSet().isMember(CourseCacheKey.IOS_AUDIT_VERSION, cv);
         }
-        if (member) {
+        if (!member) {
             return MOCK_PAGE_RESPONSE;
         }
         //</editor-fold>
