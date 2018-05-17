@@ -3,7 +3,6 @@ package com.huatu.tiku.course.web.controller.v3;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
-import com.huatu.common.consts.TerminalType;
 import com.huatu.common.exception.BizException;
 import com.huatu.common.spring.event.EventPublisher;
 import com.huatu.common.utils.collection.HashMapBuilder;
@@ -17,7 +16,6 @@ import com.huatu.tiku.course.netschool.api.v3.UserCoursesServiceV3;
 import com.huatu.tiku.course.service.CourseBizService;
 import com.huatu.tiku.course.service.CourseCollectionBizService;
 import com.huatu.tiku.course.service.VersionService;
-import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
@@ -35,8 +33,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-
-import static com.huatu.tiku.course.util.ResponseUtil.MOCK_PAGE_RESPONSE;
 
 /**
  * @author hanchao
@@ -100,13 +96,13 @@ public class CourseControllerV3 {
             @Token UserSession userSession) {
         //TODO 此处用以判断是否为IOS内测版本，正式上线后可以删除
         //<editor-fold desc="此处用以判断是否为IOS内测版本，正式上线后可以删除">
-        Boolean member = false;
-        if (terminal == TerminalType.IPHONE || terminal == TerminalType.IPHONE_IPAD) {
-            member = redisTemplate.opsForSet().isMember(CourseCacheKey.IOS_AUDIT_VERSION, cv);
-        }
-        if (!member) {
-            return MOCK_PAGE_RESPONSE;
-        }
+//        Boolean member = false;
+//        if (terminal == TerminalType.IPHONE || terminal == TerminalType.IPHONE_IPAD) {
+//            member = redisTemplate.opsForSet().isMember(CourseCacheKey.IOS_AUDIT_VERSION, cv);
+//        }
+//        if (!member) {
+//            return MOCK_PAGE_RESPONSE;
+//        }
         //</editor-fold>
         int provinceId = AreaConstants.getNetSchoolProvinceId(userSession.getArea());
         Map<String, Object> params = HashMapBuilder.<String, Object>newBuilder()
