@@ -106,6 +106,6 @@ public interface CourseServiceV3 {
      * @param params
      * @return
      */
-    @GetMapping(value="/v3/classSearch.php?books=1")
+    @GetMapping(value="/v3/classSearch_new.php?books=1")
     NetSchoolResponse findBookList(@RequestParam Map<String,Object> params);
 }
