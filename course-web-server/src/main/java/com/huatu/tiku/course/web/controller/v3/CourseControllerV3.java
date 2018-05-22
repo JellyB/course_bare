@@ -396,6 +396,7 @@ public class CourseControllerV3 {
             Object resultList = result.get("lession");
             if (null != resultList) {
                 List<Map> list = ((List<Map>) resultList).parallelStream()
+                        .limit(5)
                         .map(data -> {
                             HashMap params = HashMapBuilder.newBuilder()
                                     .put("joinCode", data.get("JoinCode") == null ? "" : String.valueOf(data.get("JoinCode")))
