@@ -17,7 +17,6 @@ import com.huatu.tiku.course.netschool.api.v3.UserCoursesServiceV3;
 import com.huatu.tiku.course.service.CourseBizService;
 import com.huatu.tiku.course.service.CourseCollectionBizService;
 import com.huatu.tiku.course.service.VersionService;
-import com.huatu.tiku.course.util.HBaseApiResponseUtil;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
@@ -395,26 +394,43 @@ public class CourseControllerV3 {
             JSONObject result = (JSONObject) response;
             Object resultList = result.get("lession");
             if (null != resultList) {
-                List<Map> list = ((List<Map>) resultList).parallelStream()
-                        .limit(5)
+                //批量接口查询
+                List<HashMap> paramList = ((List<Map>) resultList).parallelStream()
                         .map(data -> {
-                            HashMap params = HashMapBuilder.newBuilder()
+                            HashMap params = HashMapBuilder.<String, Object>newBuilder()
+                                    .put("rid", String.valueOf(data.get("rid")))
                                     .put("joinCode", data.get("JoinCode") == null ? "" : String.valueOf(data.get("JoinCode")))
-                                    .put("rid", data.get("bjyRoomId") == null ? "" : String.valueOf(data.get("bjyRoomId")))
+                                    .put("roomId", data.get("bjyRoomId") == null ? "" : String.valueOf(data.get("bjyRoomId")))
                                     .put("bjySessionId", data.get("bjySessionId") == null ? "" : String.valueOf(data.get("bjySessionId")))
                                     .put("videoIdWithTeacher", data.get("videoIdWithTeacher") == null ? "" : String.valueOf(data.get("videoIdWithTeacher")))
                                     .put("videoIdWithoutTeacher", data.get("videoIdWithoutTeacher") == null ? "" : String.valueOf(data.get("videoIdWithoutTeacher")))
                                     .build();
-                            Object processData = videoServiceV1.videoProcessDetailV1(token, terminal, cv, params);
-                            Map<String, Object> buildResult = HBaseApiResponseUtil.buildResult(processData);
-                            if (null == buildResult || null == buildResult.get("wholeTime") || (int) buildResult.get("wholeTime") == 0) {
-                                data.put("process", 0);
+                            return params;
+                        })
+                        .collect(Collectors.toList());
+                Object data = videoServiceV1.videoProcessDetailV1(token, terminal, cv, paramList);
+                List<HashMap<String, Object>> hbaseDataList = (List<HashMap<String, Object>>) ((Map<String, Object>) data).get("data");
+                //组装进度数据
+                List<Map> list = ((List<Map>) resultList).parallelStream()
+                        .map(lessionData -> {
+                            //查询匹配的数据
+                            Optional<HashMap<String, Object>> first = hbaseDataList.parallelStream()
+                                    .filter(hBaseData -> String.valueOf(lessionData.get("rid")).equals(String.valueOf(hBaseData.get("rid"))))
+                                    .findFirst();
+                            //如果有匹配数据
+                            if (first.isPresent()) {
+                                HashMap<String, Object> buildResult = first.get();
+                                if (null == buildResult || null == buildResult.get("wholeTime") || (int) buildResult.get("wholeTime") == 0) {
+                                    lessionData.put("process", 0);
+                                } else {
+                                    float process = Float.valueOf((int) buildResult.get("playTime"))
+                                            / Float.valueOf((int) buildResult.get("wholeTime"));
+                                    lessionData.put("process", (int) (process * 100));
+                                }
                             } else {
-                                float process = Float.valueOf((int) buildResult.get("playTime"))
-                                        / Float.valueOf((int) buildResult.get("wholeTime"));
-                                data.put("process", (int) (process * 100));
+                                lessionData.put("process", 0);
                             }
-                            return data;
+                            return lessionData;
                         })
                         .collect(Collectors.toList());
                 result.replace("result", list);

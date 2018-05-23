@@ -24,7 +24,7 @@ public class HBaseApiResponseUtil {
      * @param o
      * @return
      */
-    public static Map<String, Object> buildResult(Object o) {
+    public static Object buildResult(Object o) {
         if (o == null) {
             return EMPTY;
         }
