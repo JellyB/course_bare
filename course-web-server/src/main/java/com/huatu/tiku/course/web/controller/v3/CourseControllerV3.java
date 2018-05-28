@@ -402,9 +402,10 @@ public class CourseControllerV3 {
                                     .put("joinCode", data.get("JoinCode") == null ? "" : String.valueOf(data.get("JoinCode")))
                                     .put("roomId", data.get("bjyRoomId") == null ? "" : String.valueOf(data.get("bjyRoomId")))
                                     .put("bjySessionId", data.get("bjySessionId") == null ? "" : String.valueOf(data.get("bjySessionId")))
-                                    .put("videoIdWithTeacher", data.get("videoIdWithTeacher") == null ? "" : String.valueOf(data.get("videoIdWithTeacher")))
-                                    .put("videoIdWithoutTeacher", data.get("videoIdWithoutTeacher") == null ? "" : String.valueOf(data.get("videoIdWithoutTeacher")))
                                     .build();
+                            String hasTeacher = String.valueOf(data.get("hasTeacher"));
+                            params.put(hasTeacher.equals("0") ? "videoIdWithTeacher" : "videoIdWithoutTeacher",
+                                    data.get("bjyVideoId") == null ? "" : String.valueOf(data.get("bjyVideoId")));
                             return params;
                         })
                         .collect(Collectors.toList());
