@@ -3,7 +3,6 @@ package com.huatu.tiku.course.netschool.api.v4;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
@@ -23,7 +22,7 @@ public interface AppServiceV4 {
             @RequestParam("bjySessionId") int bjySessionId,
             @RequestParam("videoId") int videoId);
 
-    @PostMapping("/collectionclasses/collection_classes")
+    @GetMapping("/collectionclasses/collection_classes")
     NetSchoolResponse collectionClasses(
             @RequestParam("page") int page,
             @RequestParam("pageSize") int pageSize,
