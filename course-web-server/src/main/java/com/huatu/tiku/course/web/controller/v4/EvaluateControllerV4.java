@@ -46,7 +46,7 @@ public class EvaluateControllerV4 {
         return ResponseUtil.build(netSchoolResponse);
     }
 
-    @PostMapping("/collectionClasses")
+    @GetMapping("/collectionClasses")
     public Object collectionClasses(
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize,
