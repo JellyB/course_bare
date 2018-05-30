@@ -19,14 +19,14 @@ public interface AppServiceV4 {
 
     @GetMapping("/lession/token")
     NetSchoolResponse lessionToken(
-            @RequestParam int bjyRoomId,
-            @RequestParam int bjySessionId,
-            @RequestParam int videoId);
+            @RequestParam("bjyRoomId") int bjyRoomId,
+            @RequestParam("bjySessionId") int bjySessionId,
+            @RequestParam("videoId") int videoId);
 
     @PostMapping("/collectionclasses/collection_classes")
     NetSchoolResponse collectionClasses(
-            @RequestParam int page,
-            @RequestParam int pageSize,
-            @RequestParam int collectionId
+            @RequestParam("page") int page,
+            @RequestParam("pageSize") int pageSize,
+            @RequestParam("collectionId") int collectionId
     );
 }
