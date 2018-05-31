@@ -6,6 +6,7 @@ import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v4.AppServiceV4;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,10 +37,10 @@ public class EvaluateControllerV4 {
 
     @GetMapping("/token")
     public Object lessionToken(
-            @RequestParam(required = false) int bjyRoomId,
-            @RequestParam(required = false) int bjySessionId,
-            @RequestParam(required = false) int videoId) {
-        if (0 == bjyRoomId && 0 == videoId) {
+            @RequestParam(required = false) String bjyRoomId,
+            @RequestParam(required = false) String bjySessionId,
+            @RequestParam(required = false) String videoId) {
+        if (StringUtils.isBlank(bjyRoomId) && StringUtils.isBlank(videoId)) {
             return ErrorResult.create(50000, "服务器内部错误,缺少参数");
         }
         NetSchoolResponse netSchoolResponse = appService.lessionToken(bjyRoomId, bjySessionId, videoId);

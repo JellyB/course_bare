@@ -18,9 +18,9 @@ public interface AppServiceV4 {
 
     @GetMapping("/lession/token")
     NetSchoolResponse lessionToken(
-            @RequestParam("bjyRoomId") int bjyRoomId,
-            @RequestParam("bjySessionId") int bjySessionId,
-            @RequestParam("videoId") int videoId);
+            @RequestParam("bjyRoomId") String bjyRoomId,
+            @RequestParam("bjySessionId") String bjySessionId,
+            @RequestParam("videoId") String videoId);
 
     @GetMapping("/collectionclasses/collection_classes")
     NetSchoolResponse collectionClasses(
