@@ -32,6 +32,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -434,6 +435,8 @@ public class CourseControllerV3 {
                                     } else {
                                         float process = Float.valueOf((int) buildResult.get("playTime"))
                                                 / Float.valueOf((int) buildResult.get("wholeTime"));
+                                        BigDecimal bg = new BigDecimal(process);
+                                        double f1 = bg.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
                                         lessionData.put("process", (int) (process * 100));
                                     }
                                 } else {
