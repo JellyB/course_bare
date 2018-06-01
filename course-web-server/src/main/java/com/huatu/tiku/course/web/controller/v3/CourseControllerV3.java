@@ -403,8 +403,7 @@ public class CourseControllerV3 {
                                     .put("roomId", data.get("bjyRoomId") == null ? "" : String.valueOf(data.get("bjyRoomId")))
                                     .put("bjySessionId", data.get("bjySessionId") == null ? "" : String.valueOf(data.get("bjySessionId")))
                                     .build();
-                            String hasTeacher = String.valueOf(data.get("hasTeacher"));
-                            params.put(hasTeacher.equals("0") ? "videoIdWithTeacher" : "videoIdWithoutTeacher",
+                            params.put(data.get("hasTeacher") == null || String.valueOf(data.get("hasTeacher")).equals("0") ? "videoIdWithoutTeacher" : "videoIdWithTeacher",
                                     data.get("bjyVideoId") == null ? "" : String.valueOf(data.get("bjyVideoId")));
                             return params;
                         })
