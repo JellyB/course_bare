@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.web.controller.v3;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
@@ -24,6 +25,7 @@ import com.huatu.tiku.springboot.basic.reward.event.RewardActionEvent;
 import com.huatu.tiku.springboot.basic.subject.SubjectEnum;
 import com.huatu.tiku.springboot.basic.subject.SubjectService;
 import com.huatu.tiku.springboot.users.support.Token;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -41,6 +43,7 @@ import java.util.stream.Collectors;
  * @author hanchao
  * @date 2017/9/13 15:41
  */
+@Slf4j
 @RestController
 @RequestMapping(value = "v3/courses")
 public class CourseControllerV3 {
@@ -403,13 +406,17 @@ public class CourseControllerV3 {
                                     .put("roomId", data.get("bjyRoomId") == null ? "" : String.valueOf(data.get("bjyRoomId")))
                                     .put("bjySessionId", data.get("bjySessionId") == null ? "" : String.valueOf(data.get("bjySessionId")))
                                     .build();
-                            params.put(data.get("hasTeacher") == null || String.valueOf(data.get("hasTeacher")).equals("0") ? "videoIdWithoutTeacher" : "videoIdWithTeacher",
+                            params.put((data.get("hasTeacher") == null || String.valueOf(data.get("hasTeacher")).equals("0")) ? "videoIdWithoutTeacher" : "videoIdWithTeacher",
                                     data.get("bjyVideoId") == null ? "" : String.valueOf(data.get("bjyVideoId")));
                             return params;
                         })
                         .collect(Collectors.toList());
+
                 Object data = videoServiceV1.videoProcessDetailV1(token, terminal, cv, paramList);
+                log.info(" videoServiceV1 videoProcessDetailV1 ===> token = {},paramList = {}",token, JSON.toJSON(paramList));
+                long currentTimeMillis = System.currentTimeMillis();
                 List<HashMap<String, Object>> hbaseDataList = (List<HashMap<String, Object>>) ((Map<String, Object>) data).get("data");
+                log.info(" videoServiceV1 videoProcessDetailV1 ===> result = {},time = {}",JSON.toJSON(hbaseDataList),System.currentTimeMillis() - currentTimeMillis);
                 if (null != hbaseDataList) {
                     //组装进度数据
                     List<Map> list = ((List<Map>) resultList).parallelStream()
