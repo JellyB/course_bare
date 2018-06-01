@@ -436,6 +436,15 @@ public class CourseControllerV3 {
                             })
                             .collect(Collectors.toList());
                     result.replace("result", list);
+                } else {
+                    //此处只会在 快速失败的情况下被调用
+                    List<Map> list = ((List<Map>) resultList).parallelStream()
+                            .map(lessionData -> {
+                                lessionData.put("process", 0);
+                                return lessionData;
+                            })
+                            .collect(Collectors.toList());
+                    result.replace("result", list);
                 }
             }
         }
