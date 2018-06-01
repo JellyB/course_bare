@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 
 
-@FeignClient(value = "hbase-service", fallback = VideoServiceV1Fallback.class)
+@FeignClient(value = "hbase-service",fallback = VideoServiceV1Fallback.class,path = "/hbase")
 public interface VideoServiceV1 {
 
     @PostMapping(value = "video/process/detail")
