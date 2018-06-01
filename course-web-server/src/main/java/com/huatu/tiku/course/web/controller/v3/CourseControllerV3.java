@@ -437,7 +437,7 @@ public class CourseControllerV3 {
                                                 / Float.valueOf((int) buildResult.get("wholeTime"));
                                         BigDecimal bg = new BigDecimal(process);
                                         double f1 = bg.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
-                                        lessionData.put("process", (int) (process * 100));
+                                        lessionData.put("process", f1 * 100);
                                     }
                                 } else {
                                     lessionData.put("process", 0);
