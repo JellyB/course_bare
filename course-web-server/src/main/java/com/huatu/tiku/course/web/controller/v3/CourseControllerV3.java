@@ -412,11 +412,12 @@ public class CourseControllerV3 {
                         })
                         .collect(Collectors.toList());
 
+                long currentTimeMillis = System.currentTimeMillis();
                 Object data = videoServiceV1.videoProcessDetailV1(token, terminal, cv, paramList);
                 log.info(" videoServiceV1 videoProcessDetailV1 ===> token = {},paramList = {}",token, JSON.toJSON(paramList));
-                long currentTimeMillis = System.currentTimeMillis();
                 List<HashMap<String, Object>> hbaseDataList = (List<HashMap<String, Object>>) ((Map<String, Object>) data).get("data");
                 log.info(" videoServiceV1 videoProcessDetailV1 ===> result = {},time = {}",JSON.toJSON(hbaseDataList),System.currentTimeMillis() - currentTimeMillis);
+
                 if (null != hbaseDataList) {
                     //组装进度数据
                     List<Map> list = ((List<Map>) resultList).parallelStream()
