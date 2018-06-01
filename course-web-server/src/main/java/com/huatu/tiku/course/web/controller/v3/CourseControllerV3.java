@@ -411,30 +411,32 @@ public class CourseControllerV3 {
                         .collect(Collectors.toList());
                 Object data = videoServiceV1.videoProcessDetailV1(token, terminal, cv, paramList);
                 List<HashMap<String, Object>> hbaseDataList = (List<HashMap<String, Object>>) ((Map<String, Object>) data).get("data");
-                //组装进度数据
-                List<Map> list = ((List<Map>) resultList).parallelStream()
-                        .map(lessionData -> {
-                            //查询匹配的数据
-                            Optional<HashMap<String, Object>> first = hbaseDataList.parallelStream()
-                                    .filter(hBaseData -> String.valueOf(lessionData.get("rid")).equals(String.valueOf(hBaseData.get("rid"))))
-                                    .findFirst();
-                            //如果有匹配数据
-                            if (first.isPresent()) {
-                                HashMap<String, Object> buildResult = first.get();
-                                if (null == buildResult || null == buildResult.get("wholeTime") || (int) buildResult.get("wholeTime") == 0) {
-                                    lessionData.put("process", 0);
+                if (null != hbaseDataList) {
+                    //组装进度数据
+                    List<Map> list = ((List<Map>) resultList).parallelStream()
+                            .map(lessionData -> {
+                                //查询匹配的数据
+                                Optional<HashMap<String, Object>> first = hbaseDataList.parallelStream()
+                                        .filter(hBaseData -> String.valueOf(lessionData.get("rid")).equals(String.valueOf(hBaseData.get("rid"))))
+                                        .findFirst();
+                                //如果有匹配数据
+                                if (first.isPresent()) {
+                                    HashMap<String, Object> buildResult = first.get();
+                                    if (null == buildResult || null == buildResult.get("wholeTime") || (int) buildResult.get("wholeTime") == 0) {
+                                        lessionData.put("process", 0);
+                                    } else {
+                                        float process = Float.valueOf((int) buildResult.get("playTime"))
+                                                / Float.valueOf((int) buildResult.get("wholeTime"));
+                                        lessionData.put("process", (int) (process * 100));
+                                    }
                                 } else {
-                                    float process = Float.valueOf((int) buildResult.get("playTime"))
-                                            / Float.valueOf((int) buildResult.get("wholeTime"));
-                                    lessionData.put("process", (int) (process * 100));
+                                    lessionData.put("process", 0);
                                 }
-                            } else {
-                                lessionData.put("process", 0);
-                            }
-                            return lessionData;
-                        })
-                        .collect(Collectors.toList());
-                result.replace("result", list);
+                                return lessionData;
+                            })
+                            .collect(Collectors.toList());
+                    result.replace("result", list);
+                }
             }
         }
     }
