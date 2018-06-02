@@ -389,7 +389,7 @@ public class CourseControllerV3 {
     }
 
     /**
-     * 在播放列表添加播放进去
+     * 在播放列表添加播放进度
      *
      * @param response 播放列表信息
      */
