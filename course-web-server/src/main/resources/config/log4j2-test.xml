@@ -15,26 +15,9 @@
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
             </Policies>
-            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
             <DefaultRolloverStrategy>
                 <Delete basePath="${log_dir}/pack/">
                     <IfLastModified age="30d" />
-                </Delete>
-            </DefaultRolloverStrategy>
-        </RollingFile>
-        <!--   用WARN记录用户行为日志   -->
-        <RollingFile name="WARN" fileName="${log_dir}/${server_name}_action.log"
-                     filePattern="${log_dir}/pack/${server_name}_action-%d{yyyy-MM-dd}.log.zip"
-                     immediateFlush="true">
-            <PatternLayout charset="UTF-8"
-                           pattern="${sys:LOG_PATTERN}"/>
-            <Policies>
-                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
-            </Policies>
-            <ThresholdFilter level="WARN" onMatch="ACCEPT" onMismatch="DENY"/>
-            <DefaultRolloverStrategy>
-                <Delete basePath="${log_dir}/pack/">
-                    <IfLastModified age="4d" />
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
@@ -63,7 +46,6 @@
         <Logger name="com.huatu.tiku" level="DEBUG" additivity="false" includeLocation="true">
             <AppenderRef ref="INF"/>
             <AppenderRef ref="ERR"/>
-            <AppenderRef ref="WARN"/>
         </Logger>
         <Logger name="com.huatu.tiku.course.netschool.api" level="DEBUG" additivity="false" includeLocation="true">
             <AppenderRef ref="INF"/>
