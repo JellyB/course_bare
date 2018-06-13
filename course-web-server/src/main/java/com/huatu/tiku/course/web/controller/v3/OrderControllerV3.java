@@ -13,6 +13,7 @@ import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.springboot.users.support.Token;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -30,6 +31,7 @@ import java.util.Map;
  * @author hanchao
  * @date 2017/9/14 16:31
  */
+@Slf4j
 @RestController
 @RequestMapping("/v3/orders")
 public class OrderControllerV3 {
@@ -54,12 +56,13 @@ public class OrderControllerV3 {
      * @return
      */
     @GetMapping("/previnfo")
-    public Object getPrevInfo(@RequestParam int rid,
+    public Object getPrevInfo(@RequestParam int rid,@RequestHeader(required = false) int terminal,@RequestHeader(required = false) String cv,
                               @Token UserSession userSession) {
         Map<String,Object> params = Maps.newHashMap();
         params.put("rid",rid);
         params.put("action","placeOrder");
         params.put("username",userSession.getUname());
+        log.warn("5$${}$${}$${}$${}$${}$${}",rid,userSession.getId(),userSession.getUname(),String.valueOf(System.currentTimeMillis()),cv,terminal);
         return ResponseUtil.build(promoteCoreServiceV3.getPrevInfo(RequestUtil.encrypt(params)),true);
     }
 
@@ -71,7 +74,7 @@ public class OrderControllerV3 {
      * @throws Exception
      */
     @PostMapping("/free")
-    public Object freeCourse(@RequestHeader int terminal,
+    public Object freeCourse(@RequestHeader int terminal,@RequestHeader(required = false) String cv,
                              @RequestParam int courseId,
                              @Token UserSession userSession) throws Exception {
         String uname = userSession.getUname();
@@ -85,6 +88,8 @@ public class OrderControllerV3 {
 
        // return ResponseUtil.build(orderServiceV3.getFree(RequestUtil.encryptJsonParams(parameterMap)));
         orderServiceV3.getFree(RequestUtil.encryptJsonParams(parameterMap));
+        log.warn("11$${}$${}$${}$${}$${}$${}",courseId,userSession.getId(),userSession.getUname(),String.valueOf(System.currentTimeMillis()),cv,terminal);
+
         return SuccessMessage.create("下单成功");
 
     }
@@ -105,7 +110,8 @@ public class OrderControllerV3 {
                               @RequestParam(required = false,defaultValue = "0") String fromuser,
                               @RequestParam String tjCode,
                               @RequestParam(required = false) String FreeCardID,
-                              @RequestHeader int terminal,
+                              @RequestHeader(required = false) int terminal,
+                              @RequestHeader(required = false) String cv,
                               @Token UserSession userSession) {
         Map<String,Object> params = Maps.newHashMap();
         params.put("action","createOrder");
@@ -116,7 +122,7 @@ public class OrderControllerV3 {
         params.put("source",(terminal == 2 || terminal == 5)?'I':'A');//不是ios，就传android
         params.put("tjCode",tjCode);
         params.put("username",userSession.getUname());
-
+        log.warn("6$${}$${}$${}$${}$${}$${}$${}$${}$${}$${}",addressid,rid,userSession.getId(),userSession.getUname(),String.valueOf(System.currentTimeMillis()),cv,terminal,fromuser,tjCode,FreeCardID);
         return ResponseUtil.build(promoteCoreServiceV3.createOrder(RequestUtil.encrypt(params)),true);
     }
 
@@ -143,11 +149,14 @@ public class OrderControllerV3 {
      * @return
      */
     @PostMapping("/{orderNo}/cancel")
-    public Object cancelOrder(@PathVariable String orderNo) {
+    public Object cancelOrder(@PathVariable String orderNo, @RequestHeader(required = false) int terminal,
+                              @RequestHeader(required = false) String cv,
+                              @Token UserSession userSession) {
         Map<String,Object> params = HashMapBuilder.<String,Object>newBuilder()
                 .put("action","cancel")
                 .put("ordernum",orderNo)
                 .build();
+        log.warn("12$${}$${}$${}$${}$${}$${}",orderNo,userSession.getId(),userSession.getUname(),String.valueOf(System.currentTimeMillis()),cv,terminal);
         return ResponseUtil.build(orderServiceV3.cancelOrder(RequestUtil.encrypt(params)),true);
     }
 
@@ -179,13 +188,15 @@ public class OrderControllerV3 {
     @PostMapping("/{orderNo}/pay")
     public Object payOrder(@PathVariable String orderNo,
                            @RequestParam int payment,
-                           @Token UserSession session) {
+                           @Token UserSession session,@RequestHeader(required = false) int terminal,
+    @RequestHeader(required = false) String cv) {
         Map<String,Object> params = HashMapBuilder.<String,Object>newBuilder()
                 .put("action","pay")
                 .put("ordernum",orderNo)
                 .put("payment",payment)
                 .put("username",session.getUname())
                 .build();
+        log.warn("7$${}$${}$${}$${}$${}$${}$${}",orderNo,payment,session.getId(),session.getUname(),String.valueOf(System.currentTimeMillis()),cv,terminal);
         return ResponseUtil.build(promoteCoreServiceV3.payOrder(RequestUtil.encrypt(params)),true);
     }
 
