@@ -30,6 +30,7 @@ import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -114,8 +115,12 @@ public class CourseControllerV3 {
         //<editor-fold desc="此处用以判断是否为IOS内测版本，正式上线后可以删除">
         Boolean member = false;
         if (terminal == TerminalType.IPHONE || terminal == TerminalType.IPHONE_IPAD) {
-            member = redisTemplate.getConnectionFactory().getConnection().sIsMember(CourseCacheKey.IOS_AUDIT_VERSION.getBytes(),cv.getBytes());
-            log.info("member={}",member);
+            RedisConnection connection = redisTemplate.getConnectionFactory().getConnection();
+            try{
+                member = connection.sIsMember(CourseCacheKey.IOS_AUDIT_VERSION.getBytes(),cv.getBytes());
+            }finally {
+                connection.close();
+            }
         }
         if (!member) {
             return MOCK_PAGE_RESPONSE;
