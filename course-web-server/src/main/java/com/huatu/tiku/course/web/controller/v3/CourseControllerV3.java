@@ -115,6 +115,7 @@ public class CourseControllerV3 {
         Boolean member = false;
         if (terminal == TerminalType.IPHONE || terminal == TerminalType.IPHONE_IPAD) {
             member = redisTemplate.getConnectionFactory().getConnection().sIsMember(CourseCacheKey.IOS_AUDIT_VERSION.getBytes(),cv.getBytes());
+            log.info("member={}",member);
         }
         if (!member) {
             return MOCK_PAGE_RESPONSE;
