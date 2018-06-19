@@ -192,6 +192,12 @@
             <artifactId>common-jwt</artifactId>
         </dependency>
 
+        <!-- 引入其他项目的 common -->
+        <dependency>
+            <groupId>com.huatu.tiku</groupId>
+            <artifactId>pandora-backend-common</artifactId>
+            <version>${default.env.version}</version>
+        </dependency>
     </dependencies>
 
 
