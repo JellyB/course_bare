@@ -102,7 +102,9 @@ public class SydwCourseControllerV2 {
     @RequestMapping(value = "search", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, method = RequestMethod.GET)
     public Object search(@Token UserSession userSession,
                          @RequestParam int page,
-                         @RequestParam String keywords) throws Exception {
+                         @RequestParam String keywords,
+            @RequestHeader(required = false) String cv,
+                         @RequestHeader(required = false) int terminal) throws Exception {
         String username = userSession.getUname();
         int catgory = userSession.getCategory();
 
@@ -113,7 +115,7 @@ public class SydwCourseControllerV2 {
         //多个空格转为空字符串
         parameterMap.put("keywords", StringUtils.trimToEmpty(keywords));
         parameterMap.put("categoryid", transformToNetschool(catgory));
-
+        log.warn("8$${}$${}$${}$${}$${}$${}$${}$${}",keywords,catgory,userSession.getId(),userSession.getUname(),String.valueOf(System.currentTimeMillis()),cv,terminal);
         return ResponseUtil.build(sydwCourseService.allCollectionList(parameterMap));
     }
 

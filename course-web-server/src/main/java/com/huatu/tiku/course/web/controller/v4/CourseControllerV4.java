@@ -9,6 +9,7 @@ import com.huatu.tiku.course.netschool.api.fall.CourseServiceV4Fallback;
 import com.huatu.tiku.course.netschool.api.v4.CourseServiceV4;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +19,7 @@ import java.util.Map;
  * @author hanchao
  * @date 2018/3/6 15:15
  */
+@Slf4j
 @RestController
 @RequestMapping(value = "/courses")
 @ApiVersion("v4")
@@ -57,6 +59,7 @@ public class CourseControllerV4 {
                 .put("provinceid",provinceId).build();
         NetSchoolResponse recordingList = courseServiceV4.findRecordingList(params);
         courseServiceV4Fallback.setRecordingList(params,recordingList);
+        log.warn("2$${}$${}$${}$${}$${}$${}$${}$${}$${}",categoryid,subjectid,userSession.getId(),userSession.getUname(),keywords,String.valueOf(System.currentTimeMillis()),cv,terminal,provinceId);
         return ResponseUtil.build(recordingList);
     }
 }

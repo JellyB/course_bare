@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
+import com.huatu.common.consts.TerminalType;
 import com.huatu.common.exception.BizException;
 import com.huatu.common.spring.event.EventPublisher;
 import com.huatu.common.utils.collection.HashMapBuilder;
@@ -18,6 +19,7 @@ import com.huatu.tiku.course.netschool.api.v3.UserCoursesServiceV3;
 import com.huatu.tiku.course.service.CourseBizService;
 import com.huatu.tiku.course.service.CourseCollectionBizService;
 import com.huatu.tiku.course.service.VersionService;
+import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
@@ -28,17 +30,17 @@ import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+
+import static com.huatu.tiku.course.util.ResponseUtil.MOCK_PAGE_RESPONSE;
 
 /**
  * @author hanchao
@@ -79,9 +81,13 @@ public class CourseControllerV3 {
      * @return
      */
     @GetMapping("/collection")
-    public Object getCollectionDetail(@RequestParam String shorttitle,
+    public Object getCollectionDetail(
+            @RequestHeader(value = "terminal") Integer terminal,
+            @RequestHeader(value = "cv") String cv,@RequestParam String shorttitle,
                                       @RequestParam int page,
                                       @Token UserSession userSession) {
+        //行为日志收集   格式说明 在云盘上 http://123.103.79.72:8025/index.php?explorer
+        log.warn("3$${}$${}$${}$${}$${}$${}",shorttitle,userSession.getId(),userSession.getUname(),String.valueOf(System.currentTimeMillis()),cv,terminal);
         return courseBizService.getCollectionList(shorttitle, page);
     }
 
@@ -105,14 +111,20 @@ public class CourseControllerV3 {
             @RequestParam(required = false, defaultValue = "1000") int subjectid,
             @Token UserSession userSession) {
         //TODO 此处用以判断是否为IOS内测版本，正式上线后可以删除
+
         //<editor-fold desc="此处用以判断是否为IOS内测版本，正式上线后可以删除">
-//        Boolean member = false;
-//        if (terminal == TerminalType.IPHONE || terminal == TerminalType.IPHONE_IPAD) {
-//            member = redisTemplate.opsForSet().isMember(CourseCacheKey.IOS_AUDIT_VERSION, cv);
-//        }
-//        if (!member) {
-//            return MOCK_PAGE_RESPONSE;
-//        }
+        Boolean member = false;
+        if (terminal == TerminalType.IPHONE || terminal == TerminalType.IPHONE_IPAD) {
+            RedisConnection connection = redisTemplate.getConnectionFactory().getConnection();
+            try{
+                member = connection.sIsMember(CourseCacheKey.IOS_AUDIT_VERSION.getBytes(),cv.getBytes());
+            }finally {
+                connection.close();
+            }
+        }
+        if (!member) {
+            return MOCK_PAGE_RESPONSE;
+        }
         //</editor-fold>
         int provinceId = AreaConstants.getNetSchoolProvinceId(userSession.getArea());
         Map<String, Object> params = HashMapBuilder.<String, Object>newBuilder()
@@ -137,7 +149,9 @@ public class CourseControllerV3 {
      * @return
      */
     @GetMapping("/recordings")
-    public Object recordingList(@RequestParam(required = false, defaultValue = "1001") int categoryid,
+    public Object recordingList(
+            @RequestHeader("cv") String cv,
+            @RequestHeader("terminal") int terminal,@RequestParam(required = false, defaultValue = "1001") int categoryid,
                                 @RequestParam(required = false, defaultValue = "1") int orderid,
                                 @RequestParam int page,
                                 @RequestParam(required = false, defaultValue = "") String keywords,
@@ -154,6 +168,8 @@ public class CourseControllerV3 {
                 .put("provinceid", provinceId).build();
         NetSchoolResponse recordingList = courseServiceV3.findRecordingList(params);
         courseServiceV3Fallback.setRecordingList(params, recordingList);
+        //行为日志收集   格式说明 在云盘上 http://123.103.79.72:8025/index.php?explorer
+        log.warn("2$${}$${}$${}$${}$${}$${}$${}$${}",categoryid,subjectid,userSession.getId(),userSession.getUname(),keywords,String.valueOf(System.currentTimeMillis()),cv,terminal);
         return ResponseUtil.build(recordingList);
     }
 
@@ -203,6 +219,7 @@ public class CourseControllerV3 {
                 .put("terminal", terminal)
                 .build();
         CourseListV3DTO courseListV3 = courseBizService.getCourseListV3(params);
+        log.warn("1$${}$${}$${}$${}$${}$${}$${}",categoryid,userSession.getId(),userSession.getUname(),keywords,String.valueOf(System.currentTimeMillis()),cv,terminal);
         return courseListV3;
     }
 
@@ -216,7 +233,10 @@ public class CourseControllerV3 {
      */
     @GetMapping(value = "/{rid}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public Object getCourseDetail(@Token UserSession userSession,
+                                  @RequestHeader("cv") String cv,
+                                  @RequestHeader("terminal") int terminal,
                                   @PathVariable int rid) throws BizException, ExecutionException, InterruptedException {
+        log.warn("4$${}$${}$${}$${}$${}$${}",rid,userSession.getId(),userSession.getUname(),String.valueOf(System.currentTimeMillis()),cv,terminal);
         return courseBizService.getCourseDetailV3(rid, userSession.getUname());
     }
 
@@ -345,6 +365,7 @@ public class CourseControllerV3 {
                 .put("orderId", orderIds)
                 .put("username", username)
                 .buildUnsafe();
+        log.warn("9$${}$${}$${}$${}$${}",courseIds,userSession.getId(),username,String.valueOf(System.currentTimeMillis()),orderIds);
         return ResponseUtil.build(userCoursesServiceV3.hideCourse(RequestUtil.encryptParams(params)));
     }
 
@@ -385,6 +406,7 @@ public class CourseControllerV3 {
         final HashMap<String, Object> params = Maps.newHashMap();
         params.put("username", username);
         params.put("rid", courseId);
+        log.warn("10$${}$${}$${}$${}$${}",courseId,userSession.getId(),username,String.valueOf(System.currentTimeMillis()));
         return ResponseUtil.build(userCoursesServiceV3.getMyPackCourseDetail(RequestUtil.encryptJsonParams(params)));
     }
 
