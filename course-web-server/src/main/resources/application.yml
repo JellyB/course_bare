@@ -59,9 +59,9 @@ spring:
   ### 数据库基本配置
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
-    druid:
-      monitor:
-        enabled: enabled
+  druid:
+    monitor:
+      enabled: enabled
 
 logging:
   config: "classpath:config/log4j2-${spring.profiles.active}.xml"
