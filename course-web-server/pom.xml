@@ -192,6 +192,12 @@
             <artifactId>common-jwt</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.huatu.commons.sdk</groupId>
+            <artifactId>common-baseMapper-helper</artifactId>
+            <version>${default.env.version}</version>
+        </dependency>
+
         <!-- 引入其他项目的 common -->
         <dependency>
             <groupId>com.huatu.tiku</groupId>
