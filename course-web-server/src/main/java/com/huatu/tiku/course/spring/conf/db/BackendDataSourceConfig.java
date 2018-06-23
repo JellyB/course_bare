@@ -102,6 +102,7 @@ public class BackendDataSourceConfig {
         return bean.getObject();
     }
 
+    @Primary
     @Bean(name = "backendTransactionManager")
     public DataSourceTransactionManager backendTransactionManager(
             @Qualifier("backendDataSource") DataSource dataSource
