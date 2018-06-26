@@ -16,7 +16,7 @@ public interface VideoServiceV1 {
     @PostMapping(value = "video/process/detail")
     Object videoProcessDetailV1(
             @RequestHeader("token") String token,
-            @RequestHeader("terminal") String terminal,
+            @RequestHeader("terminal") int terminal,
             @RequestHeader("cv") String cv,
             @RequestBody List<HashMap> params
     );

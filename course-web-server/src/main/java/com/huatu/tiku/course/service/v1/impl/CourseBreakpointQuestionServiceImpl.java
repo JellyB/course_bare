@@ -2,8 +2,8 @@ package com.huatu.tiku.course.service.v1.impl;
 
 import com.google.common.base.Stopwatch;
 import com.huatu.tiku.course.service.v1.CourseBreakpointQuestionService;
-import com.huatu.tiku.course.service.v1.cache.CacheUtil;
-import com.huatu.tiku.course.service.v1.cache.CourseBreakpointCacheKey;
+import com.huatu.tiku.course.service.cache.CacheUtil;
+import com.huatu.tiku.course.service.cache.CourseBreakpointCacheKey;
 import com.huatu.tiku.course.util.ZTKResponseUtil;
 import com.huatu.tiku.course.ztk.api.v1.question.QuestionServiceV1;
 import com.huatu.tiku.entity.CourseBreakpointQuestion;

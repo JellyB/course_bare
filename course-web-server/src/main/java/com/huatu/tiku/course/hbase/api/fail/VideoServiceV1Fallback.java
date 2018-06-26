@@ -16,7 +16,7 @@ import java.util.List;
 public class VideoServiceV1Fallback implements VideoServiceV1 {
 
     @Override
-    public Object videoProcessDetailV1(String token, String terminal, String cv, List<HashMap> params) {
+    public Object videoProcessDetailV1(String token, int terminal, String cv, List<HashMap> params) {
         log.info(" videoServiceV1 ==> videoProcessDetailV1 fail");
         return HashMapBuilder.newBuilder().build();
     }

@@ -1,0 +1,48 @@
+package com.huatu.tiku.course.service.v5.impl;
+
+import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.netschool.api.v5.CourseServiceV5;
+import com.huatu.tiku.course.service.cache.CacheUtil;
+import com.huatu.tiku.course.service.cache.CourseCacheKey;
+import com.huatu.tiku.course.service.v5.CourseServiceV5Biz;
+import com.huatu.tiku.course.util.ResponseUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+
+/**
+ * Created by lijun on 2018/6/25
+ */
+@Service
+public class CourseServiceV5BizImpl implements CourseServiceV5Biz {
+
+    @Autowired
+    private CacheUtil cacheUtil;
+
+    @Autowired
+    private CourseServiceV5 courseService;
+
+    @Override
+    public Object getClassDetail(HashMap<String, Object> params) {
+        Supplier key = () -> CourseCacheKey.courseDetailKey(params);
+        Supplier<Object> value = () -> {
+            NetSchoolResponse netSchoolResponse = courseService.getClassDetail(params);
+            Object result = ResponseUtil.build(netSchoolResponse);
+            return result;
+        };
+        return cacheUtil.getCacheStringValue(key,value,30,TimeUnit.MINUTES);
+    }
+
+    @Override
+    public Object getCourseIntroduction(int classId) {
+        Supplier key = () -> CourseCacheKey.courseIntroductionKey(classId);
+        Supplier<Object> value = () ->{
+            NetSchoolResponse netSchoolResponse = courseService.getCourseIntroduction(classId);
+            return ResponseUtil.build(netSchoolResponse);
+        };
+        return cacheUtil.getCacheStringValue(key,value,30,TimeUnit.MINUTES);
+    }
+}

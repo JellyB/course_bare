@@ -1,4 +1,4 @@
-package com.huatu.tiku.course.service.v1.cache;
+package com.huatu.tiku.course.service.cache;
 
 /**
  * Created by lijun on 2018/6/21

@@ -28,4 +28,10 @@ public interface AppServiceV4 {
             @RequestParam("pageSize") int pageSize,
             @RequestParam("collectionId") int collectionId
     );
+
+    /**
+     * 专栏
+     */
+    @GetMapping(value = "/netclasses/specialcolumn")
+    NetSchoolResponse specialColumn();
 }

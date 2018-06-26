@@ -51,8 +51,8 @@ public class EvaluateControllerV4 {
 
     @GetMapping("/collectionClasses")
     public Object collectionClasses(
-            @RequestHeader(value = "terminal",required = false) Integer terminal,
-            @RequestHeader(value = "cv",required = false) String cv,
+            @RequestHeader(value = "terminal", required = false) Integer terminal,
+            @RequestHeader(value = "cv", required = false) String cv,
             @Token UserSession userSession,
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize,
@@ -60,7 +60,15 @@ public class EvaluateControllerV4 {
     ) {
         NetSchoolResponse netSchoolResponse = appService.collectionClasses(page, pageSize, collectionId);
         //行为日志收集   格式说明 在云盘上 http://123.103.79.72:8025/index.php?explorer
-        log.warn("3$${}$${}$${}$${}$${}$${}",collectionId,userSession.getId(),userSession.getUname(),String.valueOf(System.currentTimeMillis()),cv,terminal);
+        log.warn("3$${}$${}$${}$${}$${}$${}", collectionId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
         return ResponseUtil.build(netSchoolResponse);
+    }
+
+    /**
+     * 专栏
+     */
+    @GetMapping("/specialColumn")
+    public Object specialColumn() {
+        return ResponseUtil.build(appService.specialColumn());
     }
 }

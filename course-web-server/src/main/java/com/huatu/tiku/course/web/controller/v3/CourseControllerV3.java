@@ -1,6 +1,5 @@
 package com.huatu.tiku.course.web.controller.v3;
 
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
 import com.huatu.common.consts.TerminalType;
@@ -11,7 +10,6 @@ import com.huatu.tiku.common.bean.AreaConstants;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.CourseListV3DTO;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
-import com.huatu.tiku.course.hbase.api.v1.VideoServiceV1;
 import com.huatu.tiku.course.netschool.api.fall.CourseServiceV3Fallback;
 import com.huatu.tiku.course.netschool.api.v3.CourseServiceV3;
 import com.huatu.tiku.course.netschool.api.v3.UserCoursesServiceV3;
@@ -21,8 +19,7 @@ import com.huatu.tiku.course.service.VersionService;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
-import com.huatu.tiku.springboot.basic.reward.RewardAction;
-import com.huatu.tiku.springboot.basic.reward.event.RewardActionEvent;
+import com.huatu.tiku.course.web.controller.util.CourseUtil;
 import com.huatu.tiku.springboot.basic.subject.SubjectEnum;
 import com.huatu.tiku.springboot.basic.subject.SubjectService;
 import com.huatu.tiku.springboot.users.support.Token;
@@ -34,13 +31,10 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 import static com.huatu.tiku.course.util.ResponseUtil.MOCK_PAGE_RESPONSE;
 
@@ -74,8 +68,7 @@ public class CourseControllerV3 {
     private RedisTemplate redisTemplate;
 
     @Autowired
-    private VideoServiceV1 videoServiceV1;
-
+    private CourseUtil courseUtil;
     /**
      * 课程合集详情
      *
@@ -266,7 +259,7 @@ public class CourseControllerV3 {
                                     @PathVariable int rid,
                                     @RequestParam(required = false, defaultValue = "0") int isTrial,
                                     @RequestParam(required = false, defaultValue = "0") int fatherId,
-                                    @RequestHeader("terminal") String terminal,
+                                    @RequestHeader("terminal") int terminal,
                                     @RequestHeader("cv") String cv
     ) {
         Map<String, Object> params = Maps.newHashMap();
@@ -277,32 +270,12 @@ public class CourseControllerV3 {
 
         NetSchoolResponse netSchoolResponse = courseServiceV3.getCourseSecrInfo(params);
         Object response = ResponseUtil.build(netSchoolResponse, true);
-
-        //发布事件
-        if (ResponseUtil.isSuccess(netSchoolResponse) && response instanceof Map && ((Map) response).containsKey("course")) {
-            Object courseDetail = ((Map) response).get("course");
-            if (courseDetail instanceof Map && ((Map) courseDetail).containsKey("free") && "1".equals(String.valueOf(((Map) courseDetail).get("free")))) {
-                //免费课
-                eventPublisher.publishEvent(RewardActionEvent.class,
-                        this,
-                        (event) -> event.setAction(RewardAction.ActionType.WATCH_FREE)
-                                .setUname(userSession.getUname())
-                                .setUid(userSession.getId())
-                );
-            } else {
-                //收费课
-                eventPublisher.publishEvent(RewardActionEvent.class,
-                        this,
-                        (event) -> event.setAction(RewardAction.ActionType.WATCH_PAY)
-                                .setUname(userSession.getUname())
-                                .setUid(userSession.getId())
-                );
-            }
-        }
-        addStudyProcessIntoSecrInfo(response, userSession.getToken(), cv, terminal);
+        //发布课程播放事件
+        courseUtil.pushPlayEvent(userSession,netSchoolResponse,response);
+        //添加课程进度
+        courseUtil.addStudyProcessIntoSecrInfo(response, userSession.getToken(), cv, terminal);
         return response;
     }
-
 
     /**
      * 课程播放接口
@@ -316,7 +289,6 @@ public class CourseControllerV3 {
                                      @PathVariable int rid) {
         return ResponseUtil.build(courseServiceV3.findTeachersByCourse(rid));
     }
-
 
     /**
      * 课程大纲
@@ -412,75 +384,4 @@ public class CourseControllerV3 {
         return ResponseUtil.build(userCoursesServiceV3.getMyPackCourseDetail(RequestUtil.encryptJsonParams(params)));
     }
 
-    /**
-     * 在播放列表添加播放进度
-     *
-     * @param response 播放列表信息
-     */
-    private void addStudyProcessIntoSecrInfo(Object response, final String token, final String cv, final String terminal) {
-        if (null != response) {
-            JSONObject result = (JSONObject) response;
-            Object resultList = result.get("lession");
-            if (null != resultList) {
-                //批量接口查询
-                List<HashMap> paramList = ((List<Map>) resultList).parallelStream()
-                        .map(data -> {
-                            HashMap params = HashMapBuilder.<String, Object>newBuilder()
-                                    .put("rid", String.valueOf(data.get("rid")))
-                                    .put("joinCode", data.get("JoinCode") == null ? "" : String.valueOf(data.get("JoinCode")))
-                                    .put("roomId", data.get("bjyRoomId") == null ? "" : String.valueOf(data.get("bjyRoomId")))
-                                    .put("sessionId", data.get("bjySessionId") == null ? "" : String.valueOf(data.get("bjySessionId")))
-                                    .build();
-                            params.put((data.get("hasTeacher") == null || String.valueOf(data.get("hasTeacher")).equals("0")) ? "videoIdWithoutTeacher" : "videoIdWithTeacher",
-                                    data.get("bjyVideoId") == null ? "" : String.valueOf(data.get("bjyVideoId")));
-                            return params;
-                        })
-                        .collect(Collectors.toList());
-
-                long currentTimeMillis = System.currentTimeMillis();
-                Object data = videoServiceV1.videoProcessDetailV1(token, terminal, cv, paramList);
-                //log.info(" videoServiceV1 videoProcessDetailV1 ===> token = {},paramList = {}",token, JSON.toJSON(paramList));
-                List<HashMap<String, Object>> hbaseDataList = (List<HashMap<String, Object>>) ((Map<String, Object>) data).get("data");
-                //log.info(" videoServiceV1 videoProcessDetailV1 ===> result = {},time = {}",JSON.toJSON(hbaseDataList),System.currentTimeMillis() - currentTimeMillis);
-
-                if (null != hbaseDataList) {
-                    //组装进度数据
-                    List<Map> list = ((List<Map>) resultList).parallelStream()
-                            .map(lessionData -> {
-                                //查询匹配的数据
-                                Optional<HashMap<String, Object>> first = hbaseDataList.parallelStream()
-                                        .filter(hBaseData -> String.valueOf(lessionData.get("rid")).equals(String.valueOf(hBaseData.get("rid"))))
-                                        .findFirst();
-                                //如果有匹配数据
-                                if (first.isPresent()) {
-                                    HashMap<String, Object> buildResult = first.get();
-                                    if (null == buildResult || null == buildResult.get("wholeTime") || (int) buildResult.get("wholeTime") == 0) {
-                                        lessionData.put("process", 0);
-                                    } else {
-                                        float process = Float.valueOf((int) buildResult.get("playTime"))
-                                                / Float.valueOf((int) buildResult.get("wholeTime"));
-                                        BigDecimal bg = new BigDecimal(process);
-                                        double f1 = bg.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
-                                        lessionData.put("process", f1 * 100);
-                                    }
-                                } else {
-                                    lessionData.put("process", 0);
-                                }
-                                return lessionData;
-                            })
-                            .collect(Collectors.toList());
-                    result.replace("result", list);
-                } else {
-                    //此处只会在 快速失败的情况下被调用
-                    List<Map> list = ((List<Map>) resultList).parallelStream()
-                            .map(lessionData -> {
-                                lessionData.put("process", 0);
-                                return lessionData;
-                            })
-                            .collect(Collectors.toList());
-                    result.replace("result", list);
-                }
-            }
-        }
-    }
 }

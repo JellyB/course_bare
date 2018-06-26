@@ -43,7 +43,7 @@ public class HbaseTest extends BaseTest {
 
         Object o = videoService.videoProcessDetailV1(
                 "4c32d806c4c14c829e3f107b7c3ba9a8",
-                "2",
+                2,
                 "6.1.0",
                 Lists.newArrayList(params)
         );

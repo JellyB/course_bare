@@ -1,0 +1,28 @@
+package com.huatu.tiku.course.service.cache;
+
+
+import com.huatu.common.utils.web.RequestUtil;
+
+import java.util.HashMap;
+
+/**
+ * 课程相关 key
+ * Created by lijun on 2018/6/25
+ */
+public final class CourseCacheKey {
+
+    /**
+     * 课程详情
+     */
+    public static String courseDetailKey(HashMap<String,Object> map){
+        String paramSign = RequestUtil.getParamSign(map);
+        return "course:detail:" + paramSign;
+    }
+
+    /**
+     * 课程介绍
+     */
+    public static String courseIntroductionKey(int classId){
+        return new StringBuilder("course:introduction:").append(classId).toString();
+    }
+}

@@ -1,0 +1,22 @@
+package com.huatu.tiku.course.service.v5;
+
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.HashMap;
+
+/**
+ * 封装 courseService 接口
+ * Created by lijun on 2018/6/25
+ */
+public interface CourseServiceV5Biz {
+
+    /**
+     * 获取课程详情
+     */
+    Object getClassDetail(@RequestParam HashMap<String, Object> params);
+
+    /**
+     * 获取课程介绍
+     */
+    Object getCourseIntroduction(@RequestParam int classId);
+}

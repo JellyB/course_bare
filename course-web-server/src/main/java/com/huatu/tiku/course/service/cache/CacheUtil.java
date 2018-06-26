@@ -1,4 +1,4 @@
-package com.huatu.tiku.course.service.v1.cache;
+package com.huatu.tiku.course.service.cache;
 
 import com.huatu.common.utils.cache.NullHolder;
 import org.springframework.data.redis.core.ValueOperations;
