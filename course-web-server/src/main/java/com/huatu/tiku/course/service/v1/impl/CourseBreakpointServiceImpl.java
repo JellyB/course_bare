@@ -38,7 +38,7 @@ public class CourseBreakpointServiceImpl extends BaseServiceHelperImpl<CourseBre
     CourseBreakpointQuestionService courseBreakpointQuestionService;
 
     @Cached(name = "课程-断点信息",
-            key = "T(com.huatu.tiku.course.service.v1.cache).breakpointKey(#map)",
+            key = "T(com.huatu.tiku.course.service.cache.CourseBreakpointCacheKey).breakpointKey(#map)",
             params = {@Cached.Param(name = "courseType=?&courseId=?", value = "map", type = Map.class)})
     @Override
     public Map<Integer, List<CourseBreakpoint>> listByCourseTypeAndId(Integer courseType, Long courseId) {
