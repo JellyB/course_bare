@@ -65,6 +65,6 @@ public interface CourseServiceV5 {
      * 获取所有老师介绍
      */
     @GetMapping(value = "/v4/common/teacher/teacher_info")
-    NetSchoolResponse getCourseTeacherInfo(@RequestParam("classId") int teacherId);
+    NetSchoolResponse getCourseTeacherInfo(@RequestParam("rid") int teacherId);
 
 }
