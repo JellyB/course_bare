@@ -67,4 +67,10 @@ public interface CourseServiceV5 {
     @GetMapping(value = "/v4/common/teacher/teacher_info")
     NetSchoolResponse getCourseTeacherInfo(@RequestParam("rid") int teacherId);
 
+    /**
+     * 获取课程说明
+     */
+    @GetMapping(value = "/v4/common/class/class_ext")
+    NetSchoolResponse getClassExt(@RequestParam("classId") int classId, @RequestParam("terminal") int terminal);
+
 }

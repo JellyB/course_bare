@@ -179,6 +179,17 @@ public class CourseControllerV5 {
     }
 
     /**
+     * 获取课程说明
+     */
+    @GetMapping("/{classId}/getClassExt")
+    public Object getClassExt(
+            @PathVariable("classId") int classId,
+            @RequestHeader int terminal
+    ) {
+        return ResponseUtil.build(courseService.getClassExt(classId, terminal));
+    }
+
+    /**
      * 构造课程列表查询参数
      *
      * @param cv         版本号
