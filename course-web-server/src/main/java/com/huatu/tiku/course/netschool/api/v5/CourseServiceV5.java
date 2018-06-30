@@ -69,8 +69,9 @@ public interface CourseServiceV5 {
 
     /**
      * 获取课程说明
+     * 获取 html 页面
      */
     @GetMapping(value = "/v4/common/class/class_ext")
-    NetSchoolResponse getClassExt(@RequestParam("classId") int classId, @RequestParam("terminal") int terminal);
+    String getClassExt(@RequestParam("classId") int classId, @RequestParam("terminal") int terminal);
 
 }

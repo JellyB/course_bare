@@ -12,6 +12,7 @@ import com.huatu.tiku.course.web.controller.util.CourseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -181,12 +182,12 @@ public class CourseControllerV5 {
     /**
      * 获取课程说明
      */
-    @GetMapping("/{classId}/getClassExt")
+    @GetMapping(value = "/{classId}/getClassExt", produces = MediaType.TEXT_HTML_VALUE + ";charset=utf-8")
     public Object getClassExt(
             @PathVariable("classId") int classId,
-            @RequestHeader int terminal
+            @RequestHeader(defaultValue = "1") int terminal
     ) {
-        return ResponseUtil.build(courseService.getClassExt(classId, terminal));
+        return courseService.getClassExt(classId, terminal);
     }
 
     /**
