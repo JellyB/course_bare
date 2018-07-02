@@ -33,16 +33,26 @@ public class CourseServiceV5BizImpl implements CourseServiceV5Biz {
             Object result = ResponseUtil.build(netSchoolResponse);
             return result;
         };
-        return cacheUtil.getCacheStringValue(key,value,30,TimeUnit.MINUTES);
+        return cacheUtil.getCacheStringValue(key, value, 30, TimeUnit.MINUTES);
     }
 
     @Override
-    public Object getCourseIntroduction(int classId) {
-        Supplier key = () -> CourseCacheKey.courseIntroductionKey(classId);
-        Supplier<Object> value = () ->{
+    public Object getCourseIntroduction(String userName, int classId) {
+        Supplier key = () -> CourseCacheKey.courseIntroductionKey(userName, classId);
+        Supplier<Object> value = () -> {
             NetSchoolResponse netSchoolResponse = courseService.getCourseIntroduction(classId);
             return ResponseUtil.build(netSchoolResponse);
         };
-        return cacheUtil.getCacheStringValue(key,value,30,TimeUnit.MINUTES);
+        return cacheUtil.getCacheStringValue(key, value, 30, TimeUnit.MINUTES);
+    }
+
+    @Override
+    public String getClassExt(int classId, int terminal) {
+        Supplier key = () -> CourseCacheKey.classExtKey(classId, terminal);
+        Supplier<String> value = () -> {
+            String classExt = courseService.getClassExt(classId, terminal);
+            return classExt;
+        };
+        return cacheUtil.getCacheStringValue(key, value, 30, TimeUnit.MINUTES);
     }
 }

@@ -80,26 +80,6 @@ public class CourseControllerV5 {
     }
 
     /**
-     * 查询面库课程列表
-     */
-    @GetMapping("icClassList")
-    public Object icClassList(
-            @RequestHeader String cv,
-            @RequestHeader int terminal,
-            @RequestParam(defaultValue = "1") int isFree,
-            @RequestParam(defaultValue = "0") int orderType,
-            @RequestParam int categoryId,
-            @RequestParam(defaultValue = "1000") int subjectId,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "8") int pageSize
-    ) {
-        int provinceId = -1;
-        HashMap map = buildParams(cv, terminal, isFree, orderType, categoryId, provinceId, subjectId, page, pageSize);
-        NetSchoolResponse netSchoolResponse = courseService.icClassList(map);
-        return ResponseUtil.build(netSchoolResponse);
-    }
-
-    /**
      * 课程播放
      */
     @GetMapping("/{classId}/getClassPlayInfo")
@@ -156,7 +136,7 @@ public class CourseControllerV5 {
                 .put("userName", userSession.getUname())
                 .build();
         log.warn("4$${}$${}$${}$${}$${}$${}", classId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
-        return courseServiceBiz.getClassDetail(map);
+        return courseService.getClassDetail(map);
     }
 
     /**
@@ -164,9 +144,10 @@ public class CourseControllerV5 {
      */
     @GetMapping("/{classId}/getCourseIntroduction")
     public Object getCourseIntroduction(
+            @Token UserSession userSession,
             @PathVariable("classId") int classId
     ) {
-        return courseServiceBiz.getCourseIntroduction(classId);
+        return courseServiceBiz.getCourseIntroduction(userSession.getUname(),classId);
     }
 
     /**
@@ -187,7 +168,7 @@ public class CourseControllerV5 {
             @PathVariable("classId") int classId,
             @RequestHeader(defaultValue = "1") int terminal
     ) {
-        return courseService.getClassExt(classId, terminal);
+        return courseServiceBiz.getClassExt(classId, terminal);
     }
 
     /**

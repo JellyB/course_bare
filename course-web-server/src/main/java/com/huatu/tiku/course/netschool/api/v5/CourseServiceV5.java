@@ -59,7 +59,7 @@ public interface CourseServiceV5 {
      * 获取课程介绍
      */
     @GetMapping(value = "/v4/common/class/course_introduction")
-    NetSchoolResponse getCourseIntroduction(@RequestParam("classId") int classId);
+    NetSchoolResponse getCourseIntroduction(@RequestParam("userName") String userName, @RequestParam("classId") int classId);
 
     /**
      * 获取所有老师介绍

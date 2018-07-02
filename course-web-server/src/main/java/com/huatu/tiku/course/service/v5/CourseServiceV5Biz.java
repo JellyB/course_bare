@@ -1,7 +1,5 @@
 package com.huatu.tiku.course.service.v5;
 
-import org.springframework.web.bind.annotation.RequestParam;
-
 import java.util.HashMap;
 
 /**
@@ -13,10 +11,15 @@ public interface CourseServiceV5Biz {
     /**
      * 获取课程详情
      */
-    Object getClassDetail(@RequestParam HashMap<String, Object> params);
+    Object getClassDetail(HashMap<String, Object> params);
 
     /**
      * 获取课程介绍
      */
-    Object getCourseIntroduction(@RequestParam int classId);
+    Object getCourseIntroduction(String userName, int classId);
+
+    /**
+     *
+     */
+    String getClassExt(int classId, int terminal);
 }
