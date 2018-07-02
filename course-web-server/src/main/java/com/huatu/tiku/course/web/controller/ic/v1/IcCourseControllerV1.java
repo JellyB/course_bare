@@ -18,7 +18,7 @@ import java.util.HashMap;
 @RestController
 @RequestMapping("/ic/course")
 @ApiVersion("v1")
-public class CourseControllerV1 {
+public class IcCourseControllerV1 {
 
 
     @Autowired

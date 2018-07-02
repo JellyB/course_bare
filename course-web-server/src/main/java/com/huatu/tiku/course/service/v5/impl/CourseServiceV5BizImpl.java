@@ -40,7 +40,7 @@ public class CourseServiceV5BizImpl implements CourseServiceV5Biz {
     public Object getCourseIntroduction(String userName, int classId) {
         Supplier key = () -> CourseCacheKey.courseIntroductionKey(userName, classId);
         Supplier<Object> value = () -> {
-            NetSchoolResponse netSchoolResponse = courseService.getCourseIntroduction(classId);
+            NetSchoolResponse netSchoolResponse = courseService.getCourseIntroduction(userName, classId);
             return ResponseUtil.build(netSchoolResponse);
         };
         return cacheUtil.getCacheStringValue(key, value, 30, TimeUnit.MINUTES);
