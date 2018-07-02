@@ -73,7 +73,7 @@ public class IcCourseControllerV1 {
                 .put("terminal", terminal)
                 .put("userName", userName)
                 .build();
-        return courseService.getClassDetail(map);
+        return ResponseUtil.build(courseService.getClassDetail(map));
     }
 
 

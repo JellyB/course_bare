@@ -136,7 +136,7 @@ public class CourseControllerV5 {
                 .put("userName", userSession.getUname())
                 .build();
         log.warn("4$${}$${}$${}$${}$${}$${}", classId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
-        return courseService.getClassDetail(map);
+        return ResponseUtil.build(courseService.getClassDetail(map));
     }
 
     /**
