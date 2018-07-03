@@ -19,7 +19,7 @@ public interface CourseServiceV5Biz {
     Object getCourseIntroduction(String userName, int classId);
 
     /**
-     *
+     * 获取课程说明
      */
     String getClassExt(int classId, int terminal);
 }

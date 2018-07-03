@@ -7,10 +7,7 @@ import com.huatu.tiku.course.netschool.api.v5.UserCourseServiceV5;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 
@@ -57,5 +54,23 @@ public class UserCourseControllerV5 {
                 .put("page", page)
                 .build();
         return ResponseUtil.build(userCourseService.getMyNotDeletedClasses(map));
+    }
+
+    /**
+     * 获取我的直播日历
+     */
+    @GetMapping("getLiveCalendar")
+    public Object getLiveCalendar(@Token UserSession userSession) {
+        return ResponseUtil.build(userCourseService.liveCalendar(userSession.getUname()));
+    }
+
+    /**
+     * 获取我的直播日历详情
+     */
+    @GetMapping("{idList}/liveCalendarDetail")
+    public Object liveCalendar(
+            @PathVariable("idList") String idList
+    ) {
+        return ResponseUtil.build(userCourseService.liveCalendarDetail(idList));
     }
 }

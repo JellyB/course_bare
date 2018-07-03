@@ -3,6 +3,7 @@ package com.huatu.tiku.course.netschool.api.v5;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
 
@@ -26,4 +27,16 @@ public interface UserCourseServiceV5 {
      */
     @GetMapping(value = "/v4/common/user/my_course?isDelete=0")
     NetSchoolResponse getMyNotDeletedClasses(Map<String, Object> params);
+
+    /**
+     * 查询我的直播日历
+     */
+    @GetMapping(value = "/v4/common/class/live_calendar")
+    NetSchoolResponse liveCalendar(@RequestParam("userName") String userName);
+
+    /**
+     * 直播日历详情
+     */
+    @GetMapping(value = "/v4/common/class/live_detail")
+    NetSchoolResponse liveCalendarDetail(@RequestParam("id") String idList);
 }
