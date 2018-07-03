@@ -33,14 +33,14 @@ public class EvaluationControllerV5 {
             @RequestParam int classId,
             @RequestParam(defaultValue = "0") int isLive,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int pageNum
+            @RequestParam(defaultValue = "10") int pageSize
     ) {
         HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
                 .put("classId", classId)
                 .put("terminal", terminal)
                 .put("isLive", isLive)
                 .put("page", page)
-                .put("pageNum", pageNum)
+                .put("pageNum", pageSize)
                 .build();
         return ResponseUtil.build(evaluationService.getClassEvaluation(map));
     }

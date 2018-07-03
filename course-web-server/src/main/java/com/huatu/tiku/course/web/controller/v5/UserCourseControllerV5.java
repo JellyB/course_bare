@@ -28,10 +28,14 @@ public class UserCourseControllerV5 {
     @GetMapping("getMyDeletedClasses")
     public Object getMyDeletedClasses(
             @Token UserSession userSession,
+            @RequestParam int cateId,
+            @RequestParam(defaultValue = "") String keyWord,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize
     ) {
         HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
+                .put("cateId", cateId)
+                .put("keyWord", keyWord)
                 .put("userName", userSession.getUname())
                 .put("pageSize", pageSize)
                 .put("page", page)
@@ -45,10 +49,14 @@ public class UserCourseControllerV5 {
     @GetMapping("getMyNotDeletedClasses")
     public Object getMyNotDeletedClasses(
             @Token UserSession userSession,
+            @RequestParam int cateId,
+            @RequestParam(defaultValue = "") String keyWord,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize
     ) {
         HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
+                .put("cateId", cateId)
+                .put("keyWord", keyWord)
                 .put("userName", userSession.getUname())
                 .put("pageSize", pageSize)
                 .put("page", page)

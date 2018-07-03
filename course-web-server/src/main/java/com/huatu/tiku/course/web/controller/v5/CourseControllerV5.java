@@ -108,14 +108,38 @@ public class CourseControllerV5 {
     }
 
     /**
-     * 获取课程大纲
+     * 获取课程大纲-售前
      */
     @GetMapping("/{classId}/classSyllabus")
     public Object classSyllabus(
-            @PathVariable("classId") int classId
+            @PathVariable("classId") int classId,
+            @RequestParam int parentId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int pageSize
     ) {
-        NetSchoolResponse netSchoolResponse = courseService.findTimetable(classId);
-        return ResponseUtil.build(netSchoolResponse);
+        return courseServiceBiz.findTimetable(classId, parentId, page, pageSize);
+    }
+
+    /**
+     * 获取课程大纲-售后
+     */
+    @GetMapping("/{classId}/purchasedClassSyllabus")
+    public Object purchasedClassSyllabus(
+            @Token UserSession userSession,
+            @PathVariable("classId") int classId,
+            @RequestParam int parentId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int pageSize
+    ) {
+        HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
+                .put("classId", classId)
+                .put("parentId", parentId)
+                .put("userName", userSession.getUname())
+                .put("page", page)
+                .put("pageSize", pageSize)
+                .build();
+        NetSchoolResponse timetable = courseService.findPurchasesTimetable(map);
+        return ResponseUtil.build(timetable);
     }
 
     /**
@@ -147,7 +171,7 @@ public class CourseControllerV5 {
             @Token UserSession userSession,
             @PathVariable("classId") int classId
     ) {
-        return courseServiceBiz.getCourseIntroduction(userSession.getUname(),classId);
+        return courseServiceBiz.getCourseIntroduction(userSession.getUname(), classId);
     }
 
     /**

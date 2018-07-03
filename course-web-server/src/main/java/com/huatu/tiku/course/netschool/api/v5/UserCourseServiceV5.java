@@ -20,13 +20,13 @@ public interface UserCourseServiceV5 {
      * @param params
      */
     @GetMapping(value = "/v4/common/user/my_course?isDelete=1")
-    NetSchoolResponse getMyDeletedClasses(Map<String, Object> params);
+    NetSchoolResponse getMyDeletedClasses(@RequestParam Map<String, Object> params);
 
     /**
      * 查询我的课程-未删除
      */
     @GetMapping(value = "/v4/common/user/my_course?isDelete=0")
-    NetSchoolResponse getMyNotDeletedClasses(Map<String, Object> params);
+    NetSchoolResponse getMyNotDeletedClasses(@RequestParam Map<String, Object> params);
 
     /**
      * 查询我的直播日历

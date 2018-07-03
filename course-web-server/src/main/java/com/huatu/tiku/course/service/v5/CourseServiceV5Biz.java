@@ -22,4 +22,9 @@ public interface CourseServiceV5Biz {
      * 获取课程说明
      */
     String getClassExt(int classId, int terminal);
+
+    /**
+     * 课程大纲
+     */
+    Object findTimetable(int classId, int parentId, int page, int pageSize);
 }

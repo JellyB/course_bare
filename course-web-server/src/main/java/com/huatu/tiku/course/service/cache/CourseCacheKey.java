@@ -33,4 +33,15 @@ public final class CourseCacheKey {
         return new StringBuilder("course:classExt:").append(classId).append(":").append(terminal).toString();
     }
 
+    /**
+     * 课程大纲
+     */
+    public static String timeTableKey(int classId, int parentId, int page, int pageSize) {
+        return new StringBuilder("course:timeTable")
+                .append(":").append(classId)
+                .append(":").append(parentId)
+                .append(":").append(page)
+                .append(":").append(pageSize)
+                .toString();
+    }
 }

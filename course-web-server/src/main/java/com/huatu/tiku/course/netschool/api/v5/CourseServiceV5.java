@@ -39,14 +39,17 @@ public interface CourseServiceV5 {
     NetSchoolResponse getCommonUserPlay(@RequestParam Map<String, Object> params);
 
     /**
-     * 课程大纲
+     * 课程大纲-售前
      * TODO: v3 Service 中有降级代码，但未被启用。
-     *
-     * @param classId
-     * @return
      */
     @GetMapping(value = "/v4/common/class/class_syllabus")
-    NetSchoolResponse findTimetable(@RequestParam("classId") int classId);
+    NetSchoolResponse findTimetable(@RequestParam Map<String, Object> params);
+
+    /**
+     * 课程大纲-售后
+     */
+    @GetMapping(value = "/v4/common/class/purchased_class_syllabus")
+    NetSchoolResponse findPurchasesTimetable(@RequestParam Map<String, Object> params);
 
     /**
      * 查询课程详情
