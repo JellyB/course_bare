@@ -40,7 +40,7 @@ public class EvaluationControllerV5 {
                 .put("terminal", terminal)
                 .put("isLive", isLive)
                 .put("page", page)
-                .put("pageNum", pageSize)
+                .put("pageSize", pageSize)
                 .build();
         return ResponseUtil.build(evaluationService.getClassEvaluation(map));
     }
@@ -53,13 +53,13 @@ public class EvaluationControllerV5 {
             @RequestHeader int terminal,
             @RequestParam int teacherId,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int pageNum
+            @RequestParam(defaultValue = "10") int pageSize
     ) {
         HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
                 .put("terminal", terminal)
                 .put("teacherId", teacherId)
                 .put("page", page)
-                .put("pageNum", pageNum)
+                .put("pageSize", pageSize)
                 .build();
         return ResponseUtil.build(evaluationService.getTeacherEvaluation(map));
     }
