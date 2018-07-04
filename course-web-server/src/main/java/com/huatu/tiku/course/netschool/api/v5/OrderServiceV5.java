@@ -41,5 +41,6 @@ public interface OrderServiceV5 {
     /**
      * 查询订单详情
      */
+    @GetMapping(value = "/v4/common/order/detail")
     NetSchoolResponse detail(@RequestParam("orderId") int orderId);
 }
