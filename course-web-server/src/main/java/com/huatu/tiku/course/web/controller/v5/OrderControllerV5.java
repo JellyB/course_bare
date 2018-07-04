@@ -3,6 +3,7 @@ package com.huatu.tiku.course.web.controller.v5;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.netschool.api.v5.OrderServiceV5;
+import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ public class OrderControllerV5 {
      */
     @GetMapping("/{orderId}/orderLogistics")
     public Object getOrderLogistics(@PathVariable("orderId") int orderId) {
-        return orderService.getOrderLogistics(orderId);
+        return ResponseUtil.build(orderService.getOrderLogistics(orderId));
     }
 
     /**
@@ -33,7 +34,7 @@ public class OrderControllerV5 {
      */
     @GetMapping("/{orderId}/lastOrderLogistics")
     public Object getLastOrderLogistics(@PathVariable("orderId") int orderId) {
-        return orderService.getLastOrderLogistics(orderId);
+        return ResponseUtil.build(orderService.getLastOrderLogistics(orderId));
     }
 
     /**
@@ -47,7 +48,7 @@ public class OrderControllerV5 {
             @PathVariable("orderId") int orderId
     ) {
         log.warn("12$${}$${}$${}$${}$${}$${}", orderId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
-        return orderService.cancelOrder(orderId, userSession.getUname());
+        return ResponseUtil.build(orderService.cancelOrder(orderId, userSession.getUname()));
     }
 
     /**
@@ -58,7 +59,16 @@ public class OrderControllerV5 {
             @Token UserSession userSession,
             @PathVariable("orderId") int orderId
     ) {
-        return orderService.deleteOrder(orderId, userSession.getUname());
+        return ResponseUtil.build(orderService.deleteOrder(orderId, userSession.getUname()));
     }
 
+    /**
+     * 获取订单详情
+     */
+    @GetMapping("{orderId}")
+    public Object detail(
+            @PathVariable("orderId") int orderId
+    ) {
+        return ResponseUtil.build(orderService.detail(orderId));
+    }
 }

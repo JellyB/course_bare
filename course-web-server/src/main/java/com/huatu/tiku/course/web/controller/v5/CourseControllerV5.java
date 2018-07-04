@@ -202,7 +202,7 @@ public class CourseControllerV5 {
     }
 
     /**
-     * 获取课程说明
+     * 获取课程说明-返回H5 页面
      */
     @GetMapping(value = "/{classId}/getClassExt", produces = MediaType.TEXT_HTML_VALUE + ";charset=utf-8")
     public Object getClassExt(
@@ -261,7 +261,6 @@ public class CourseControllerV5 {
                 .build();
         return ResponseUtil.build(courseService.postTopCourse(map));
     }
-
 
     /**
      * 删除置顶信息

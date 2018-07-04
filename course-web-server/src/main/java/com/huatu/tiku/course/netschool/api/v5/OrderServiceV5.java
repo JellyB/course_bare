@@ -37,4 +37,9 @@ public interface OrderServiceV5 {
      */
     @DeleteMapping(value = "/v4/common/order/delete")
     NetSchoolResponse deleteOrder(@RequestParam("orderId") int orderId, @RequestParam("userName") String userName);
+
+    /**
+     * 查询订单详情
+     */
+    NetSchoolResponse detail(@RequestParam("orderId") int orderId);
 }
