@@ -27,27 +27,6 @@ public class CourseServiceV5BizImpl implements CourseServiceV5Biz {
     private CourseServiceV5 courseService;
 
     @Override
-    public Object getClassDetail(HashMap<String, Object> params) {
-        Supplier key = () -> CourseCacheKey.courseDetailKey(params);
-        Supplier<Object> value = () -> {
-            NetSchoolResponse netSchoolResponse = courseService.getClassDetail(params);
-            Object result = ResponseUtil.build(netSchoolResponse);
-            return result;
-        };
-        return cacheUtil.getCacheStringValue(key, value, 30, TimeUnit.MINUTES);
-    }
-
-    @Override
-    public Object getCourseIntroduction(String userName, int classId) {
-        Supplier key = () -> CourseCacheKey.courseIntroductionKey(userName, classId);
-        Supplier<Object> value = () -> {
-            NetSchoolResponse netSchoolResponse = courseService.getCourseIntroduction(userName, classId);
-            return ResponseUtil.build(netSchoolResponse);
-        };
-        return cacheUtil.getCacheStringValue(key, value, 30, TimeUnit.MINUTES);
-    }
-
-    @Override
     public String getClassExt(int classId, int terminal) {
         Supplier key = () -> CourseCacheKey.classExtKey(classId, terminal);
         Supplier<String> value = () -> {
@@ -71,7 +50,7 @@ public class CourseServiceV5BizImpl implements CourseServiceV5Biz {
             return ResponseUtil.build(timetable);
         };
         if (page == 1) {//只缓存第一页数据
-            return cacheUtil.getCacheStringValue(key, value, 30, TimeUnit.MINUTES);
+            return cacheUtil.getCacheStringValue(key, value, 5, TimeUnit.MINUTES);
         }
         return value.get();
     }

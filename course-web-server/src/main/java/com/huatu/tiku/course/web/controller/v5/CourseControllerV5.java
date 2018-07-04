@@ -143,24 +143,41 @@ public class CourseControllerV5 {
     }
 
     /**
-     * 获取课程详情
+     * 获取课程详情-录播
      */
-    @GetMapping("/{classId}/getCourseDetail")
-    public Object getCourseDetail(
+    @GetMapping("/{classId}/getClassDetailNotLive")
+    public Object getClassDetailNotLive(
             @Token UserSession userSession,
             @RequestHeader int terminal,
             @RequestHeader String cv,
-            @PathVariable("classId") int classId,
-            @RequestParam(defaultValue = "0") int isLive
+            @PathVariable("classId") int classId
     ) {
         HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
                 .put("classId", classId)
-                .put("isLive", isLive)
                 .put("terminal", terminal)
                 .put("userName", userSession.getUname())
                 .build();
         log.warn("4$${}$${}$${}$${}$${}$${}", classId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
-        return ResponseUtil.build(courseService.getClassDetail(map));
+        return ResponseUtil.build(courseService.getClassDetailNotLive(map));
+    }
+
+    /**
+     * 获取课程详情-直播
+     */
+    @GetMapping("/{classId}/getClassDetailLive")
+    public Object getClassDetailLive(
+            @Token UserSession userSession,
+            @RequestHeader int terminal,
+            @RequestHeader String cv,
+            @PathVariable("classId") int classId
+    ) {
+        HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
+                .put("classId", classId)
+                .put("terminal", terminal)
+                .put("userName", userSession.getUname())
+                .build();
+        log.warn("4$${}$${}$${}$${}$${}$${}", classId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
+        return ResponseUtil.build(courseService.getClassDetailLive(map));
     }
 
     /**
@@ -171,7 +188,7 @@ public class CourseControllerV5 {
             @Token UserSession userSession,
             @PathVariable("classId") int classId
     ) {
-        return courseServiceBiz.getCourseIntroduction(userSession.getUname(), classId);
+        return courseService.getCourseIntroduction(userSession.getUname(), classId);
     }
 
     /**
@@ -194,6 +211,75 @@ public class CourseControllerV5 {
     ) {
         return courseServiceBiz.getClassExt(classId, terminal);
     }
+
+    /**
+     * 删除课程
+     */
+    @DeleteMapping(value = "/{classId}")
+    public Object deleteMyCourse(
+            @Token UserSession userSession,
+            @PathVariable("classId") int classId,
+            @RequestParam int orderId
+    ) {
+        HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
+                .put("userName", userSession.getUname())
+                .put("classId", classId)
+                .put("orderId", orderId)
+                .build();
+        return ResponseUtil.build(courseService.deleteCourse(map));
+    }
+
+    /**
+     * 取消删除
+     */
+    @PutMapping(value = "/{classId}")
+    public Object cancelDeleteMyCourse(
+            @Token UserSession userSession,
+            @PathVariable("classId") int classId,
+            @RequestParam int orderId
+    ) {
+        HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
+                .put("userName", userSession.getUname())
+                .put("classId", classId)
+                .put("orderId", orderId)
+                .build();
+        return ResponseUtil.build(courseService.cancelDeleteCourse(map));
+    }
+
+    /**
+     * 置顶课程
+     */
+    @PostMapping(value = "{classId}/topCourse")
+    public Object topCourse(
+            @Token UserSession userSession,
+            @PathVariable("classId") int classId,
+            @RequestParam int orderId) {
+        HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
+                .put("userName", userSession.getUname())
+                .put("classId", classId)
+                .put("orderId", orderId)
+                .build();
+        return ResponseUtil.build(courseService.postTopCourse(map));
+    }
+
+
+    /**
+     * 删除置顶信息
+     */
+    @DeleteMapping(value = "{classId}/deleteTopCourse")
+    public Object deleteTopCourse(
+            @Token UserSession userSession,
+            @PathVariable("classId") int classId,
+            @RequestParam int orderId
+    ) {
+        HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
+                .put("userName", userSession.getUname())
+                .put("classId", classId)
+                .put("orderId", orderId)
+                .build();
+        return ResponseUtil.build(courseService.deleteTopCourse(map));
+    }
+
 
     /**
      * 构造课程列表查询参数

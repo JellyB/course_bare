@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.web.controller.v4;
 
 import com.huatu.common.ErrorResult;
+import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v4.AppServiceV4;
@@ -10,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 
 /**
  * Created by lijun on 2018/5/18
@@ -49,6 +52,9 @@ public class EvaluateControllerV4 {
         return ResponseUtil.build(netSchoolResponse);
     }
 
+    /**
+     * 查询合集列表
+     */
     @GetMapping("/collectionClasses")
     public Object collectionClasses(
             @RequestHeader(value = "terminal", required = false) Integer terminal,
@@ -58,7 +64,14 @@ public class EvaluateControllerV4 {
             @RequestParam(required = false, defaultValue = "10") int pageSize,
             @RequestParam int collectionId
     ) {
-        NetSchoolResponse netSchoolResponse = appService.collectionClasses(page, pageSize, collectionId);
+        HashMap<Object, Object> map = HashMapBuilder.newBuilder()
+                .put("terminal", terminal)
+                .put("cv", cv)
+                .put("collectionId", collectionId)
+                .put("page", page)
+                .put("pageSize", pageSize)
+                .build();
+        NetSchoolResponse netSchoolResponse = appService.collectionClasses(map);
         //行为日志收集   格式说明 在云盘上 http://123.103.79.72:8025/index.php?explorer
         log.warn("3$${}$${}$${}$${}$${}$${}", collectionId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
         return ResponseUtil.build(netSchoolResponse);

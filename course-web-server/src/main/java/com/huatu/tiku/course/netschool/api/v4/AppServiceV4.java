@@ -5,10 +5,12 @@ import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.HashMap;
+
 /**
  * Created by lijun on 2018/5/18
  */
-@FeignClient(value = "o-course-service",path = "/lumenapi/v4/app")
+@FeignClient(value = "o-course-service", path = "/lumenapi/v4/app")
 public interface AppServiceV4 {
 
     @GetMapping("/lession/evaluate")
@@ -22,12 +24,11 @@ public interface AppServiceV4 {
             @RequestParam("bjySessionId") String bjySessionId,
             @RequestParam("videoId") String videoId);
 
+    /**
+     * 合集查询
+     */
     @GetMapping("/collectionclasses/collection_classes")
-    NetSchoolResponse collectionClasses(
-            @RequestParam("page") int page,
-            @RequestParam("pageSize") int pageSize,
-            @RequestParam("collectionId") int collectionId
-    );
+    NetSchoolResponse collectionClasses(@RequestParam HashMap map);
 
     /**
      * 专栏
