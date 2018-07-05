@@ -12,4 +12,10 @@ public final class OrderCacheKey {
         return "_order:prevInfo:qps";
     }
 
+    /**
+     * 创建订单
+     */
+    public static String orderCreate(){
+        return "_order:create:qps";
+    }
 }
