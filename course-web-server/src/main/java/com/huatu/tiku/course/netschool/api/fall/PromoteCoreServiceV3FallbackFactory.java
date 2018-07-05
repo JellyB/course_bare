@@ -31,6 +31,7 @@ public class PromoteCoreServiceV3FallbackFactory implements Fallback<PromoteCore
         return new PromoteCoreServiceV3() {
             @Override
             public NetSchoolResponse getPrevInfo(String p) {
+                log.info("course =>>>> 立即购买按钮失败~ ===================");
                 orderCacheQPS.orderPreInfoQPSRelease();
 //                return NetSchoolResponse.DEFAULT_ERROR;
                 throw new BizException(OrderCacheQPS.DEFAULT_RESULT);
