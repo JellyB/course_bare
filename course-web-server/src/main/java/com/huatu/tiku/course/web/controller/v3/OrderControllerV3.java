@@ -69,8 +69,9 @@ public class OrderControllerV3 {
         params.put("username",userSession.getUname());
         log.warn("5$${}$${}$${}$${}$${}$${}",rid,userSession.getId(),userSession.getUname(),String.valueOf(System.currentTimeMillis()),cv,terminal);
         //释放
+        Object result = ResponseUtil.build(promoteCoreServiceV3.getPrevInfo(RequestUtil.encrypt(params)), true);
         orderCacheQPS.orderPreInfoQPSRelease();
-        return ResponseUtil.build(promoteCoreServiceV3.getPrevInfo(RequestUtil.encrypt(params)),true);
+        return result;
     }
 
     /**
