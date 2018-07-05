@@ -16,7 +16,6 @@ import java.util.function.Supplier;
 @Component
 public class CacheUtil {
 
-
     @Resource(name = "redisTemplate")
     private ValueOperations<String, Object> valueOperations;
 
@@ -43,8 +42,9 @@ public class CacheUtil {
         //获取源数据
         T cacheData = valueSupplier.get();
         if (objectIsBank(cacheData)) {//数据库不存在，使用默认值-防止接口被刷
-            valueOperations.set(key, NullHolder.DEFAULT, 30, TimeUnit.SECONDS);
+            valueOperations.set(key, NullHolder.DEFAULT, 5, TimeUnit.SECONDS);
         } else {
+            //TODO: 添加缓存时间字段
             //生成缓存数据
             valueOperations.set(key, cacheData, time, timeUnit);
         }

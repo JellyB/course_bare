@@ -28,7 +28,7 @@ public class CourseServiceV5BizImpl implements CourseServiceV5Biz {
 
     @Override
     public String getClassExt(int classId, int terminal) {
-        Supplier key = () -> CourseCacheKey.classExtKey(classId, terminal);
+        Supplier key = () -> CourseCacheKey.classExtKeyV5(classId, terminal);
         Supplier<String> value = () -> {
             String classExt = courseService.getClassExt(classId, terminal);
             return classExt;
@@ -38,7 +38,7 @@ public class CourseServiceV5BizImpl implements CourseServiceV5Biz {
 
     @Override
     public Object findTimetable(int classId, int parentId, int page, int pageSize) {
-        Supplier key = () -> CourseCacheKey.timeTableKey(classId, parentId, page, pageSize);
+        Supplier key = () -> CourseCacheKey.timeTableKeyV5(classId, parentId, page, pageSize);
         Supplier<Object> value = () -> {
             HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
                     .put("classId", classId)

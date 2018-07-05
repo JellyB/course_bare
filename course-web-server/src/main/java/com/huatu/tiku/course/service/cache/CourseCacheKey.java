@@ -1,25 +1,37 @@
 package com.huatu.tiku.course.service.cache;
 
 
+import com.huatu.common.utils.web.RequestUtil;
+
+import java.util.HashMap;
+
 /**
  * 课程相关 key
  * Created by lijun on 2018/6/25
  */
 public final class CourseCacheKey {
 
+    /**
+     * 课程合集
+     */
+    public static String collectionClassesKeyV4(HashMap map) {
+        String paramSign = RequestUtil.getParamSign(map);
+        return "course:v4:collection:" + paramSign;
+    }
+
 
     /**
      * 课程详情 - 网页
      */
-    public static String classExtKey(int classId, int terminal) {
-        return new StringBuilder("course:classExt:").append(classId).append(":").append(terminal).toString();
+    public static String classExtKeyV5(int classId, int terminal) {
+        return new StringBuilder("course:v5:classExt:").append(classId).append(":").append(terminal).toString();
     }
 
     /**
      * 课程大纲-售前
      */
-    public static String timeTableKey(int classId, int parentId, int page, int pageSize) {
-        return new StringBuilder("course:timeTable")
+    public static String timeTableKeyV5(int classId, int parentId, int page, int pageSize) {
+        return new StringBuilder("course:v5:timeTable")
                 .append(":").append(classId)
                 .append(":").append(parentId)
                 .append(":").append(page)

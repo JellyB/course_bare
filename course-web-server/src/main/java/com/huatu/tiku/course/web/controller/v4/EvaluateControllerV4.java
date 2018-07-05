@@ -5,6 +5,7 @@ import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v4.AppServiceV4;
+import com.huatu.tiku.course.service.v4.CourseBizServiceV4;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,9 @@ public class EvaluateControllerV4 {
 
     @Autowired
     private AppServiceV4 appService;
+
+    @Autowired
+    private CourseBizServiceV4 courseBizServiceV4;
 
     /**
      * 课件是否被用户评价
@@ -71,10 +75,9 @@ public class EvaluateControllerV4 {
                 .put("page", page)
                 .put("pageSize", pageSize)
                 .build();
-        NetSchoolResponse netSchoolResponse = appService.collectionClasses(map);
         //行为日志收集   格式说明 在云盘上 http://123.103.79.72:8025/index.php?explorer
         log.warn("3$${}$${}$${}$${}$${}$${}", collectionId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
-        return ResponseUtil.build(netSchoolResponse);
+        return courseBizServiceV4.collectionClasses(map);
     }
 
     /**

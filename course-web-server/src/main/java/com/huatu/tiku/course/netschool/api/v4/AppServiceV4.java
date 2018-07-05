@@ -10,7 +10,7 @@ import java.util.HashMap;
 /**
  * Created by lijun on 2018/5/18
  */
-@FeignClient(value = "o-course-service", path = "/lumenapi/v4/app")
+@FeignClient(value = "o-course-service", path = "/lumenapi/v4/app", fallback = AppServiceV4.class)
 public interface AppServiceV4 {
 
     @GetMapping("/lession/evaluate")

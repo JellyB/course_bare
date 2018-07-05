@@ -5,20 +5,19 @@ import com.google.common.collect.Maps;
 import com.huatu.common.SuccessMessage;
 import com.huatu.common.spring.web.MediaType;
 import com.huatu.common.utils.collection.HashMapBuilder;
+import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.consts.NetschoolTerminalType;
 import com.huatu.tiku.course.netschool.api.v3.OrderServiceV3;
 import com.huatu.tiku.course.netschool.api.v3.PromoteCoreServiceV3;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
-import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -58,6 +57,8 @@ public class OrderControllerV3 {
     @GetMapping("/previnfo")
     public Object getPrevInfo(@RequestParam int rid,@RequestHeader(required = false) int terminal,@RequestHeader(required = false) String cv,
                               @Token UserSession userSession) {
+        //设置QPS
+
         Map<String,Object> params = Maps.newHashMap();
         params.put("rid",rid);
         params.put("action","placeOrder");
