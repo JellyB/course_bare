@@ -54,35 +54,41 @@ public class OrderControllerV3 {
 
     /**
      * 下单页面相关信息（结算信息，收货地址）
+     *
      * @param rid
      * @param userSession
      * @return
      */
     @GetMapping("/previnfo")
-    public Object getPrevInfo(@RequestParam int rid,@RequestHeader(required = false) int terminal,@RequestHeader(required = false) String cv,
+    public Object getPrevInfo(@RequestParam int rid, @RequestHeader(required = false) int terminal, @RequestHeader(required = false) String cv,
                               @Token UserSession userSession) {
         //设置QPS
         orderCacheQPS.orderPreInfoQPS();
-        Map<String,Object> params = Maps.newHashMap();
-        params.put("rid",rid);
-        params.put("action","placeOrder");
-        params.put("username",userSession.getUname());
-        log.warn("5$${}$${}$${}$${}$${}$${}",rid,userSession.getId(),userSession.getUname(),String.valueOf(System.currentTimeMillis()),cv,terminal);
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("rid", rid);
+        params.put("action", "placeOrder");
+        params.put("username", userSession.getUname());
+        log.warn("5$${}$${}$${}$${}$${}$${}", rid, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
         //释放
-        Object result = ResponseUtil.build(promoteCoreServiceV3.getPrevInfo(RequestUtil.encrypt(params)), true);
-        orderCacheQPS.orderPreInfoQPSRelease();
+        Object result;
+        try {
+            result = ResponseUtil.build(promoteCoreServiceV3.getPrevInfo(RequestUtil.encrypt(params)), true);
+        } finally {
+            orderCacheQPS.orderPreInfoQPSRelease();
+        }
         return result;
     }
 
     /**
      * 添加免费课程
+     *
      * @param terminal 终端类型
      * @param courseId 课程id
      * @return
      * @throws Exception
      */
     @PostMapping("/free")
-    public Object freeCourse(@RequestHeader int terminal,@RequestHeader(required = false) String cv,
+    public Object freeCourse(@RequestHeader int terminal, @RequestHeader(required = false) String cv,
                              @RequestParam int courseId,
                              @Token UserSession userSession) throws Exception {
         String uname = userSession.getUname();
@@ -94,9 +100,9 @@ public class OrderControllerV3 {
                 .put("rid", courseId)
                 .buildUnsafe();
 
-       // return ResponseUtil.build(orderServiceV3.getFree(RequestUtil.encryptJsonParams(parameterMap)));
+        // return ResponseUtil.build(orderServiceV3.getFree(RequestUtil.encryptJsonParams(parameterMap)));
         orderServiceV3.getFree(RequestUtil.encryptJsonParams(parameterMap));
-        log.warn("11$${}$${}$${}$${}$${}$${}",courseId,userSession.getId(),userSession.getUname(),String.valueOf(System.currentTimeMillis()),cv,terminal);
+        log.warn("11$${}$${}$${}$${}$${}$${}", courseId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
 
         return SuccessMessage.create("下单成功");
 
@@ -105,6 +111,7 @@ public class OrderControllerV3 {
 
     /**
      * 创建订单
+     *
      * @param addressid
      * @param rid
      * @param fromuser
@@ -115,7 +122,7 @@ public class OrderControllerV3 {
     @PostMapping("/create")
     public Object createOrder(@RequestParam String addressid,
                               @RequestParam int rid,
-                              @RequestParam(required = false,defaultValue = "0") String fromuser,
+                              @RequestParam(required = false, defaultValue = "0") String fromuser,
                               @RequestParam String tjCode,
                               @RequestParam(required = false) String FreeCardID,
                               @RequestHeader(required = false) int terminal,
@@ -123,41 +130,47 @@ public class OrderControllerV3 {
                               @Token UserSession userSession) {
         //QPS
         orderCacheQPS.orderCreateQPS();
-        Map<String,Object> params = Maps.newHashMap();
-        params.put("action","createOrder");
-        params.put("addressid",addressid);
-        params.put("FreeCardID",FreeCardID);
-        params.put("fromuser",fromuser);
-        params.put("rid",rid);
-        params.put("source",(terminal == 2 || terminal == 5)?'I':'A');//不是ios，就传android
-        params.put("tjCode",tjCode);
-        params.put("username",userSession.getUname());
-        log.warn("6$${}$${}$${}$${}$${}$${}$${}$${}$${}$${}",addressid,rid,userSession.getId(),userSession.getUname(),String.valueOf(System.currentTimeMillis()),cv,terminal,fromuser,tjCode,FreeCardID);
-        Object result = ResponseUtil.build(promoteCoreServiceV3.createOrder(RequestUtil.encrypt(params)), true);
-        //释放
-        orderCacheQPS.orderCreateQPSRelease();
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("action", "createOrder");
+        params.put("addressid", addressid);
+        params.put("FreeCardID", FreeCardID);
+        params.put("fromuser", fromuser);
+        params.put("rid", rid);
+        params.put("source", (terminal == 2 || terminal == 5) ? 'I' : 'A');//不是ios，就传android
+        params.put("tjCode", tjCode);
+        params.put("username", userSession.getUname());
+        log.warn("6$${}$${}$${}$${}$${}$${}$${}$${}$${}$${}", addressid, rid, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal, fromuser, tjCode, FreeCardID);
+        Object result = null;
+        try {
+            result = ResponseUtil.build(promoteCoreServiceV3.createOrder(RequestUtil.encrypt(params)), true);
+        } finally {
+            //释放
+            orderCacheQPS.orderCreateQPSRelease();
+        }
         return result;
     }
 
     /**
      * 订单详情
+     *
      * @param orderNo
      * @return
      */
     @GetMapping("/{orderNo}")
     public Object getOrderDetail(@PathVariable String orderNo,
                                  @RequestParam String type) {
-        Map<String,Object> params = HashMapBuilder.<String,Object>newBuilder()
-                .put("action","orderDetail")
-                .put("ordernum",orderNo)
-                .put("type",type)
+        Map<String, Object> params = HashMapBuilder.<String, Object>newBuilder()
+                .put("action", "orderDetail")
+                .put("ordernum", orderNo)
+                .put("type", type)
                 .build();
-        return ResponseUtil.build(promoteCoreServiceV3.getOrderDetail(RequestUtil.encrypt(params)),true);
+        return ResponseUtil.build(promoteCoreServiceV3.getOrderDetail(RequestUtil.encrypt(params)), true);
     }
 
 
     /**
      * 取消订单
+     *
      * @param orderNo
      * @return
      */
@@ -165,16 +178,17 @@ public class OrderControllerV3 {
     public Object cancelOrder(@PathVariable String orderNo, @RequestHeader(required = false) int terminal,
                               @RequestHeader(required = false) String cv,
                               @Token UserSession userSession) {
-        Map<String,Object> params = HashMapBuilder.<String,Object>newBuilder()
-                .put("action","cancel")
-                .put("ordernum",orderNo)
+        Map<String, Object> params = HashMapBuilder.<String, Object>newBuilder()
+                .put("action", "cancel")
+                .put("ordernum", orderNo)
                 .build();
-        log.warn("12$${}$${}$${}$${}$${}$${}",orderNo,userSession.getId(),userSession.getUname(),String.valueOf(System.currentTimeMillis()),cv,terminal);
-        return ResponseUtil.build(orderServiceV3.cancelOrder(RequestUtil.encrypt(params)),true);
+        log.warn("12$${}$${}$${}$${}$${}$${}", orderNo, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
+        return ResponseUtil.build(orderServiceV3.cancelOrder(RequestUtil.encrypt(params)), true);
     }
 
     /**
      * 我的订单列表
+     *
      * @param session
      * @param page
      * @param type
@@ -184,38 +198,40 @@ public class OrderControllerV3 {
     public Object myOrders(@Token UserSession session,
                            @RequestParam int page,
                            @RequestParam int type) {
-        Map<String,Object> params = HashMapBuilder.<String,Object>newBuilder()
-                .put("action","myOrder")
-                .put("page",page)
-                .put("type",type)
-                .put("username",session.getUname())
+        Map<String, Object> params = HashMapBuilder.<String, Object>newBuilder()
+                .put("action", "myOrder")
+                .put("page", page)
+                .put("type", type)
+                .put("username", session.getUname())
                 .build();
-        return ResponseUtil.build(orderServiceV3.myOrder(RequestUtil.encrypt(params)),true);
+        return ResponseUtil.build(orderServiceV3.myOrder(RequestUtil.encrypt(params)), true);
     }
 
 
     /**
      * 支付订单
+     *
      * @return
      */
     @PostMapping("/{orderNo}/pay")
     public Object payOrder(@PathVariable String orderNo,
                            @RequestParam int payment,
-                           @Token UserSession session,@RequestHeader(required = false) int terminal,
-    @RequestHeader(required = false) String cv) {
-        Map<String,Object> params = HashMapBuilder.<String,Object>newBuilder()
-                .put("action","pay")
-                .put("ordernum",orderNo)
-                .put("payment",payment)
-                .put("username",session.getUname())
+                           @Token UserSession session, @RequestHeader(required = false) int terminal,
+                           @RequestHeader(required = false) String cv) {
+        Map<String, Object> params = HashMapBuilder.<String, Object>newBuilder()
+                .put("action", "pay")
+                .put("ordernum", orderNo)
+                .put("payment", payment)
+                .put("username", session.getUname())
                 .build();
-        log.warn("7$${}$${}$${}$${}$${}$${}$${}",orderNo,payment,session.getId(),session.getUname(),String.valueOf(System.currentTimeMillis()),cv,terminal);
-        return ResponseUtil.build(promoteCoreServiceV3.payOrder(RequestUtil.encrypt(params)),true);
+        log.warn("7$${}$${}$${}$${}$${}$${}$${}", orderNo, payment, session.getId(), session.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
+        return ResponseUtil.build(promoteCoreServiceV3.payOrder(RequestUtil.encrypt(params)), true);
     }
 
 
     /**
      * 秒杀的支付方式
+     *
      * @param ordernum
      * @param userSession
      * @return
@@ -223,21 +239,22 @@ public class OrderControllerV3 {
      */
     @PostMapping("/seckill/payWay")
     public Object payWay(@RequestParam String ordernum,
-                           @Token UserSession userSession) throws IOException {
-        Map<String,Object> params = HashMapBuilder.<String,Object>newBuilder()
-                .put("action","payWay")
-                .put("ordernum",ordernum)
+                         @Token UserSession userSession) throws IOException {
+        Map<String, Object> params = HashMapBuilder.<String, Object>newBuilder()
+                .put("action", "payWay")
+                .put("ordernum", ordernum)
                 .build();
         String p = RequestUtil.encrypt(params);
-        okhttp3.RequestBody requestBody = RequestBody.create(okhttp3.MediaType.parse(MediaType.APPLICATION_FORM_URLENCODED_UTF8_VALUE), "p="+p);
+        okhttp3.RequestBody requestBody = RequestBody.create(okhttp3.MediaType.parse(MediaType.APPLICATION_FORM_URLENCODED_UTF8_VALUE), "p=" + p);
         Request request = new Request.Builder().url(seckillPayUrl).post(requestBody).build();
         Response responseBody = okHttpClient.newCall(request).execute();
-        NetSchoolResponse response = objectMapper.readValue(responseBody.body().string(),NetSchoolResponse.class);
-        return ResponseUtil.build(response,true);
+        NetSchoolResponse response = objectMapper.readValue(responseBody.body().string(), NetSchoolResponse.class);
+        return ResponseUtil.build(response, true);
     }
 
     /**
      * 秒杀支付
+     *
      * @param ordernum
      * @param payment
      * @param userSession
@@ -248,17 +265,17 @@ public class OrderControllerV3 {
     public Object payOrder(@RequestParam String ordernum,
                            @RequestParam String payment,
                            @Token UserSession userSession) throws IOException {
-        Map<String,Object> params = HashMapBuilder.<String,Object>newBuilder()
-                .put("action","pay")
-                .put("ordernum",ordernum)
-                .put("payment",payment)
+        Map<String, Object> params = HashMapBuilder.<String, Object>newBuilder()
+                .put("action", "pay")
+                .put("ordernum", ordernum)
+                .put("payment", payment)
                 .build();
         String p = RequestUtil.encrypt(params);
-        okhttp3.RequestBody requestBody = RequestBody.create(okhttp3.MediaType.parse(MediaType.APPLICATION_FORM_URLENCODED_UTF8_VALUE), "p="+p);
+        okhttp3.RequestBody requestBody = RequestBody.create(okhttp3.MediaType.parse(MediaType.APPLICATION_FORM_URLENCODED_UTF8_VALUE), "p=" + p);
         Request request = new Request.Builder().url(seckillPayUrl).post(requestBody).build();
         Response responseBody = okHttpClient.newCall(request).execute();
-        NetSchoolResponse response = objectMapper.readValue(responseBody.body().string(),NetSchoolResponse.class);
-        return ResponseUtil.build(response,true);
+        NetSchoolResponse response = objectMapper.readValue(responseBody.body().string(), NetSchoolResponse.class);
+        return ResponseUtil.build(response, true);
     }
 
 }
