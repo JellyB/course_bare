@@ -1,11 +1,14 @@
 package com.huatu.tiku.course.netschool.api.fall;
 
+import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v3.PromoteCoreServiceV3;
+import com.huatu.tiku.course.service.cache.OrderCacheQPS;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import com.netflix.hystrix.HystrixCommand;
 import feign.hystrix.Fallback;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.stereotype.Component;
 
@@ -20,12 +23,19 @@ import javax.annotation.Resource;
 public class PromoteCoreServiceV3FallbackFactory implements Fallback<PromoteCoreServiceV3> {
     @Resource(name = "redisTemplate")
     private ListOperations listOperations;
+
+    @Autowired
+    private OrderCacheQPS orderCacheQPS;
+
     @Override
     public PromoteCoreServiceV3 create(Throwable throwable, HystrixCommand command) {
         return new PromoteCoreServiceV3() {
             @Override
             public NetSchoolResponse getPrevInfo(String p) {
-                return NetSchoolResponse.DEFAULT_ERROR;
+                orderCacheQPS.orderPreInfoQPSRelease();
+//                return NetSchoolResponse.DEFAULT_ERROR;
+                throw new BizException(OrderCacheQPS.DEFAULT_RESULT);
+
             }
 
             @Override
@@ -43,7 +53,10 @@ public class PromoteCoreServiceV3FallbackFactory implements Fallback<PromoteCore
                     log.info(">>> order circuitbreaker is open， push the request to queue...");
                     listOperations.leftPush(CourseCacheKey.ORDERS_QUEUE,p);
                 }
-                return NetSchoolResponse.DEFAULT_ERROR;
+                orderCacheQPS.orderCreateQPSRelease();
+                throw new BizException(OrderCacheQPS.DEFAULT_RESULT);
+
+                //return NetSchoolResponse.DEFAULT_ERROR;
             }
 
             @Override
