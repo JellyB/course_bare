@@ -13,7 +13,7 @@ import javax.annotation.Resource;
 @Component
 public class OrderCacheQPS {
 
-    public static ErrorResult DEFAULT_RESULT = ErrorResult.create(5000001, "排队人数过多，请等待....");
+    public static ErrorResult DEFAULT_RESULT = ErrorResult.create(5000001, "哎哟。。人还真多，再用力挤挤吧。。。");
 
 
     private static final int DEFAULT_QPS = 10;
