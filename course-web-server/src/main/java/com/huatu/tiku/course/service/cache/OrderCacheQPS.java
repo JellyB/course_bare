@@ -26,7 +26,7 @@ public class OrderCacheQPS {
      */
     public void orderPreInfoQPS() {
         String key = OrderCacheKey.orderPrevInfo();
-        orderPreInfoQPSRelease(key);
+        orderQPS(key);
     }
 
     /**
@@ -40,7 +40,7 @@ public class OrderCacheQPS {
     /**
      * 提交订单
      */
-    public void orderCreateQPS(){
+    public void orderCreateQPS() {
         String key = OrderCacheKey.orderCreate();
         orderQPS(key);
     }
@@ -48,7 +48,7 @@ public class OrderCacheQPS {
     /**
      * 提交订单
      */
-    public void orderCreateQPSRelease(){
+    public void orderCreateQPSRelease() {
         String key = OrderCacheKey.orderCreate();
         orderPreInfoQPSRelease(key);
     }
@@ -61,6 +61,8 @@ public class OrderCacheQPS {
         if (null != num) {
             if (num <= 0) {
                 throw new BizException(DEFAULT_RESULT);
+            } else {
+                valueOperations.increment(key, -1);
             }
         } else {//避免第一次 获取到 空值
             valueOperations.set(key, DEFAULT_QPS);
@@ -72,8 +74,8 @@ public class OrderCacheQPS {
      */
     private void orderPreInfoQPSRelease(String key) {
         Integer num = valueOperations.get(key);
-        if (num != null && num > 0) {
-            valueOperations.increment(key, -1);
+        if (num != null) {
+            valueOperations.increment(key, 1);
         }
     }
 
