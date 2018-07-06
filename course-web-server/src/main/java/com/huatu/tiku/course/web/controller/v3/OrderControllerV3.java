@@ -60,18 +60,15 @@ public class OrderControllerV3 {
      * @return
      */
     @GetMapping("/previnfo")
-    public Object getPrevInfo(
-//            @RequestParam int rid,
-//            @RequestHeader(required = false) int terminal,
-//            @RequestHeader(required = false) String cv
-                              ) {
+    public Object getPrevInfo(@RequestParam int rid, @RequestHeader(required = false) int terminal, @RequestHeader(required = false) String cv,
+                              @Token UserSession userSession) {
         //设置QPS
         orderCacheQPS.orderPreInfoQPS();
         Map<String, Object> params = Maps.newHashMap();
-      //  params.put("rid", rid);
+        params.put("rid", rid);
         params.put("action", "placeOrder");
-        params.put("username", "app_ztk663759187");
-       // log.warn("5$${}$${}$${}$${}$${}$${}", rid, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
+        params.put("username", userSession.getUname());
+        log.warn("5$${}$${}$${}$${}$${}$${}", rid, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
         //释放
         Object result;
         try {
