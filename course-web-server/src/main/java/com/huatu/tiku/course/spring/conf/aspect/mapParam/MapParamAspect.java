@@ -1,5 +1,7 @@
 package com.huatu.tiku.course.spring.conf.aspect.mapParam;
 
+import com.huatu.common.ErrorResult;
+import com.huatu.common.exception.BizException;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.springboot.users.service.UserSessionService;
@@ -11,6 +13,8 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -33,6 +37,9 @@ public class MapParamAspect {
 
     @Autowired
     private UserSessionService userSessionService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     /**
      * 需要本地化的 head 请求参数
@@ -72,13 +79,17 @@ public class MapParamAspect {
                     userName = getZTKUserName(request.getHeader("token"));
                     break;
                 case IC:
+                    userName = getICUserName(request.getHeader("token"));
                     break;
+            }
+            if (localMapParam.checkToken() && StringUtils.isBlank(userName)) {
+                throw new BizException(ErrorResult.create(5000000, "用户信息失效"));
             }
             if (StringUtils.isNotBlank(userName)) {
                 hashMapBuilder.put("userName", userName);
             }
         }
-        //2. build RequesBody
+        //2. build RequestBody
         Map<String, String[]> map = request.getParameterMap();
         Function<String[], String> transParam = (param) -> Arrays.asList(param).stream().collect(Collectors.joining(","));
         for (String entry : map.keySet()) {
@@ -107,7 +118,7 @@ public class MapParamAspect {
     /**
      * 根据 token 获取用户信息 此处主要获取用户名称 需关联start-user
      *
-     * @return 用户信息
+     * @return 用户名称
      */
     private String getZTKUserName(String token) {
         //从当前线程存储获取，如果没有再去redis查找，减少访问次数
@@ -119,5 +130,31 @@ public class MapParamAspect {
             return userSession.getUname();
         }
         return StringUtils.EMPTY;
+    }
+
+    /**
+     * 获取IC(面库用户名)
+     *
+     * @return 用户名称
+     */
+    private String getICUserName(String token) {
+        RedisConnection connection = redisTemplate.getConnectionFactory().getConnection();
+        try {
+            Map<byte[], byte[]> map = connection.hGetAll(token.getBytes());
+            if (null == map) {
+                return StringUtils.EMPTY;
+            }
+            byte[] bytes = map.get("\"username\"".getBytes());
+            if (null == bytes) {
+                return StringUtils.EMPTY;
+            }
+            String userName = new String(bytes);
+            if (StringUtils.isNotBlank(userName)) {
+                return userName.substring(0, userName.length() - 1);
+            }
+            return userName;
+        } finally {
+            connection.close();
+        }
     }
 }
