@@ -60,8 +60,11 @@ public class OrderControllerV3 {
      * @return
      */
     @GetMapping("/previnfo")
-    public Object getPrevInfo(@RequestParam int rid, @RequestHeader(required = false) int terminal, @RequestHeader(required = false) String cv,
-                              @Token UserSession userSession) {
+    public Object getPrevInfo(
+            @RequestParam int rid,
+            @RequestHeader(required = false) int terminal,
+            @RequestHeader(required = false) String cv,
+            @Token UserSession userSession) {
         //设置QPS
         orderCacheQPS.orderPreInfoQPS();
         Map<String, Object> params = Maps.newHashMap();

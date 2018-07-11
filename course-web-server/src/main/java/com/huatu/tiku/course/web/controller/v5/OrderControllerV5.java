@@ -3,11 +3,15 @@ package com.huatu.tiku.course.web.controller.v5;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.netschool.api.v5.OrderServiceV5;
+import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
+import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 
 /**
  * Created by lijun on 2018/6/25
@@ -70,5 +74,20 @@ public class OrderControllerV5 {
             @PathVariable("orderId") int orderId
     ) {
         return ResponseUtil.build(orderService.detail(orderId));
+    }
+
+    /**
+     * 用户订单列表
+     */
+    @LocalMapParam
+    @GetMapping("userOrderList")
+    public Object userOrderList(
+            @RequestParam(defaultValue = "0") int chooseStatus,
+            @RequestParam(defaultValue = "1") int dateSize,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize
+    ) {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return ResponseUtil.build(orderService.userOrderListZTK(map));
     }
 }

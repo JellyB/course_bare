@@ -3,8 +3,6 @@ package com.huatu.tiku.course.web.controller.v5;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.course.netschool.api.v5.TeacherServiceV5;
-import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
-import com.huatu.tiku.course.util.LogPrint;
 import com.huatu.tiku.course.util.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

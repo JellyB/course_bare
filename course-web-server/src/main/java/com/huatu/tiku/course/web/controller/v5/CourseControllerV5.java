@@ -7,6 +7,8 @@ import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v5.CourseServiceV5;
 import com.huatu.tiku.course.service.v5.CourseServiceV5Biz;
+import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
+import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.course.web.controller.util.CourseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
@@ -174,7 +176,7 @@ public class CourseControllerV5 {
         HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
                 .put("classId", classId)
                 .put("terminal", terminal)
-                .put("userName", userSession.getUname())
+                .put("userName", "uname")
                 .build();
         log.warn("4$${}$${}$${}$${}$${}$${}", classId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
         return ResponseUtil.build(courseService.getClassDetailLive(map));
@@ -183,12 +185,11 @@ public class CourseControllerV5 {
     /**
      * 获取课程介绍
      */
+    @LocalMapParam
     @GetMapping("/{classId}/getCourseIntroduction")
-    public Object getCourseIntroduction(
-            @Token UserSession userSession,
-            @PathVariable("classId") int classId
-    ) {
-        return courseService.getCourseIntroduction(userSession.getUname(), classId);
+    public Object getCourseIntroduction() {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return courseService.getCourseIntroduction(map);
     }
 
     /**

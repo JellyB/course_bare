@@ -16,8 +16,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.context.request.*;
+import org.springframework.web.servlet.HandlerMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
@@ -55,45 +55,57 @@ public class MapParamAspect {
      */
     @Before("mapParamMethod()")
     public void before(JoinPoint joinPoint) {
-
-
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = requestAttributes.getRequest();
         //1.build Heard 信息
         HashMapBuilder<String, Object> hashMapBuilder = HashMapBuilder.newBuilder();
-        for (String headStr : HEARD_PARAM) {
-            if (StringUtils.isNotBlank(request.getHeader(headStr))) {
-                hashMapBuilder.put(headStr, request.getHeader(headStr));
-            }
-        }
-        //1.2 处理token
+        //1.1 处理token - 可能需要验证 token
         if (StringUtils.isNotBlank(request.getHeader("token"))) {
             MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
             Method method = methodSignature.getMethod();
             //获取当前 token -> userName 方法
             LocalMapParam localMapParam = method.getAnnotation(LocalMapParam.class);
-            TokenType tokenType = localMapParam.tokenType();
-            String userName = "";
-            switch (tokenType) {
-                case ZTK:
-                    userName = getZTKUserName(request.getHeader("token"));
-                    break;
-                case IC:
-                    userName = getICUserName(request.getHeader("token"));
-                    break;
+            if (localMapParam.needUserName()) {
+                TokenType tokenType = localMapParam.tokenType();
+                String userName = "";
+                switch (tokenType) {
+                    case ZTK:
+                        userName = getZTKUserName(request.getHeader("token"));
+                        break;
+                    case IC:
+                        userName = getICUserName(request.getHeader("token"));
+                        break;
+                }
+                if (localMapParam.checkToken() && StringUtils.isBlank(userName)) {
+                    throw new BizException(ErrorResult.create(5000000, "登录信息失效,请重新登录"));
+                }
+                if (StringUtils.isNotBlank(userName)) {
+                    hashMapBuilder.put("userName", userName);
+                }
             }
-            if (localMapParam.checkToken() && StringUtils.isBlank(userName)) {
-                throw new BizException(ErrorResult.create(5000000, "用户信息失效"));
-            }
-            if (StringUtils.isNotBlank(userName)) {
-                hashMapBuilder.put("userName", userName);
+        }
+        //1.2 处理其他的head 信息
+        for (String headStr : HEARD_PARAM) {
+            if (StringUtils.isNotBlank(request.getHeader(headStr))) {
+                hashMapBuilder.put(headStr, request.getHeader(headStr));
             }
         }
         //2. build RequestBody
         Map<String, String[]> map = request.getParameterMap();
-        Function<String[], String> transParam = (param) -> Arrays.asList(param).stream().collect(Collectors.joining(","));
-        for (String entry : map.keySet()) {
-            hashMapBuilder.put(entry, transParam.apply(map.get(entry)));
+        if (null != map) {
+            Function<String[], String> transParam = (param) -> Arrays.asList(param).stream().collect(Collectors.joining(","));
+            for (String entry : map.keySet()) {
+                hashMapBuilder.put(entry, transParam.apply(map.get(entry)));
+            }
+        }
+        //3. build PathVariable
+        NativeWebRequest nativeWebRequest = new ServletWebRequest(request);
+        Map<String, String> pathParam = (Map<String, String>) nativeWebRequest.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
+        if (null != pathParam) {
+            for (String key : pathParam.keySet()) {
+                //此处不需要做 notBlank 判断，在路径上的参数 必定不会null
+                hashMapBuilder.put(key, pathParam.get(key));
+            }
         }
         LocalMapParamHandler.set(hashMapBuilder.build());
     }

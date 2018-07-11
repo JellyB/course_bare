@@ -68,7 +68,7 @@ public interface CourseServiceV5 {
      * 获取课程介绍
      */
     @GetMapping(value = "/v4/common/class/course_introduction")
-    NetSchoolResponse getCourseIntroduction(@RequestParam("userName") String userName, @RequestParam("classId") int classId);
+    NetSchoolResponse getCourseIntroduction(@RequestParam Map<String, Object> params);
 
     /**
      * 获取所有老师介绍
@@ -106,4 +106,16 @@ public interface CourseServiceV5 {
      */
     @DeleteMapping(value = "/v4/common/user/top_course")
     NetSchoolResponse deleteTopCourse(@RequestParam Map<String, Object> params);
+
+    /**
+     * 获取最后一次学习课程 - IC
+     */
+    @GetMapping(value = "/v4/interview/user/last_study")
+    NetSchoolResponse lastStudyCourse(@RequestParam Map<String, Object> params);
+
+    /**
+     * 已够课程列表 - IC
+     */
+    @GetMapping(value = "/v4/interview/class/list")
+    NetSchoolResponse userCourseList(@RequestParam Map<String, Object> params);
 }
