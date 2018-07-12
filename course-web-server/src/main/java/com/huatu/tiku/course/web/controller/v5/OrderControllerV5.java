@@ -70,16 +70,14 @@ public class OrderControllerV5 {
      * 获取订单详情
      */
     @GetMapping("{orderId}")
-    public Object detail(
-            @PathVariable("orderId") int orderId
-    ) {
+    public Object detail(@PathVariable("orderId") int orderId) {
         return ResponseUtil.build(orderService.detail(orderId));
     }
 
     /**
      * 用户订单列表
      */
-    @LocalMapParam
+    @LocalMapParam(checkToken = true)
     @GetMapping("userOrderList")
     public Object userOrderList(
             @RequestParam(defaultValue = "0") int chooseStatus,

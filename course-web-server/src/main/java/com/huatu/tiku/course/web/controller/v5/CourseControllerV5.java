@@ -125,21 +125,14 @@ public class CourseControllerV5 {
     /**
      * 获取课程大纲-售后
      */
+    @LocalMapParam(checkToken = true)
     @GetMapping("/{classId}/purchasedClassSyllabus")
     public Object purchasedClassSyllabus(
-            @Token UserSession userSession,
-            @PathVariable("classId") int classId,
             @RequestParam int parentId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int pageSize
     ) {
-        HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
-                .put("classId", classId)
-                .put("parentId", parentId)
-                .put("userName", userSession.getUname())
-                .put("page", page)
-                .put("pageSize", pageSize)
-                .build();
+        HashMap<String, Object> map = LocalMapParamHandler.get();
         NetSchoolResponse timetable = courseService.findPurchasesTimetable(map);
         return ResponseUtil.build(timetable);
     }
@@ -185,7 +178,7 @@ public class CourseControllerV5 {
     /**
      * 获取课程介绍
      */
-    @LocalMapParam
+    @LocalMapParam(checkToken = true)
     @GetMapping("/{classId}/getCourseIntroduction")
     public Object getCourseIntroduction() {
         HashMap<String, Object> map = LocalMapParamHandler.get();
@@ -196,9 +189,7 @@ public class CourseControllerV5 {
      * 课程所有老师介绍
      */
     @GetMapping("/{classId}/getCourseTeacherInfo")
-    public Object getCourseTeacherInfo(
-            @PathVariable("classId") int classId
-    ) {
+    public Object getCourseTeacherInfo(@PathVariable("classId") int classId) {
         return ResponseUtil.build(courseService.getCourseTeacherInfo(classId));
     }
 
@@ -216,67 +207,40 @@ public class CourseControllerV5 {
     /**
      * 删除课程
      */
+    @LocalMapParam(checkToken = true)
     @DeleteMapping(value = "/{classId}")
-    public Object deleteMyCourse(
-            @Token UserSession userSession,
-            @PathVariable("classId") int classId,
-            @RequestParam int orderId
-    ) {
-        HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
-                .put("userName", userSession.getUname())
-                .put("classId", classId)
-                .put("orderId", orderId)
-                .build();
+    public Object deleteMyCourse(@RequestParam int orderId) {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
         return ResponseUtil.build(courseService.deleteCourse(map));
     }
 
     /**
      * 取消删除
      */
+    @LocalMapParam(checkToken = true)
     @PutMapping(value = "/{classId}")
-    public Object cancelDeleteMyCourse(
-            @Token UserSession userSession,
-            @PathVariable("classId") int classId,
-            @RequestParam int orderId
-    ) {
-        HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
-                .put("userName", userSession.getUname())
-                .put("classId", classId)
-                .put("orderId", orderId)
-                .build();
+    public Object cancelDeleteMyCourse(@RequestParam int orderId) {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
         return ResponseUtil.build(courseService.cancelDeleteCourse(map));
     }
 
     /**
      * 置顶课程
      */
+    @LocalMapParam(checkToken = true)
     @PostMapping(value = "{classId}/topCourse")
-    public Object topCourse(
-            @Token UserSession userSession,
-            @PathVariable("classId") int classId,
-            @RequestParam int orderId) {
-        HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
-                .put("userName", userSession.getUname())
-                .put("classId", classId)
-                .put("orderId", orderId)
-                .build();
+    public Object topCourse(@RequestParam int orderId) {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
         return ResponseUtil.build(courseService.postTopCourse(map));
     }
 
     /**
      * 删除置顶信息
      */
+    @LocalMapParam(checkToken = true)
     @DeleteMapping(value = "{classId}/deleteTopCourse")
-    public Object deleteTopCourse(
-            @Token UserSession userSession,
-            @PathVariable("classId") int classId,
-            @RequestParam int orderId
-    ) {
-        HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
-                .put("userName", userSession.getUname())
-                .put("classId", classId)
-                .put("orderId", orderId)
-                .build();
+    public Object deleteTopCourse(@RequestParam int orderId) {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
         return ResponseUtil.build(courseService.deleteTopCourse(map));
     }
 
