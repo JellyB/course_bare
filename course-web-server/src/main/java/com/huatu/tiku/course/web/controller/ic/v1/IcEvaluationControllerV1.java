@@ -4,6 +4,7 @@ import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.course.netschool.api.v5.EvaluationServiceV5;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
+import com.huatu.tiku.course.spring.conf.aspect.mapParam.TokenType;
 import com.huatu.tiku.course.util.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,7 @@ public class IcEvaluationControllerV1 {
     /**
      * 获取老师介绍页评价列表
      */
-    @LocalMapParam
+    @LocalMapParam(needUserName = false)
     @GetMapping("getTeacherEvaluation")
     public Object getTeacherEvaluation(
             @RequestParam int teacherId,
@@ -39,7 +40,7 @@ public class IcEvaluationControllerV1 {
     /**
      * 获取售前课程详情评价列表
      */
-    @LocalMapParam
+    @LocalMapParam(needUserName = false)
     @GetMapping("getClassEvaluation")
     public Object getClassEvaluation(
             @RequestParam int classId,
@@ -54,7 +55,7 @@ public class IcEvaluationControllerV1 {
     /**
      * 提交评价
      */
-    @LocalMapParam
+    @LocalMapParam(checkToken = true,tokenType = TokenType.IC)
     @PostMapping("submit")
     public Object submit(
             @RequestParam int classId,

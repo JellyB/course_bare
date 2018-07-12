@@ -10,6 +10,7 @@ import com.huatu.tiku.course.netschool.api.v5.CourseServiceV5;
 import com.huatu.tiku.course.service.CourseBizService;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
+import com.huatu.tiku.course.spring.conf.aspect.mapParam.TokenType;
 import com.huatu.tiku.course.util.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,18 +33,18 @@ public class IcCourseControllerV1 {
     private CourseServiceV1 courseServiceV1;
 
     @Autowired
-    private CourseBizService courseBizService;
-
-    @Autowired
     private CourseServiceV3 courseServiceV3;
 
     @Autowired
     private CourseServiceV5 courseService;
 
+    @Autowired
+    private CourseBizService courseBizService;
+
     /**
      * 查询面库课程列表 - 首页展示的课程列表信息
      */
-    @LocalMapParam
+    @LocalMapParam(needUserName = false)
     @GetMapping("icClassList")
     public Object icClassList(
             @RequestParam(defaultValue = "1") int isFree,
@@ -60,8 +61,9 @@ public class IcCourseControllerV1 {
 
     /**
      * 获取课程详情
+     * TODO：课程销量、是否购买重写
      */
-    @LocalMapParam(checkToken = true)
+    @LocalMapParam(checkToken = true, tokenType = TokenType.IC)
     @GetMapping("/{courseId}")
     public Object getCourseDetail() throws ExecutionException, InterruptedException {
         HashMap<String, Object> map = LocalMapParamHandler.get();
@@ -88,8 +90,9 @@ public class IcCourseControllerV1 {
 
     /**
      * 获取最近学习的课程
+     * TODO：重新设计
      */
-    @LocalMapParam(checkToken = true)
+    @LocalMapParam(checkToken = true, tokenType = TokenType.IC)
     @GetMapping("/getLastStudyCourse")
     public Object getLastStudyCourse() {
         HashMap<String, Object> map = LocalMapParamHandler.get();
@@ -99,7 +102,7 @@ public class IcCourseControllerV1 {
     /**
      * 课程播放接口
      */
-    @LocalMapParam(checkToken = true)
+    @LocalMapParam(checkToken = true, tokenType = TokenType.IC)
     @GetMapping("/{rid}/secrinfo")
     public Object getCourseSecrInfo(
             @RequestParam(required = false, defaultValue = "0") int isTrial,
@@ -107,7 +110,7 @@ public class IcCourseControllerV1 {
 
     ) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
-        map.put("username",String.valueOf(map.get("userName").toString()));
+        map.put("username", String.valueOf(map.get("userName").toString()));
 
         NetSchoolResponse netSchoolResponse = courseServiceV3.getCourseSecrInfo(map);
         Object response = ResponseUtil.build(netSchoolResponse, true);
@@ -126,8 +129,9 @@ public class IcCourseControllerV1 {
 
     /**
      * 用户已购课程列表
+     * TODO: 从面库获取用户订单后自组装数据
      */
-    @LocalMapParam
+    @LocalMapParam(checkToken = true, tokenType = TokenType.IC)
     @GetMapping("userCourseList")
     public Object getUserCourseList(
             @RequestParam(defaultValue = "1") int page,
