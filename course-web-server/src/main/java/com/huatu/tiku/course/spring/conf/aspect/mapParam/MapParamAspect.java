@@ -60,11 +60,11 @@ public class MapParamAspect {
         //1.build Heard 信息
         HashMapBuilder<String, Object> hashMapBuilder = HashMapBuilder.newBuilder();
         //1.1 处理token - 可能需要验证 token
+        MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
+        Method method = methodSignature.getMethod();
+        //获取当前 token -> userName 方法
+        LocalMapParam localMapParam = method.getAnnotation(LocalMapParam.class);
         if (StringUtils.isNotBlank(request.getHeader("token"))) {
-            MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
-            Method method = methodSignature.getMethod();
-            //获取当前 token -> userName 方法
-            LocalMapParam localMapParam = method.getAnnotation(LocalMapParam.class);
             if (localMapParam.needUserName()) {
                 TokenType tokenType = localMapParam.tokenType();
                 String userName = "";
@@ -77,12 +77,14 @@ public class MapParamAspect {
                         break;
                 }
                 if (localMapParam.checkToken() && StringUtils.isBlank(userName)) {
-                    throw new BizException(ErrorResult.create(5000000, "登录信息失效,请重新登录"));
+                    throw new BizException(ErrorResult.create(1110002, "用户会话过期"));
                 }
                 if (StringUtils.isNotBlank(userName)) {
                     hashMapBuilder.put("userName", userName);
                 }
             }
+        } else if (localMapParam.checkToken()) {
+            throw new BizException(ErrorResult.create(1110002, "用户会话过期"));
         }
         //1.2 处理其他的head 信息
         for (String headStr : HEARD_PARAM) {

@@ -189,7 +189,7 @@ public class CourseControllerV5 {
     @GetMapping("/{classId}/getCourseIntroduction")
     public Object getCourseIntroduction() {
         HashMap<String, Object> map = LocalMapParamHandler.get();
-        return courseService.getCourseIntroduction(map);
+        return ResponseUtil.build(courseService.getCourseIntroduction(map));
     }
 
     /**

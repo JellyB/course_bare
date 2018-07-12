@@ -1,19 +1,22 @@
 package com.huatu.tiku.course.web.controller.ic.v1;
 
+import com.huatu.common.exception.BizException;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
-import com.huatu.tiku.common.bean.user.UserSession;
+import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.CourseServiceV1;
+import com.huatu.tiku.course.netschool.api.v3.CourseServiceV3;
 import com.huatu.tiku.course.netschool.api.v5.CourseServiceV5;
+import com.huatu.tiku.course.service.CourseBizService;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
-import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 /**
  * 课程接口
@@ -29,10 +32,16 @@ public class IcCourseControllerV1 {
     private CourseServiceV1 courseServiceV1;
 
     @Autowired
+    private CourseBizService courseBizService;
+
+    @Autowired
+    private CourseServiceV3 courseServiceV3;
+
+    @Autowired
     private CourseServiceV5 courseService;
 
     /**
-     * 查询面库课程列表
+     * 查询面库课程列表 - 首页展示的课程列表信息
      */
     @LocalMapParam
     @GetMapping("icClassList")
@@ -50,33 +59,61 @@ public class IcCourseControllerV1 {
     }
 
     /**
-     * 获取课程详情 - 直播
+     * 获取课程详情
      */
-    @LocalMapParam
-    @GetMapping("/{classId}/getClassDetailLive")
-    public Object getClassDetailLive() {
+    @LocalMapParam(checkToken = true)
+    @GetMapping("/{courseId}")
+    public Object getCourseDetail() throws ExecutionException, InterruptedException {
         HashMap<String, Object> map = LocalMapParamHandler.get();
-        return ResponseUtil.build(courseService.getClassDetailLive(map));
+        int courseId = Integer.valueOf(map.get("courseId").toString());
+        String userName = map.get("userName").toString();
+        return courseBizService.getCourseDetailV3(courseId, userName);
     }
 
     /**
-     * 获取课程详情-录播
+     * 课程详情页(h5)
      */
-    @LocalMapParam
-    @GetMapping("/{classId}/getClassDetailNotLive")
-    public Object getClassDetailNotLive() {
-        HashMap<String, Object> map = LocalMapParamHandler.get();
-        return ResponseUtil.build(courseService.getClassDetailNotLive(map));
+    @GetMapping(value = "/{courseId}/getClassExt")
+    public Object getCourseHtml(@PathVariable int courseId) throws BizException {
+        return courseBizService.getCourseHtml(courseId);
+    }
+
+    /**
+     * 课程表（课程大纲）
+     */
+    @GetMapping("/{courseId}/timetable")
+    public Object findCourseTimetable(@PathVariable int courseId) {
+        return ResponseUtil.build(courseServiceV3.findTimetable(courseId));
     }
 
     /**
      * 获取最近学习的课程
      */
-    @LocalMapParam
+    @LocalMapParam(checkToken = true)
     @GetMapping("/getLastStudyCourse")
     public Object getLastStudyCourse() {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         return ResponseUtil.build(courseService.lastStudyCourse(map));
+    }
+
+    /**
+     * 课程播放接口
+     */
+    @LocalMapParam(checkToken = true)
+    @GetMapping("/{rid}/secrinfo")
+    public Object getCourseSecrInfo(
+            @RequestParam(required = false, defaultValue = "0") int isTrial,
+            @RequestParam(required = false, defaultValue = "0") int fatherId
+
+    ) {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        map.put("username",String.valueOf(map.get("userName").toString()));
+
+        NetSchoolResponse netSchoolResponse = courseServiceV3.getCourseSecrInfo(map);
+        Object response = ResponseUtil.build(netSchoolResponse, true);
+        //添加课程进度
+        // courseUtil.addStudyProcessIntoSecrInfo(response, userSession.getToken(), cv, terminal);
+        return response;
     }
 
     /**
@@ -100,15 +137,6 @@ public class IcCourseControllerV1 {
         return ResponseUtil.build(courseService.userCourseList(map));
     }
 
-    /**
-     * 获取课程介绍
-     */
-    @LocalMapParam
-    @GetMapping("/{classId}/getCourseIntroduction")
-    public Object getCourseIntroduction() {
-        HashMap<String, Object> map = LocalMapParamHandler.get();
-        return courseService.getCourseIntroduction(map);
-    }
 
     /**
      * 获取课程讲义
