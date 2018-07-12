@@ -2,11 +2,13 @@ package com.huatu.tiku.course.web.controller.ic.v1;
 
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
+import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.netschool.api.CourseServiceV1;
 import com.huatu.tiku.course.netschool.api.v5.CourseServiceV5;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
+import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +21,7 @@ import java.util.HashMap;
  */
 @Slf4j
 @RestController
-@RequestMapping("/ic/course")
+@RequestMapping("/ic/courses")
 @ApiVersion("v1")
 public class IcCourseControllerV1 {
 
