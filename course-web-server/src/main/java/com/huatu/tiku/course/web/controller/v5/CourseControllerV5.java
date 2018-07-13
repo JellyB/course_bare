@@ -244,6 +244,15 @@ public class CourseControllerV5 {
         return ResponseUtil.build(courseService.deleteTopCourse(map));
     }
 
+    /**
+     * 获取 qq群、课程学习总进度
+     */
+    @LocalMapParam(checkToken = true)
+    @GetMapping(value = "{classId}/getQqGroupSchedule")
+    public Object getQqGroupSchedule() {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return ResponseUtil.build(courseService.qqGroupSchedule(map));
+    }
 
     /**
      * 构造课程列表查询参数

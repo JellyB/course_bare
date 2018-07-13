@@ -108,6 +108,12 @@ public interface CourseServiceV5 {
     NetSchoolResponse deleteTopCourse(@RequestParam Map<String, Object> params);
 
     /**
+     * qq群、课程学习总进度
+     */
+    @GetMapping(value = "/v4/common/class/qq_group_schedule")
+    NetSchoolResponse qqGroupSchedule(@RequestParam Map<String, Object> params);
+
+    /**
      * 获取最后一次学习课程 - IC
      */
     @GetMapping(value = "/v4/interview/user/last_study")
