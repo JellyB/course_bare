@@ -6,6 +6,10 @@ import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.springboot.users.service.UserSessionService;
 import com.huatu.tiku.springboot.users.support.UserSessionHolder;
+import javassist.*;
+import javassist.bytecode.CodeAttribute;
+import javassist.bytecode.LocalVariableAttribute;
+import javassist.bytecode.MethodInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
@@ -21,10 +25,8 @@ import org.springframework.web.servlet.HandlerMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * 确认在其他数据处理完成之后再进行
@@ -46,6 +48,13 @@ public class MapParamAspect {
      */
     private static final String[] HEARD_PARAM = new String[]{"cv", "terminal", "appType"};
 
+    /**
+     * 参数中排除的对象
+     */
+    private static final ArrayList EXCEPT_PARAM = new ArrayList() {{
+        add(UserSession.class);
+    }};
+
     @Pointcut("@annotation(com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam)")
     private void mapParamMethod() {
     }
@@ -54,7 +63,7 @@ public class MapParamAspect {
      * 进入方法之前 转换参数
      */
     @Before("mapParamMethod()")
-    public void before(JoinPoint joinPoint) {
+    public void before(JoinPoint joinPoint) throws NotFoundException, ClassNotFoundException {
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = requestAttributes.getRequest();
         //1.build Heard 信息
@@ -93,13 +102,24 @@ public class MapParamAspect {
             }
         }
         //2. build RequestBody
-        Map<String, String[]> map = request.getParameterMap();
-        if (null != map) {
-            Function<String[], String> transParam = (param) -> Arrays.asList(param).stream().collect(Collectors.joining(","));
-            for (String entry : map.keySet()) {
-                hashMapBuilder.put(entry, transParam.apply(map.get(entry)));
+        String className = joinPoint.getTarget().getClass().getName();
+        String methodName = joinPoint.getSignature().getName();
+        Object[] args = joinPoint.getArgs();
+        String[] fileName = getFileName(className, methodName);
+        if (null != fileName) {
+            for (int index = 0; index < fileName.length; index++) {
+                if (!EXCEPT_PARAM.contains(args[index].getClass())) {
+                    hashMapBuilder.put(fileName[index], args[index]);
+                }
             }
         }
+//        Map<String, String[]> map = request.getParameterMap();
+//        if (null != map) {
+//            Function<String[], String> transParam = (param) -> Arrays.asList(param).stream().collect(Collectors.joining(","));
+//            for (String entry : map.keySet()) {
+//                hashMapBuilder.put(entry, transParam.apply(map.get(entry)));
+//            }
+//        }
         //3. build PathVariable
         NativeWebRequest nativeWebRequest = new ServletWebRequest(request);
         Map<String, String> pathParam = (Map<String, String>) nativeWebRequest.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
@@ -170,5 +190,35 @@ public class MapParamAspect {
         } finally {
             connection.close();
         }
+    }
+
+    /**
+     * 获取字段名称
+     *
+     * @param className  类名
+     * @param methodName 方法名
+     */
+    private String[] getFileName(String className, String methodName) throws ClassNotFoundException, NotFoundException {
+        Class<?> clazz = Class.forName(className);
+        ClassPool classPool = ClassPool.getDefault();
+        ClassClassPath classPath = new ClassClassPath(clazz);
+        classPool.insertClassPath(classPath);
+
+        //获取类信息
+        String clazzName = clazz.getName();
+        CtClass ctClass = classPool.get(clazzName);
+        CtMethod declaredMethod = ctClass.getDeclaredMethod(methodName);
+        MethodInfo methodInfo = declaredMethod.getMethodInfo();
+        CodeAttribute codeAttribute = methodInfo.getCodeAttribute();
+        LocalVariableAttribute attribute = (LocalVariableAttribute) codeAttribute.getAttribute(LocalVariableAttribute.tag);
+        if (null == attribute) {
+            return null;
+        }
+        String[] paramsArgsName = new String[declaredMethod.getParameterTypes().length];
+        int pos = Modifier.isStatic(declaredMethod.getModifiers()) ? 0 : 1;
+        for (int index = 0; index < paramsArgsName.length; index++) {
+            paramsArgsName[index] = attribute.variableName(index + pos);
+        }
+        return paramsArgsName;
     }
 }
