@@ -55,6 +55,16 @@ public class MapParamAspect {
         add(UserSession.class);
     }};
 
+    /**
+     * 面库 redis key 前缀
+     */
+    private static final String IC_REDIS_KEY_PREFIX = "interview.";
+
+    /**
+     * 验证失败 消息
+     */
+    private static final ErrorResult FAIL_RESULT = ErrorResult.create(1110002, "用户会话过期");
+
     @Pointcut("@annotation(com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam)")
     private void mapParamMethod() {
     }
@@ -76,24 +86,33 @@ public class MapParamAspect {
         if (StringUtils.isNotBlank(request.getHeader("token"))) {
             if (localMapParam.needUserName()) {
                 TokenType tokenType = localMapParam.tokenType();
-                String userName = "";
                 switch (tokenType) {
                     case ZTK:
-                        userName = getZTKUserName(request.getHeader("token"));
+                        String userName = getZTKUserName(request.getHeader("token"));
+                        if (localMapParam.checkToken() && StringUtils.isBlank(userName)) {
+                            throw new BizException(FAIL_RESULT);
+                        }
+                        if (StringUtils.isNotBlank(userName)) {
+                            hashMapBuilder.put("userName", userName);
+                        }
                         break;
                     case IC:
-                        userName = getICUserName(request.getHeader("token"));
+                        String userId = getICUserId(request.getHeader("token"));
+                        if (localMapParam.checkToken() && StringUtils.isBlank(userId)) {
+                            throw new BizException(FAIL_RESULT);
+                        }
+                        if (StringUtils.isNotBlank(userId)) {
+                            hashMapBuilder.put("userId", userId);
+                        }
                         break;
-                }
-                if (localMapParam.checkToken() && StringUtils.isBlank(userName)) {
-                    throw new BizException(ErrorResult.create(1110002, "用户会话过期"));
-                }
-                if (StringUtils.isNotBlank(userName)) {
-                    hashMapBuilder.put("userName", userName);
+                    default:
+                        //类型非法
+                        throw new BizException(ErrorResult.create(1110003, "用户信息非法"));
+
                 }
             }
         } else if (localMapParam.checkToken()) {
-            throw new BizException(ErrorResult.create(1110002, "用户会话过期"));
+            throw new BizException(FAIL_RESULT);
         }
         //1.2 处理其他的head 信息
         for (String headStr : HEARD_PARAM) {
@@ -167,26 +186,26 @@ public class MapParamAspect {
     }
 
     /**
-     * 获取IC(面库用户名)
+     * 获取IC(面库用户ID)
      *
-     * @return 用户名称
+     * @return 用户ID
      */
-    private String getICUserName(String token) {
+    private String getICUserId(String token) {
         RedisConnection connection = redisTemplate.getConnectionFactory().getConnection();
         try {
-            Map<byte[], byte[]> map = connection.hGetAll(token.getBytes());
+            Map<byte[], byte[]> map = connection.hGetAll((IC_REDIS_KEY_PREFIX + token).getBytes());
             if (null == map) {
                 return StringUtils.EMPTY;
             }
-            byte[] bytes = map.get("\"username\"".getBytes());
+            byte[] bytes = map.get((IC_REDIS_KEY_PREFIX + "id").getBytes());
             if (null == bytes) {
                 return StringUtils.EMPTY;
             }
-            String userName = new String(bytes);
-            if (StringUtils.isNotBlank(userName)) {
-                return userName.substring(0, userName.length() - 1);
+            String userId = new String(bytes);
+            if (StringUtils.isNotBlank(userId)) {
+                return userId.substring(0, userId.length() - 1);
             }
-            return userName;
+            return userId;
         } finally {
             connection.close();
         }

@@ -124,4 +124,10 @@ public interface CourseServiceV5 {
      */
     @GetMapping(value = "/v4/interview/class/list")
     NetSchoolResponse userCourseList(@RequestParam Map<String, Object> params);
+
+    /**
+     * 根据课程id 批量获取数据
+     */
+    @GetMapping(value = "/v4/interview/class/list_by_id")
+    NetSchoolResponse courseInfoList(@RequestParam("classIds") String classIds);
 }

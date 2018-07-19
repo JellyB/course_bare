@@ -443,4 +443,64 @@ public class CourseBizService {
         }
     }
 
+
+    /**
+     * 构建 课程的 购买状态信息
+     *
+     * @param classInfo 课程信息对象
+     * @param buyNum    已购 数量
+     */
+    public static void buildCourseLimitStatus(CourseDetailV3DTO.ClassInfo classInfo, int buyNum) {
+        int totalNum = Integer.MAX_VALUE;//限制人数
+        if (classInfo.getLimitUserCount() != null && classInfo.getLimitUserCount() != 0) {
+            totalNum = classInfo.getLimitUserCount();
+        }
+        int current = TimestampUtil.currentUnixTimeStamp();
+        //获取开始时间和结束时间
+        int startTime = Optional.ofNullable(Ints.tryParse(classInfo.getStartTime())).orElse((int) (DateUtil.addDay(-1).getTime() / 1000));
+        int stopTime = Optional.ofNullable(Ints.tryParse(classInfo.getStopTime())).orElse((int) (DateUtil.addDay(1).getTime() / 1000));
+
+        int limitStatus = 0;
+
+        //获取课程销售状态
+        do {
+            if (startTime == stopTime && startTime == 0) {
+                //不限时，并且不限量
+                if (classInfo.getLimitUserCount() != null && classInfo.getLimitUserCount() == 0) {
+                    limitStatus = 7; //不限时不限量
+                    break;
+                }
+                if (totalNum > buyNum) {
+                    limitStatus = 7; //不限时限量，未售罄
+                } else {
+                    limitStatus = 8; //不限时限量，已售罄
+                }
+                break;
+            }
+            if (startTime > current) {
+                classInfo.setLimitTimes(startTime - current);
+                limitStatus = 2;//未开始
+            } else if (current >= startTime && current < stopTime) {
+                classInfo.setLimitTimes(stopTime - current);
+                if (totalNum > buyNum) {
+                    limitStatus = 3;//抢购中，未售罄
+                } else {
+                    limitStatus = 4;//抢购中，已售罄
+                }
+            } else {
+                classInfo.setLimitTimes(0);
+                if (totalNum <= buyNum) {
+                    limitStatus = 5;//抢购结束
+                } else {
+                    limitStatus = 6;
+                }
+            }
+
+        } while (false);
+        classInfo.setTotal(buyNum);
+        classInfo.setLimitStatus(limitStatus);
+        classInfo.setStartTime(DateFormatUtil.DEFAULT_FORMAT.format(startTime * 1000L));
+        classInfo.setStopTime(DateFormatUtil.DEFAULT_FORMAT.format(stopTime * 1000L));
+    }
+
 }
