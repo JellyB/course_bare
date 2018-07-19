@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  * 面库 用户-课程 订单信息
  * Created by lijun on 2018/7/18
  */
-@FeignClient(url = "http://123.103.86.52:18100", value = "ic-service", path = "/cloud/v1/course")
+@FeignClient(value = "ic-service", path = "/cloud/v1/course")
 public interface IcUserCourseServiceV1 {
 
     /**
