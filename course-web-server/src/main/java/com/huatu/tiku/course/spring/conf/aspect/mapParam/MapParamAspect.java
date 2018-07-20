@@ -58,7 +58,7 @@ public class MapParamAspect {
     /**
      * 面库 redis key 前缀
      */
-    private static final String IC_REDIS_KEY_PREFIX = "interview.";
+    private static final String IC_REDIS_KEY_PREFIX = "ic.";
 
     /**
      * 验证失败 消息
