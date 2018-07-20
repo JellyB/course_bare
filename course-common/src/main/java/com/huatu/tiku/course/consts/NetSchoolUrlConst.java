@@ -130,14 +130,6 @@ public class NetSchoolUrlConst {
      * 我的直播-套餐课程主页接口
      */
     public static final String MY_LIVE_SUIT_DETAIL = "/v2/packageClassList.php";
-    /**
-     * 获取弹幕接口
-     */
-    public static final String BARRAGE_LIST = "/v4/common/barrage/getList";
-    /**
-     * 添加弹幕接口
-     */
-    public static final String BARRAGE_ADD = "/v4/common/barrage/submit";
 
     /**
      * ios内购回调接口
