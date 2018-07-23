@@ -55,7 +55,7 @@ public class CourseControllerV5 {
         int provinceId = AreaConstants.getNetSchoolProvinceId(userSession.getArea());
         HashMap map = buildParams(cv, terminal, isFree, orderType, categoryId, provinceId, subjectId, page, pageSize);
         NetSchoolResponse netSchoolResponse = courseService.recordClassList(map);
-        log.warn("1$${}$${}$${}$${}$${}$${}$${}", categoryId, userSession.getId(), userSession.getUname(), "", String.valueOf(System.currentTimeMillis()), cv, terminal);
+        log.warn("1$${}$${}$${}$${}$${}$${}$${}$${}", categoryId, subjectId, userSession.getId(), userSession.getUname(), "", String.valueOf(System.currentTimeMillis()), cv, terminal);
         return ResponseUtil.build(netSchoolResponse);
     }
 

@@ -69,6 +69,7 @@ public class CourseControllerV3 {
 
     @Autowired
     private CourseUtil courseUtil;
+
     /**
      * 课程合集详情
      *
@@ -78,11 +79,11 @@ public class CourseControllerV3 {
     @GetMapping("/collection")
     public Object getCollectionDetail(
             @RequestHeader(value = "terminal") Integer terminal,
-            @RequestHeader(value = "cv") String cv,@RequestParam String shorttitle,
-                                      @RequestParam int page,
-                                      @Token UserSession userSession) {
+            @RequestHeader(value = "cv") String cv, @RequestParam String shorttitle,
+            @RequestParam int page,
+            @Token UserSession userSession) {
         //行为日志收集   格式说明 在云盘上 http://123.103.79.72:8025/index.php?explorer
-        log.warn("3$${}$${}$${}$${}$${}$${}",shorttitle,userSession.getId(),userSession.getUname(),String.valueOf(System.currentTimeMillis()),cv,terminal);
+        log.warn("3$${}$${}$${}$${}$${}$${}", shorttitle, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
         return courseBizService.getCollectionList(shorttitle, page);
     }
 
@@ -111,9 +112,9 @@ public class CourseControllerV3 {
         Boolean member = false;
         if (terminal == TerminalType.IPHONE || terminal == TerminalType.IPHONE_IPAD) {
             RedisConnection connection = redisTemplate.getConnectionFactory().getConnection();
-            try{
-                member = connection.sIsMember(CourseCacheKey.IOS_AUDIT_VERSION.getBytes(),cv.getBytes());
-            }finally {
+            try {
+                member = connection.sIsMember(CourseCacheKey.IOS_AUDIT_VERSION.getBytes(), cv.getBytes());
+            } finally {
                 connection.close();
             }
         }
@@ -146,12 +147,12 @@ public class CourseControllerV3 {
     @GetMapping("/recordings")
     public Object recordingList(
             @RequestHeader("cv") String cv,
-            @RequestHeader("terminal") int terminal,@RequestParam(required = false, defaultValue = "1001") int categoryid,
-                                @RequestParam(required = false, defaultValue = "1") int orderid,
-                                @RequestParam int page,
-                                @RequestParam(required = false, defaultValue = "") String keywords,
-                                @RequestParam(required = false, defaultValue = "1000") int subjectid,
-                                @Token UserSession userSession) {
+            @RequestHeader("terminal") int terminal, @RequestParam(required = false, defaultValue = "1001") int categoryid,
+            @RequestParam(required = false, defaultValue = "1") int orderid,
+            @RequestParam int page,
+            @RequestParam(required = false, defaultValue = "") String keywords,
+            @RequestParam(required = false, defaultValue = "1000") int subjectid,
+            @Token UserSession userSession) {
         int provinceId = AreaConstants.getNetSchoolProvinceId(userSession.getArea());
         Map<String, Object> params = HashMapBuilder.<String, Object>newBuilder()
                 .put("categoryid", categoryid)
@@ -164,7 +165,7 @@ public class CourseControllerV3 {
         NetSchoolResponse recordingList = courseServiceV3.findRecordingList(params);
         courseServiceV3Fallback.setRecordingList(params, recordingList);
         //行为日志收集   格式说明 在云盘上 http://123.103.79.72:8025/index.php?explorer
-        log.warn("2$${}$${}$${}$${}$${}$${}$${}$${}",categoryid,subjectid,userSession.getId(),userSession.getUname(),keywords,String.valueOf(System.currentTimeMillis()),cv,terminal);
+        log.warn("2$${}$${}$${}$${}$${}$${}$${}$${}", categoryid, subjectid, userSession.getId(), userSession.getUname(), keywords, String.valueOf(System.currentTimeMillis()), cv, terminal);
         return ResponseUtil.build(recordingList);
     }
 
@@ -214,7 +215,7 @@ public class CourseControllerV3 {
                 .put("terminal", terminal)
                 .build();
         CourseListV3DTO courseListV3 = courseBizService.getCourseListV3(params);
-        log.warn("1$${}$${}$${}$${}$${}$${}$${}",categoryid,userSession.getId(),userSession.getUname(),keywords,String.valueOf(System.currentTimeMillis()),cv,terminal);
+        log.warn("1$${}$${}$${}$${}$${}$${}$${}$${}", categoryid, -1, userSession.getId(), userSession.getUname(), "", String.valueOf(System.currentTimeMillis()), cv, terminal);
         return courseListV3;
     }
 
@@ -231,7 +232,7 @@ public class CourseControllerV3 {
                                   @RequestHeader("cv") String cv,
                                   @RequestHeader("terminal") int terminal,
                                   @PathVariable int rid) throws BizException, ExecutionException, InterruptedException {
-        log.warn("4$${}$${}$${}$${}$${}$${}",rid,userSession.getId(),userSession.getUname(),String.valueOf(System.currentTimeMillis()),cv,terminal);
+        log.warn("4$${}$${}$${}$${}$${}$${}", rid, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
         return courseBizService.getCourseDetailV3(rid, userSession.getUname());
     }
 
@@ -271,7 +272,7 @@ public class CourseControllerV3 {
         NetSchoolResponse netSchoolResponse = courseServiceV3.getCourseSecrInfo(params);
         Object response = ResponseUtil.build(netSchoolResponse, true);
         //发布课程播放事件
-        courseUtil.pushPlayEvent(userSession,netSchoolResponse,response);
+        courseUtil.pushPlayEvent(userSession, netSchoolResponse, response);
         //添加课程进度
         courseUtil.addStudyProcessIntoSecrInfo(response, userSession.getToken(), cv, terminal);
         return response;
@@ -339,7 +340,7 @@ public class CourseControllerV3 {
                 .put("orderId", orderIds)
                 .put("username", username)
                 .buildUnsafe();
-        log.warn("9$${}$${}$${}$${}$${}",courseIds,userSession.getId(),username,String.valueOf(System.currentTimeMillis()),orderIds);
+        log.warn("9$${}$${}$${}$${}$${}", courseIds, userSession.getId(), username, String.valueOf(System.currentTimeMillis()), orderIds);
         return ResponseUtil.build(userCoursesServiceV3.hideCourse(RequestUtil.encryptParams(params)));
     }
 
@@ -380,7 +381,7 @@ public class CourseControllerV3 {
         final HashMap<String, Object> params = Maps.newHashMap();
         params.put("username", username);
         params.put("rid", courseId);
-        log.warn("10$${}$${}$${}$${}$${}",courseId,userSession.getId(),username,String.valueOf(System.currentTimeMillis()));
+        log.warn("10$${}$${}$${}$${}$${}", courseId, userSession.getId(), username, String.valueOf(System.currentTimeMillis()));
         return ResponseUtil.build(userCoursesServiceV3.getMyPackCourseDetail(RequestUtil.encryptJsonParams(params)));
     }
 
