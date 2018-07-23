@@ -112,14 +112,17 @@ public class CourseControllerV5 {
     /**
      * 获取课程大纲-售前
      */
+    @LocalMapParam(checkToken = true)
     @GetMapping("/{classId}/classSyllabus")
     public Object classSyllabus(
             @PathVariable("classId") int classId,
-            @RequestParam int parentId,
+            @RequestParam(defaultValue = "0") int parentId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int pageSize
     ) {
-        return courseServiceBiz.findTimetable(classId, parentId, page, pageSize);
+        //return courseServiceBiz.findTimetable(classId, parentId, page, pageSize);
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return courseService.findTimetable(map);
     }
 
     /**
