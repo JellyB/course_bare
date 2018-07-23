@@ -90,6 +90,12 @@ public interface CourseServiceV5 {
     NetSchoolResponse deleteCourse(@RequestParam Map<String, Object> params);
 
     /**
+     * 彻底删除回收站课程
+     */
+    @DeleteMapping(value = "/v4/common/user/my_course_deep")
+    NetSchoolResponse deleteDeepCourse(@RequestParam Map<String, Object> params);
+
+    /**
      * 取消删除
      */
     @PutMapping(value = "/v4/common/user/my_course")

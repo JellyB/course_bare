@@ -215,6 +215,17 @@ public class CourseControllerV5 {
     }
 
     /**
+     * 彻底删除回收站中用户客户课程数据
+     */
+    @LocalMapParam(checkToken = true)
+    @DeleteMapping(value = "/{orderId}/deepDeleteCourse")
+    public Object deepDeleteMyCourse() {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return ResponseUtil.build(courseService.deleteDeepCourse(map));
+    }
+
+
+    /**
      * 取消删除
      */
     @LocalMapParam(checkToken = true)
