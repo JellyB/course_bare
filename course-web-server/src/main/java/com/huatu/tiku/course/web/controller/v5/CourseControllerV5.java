@@ -122,7 +122,7 @@ public class CourseControllerV5 {
     ) {
         //return courseServiceBiz.findTimetable(classId, parentId, page, pageSize);
         HashMap<String, Object> map = LocalMapParamHandler.get();
-        return courseService.findTimetable(map);
+        return ResponseUtil.build(courseService.findTimetable(map));
     }
 
     /**
