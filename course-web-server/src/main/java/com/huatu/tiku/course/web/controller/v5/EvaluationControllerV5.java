@@ -4,6 +4,8 @@ import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.netschool.api.v5.EvaluationServiceV5;
+import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
+import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
@@ -67,40 +69,31 @@ public class EvaluationControllerV5 {
     /**
      * 获取用户当前课件评价信息接口
      */
+    @LocalMapParam(checkToken = true)
     @GetMapping("getClickEvaluation")
     public Object getClickEvaluation(
             @Token UserSession userSession,
             @RequestParam int classId,
-            @RequestParam int lessonId
+            @RequestParam int lessonId,
+            @RequestParam int parentId
     ) {
-        HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
-                .put("userName", userSession.getUname())
-                .put("classId", classId)
-                .put("lessonId", lessonId)
-                .build();
+        HashMap<String, Object> map = LocalMapParamHandler.get();
         return ResponseUtil.build(evaluationService.getClickEvaluation(map));
     }
 
     /**
      * 提交评价
      */
+    @LocalMapParam(checkToken = true)
     @PostMapping("submit")
     public Object submit(
-            @Token UserSession userSession,
-            @RequestHeader int terminal,
             @RequestParam int classId,
             @RequestParam String evaluation,
             @RequestParam int lessonId,
-            @RequestParam String score
+            @RequestParam String score,
+            @RequestParam int parentId
     ) {
-        HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
-                .put("classId", classId)
-                .put("evaluation", evaluation)
-                .put("lessonId", lessonId)
-                .put("score", score)
-                .put("terminal", terminal)
-                .put("userName", userSession.getUname())
-                .build();
+        HashMap<String, Object> map = LocalMapParamHandler.get();
         return ResponseUtil.build(evaluationService.submit(map));
     }
 }
