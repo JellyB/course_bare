@@ -203,7 +203,7 @@ public class MapParamAspect {
             }
             String userId = new String(bytes);
             if (StringUtils.isNotBlank(userId)) {
-                return userId.substring(0, userId.length() - 1);
+                return userId.startsWith("\"") ? userId.substring(0, userId.length() - 1) : userId;
             }
             return userId;
         } finally {
