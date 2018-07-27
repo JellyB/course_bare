@@ -10,6 +10,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -68,6 +69,8 @@ public class CourseExercisesController {
                 terminal, subjectId, userSession.getId(), "课后练习",
                 courseType, courseId, questionId
         );
-        return ZTKResponseUtil.build(practiceCard);
+        HashMap<String, Object> result = (HashMap<String, Object>) ZTKResponseUtil.build(practiceCard);
+        result.computeIfPresent("id", (key, value) -> String.valueOf(value));
+        return result;
     }
 }
