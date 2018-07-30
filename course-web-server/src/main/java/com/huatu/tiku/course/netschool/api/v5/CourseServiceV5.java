@@ -140,5 +140,6 @@ public interface CourseServiceV5 {
     /**
      * 获取横屏课程信息
      */
+    @GetMapping(value = "/v4/common/class/choose_courseware")
     NetSchoolResponse chooseCourseWare(@RequestParam Map<String, Object> params);
 }
