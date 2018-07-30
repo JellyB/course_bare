@@ -66,7 +66,7 @@ public class CourseServiceV5BizImpl implements CourseServiceV5Biz {
         NetSchoolResponse purchasesTimetable = courseService.findPurchasesTimetable(map);
         LinkedHashMap response = (LinkedHashMap) (ResponseUtil.build(purchasesTimetable));
         response.computeIfPresent("list", (key, value) -> {
-                    if (MapUtils.getString(response, "type").equals("2")) {
+                    if (null != MapUtils.getString(response, "type") && MapUtils.getString(response, "type").equals("2")) {
                         HashMap<String, Object> answerCard = HashMapBuilder.<String, Object>newBuilder()
                                 .put("status", 1)
                                 .put("questionCount", 5)
