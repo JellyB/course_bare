@@ -271,7 +271,7 @@ public class CourseControllerV5 {
      * 获取横屏课件列表
      */
     @LocalMapParam(checkToken = false)
-    @GetMapping(value = "/{classId}/getChooseCourseWare")
+    @GetMapping(value = "/{netClassId}/getChooseCourseWare")
     public Object getChooseCourseWare(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize
