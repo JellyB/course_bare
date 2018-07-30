@@ -65,7 +65,7 @@ public class CourseBreakpointQuestionServiceImpl extends BaseServiceHelperImpl<C
             return result;
         };
 
-        List<Map<String, Object>> cacheStringValue = cacheUtil.getCacheStringValue(keySupplier, valueSupplier, 30, TimeUnit.MINUTES);
+        List<Map<String, Object>> cacheStringValue = cacheUtil.getCacheStringValue(keySupplier, valueSupplier, 5, TimeUnit.MINUTES);
         return cacheStringValue;
     }
 

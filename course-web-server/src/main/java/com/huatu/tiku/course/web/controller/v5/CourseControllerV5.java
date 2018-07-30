@@ -136,8 +136,7 @@ public class CourseControllerV5 {
             @RequestParam(defaultValue = "20") int pageSize
     ) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
-        NetSchoolResponse timetable = courseService.findPurchasesTimetable(map);
-        return ResponseUtil.build(timetable);
+        return courseServiceBiz.findPurchasesTimetable(map);
     }
 
     /**
@@ -266,6 +265,19 @@ public class CourseControllerV5 {
     public Object getQqGroupSchedule() {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         return ResponseUtil.build(courseService.qqGroupSchedule(map));
+    }
+
+    /**
+     * 获取横屏课件列表
+     */
+    @LocalMapParam(checkToken = false)
+    @GetMapping(value = "/{classId}/getChooseCourseWare")
+    public Object getChooseCourseWare(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize
+    ) {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return ResponseUtil.build(courseService.chooseCourseWare(map));
     }
 
     /**

@@ -136,4 +136,9 @@ public interface CourseServiceV5 {
      */
     @GetMapping(value = "/v4/interview/class/list_by_id")
     NetSchoolResponse courseInfoList(@RequestParam("classIds") String classIds);
+
+    /**
+     * 获取横屏课程信息
+     */
+    NetSchoolResponse chooseCourseWare(@RequestParam Map<String, Object> params);
 }
