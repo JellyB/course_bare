@@ -170,6 +170,7 @@ public class CourseUtil {
                         //获取答题卡信息状态
                         Function<HashMap<String, Object>, Map> getCourse = (valueData) -> {
                             Optional<Map> first = ((List<Map>) build).stream()
+                                    .filter(result -> null != result.get("courseId") && null != result.get("courseType"))
                                     .filter(result ->
                                             MapUtils.getString(result, "courseId").equals(MapUtils.getString(valueData, "coursewareId"))
                                                     && MapUtils.getString(result, "courseType").equals(MapUtils.getString(valueData, "videoType"))
