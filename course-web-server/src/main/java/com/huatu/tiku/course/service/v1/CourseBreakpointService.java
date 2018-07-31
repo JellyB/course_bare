@@ -4,7 +4,6 @@ import com.huatu.tiku.entity.CourseBreakpoint;
 import service.BaseServiceHelper;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by lijun on 2018/6/19
@@ -18,7 +17,7 @@ public interface CourseBreakpointService extends BaseServiceHelper<CourseBreakpo
      * @param courseId   课程ID
      * @return
      */
-    Map<Integer, List<CourseBreakpoint>> listByCourseTypeAndId(Integer courseType, Long courseId);
+    List<CourseBreakpoint> listByCourseTypeAndId(Integer courseType, Long courseId);
 
     /**
      * 获取某个课程下的所有试题信息

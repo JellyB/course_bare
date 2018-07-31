@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 /**
@@ -44,7 +45,24 @@ public class CourseBreakPointController {
             @PathVariable(value = "courseType") Integer courseType,
             @PathVariable(value = "courseId") Long courseId
     ) {
-        Map<Integer, List<CourseBreakpoint>> listMap = service.listByCourseTypeAndId(courseType, courseId);
+        List<CourseBreakpoint> listMap = service.listByCourseTypeAndId(courseType, courseId);
+        Map<Integer, List<CourseBreakpoint>> map = listMap.stream()
+                .collect(Collectors.groupingBy(CourseBreakpoint::getPosition));
+        //按照 position(时间顺序) 排序
+        TreeMap<Integer, List<CourseBreakpoint>> scoreMap = new TreeMap<>(Integer::compareTo);
+        scoreMap.putAll(map);
+        return scoreMap;
+    }
+
+    /**
+     * 根据课程ID、课程类型获取端点集合
+     */
+    @GetMapping(value = "/{courseType}/{courseId}/listForAndroid")
+    public Object listForAndroid(
+            @PathVariable(value = "courseType") Integer courseType,
+            @PathVariable(value = "courseId") Long courseId
+    ) {
+        List<CourseBreakpoint> listMap = service.listByCourseTypeAndId(courseType, courseId);
         return listMap;
     }
 

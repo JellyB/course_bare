@@ -1,10 +1,10 @@
 package com.huatu.tiku.course.service.v1.impl;
 
 import com.huatu.common.spring.cache.Cached;
-import com.huatu.tiku.course.service.v1.CourseBreakpointQuestionService;
-import com.huatu.tiku.course.service.v1.CourseBreakpointService;
 import com.huatu.tiku.course.service.cache.CacheUtil;
 import com.huatu.tiku.course.service.cache.CourseBreakpointCacheKey;
+import com.huatu.tiku.course.service.v1.CourseBreakpointQuestionService;
+import com.huatu.tiku.course.service.v1.CourseBreakpointService;
 import com.huatu.tiku.entity.CourseBreakpoint;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,6 @@ import tk.mybatis.mapper.weekend.WeekendSqls;
 
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -41,11 +40,11 @@ public class CourseBreakpointServiceImpl extends BaseServiceHelperImpl<CourseBre
             key = "T(com.huatu.tiku.course.service.cache.CourseBreakpointCacheKey).breakpointKey(#map)",
             params = {@Cached.Param(name = "courseType=?&courseId=?", value = "map", type = Map.class)})
     @Override
-    public Map<Integer, List<CourseBreakpoint>> listByCourseTypeAndId(Integer courseType, Long courseId) {
+    public List<CourseBreakpoint> listByCourseTypeAndId(Integer courseType, Long courseId) {
         //生成key
         Supplier keySupplier = () -> CourseBreakpointCacheKey.breakpointKey(courseId, courseType);
         //生成value
-        Supplier<Map<Integer, List<CourseBreakpoint>>> supplier = () -> {
+        Supplier<List<CourseBreakpoint>> supplier = () -> {
             WeekendSqls<CourseBreakpoint> sql = WeekendSqls.custom();
             sql.andEqualTo(CourseBreakpoint::getCourseType, courseType);
             sql.andEqualTo(CourseBreakpoint::getCourseId, courseId);
@@ -58,15 +57,10 @@ public class CourseBreakpointServiceImpl extends BaseServiceHelperImpl<CourseBre
             if (courseBreakpoints.size() == 0) {
                 return null;
             }
-            Map<Integer, List<CourseBreakpoint>> map = courseBreakpoints.stream()
-                    .collect(Collectors.groupingBy(CourseBreakpoint::getPosition));
-            //按照 position(时间顺序) 排序
-            TreeMap<Integer, List<CourseBreakpoint>> scoreMap = new TreeMap<>(Integer::compareTo);
-            scoreMap.putAll(map);
-            return scoreMap;
+            return courseBreakpoints;
         };
         //生成缓存
-        Map<Integer, List<CourseBreakpoint>> cacheStringValue = cacheUtil.getCacheStringValue(keySupplier, supplier, 30, TimeUnit.MINUTES);
+        List<CourseBreakpoint> cacheStringValue = cacheUtil.getCacheStringValue(keySupplier, supplier, 5, TimeUnit.MINUTES);
         return cacheStringValue;
     }
 
@@ -74,15 +68,14 @@ public class CourseBreakpointServiceImpl extends BaseServiceHelperImpl<CourseBre
     public List<Long> listAllQuestionId(Integer courseType, Long courseId) {
         Supplier key = () -> CourseBreakpointCacheKey.breakpointCardQuestionKey(courseId, courseType);
         Supplier<List<Long>> value = () -> {
-            Map<Integer, List<CourseBreakpoint>> map = listByCourseTypeAndId(courseType, courseId);
-            if (map == null) {
+            List<CourseBreakpoint> dataList = listByCourseTypeAndId(courseType, courseId);
+            if (dataList == null) {
                 return null;
             }
             //获取所有的端点ID
-            List<Long> breakPointIdList = map.entrySet().stream()
-                    .flatMap(data -> data.getValue().stream().map(CourseBreakpoint::getId))
+            List<Long> breakPointIdList = dataList.stream()
+                    .map(CourseBreakpoint::getId)
                     .collect(Collectors.toList());
-
             List<Long> questionIdList = courseBreakpointQuestionService.listQuestionIdByBreakpointIdList(breakPointIdList);
             return questionIdList;
         };
