@@ -46,6 +46,9 @@ public class CourseBreakPointController {
             @PathVariable(value = "courseId") Long courseId
     ) {
         List<CourseBreakpoint> listMap = service.listByCourseTypeAndId(courseType, courseId);
+        if (null == listMap || listMap.size() == 0) {
+            return listMap;
+        }
         Map<Integer, List<CourseBreakpoint>> map = listMap.stream()
                 .collect(Collectors.groupingBy(CourseBreakpoint::getPosition));
         //按照 position(时间顺序) 排序
