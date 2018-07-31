@@ -18,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  * Created by lijun on 2018/6/25
@@ -131,12 +132,16 @@ public class CourseControllerV5 {
     @LocalMapParam(checkToken = true)
     @GetMapping("/{classId}/purchasedClassSyllabus")
     public Object purchasedClassSyllabus(
+            @Token UserSession userSession,
             @RequestParam int parentId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int pageSize
     ) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
-        return courseServiceBiz.findPurchasesTimetable(map);
+        Object purchasesTimetable = courseServiceBiz.findPurchasesTimetable(userSession.getId(), map);
+        //添加答题信息
+        courseUtil.addExercisesCardInfo((LinkedHashMap) purchasesTimetable, userSession.getId());
+        return purchasesTimetable;
     }
 
     /**
