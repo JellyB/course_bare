@@ -38,6 +38,9 @@ public class CourseBreakPointController {
     ) {
         HashMap<String, Object> map = service.buildCard(terminal, userSession.getSubject(), userSession.getId(), courseType, courseId);
         do {
+            if (null == map) {
+                break;
+            }
             if (null == map.get("paper")) {
                 break;
             }

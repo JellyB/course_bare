@@ -129,7 +129,9 @@ public class CourseBreakpointServiceImpl extends BaseServiceHelperImpl<CourseBre
                 courseType, courseId, questionId, breakPointInfoList
         );
         HashMap<String, Object> result = (HashMap<String, Object>) ZTKResponseUtil.build(practiceCard);
-        result.computeIfPresent("id", (key, value) -> String.valueOf(value));
+        if (null != result) {
+            result.computeIfPresent("id", (key, value) -> String.valueOf(value));
+        }
         return result;
     }
 }
