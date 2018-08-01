@@ -13,6 +13,7 @@ import com.huatu.tiku.entity.CourseBreakpoint;
 import com.huatu.tiku.entity.CourseBreakpointQuestion;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import service.impl.BaseServiceHelperImpl;
@@ -120,6 +121,9 @@ public class CourseBreakpointServiceImpl extends BaseServiceHelperImpl<CourseBre
                 .flatMap(data -> data.getQuestionInfoList().stream())
                 .map(String::valueOf)
                 .collect(Collectors.joining(","));
+        if (StringUtils.isBlank(questionId)) {
+            return null;
+        }
         //生成节点信息
         List<Object> breakPointInfoList = list.stream()
                 .map(data -> JSONObject.toJSON(data))
