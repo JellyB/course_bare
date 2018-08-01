@@ -73,7 +73,7 @@ public class CourseBreakpointServiceImpl extends BaseServiceHelperImpl<CourseBre
                                 .sort(courseBreakpoint.getSort())
                                 .build();
                         List<Long> questionList = questionIdList.stream()
-                                .filter(courseBreakpointQuestion -> courseBreakpointQuestion.getBreakpointId() == courseBreakpoint.getId())
+                                .filter(courseBreakpointQuestion -> courseBreakpointQuestion.getBreakpointId().equals(courseBreakpoint.getId()))
                                 .map(CourseBreakpointQuestion::getQuestionId)
                                 .collect(Collectors.toList());
                         dto.setQuestionInfoList(questionList);
