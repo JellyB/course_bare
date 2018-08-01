@@ -30,21 +30,6 @@ public class CourseExercisesController {
     private PracticeCardServiceV1 practiceCardService;
 
     /**
-     * 获取课后习题详情
-     *
-     * @param courseType 课程类型
-     * @param courseId   课程ID
-     * @return
-     */
-    @GetMapping(value = "/{courseType}/{courseId}")
-    public Object list(
-            @PathVariable("courseType") Integer courseType,
-            @PathVariable("courseId") Long courseId
-    ) {
-        return service.listQuestionByCourseId(courseType, courseId);
-    }
-
-    /**
      * 创建课后训练答题卡
      *
      * @return

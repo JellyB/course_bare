@@ -71,16 +71,13 @@ public class CourseBreakpointQuestionServiceImpl extends BaseServiceHelperImpl<C
 
 
     @Override
-    public List<Long> listQuestionIdByBreakpointIdList(List<Long> list) {
+    public List<CourseBreakpointQuestion> listQuestionIdByBreakpointIdList(List<Long> list) {
         WeekendSqls<CourseBreakpointQuestion> sql = WeekendSqls.custom();
         sql.andIn(CourseBreakpointQuestion::getBreakpointId, list);
         Example example = Example.builder(CourseBreakpointQuestion.class)
                 .where(sql)
                 .build();
         List<CourseBreakpointQuestion> questions = selectByExample(example);
-        List<Long> questionIdList = questions.stream()
-                .map(CourseBreakpointQuestion::getQuestionId)
-                .collect(Collectors.toList());
-        return questionIdList;
+        return questions;
     }
 }

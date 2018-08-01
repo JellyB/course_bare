@@ -1,8 +1,10 @@
 package com.huatu.tiku.course.service.v1;
 
+import com.huatu.tiku.course.bean.CourseBreakpointQuestionDTO;
 import com.huatu.tiku.entity.CourseBreakpoint;
 import service.BaseServiceHelper;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -11,20 +13,23 @@ import java.util.List;
 public interface CourseBreakpointService extends BaseServiceHelper<CourseBreakpoint> {
 
     /**
-     * 根据课程类型、ID 查询知识点数据
-     *
-     * @param courseType 课程类型
-     * @param courseId   课程ID
-     * @return
-     */
-    List<CourseBreakpoint> listByCourseTypeAndId(Integer courseType, Long courseId);
-
-    /**
      * 获取某个课程下的所有试题信息
      *
      * @param courseType 课程类型
      * @param courseId   课程ID
      * @return
      */
-    List<Long> listAllQuestionId(Integer courseType, Long courseId);
+    List<CourseBreakpointQuestionDTO> listAllQuestionId(int courseType, long courseId);
+
+    /**
+     * 创建答题卡
+     *
+     * @param terminal   设备类型
+     * @param subjectId  科目ID
+     * @param userId     用户ID
+     * @param courseType 课程类型
+     * @param courseId   课程ID
+     * @return
+     */
+    HashMap<String, Object> buildCard(int terminal, int subjectId, int userId, int courseType, long courseId);
 }

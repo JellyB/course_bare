@@ -19,7 +19,7 @@ public class PracticeCardServiceV1Fallback implements PracticeCardServiceV1 {
     }
 
     @Override
-    public Object createCourseBreakPointPracticeCard(Integer terminal, Integer subject, Integer uid, String name, Integer courseType, Long courseId, String questionId) {
+    public Object createCourseBreakPointPracticeCard(Integer terminal, Integer subject, Integer uid, String name, Integer courseType, Long courseId, String questionId, List<Object> questionInfoList) {
         return ZTKResponseUtil.defaultResult();
     }
 

@@ -24,6 +24,6 @@ public interface CourseBreakpointQuestionService extends BaseServiceHelper<Cours
      * @param list
      * @return
      */
-    List<Long> listQuestionIdByBreakpointIdList(List<Long> list);
+    List<CourseBreakpointQuestion> listQuestionIdByBreakpointIdList(List<Long> list);
 
 }

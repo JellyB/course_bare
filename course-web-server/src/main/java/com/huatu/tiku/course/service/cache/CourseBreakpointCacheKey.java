@@ -43,11 +43,4 @@ public class CourseBreakpointCacheKey {
         return "course:breakpoint:question:" + breakpointId;
     }
 
-    /**
-     * 课中练习 所有的试题ID集合
-     * @return
-     */
-    public static String breakpointCardQuestionKey(Long courseId, Integer courseType) {
-        return "course:breakpoint:andCard:" + courseType + "$" + courseId;
-    }
 }

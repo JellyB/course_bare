@@ -41,7 +41,8 @@ public interface PracticeCardServiceV1 {
             @RequestParam("name") String name,
             @RequestParam("courseType") Integer courseType,
             @RequestParam("courseId") Long courseId,
-            @RequestParam("questionId") String questionId
+            @RequestParam("questionId") String questionId,
+            @RequestBody List<Object> questionInfoList
     );
 
     /**

@@ -2,20 +2,15 @@ package com.huatu.tiku.course.web.controller.v1;
 
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
-import com.huatu.tiku.course.service.v1.CourseBreakpointQuestionService;
 import com.huatu.tiku.course.service.v1.CourseBreakpointService;
-import com.huatu.tiku.course.util.ZTKResponseUtil;
-import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
-import com.huatu.tiku.entity.CourseBreakpoint;
 import com.huatu.tiku.springboot.users.support.Token;
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 /**
@@ -29,59 +24,6 @@ public class CourseBreakPointController {
     @Autowired
     private CourseBreakpointService service;
 
-    @Autowired
-    private CourseBreakpointQuestionService breakpointQuestionService;
-
-    @Autowired
-    private PracticeCardServiceV1 practiceCardService;
-
-    /**
-     * 根据课程ID、课程类型获取端点集合并分组
-     *
-     * @return
-     */
-    @GetMapping(value = "/{courseType}/{courseId}")
-    public Object list(
-            @PathVariable(value = "courseType") Integer courseType,
-            @PathVariable(value = "courseId") Long courseId
-    ) {
-        List<CourseBreakpoint> listMap = service.listByCourseTypeAndId(courseType, courseId);
-        if (null == listMap || listMap.size() == 0) {
-            return listMap;
-        }
-        Map<Integer, List<CourseBreakpoint>> map = listMap.stream()
-                .collect(Collectors.groupingBy(CourseBreakpoint::getPosition));
-        //按照 position(时间顺序) 排序
-        TreeMap<Integer, List<CourseBreakpoint>> scoreMap = new TreeMap<>(Integer::compareTo);
-        scoreMap.putAll(map);
-        return scoreMap;
-    }
-
-    /**
-     * 根据课程ID、课程类型获取端点集合
-     */
-    @GetMapping(value = "/{courseType}/{courseId}/listForAndroid")
-    public Object listForAndroid(
-            @PathVariable(value = "courseType") Integer courseType,
-            @PathVariable(value = "courseId") Long courseId
-    ) {
-        List<CourseBreakpoint> listMap = service.listByCourseTypeAndId(courseType, courseId);
-        return listMap;
-    }
-
-    /**
-     * 根据断点ID 查询数据
-     *
-     * @return
-     */
-    @GetMapping(value = "/{breakQuestionId}")
-    public Object listQuestion(
-            @PathVariable("breakQuestionId") long breakQuestionId
-    ) {
-        List<Map<String, Object>> mapList = breakpointQuestionService.listQuestionIdByPointId(breakQuestionId);
-        return mapList;
-    }
-
     /**
      * 创建课中训练答题卡
      *
@@ -94,18 +36,34 @@ public class CourseBreakPointController {
             @PathVariable(value = "courseType") Integer courseType,
             @PathVariable(value = "courseId") Long courseId
     ) {
-        List<Long> list = service.listAllQuestionId(courseType, courseId);
-        if (CollectionUtils.isEmpty(list)) {
-            return null;
-        }
-        int subjectId = userSession.getSubject();
-        String questionId = list.stream().map(String::valueOf).collect(Collectors.joining(","));
-        Object practiceCard = practiceCardService.createCourseBreakPointPracticeCard(
-                terminal, subjectId, userSession.getId(), "课中练习",
-                courseType, courseId, questionId
-        );
-        HashMap<String, Object> result = (HashMap<String, Object>) ZTKResponseUtil.build(practiceCard);
-        result.computeIfPresent("id", (key, value) -> String.valueOf(value));
-        return result;
+        HashMap<String, Object> map = service.buildCard(terminal, userSession.getSubject(), userSession.getId(), courseType, courseId);
+        do {
+            if (null == map.get("paper")) {
+                break;
+            }
+            if (null == ((HashMap<String, Object>) map.get("paper")).get("breakPointInfoList")) {
+                break;
+            }
+            Map<String, List<HashMap>> collect = ((ArrayList<HashMap>) ((HashMap<String, Object>) map.get("paper")).get("breakPointInfoList"))
+                    .stream()
+                    .collect(Collectors.groupingBy(data -> data.get("position").toString()));
+            ((HashMap<String, Object>) map.get("paper")).put("breakPointInfoList", collect);
+        } while (false);
+        return map;
+    }
+
+    /**
+     * 创建课中训练答题卡
+     *
+     * @return
+     */
+    @GetMapping(value = "/{courseType}/{courseId}/cardForAndroid")
+    public Object cardForAndroid(
+            @Token UserSession userSession,
+            @RequestHeader("terminal") Integer terminal,
+            @PathVariable(value = "courseType") Integer courseType,
+            @PathVariable(value = "courseId") Long courseId
+    ) {
+        return service.buildCard(terminal, userSession.getSubject(), userSession.getId(), courseType, courseId);
     }
 }
