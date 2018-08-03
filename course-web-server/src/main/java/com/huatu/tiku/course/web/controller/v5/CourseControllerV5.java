@@ -116,14 +116,19 @@ public class CourseControllerV5 {
     @LocalMapParam(checkToken = true)
     @GetMapping("/{classId}/classSyllabus")
     public Object classSyllabus(
+            @Token UserSession userSession,
             @PathVariable("classId") int classId,
-            @RequestParam(defaultValue = "0") int parentId,
+            @RequestParam int parentId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int pageSize
     ) {
         //return courseServiceBiz.findTimetable(classId, parentId, page, pageSize);
         HashMap<String, Object> map = LocalMapParamHandler.get();
-        return ResponseUtil.build(courseService.findTimetable(map));
+        //添加答题信息
+        Object timeTable = ResponseUtil.build(courseService.findTimetable(map));
+        //添加答题信息
+        courseUtil.addExercisesCardInfo((LinkedHashMap) timeTable, userSession.getId());
+        return timeTable;
     }
 
     /**
