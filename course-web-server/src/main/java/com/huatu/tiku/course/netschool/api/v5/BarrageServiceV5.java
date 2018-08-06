@@ -18,7 +18,7 @@ public interface BarrageServiceV5 {
     /**
      * 弹幕列表
      */
-    @GetMapping(value = "/v4/common/barrage/getList")
+    @GetMapping(value = "/v4/common/barrage/get_list")
     NetSchoolResponse barrageList(@RequestParam Map<String, Object> params);
 
     /**
