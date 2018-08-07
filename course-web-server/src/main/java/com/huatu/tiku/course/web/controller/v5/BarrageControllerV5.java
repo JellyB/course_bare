@@ -28,9 +28,9 @@ public class BarrageControllerV5 {
      */
     @LocalMapParam(checkToken = true)
     @GetMapping
-    public Object getBarrages(long classId,
-                              long lessonId,
-                              long videoNode,
+    public Object getBarrages(@RequestParam long classId,
+                              @RequestParam long lessonId,
+                              @RequestParam long videoNode,
                               @RequestParam(defaultValue = "1") int page,
                               @RequestParam(defaultValue = "10") int pageSize) throws BizException {
         HashMap<String, Object> map = LocalMapParamHandler.get();
@@ -42,7 +42,12 @@ public class BarrageControllerV5 {
      */
     @LocalMapParam(checkToken = true)
     @PostMapping
-    public Object addBarrage(long classId, String content, long lessonId, String videoNode, int background) {
+    public Object addBarrage(
+            @RequestParam long classId,
+            @RequestParam String content,
+            @RequestParam long lessonId,
+            @RequestParam String videoNode,
+            @RequestParam int background) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         return ResponseUtil.build(barrageServiceV5.barrageAdd(map));
     }
