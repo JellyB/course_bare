@@ -197,7 +197,7 @@ public class MapParamAspect {
             if (null == map) {
                 return StringUtils.EMPTY;
             }
-            byte[] bytes = map.get("\"id\"".getBytes());
+            byte[] bytes = map.get("id".getBytes());
             if (null == bytes) {
                 return StringUtils.EMPTY;
             }
