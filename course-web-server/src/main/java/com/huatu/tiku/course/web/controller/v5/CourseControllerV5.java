@@ -113,7 +113,7 @@ public class CourseControllerV5 {
     /**
      * 获取课程大纲-售前
      */
-    @LocalMapParam(checkToken = true)
+//    @LocalMapParam(checkToken = true)
     @GetMapping("/{classId}/classSyllabus")
     public Object classSyllabus(
             @Token UserSession userSession,
