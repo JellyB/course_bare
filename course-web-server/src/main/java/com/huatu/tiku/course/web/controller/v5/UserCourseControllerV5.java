@@ -29,7 +29,7 @@ public class UserCourseControllerV5 {
     @LocalMapParam(checkToken = true)
     @GetMapping("getMyDeletedClasses")
     public Object getMyDeletedClasses(
-            @RequestParam int cateId,
+            @RequestParam(defaultValue = "0") int cateId,
             @RequestParam(defaultValue = "") String keyWord,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize
@@ -44,7 +44,7 @@ public class UserCourseControllerV5 {
     @LocalMapParam(checkToken = true)
     @GetMapping("getMyNotDeletedClasses")
     public Object getMyNotDeletedClasses(
-            @RequestParam int cateId,
+            @RequestParam(defaultValue = "0") int cateId,
             @RequestParam(defaultValue = "") String keyWord,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize
