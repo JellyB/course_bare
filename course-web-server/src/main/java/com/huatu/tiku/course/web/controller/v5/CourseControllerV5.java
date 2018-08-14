@@ -113,9 +113,10 @@ public class CourseControllerV5 {
     /**
      * 获取课程大纲-售前
      */
+    @LocalMapParam
     @GetMapping("/{classId}/classSyllabus")
     public Object classSyllabus(
-            @Token(required = false) UserSession userSession,
+            @Token UserSession userSession,
             @PathVariable("classId") int classId,
             @RequestParam int parentId,
             @RequestParam(defaultValue = "1") int page,
@@ -126,11 +127,25 @@ public class CourseControllerV5 {
         //添加答题信息
         Object timeTable = ResponseUtil.build(courseService.findTimetable(map));
         //添加答题信息
-        if (null != userSession && 0 != userSession.getId()) {
-            courseUtil.addExercisesCardInfo((LinkedHashMap) timeTable, userSession.getId());
-        }
+        courseUtil.addExercisesCardInfo((LinkedHashMap) timeTable, userSession.getId());
         return timeTable;
     }
+
+    /**
+     * 获取课程大纲-售前
+     */
+    @LocalMapParam
+    @GetMapping("/{classId}/classSyllabusWithoutSession")
+    public Object classSyllabusWithoutSession(
+            @PathVariable("classId") int classId,
+            @RequestParam int parentId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int pageSize
+    ) {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return ResponseUtil.build(courseService.findTimetable(map));
+    }
+
 
     /**
      * 获取课程大纲-售后
