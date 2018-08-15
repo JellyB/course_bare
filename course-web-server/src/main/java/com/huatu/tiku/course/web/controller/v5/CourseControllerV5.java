@@ -307,13 +307,13 @@ public class CourseControllerV5 {
     }
 
     /**
-     * 最近学习
+     * 继续学习
      */
     @LocalMapParam
     @GetMapping(value = "/{netClassId}/lastPlayLesson")
     public Object lastPlayLesson() {
         HashMap<String, Object> map = LocalMapParamHandler.get();
-        return ResponseUtil.build(courseService.lastStudyCourse(map));
+        return ResponseUtil.build(courseService.lastPlayLesson(map));
     }
 
     /**
