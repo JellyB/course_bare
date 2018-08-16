@@ -149,4 +149,10 @@ public interface CourseServiceV5 {
     @GetMapping(value = "/v4/common/class/last_play_lesson")
     NetSchoolResponse lastPlayLesson(@RequestParam Map<String, Object> params);
 
+    /**
+     * 讲义
+     */
+    @GetMapping(value = "/v4/common/class/get_handouts")
+    NetSchoolResponse handouts(@RequestParam Map<String, Object> params);
+
 }

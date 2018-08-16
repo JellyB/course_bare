@@ -317,6 +317,17 @@ public class CourseControllerV5 {
     }
 
     /**
+     * 讲义
+     */
+    @LocalMapParam
+    @GetMapping("/{classId}/handouts")
+    public Object handouts() {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return ResponseUtil.build(courseService.handouts(map));
+    }
+
+
+    /**
      * 构造课程列表查询参数
      *
      * @param cv         版本号
