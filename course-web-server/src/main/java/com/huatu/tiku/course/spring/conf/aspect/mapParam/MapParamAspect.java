@@ -17,7 +17,6 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.*;
@@ -190,26 +189,17 @@ public class MapParamAspect {
      *
      * @return 用户ID
      */
-    private String getICUserId(String token) {
-        RedisConnection connection = redisTemplate.getConnectionFactory().getConnection();
-        try {
-            Map<byte[], byte[]> map = connection.hGetAll((IC_REDIS_KEY_PREFIX + token).getBytes());
-            if (null == map) {
-                return StringUtils.EMPTY;
-            }
-            byte[] bytes = map.get("id".getBytes());
-            if (null == bytes) {
-                return StringUtils.EMPTY;
-            }
-            String userId = new String(bytes);
-            if (StringUtils.isNotBlank(userId)) {
-                return userId.startsWith("\"") ? userId.substring(0, userId.length() - 1) : userId;
-            }
-            return userId;
-        } finally {
-            connection.close();
-        }
-    }
+	private String getICUserId(String token) {
+		// 从当前线程存储获取，如果没有再去redis查找，减少访问次数
+		UserSession userSession = UserSessionHolder.get();
+		if (userSession == null) {
+			userSession = userSessionService.getUserSession(token);
+		}
+		if (userSession != null) {
+			return userSession.getId() + "";
+		}
+		return StringUtils.EMPTY;
+	}
 
     /**
      * 获取字段名称
