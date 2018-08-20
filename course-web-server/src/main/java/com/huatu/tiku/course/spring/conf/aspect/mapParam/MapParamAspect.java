@@ -17,6 +17,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.*;
@@ -173,15 +174,11 @@ public class MapParamAspect {
      * @return 用户名称
      */
     private String getZTKUserName(String token) {
-        //从当前线程存储获取，如果没有再去redis查找，减少访问次数
-        UserSession userSession = UserSessionHolder.get();
-        if (userSession == null) {
-            userSession = userSessionService.getUserSession(token);
+        UserSession userSession = getUserSessionFromUserStart(token);
+        if (null == userSession) {
+            return StringUtils.EMPTY;
         }
-        if (userSession != null) {
-            return userSession.getUname();
-        }
-        return StringUtils.EMPTY;
+        return userSession.getUname();
     }
 
     /**
@@ -189,17 +186,58 @@ public class MapParamAspect {
      *
      * @return 用户ID
      */
-	private String getICUserId(String token) {
-		// 从当前线程存储获取，如果没有再去redis查找，减少访问次数
-		UserSession userSession = UserSessionHolder.get();
-		if (userSession == null) {
-			userSession = userSessionService.getUserSession(token);
-		}
-		if (userSession != null) {
-			return userSession.getId() + "";
-		}
-		return StringUtils.EMPTY;
-	}
+    private String getICUserId(String token) {
+        // 从当前线程存储获取，如果没有再去redis查找，减少访问次数
+        UserSession userSession = getUserSessionFromUserStart(token);
+        if (null == userSession) {
+            return StringUtils.EMPTY;
+        }
+        return userSession.getId() + "";
+    }
+
+    /**
+     * 从 user-start 组件中把token转换成 userName
+     *
+     * @param token token 值
+     * @return userSession
+     */
+    private UserSession getUserSessionFromUserStart(String token) {
+        //从当前线程存储获取，如果没有再去redis查找，减少访问次数
+        UserSession userSession = UserSessionHolder.get();
+        if (userSession == null) {
+            userSession = userSessionService.getUserSession(token);
+        }
+        return userSession;
+    }
+
+    /**
+     * 从某个 redisTemplate 中获取userSession信息
+     *
+     * @param token token 值
+     * @return userSession 只有 id信息
+     */
+    private UserSession getUserSessionFromRedis(String token) {
+        RedisConnection connection = redisTemplate.getConnectionFactory().getConnection();
+        try {
+            UserSession.UserSessionBuilder builder = UserSession.builder();
+            Map<byte[], byte[]> map = connection.hGetAll((IC_REDIS_KEY_PREFIX + token).getBytes());
+            if (null == map) {
+                return builder.build();
+            }
+            byte[] bytes = map.get("\"id\"".getBytes());
+            if (null == bytes) {
+                return builder.id(0).build();
+            }
+            String userId = new String(bytes);
+            if (StringUtils.isNotBlank(userId)) {
+                Integer id = Integer.valueOf(userId.startsWith("\"") ? userId.substring(0, userId.length() - 1) : userId);
+                return builder.id(id).build();
+            }
+            return builder.build();
+        } finally {
+            connection.close();
+        }
+    }
 
     /**
      * 获取字段名称
@@ -207,7 +245,8 @@ public class MapParamAspect {
      * @param className  类名
      * @param methodName 方法名
      */
-    private String[] getFileName(String className, String methodName) throws ClassNotFoundException, NotFoundException {
+    private String[] getFileName(String className, String methodName) throws
+            ClassNotFoundException, NotFoundException {
         Class<?> clazz = Class.forName(className);
         ClassPool classPool = ClassPool.getDefault();
         ClassClassPath classPath = new ClassClassPath(clazz);
