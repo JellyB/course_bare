@@ -268,7 +268,7 @@ public class CourseControllerV5 {
      */
     @LocalMapParam(checkToken = true)
     @PostMapping(value = "{classId}/topCourse")
-    public Object topCourse(@RequestParam int orderId, @RequestParam int cateId) {
+    public Object topCourse(@RequestParam int orderId) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         return ResponseUtil.build(courseService.postTopCourse(map));
     }
