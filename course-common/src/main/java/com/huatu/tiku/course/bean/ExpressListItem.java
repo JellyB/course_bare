@@ -25,6 +25,9 @@ public class ExpressListItem {
     @JsonProperty("ExpressNo")
     private String ExpressNo;       //运单号
 
+    @JsonProperty("orderId")
+    private String orderId;       //订单号
+
     @JsonProperty("ExpressCorp")
     private String ExpressCorp;     //物流公司
 
