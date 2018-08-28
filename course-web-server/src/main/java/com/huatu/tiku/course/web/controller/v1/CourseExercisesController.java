@@ -47,7 +47,7 @@ public class CourseExercisesController {
         }
         int subjectId = userSession.getSubject();
         String questionId = list.stream()
-                .filter(map -> null != map.get("id"))
+                .filter(map -> null != map && null != map.get("id"))
                 .map(map -> String.valueOf(map.get("id")))
                 .collect(Collectors.joining(","));
         Object practiceCard = practiceCardService.createCourseExercisesPracticeCard(
