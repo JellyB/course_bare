@@ -47,9 +47,12 @@ public class IcCourseServiceImpl implements IcCourseService {
     public List<HashMap<String, Object>> icClassList(HashMap<String, Object> map) {
         NetSchoolResponse netSchoolResponse = courseService.icClassList(map);
         Object response = ResponseUtil.build(netSchoolResponse);
-        if (null == response) {
-            return Lists.newArrayList();
-        }
+        // PHP添加了一层list
+		if (null == response) {
+			return Lists.newArrayList();
+		} else {
+			response = ((Map<String, Object>) response).get("list");
+		}
         List<HashMap<String, Object>> result = (List<HashMap<String, Object>>) response;
         //修改 PHP 端数据
         String classIdList = result.stream()
