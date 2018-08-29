@@ -100,12 +100,12 @@ public class UserAccountControllerV3 {
             @RequestParam int type,
             @RequestParam int page,
             @Token UserSession userSession,
-            @RequestHeader("terminal") String terminal
+            @RequestHeader("cv") String terminal
     ) {
         Map<String,Object> params = Maps.newHashMap();
         params.put("action",type == 1 ? 2:3);//
         params.put("username",userSession.getUname());
-        params.put("terminal",terminal);
+        params.put("cv",terminal);
         params.put("page",page);
 
         return ResponseUtil.build(userAccountServiceV3.findAccountRecortds(RequestUtil.encrypt(params)),true);
@@ -120,13 +120,13 @@ public class UserAccountControllerV3 {
     @GetMapping("/balance")
     public Object getBalance(
             @Token UserSession userSession,
-            @RequestHeader("terminal") String terminal
+            @RequestHeader("cv") String terminal
 
     ) {
         Map<String,Object> params = Maps.newHashMap();
         params.put("action",1);//
         params.put("username",userSession.getUname());
-        params.put("terminal",terminal);
+        params.put("cv",terminal);
         return ResponseUtil.build(userAccountServiceV3.getAccountBalance(RequestUtil.encrypt(params)),true);
     }
 
