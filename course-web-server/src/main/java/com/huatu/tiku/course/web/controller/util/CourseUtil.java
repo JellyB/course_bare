@@ -165,6 +165,7 @@ public class CourseUtil {
                             .put("rcount", 0)
                             .put("wcount", 0)
                             .put("ucount", 0)
+                            .put("id", 0)
                             .build();
                     if (null != build && 0 != ((List<Map>) build).size()) {
                         //获取答题卡信息状态
