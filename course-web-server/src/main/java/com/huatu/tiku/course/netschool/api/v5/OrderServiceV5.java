@@ -47,6 +47,12 @@ public interface OrderServiceV5 {
     NetSchoolResponse detail(@RequestParam("orderId") int orderId);
 
     /**
+     * 查看小程序订单详情
+     */
+    @GetMapping(value = "/v4/wechat/collage/order_details")
+    NetSchoolResponse detailWeChat(@RequestParam("orderId") int orderId);
+
+    /**
      * 查询我的订单列表 - ZTK
      */
     @GetMapping(value = "/v4/common/order/list?isInterview=0")
