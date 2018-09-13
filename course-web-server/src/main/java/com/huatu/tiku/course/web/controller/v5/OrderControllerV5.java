@@ -61,7 +61,8 @@ public class OrderControllerV5 {
     @DeleteMapping("{orderId}")
     public Object deleteOrder(
             @Token UserSession userSession,
-            @PathVariable("orderId") int orderId
+            @PathVariable("orderId") int orderId,
+            @RequestParam(defaultValue = "0") int type
     ) {
         return ResponseUtil.build(orderService.deleteOrder(orderId, userSession.getUname()));
     }
@@ -75,6 +76,14 @@ public class OrderControllerV5 {
     }
 
     /**
+     * 获取小程序订单详情
+     */
+    @GetMapping("{orderId}/wechat")
+    public Object detailWeChat(@PathVariable("orderId") int orderId){
+        return ResponseUtil.build(orderService.detail(orderId));
+    }
+
+    /**
      * 用户订单列表
      */
     @LocalMapParam(checkToken = true)
@@ -82,6 +91,7 @@ public class OrderControllerV5 {
     public Object userOrderList(
             @RequestParam(defaultValue = "0") int chooseStatus,
             @RequestParam(defaultValue = "0") int dateSize,
+            @RequestParam(defaultValue = "0") int mini,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize
     ) {
