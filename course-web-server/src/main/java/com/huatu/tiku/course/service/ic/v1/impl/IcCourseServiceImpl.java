@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.service.ic.v1.impl;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.CourseDetailV3DTO;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
@@ -115,6 +116,20 @@ public class IcCourseServiceImpl implements IcCourseService {
         }
         String hasBuyCourseIds = ((List<String>) response).stream().collect(Collectors.joining(","));
         NetSchoolResponse netSchoolResponse = courseService.courseInfoList(hasBuyCourseIds);
+        // 添加有序逻辑
+        List<Map<String, String>> data = (List<Map<String, String>>) netSchoolResponse.getData();
+        Map<String, Object> courseDic = Maps.newHashMapWithExpectedSize(data.size());
+        data.forEach(temp -> {
+        	courseDic.put(temp.get("class_id"), temp);
+        });
+        List<Object> sortedList = Lists.newArrayListWithExpectedSize(data.size());
+        ((List<String>) response).forEach(classId -> {
+        	Object course = courseDic.get(classId);
+        	if (course != null) {
+        		sortedList.add(course);
+        	}
+        });
+        netSchoolResponse.setData(sortedList);
         return ResponseUtil.build(netSchoolResponse);
     }
 
