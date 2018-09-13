@@ -58,13 +58,14 @@ public class OrderControllerV5 {
     /**
      * 删除订单
      */
+    @LocalMapParam(checkToken = true)
     @DeleteMapping("{orderId}")
     public Object deleteOrder(
-            @Token UserSession userSession,
             @PathVariable("orderId") int orderId,
             @RequestParam(defaultValue = "0") int type
     ) {
-        return ResponseUtil.build(orderService.deleteOrder(orderId, userSession.getUname()));
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return ResponseUtil.build(orderService.deleteOrder(map));
     }
 
     /**

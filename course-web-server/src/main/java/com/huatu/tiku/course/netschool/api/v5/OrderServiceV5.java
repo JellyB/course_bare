@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 订单相关业务
@@ -38,7 +39,7 @@ public interface OrderServiceV5 {
      * 删除订单
      */
     @DeleteMapping(value = "/v4/common/order/delete")
-    NetSchoolResponse deleteOrder(@RequestParam("orderId") int orderId, @RequestParam("userName") String userName);
+    NetSchoolResponse deleteOrder(@RequestParam Map<String, Object> params);
 
     /**
      * 查询订单详情
