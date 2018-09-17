@@ -81,7 +81,7 @@ public class OrderControllerV5 {
      */
     @GetMapping("{orderId}/wechat")
     public Object detailWeChat(@PathVariable("orderId") int orderId){
-        return ResponseUtil.build(orderService.detail(orderId));
+        return ResponseUtil.build(orderService.detailWeChat(orderId));
     }
 
     /**

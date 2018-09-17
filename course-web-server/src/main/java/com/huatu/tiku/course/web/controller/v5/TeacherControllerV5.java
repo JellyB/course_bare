@@ -24,7 +24,7 @@ public class TeacherControllerV5 {
     /**
      * 老师在售课程
      */
-    @LocalMapParam(needUserName = false)
+    @LocalMapParam
     @GetMapping("getPayClassesAll")
     public Object getPayClassesAll(
             @RequestParam String teacherName,

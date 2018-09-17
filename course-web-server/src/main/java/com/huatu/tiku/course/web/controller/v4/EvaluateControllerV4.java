@@ -1,11 +1,12 @@
 package com.huatu.tiku.course.web.controller.v4;
 
 import com.huatu.common.ErrorResult;
-import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v4.AppServiceV4;
 import com.huatu.tiku.course.service.v4.CourseBizServiceV4;
+import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
+import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +60,7 @@ public class EvaluateControllerV4 {
     /**
      * 查询合集列表
      */
+    @LocalMapParam
     @GetMapping("/collectionClasses")
     public Object collectionClasses(
             @RequestHeader(value = "terminal", required = false) Integer terminal,
@@ -68,13 +70,7 @@ public class EvaluateControllerV4 {
             @RequestParam(required = false, defaultValue = "10") int pageSize,
             @RequestParam int collectionId
     ) {
-        HashMap<Object, Object> map = HashMapBuilder.newBuilder()
-                .put("terminal", terminal)
-                .put("cv", cv)
-                .put("collectionId", collectionId)
-                .put("page", page)
-                .put("pageSize", pageSize)
-                .build();
+        HashMap<String, Object> map = LocalMapParamHandler.get();
         //行为日志收集   格式说明 在云盘上 http://123.103.79.72:8025/index.php?explorer
         log.warn("3$${}$${}$${}$${}$${}$${}", collectionId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
         return courseBizServiceV4.collectionClasses(map);
