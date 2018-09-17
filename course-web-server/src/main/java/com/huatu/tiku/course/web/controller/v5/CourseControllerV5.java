@@ -208,7 +208,9 @@ public class CourseControllerV5 {
      */
     @LocalMapParam(checkToken = true)
     @GetMapping("/{classId}/getCourseIntroduction")
-    public Object getCourseIntroduction() {
+    public Object getCourseIntroduction(
+            @RequestParam(defaultValue = "0") String collageActivityId
+    ) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         return ResponseUtil.build(courseService.getCourseIntroduction(map));
     }
