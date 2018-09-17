@@ -173,12 +173,14 @@ public class CourseControllerV5 {
             @Token UserSession userSession,
             @RequestHeader int terminal,
             @RequestHeader String cv,
-            @PathVariable("classId") int classId
+            @PathVariable("classId") int classId,
+            @RequestParam(defaultValue = "0") String collageActivityId
     ) {
         HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
                 .put("classId", classId)
                 .put("terminal", terminal)
                 .put("userName", userSession.getUname())
+                .put("collageActivityId",collageActivityId)
                 .build();
         log.warn("4$${}$${}$${}$${}$${}$${}", classId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
         return ResponseUtil.build(courseService.getClassDetailNotLive(map));
@@ -192,12 +194,14 @@ public class CourseControllerV5 {
             @Token UserSession userSession,
             @RequestHeader int terminal,
             @RequestHeader String cv,
-            @PathVariable("classId") int classId
+            @PathVariable("classId") int classId,
+            @RequestParam(defaultValue = "0") String collageActivityId
     ) {
         HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
                 .put("classId", classId)
                 .put("terminal", terminal)
                 .put("userName", "uname")
+                .put("collageActivityId",collageActivityId)
                 .build();
         log.warn("4$${}$${}$${}$${}$${}$${}", classId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
         return ResponseUtil.build(courseService.getClassDetailLive(map));
