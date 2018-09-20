@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.web.controller.v5;
 
+import com.huatu.common.SuccessMessage;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.AreaConstants;
@@ -109,6 +110,16 @@ public class CourseControllerV5 {
         courseUtil.addStudyProcessIntoSecrInfo(response, userSession.getToken(), cv, terminal);
         return response;
     }
+
+    /**
+     * 播放课程添加金币
+     */
+    @PutMapping("addPlayIcon")
+    public Object addPlayIcon(@Token UserSession userSession, @RequestParam("isFree") int isFree){
+       courseUtil.pushPlayEvent(userSession,1 == isFree);
+       return SuccessMessage.create("操作成功");
+    }
+
 
     /**
      * 获取课程大纲-售前

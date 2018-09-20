@@ -42,23 +42,31 @@ public class CourseUtil {
         //发布事件
         if (ResponseUtil.isSuccess(netSchoolResponse) && response instanceof Map && ((Map) response).containsKey("course")) {
             Object courseDetail = ((Map) response).get("course");
-            if (courseDetail instanceof Map && ((Map) courseDetail).containsKey("free") && "1".equals(String.valueOf(((Map) courseDetail).get("free")))) {
-                //免费课
-                eventPublisher.publishEvent(RewardActionEvent.class,
-                        this,
-                        (event) -> event.setAction(RewardAction.ActionType.WATCH_FREE)
-                                .setUname(userSession.getUname())
-                                .setUid(userSession.getId())
-                );
-            } else {
-                //收费课
-                eventPublisher.publishEvent(RewardActionEvent.class,
-                        this,
-                        (event) -> event.setAction(RewardAction.ActionType.WATCH_PAY)
-                                .setUname(userSession.getUname())
-                                .setUid(userSession.getId())
-                );
-            }
+            boolean isFree = (courseDetail instanceof Map && ((Map) courseDetail).containsKey("free") && "1".equals(String.valueOf(((Map) courseDetail).get("free"))));
+            pushPlayEvent(userSession, isFree);
+        }
+    }
+
+    /**
+     * 加金币
+     */
+    public void pushPlayEvent(UserSession userSession, boolean isFree) {
+        if (isFree) {
+            //免费课
+            eventPublisher.publishEvent(RewardActionEvent.class,
+                    this,
+                    (event) -> event.setAction(RewardAction.ActionType.WATCH_FREE)
+                            .setUname(userSession.getUname())
+                            .setUid(userSession.getId())
+            );
+        } else {
+            //收费课
+            eventPublisher.publishEvent(RewardActionEvent.class,
+                    this,
+                    (event) -> event.setAction(RewardAction.ActionType.WATCH_PAY)
+                            .setUname(userSession.getUname())
+                            .setUid(userSession.getId())
+            );
         }
     }
 
