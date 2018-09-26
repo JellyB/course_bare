@@ -56,7 +56,7 @@ public class IcCourseAsyncService {
      */
     @Async
     public ListenableFuture<Map<String, String>> checkUserHasBuy(String userId, int courseId) {
-        Map<String, String> checkUserBuyMap = userCourseServiceV1.checkUserBuy(userId, courseId);
+        Object checkUserBuyMap = userCourseServiceV1.checkUserBuy(userId, courseId);
         Object build = ZTKResponseUtil.build(checkUserBuyMap);
         if (null == build) {
             return new AsyncResult<>(null);
