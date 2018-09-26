@@ -1,17 +1,19 @@
 package com.huatu.tiku.course.service.ic.v1.async;
 
-import com.huatu.common.utils.collection.HashMapBuilder;
-import com.huatu.tiku.course.ic.api.v1.IcUserCourseServiceV1;
-import com.huatu.tiku.course.util.ZTKResponseUtil;
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.huatu.common.utils.collection.HashMapBuilder;
+import com.huatu.tiku.course.ic.api.v1.IcUserCourseServiceV1;
+import com.huatu.tiku.course.util.ZTKResponseUtil;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 面库 异步接口
@@ -53,14 +55,14 @@ public class IcCourseAsyncService {
      * @return
      */
     @Async
-    public ListenableFuture<Boolean> checkUserHasBuy(String userId, int courseId) {
-        Object checkUserBuy = userCourseServiceV1.checkUserBuy(userId, courseId);
-        Object build = ZTKResponseUtil.build(checkUserBuy);
+    public ListenableFuture<Map<String, String>> checkUserHasBuy(String userId, int courseId) {
+        Map<String, String> checkUserBuyMap = userCourseServiceV1.checkUserBuy(userId, courseId);
+        Object build = ZTKResponseUtil.build(checkUserBuyMap);
         if (null == build) {
-            return new AsyncResult<>(false);
+            return new AsyncResult<>(null);
         } else {
-            Boolean hasBuy = (Boolean) build;
-            return new AsyncResult<>(hasBuy);
+        	Map<String, String> hasBuy = (Map<String, String>) build;
+			return new AsyncResult<>(hasBuy);
         }
     }
 

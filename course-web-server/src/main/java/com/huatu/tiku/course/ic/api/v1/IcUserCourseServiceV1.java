@@ -1,5 +1,7 @@
 package com.huatu.tiku.course.ic.api.v1;
 
+import java.util.Map;
+
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,7 +27,7 @@ public interface IcUserCourseServiceV1 {
      * @param courseId 课程ID
      */
     @GetMapping(value = "checkBuyCourse")
-    Object checkUserBuy(@RequestParam("userId") String userId, @RequestParam("courseId") int courseId);
+    Map<String, String> checkUserBuy(@RequestParam("userId") String userId, @RequestParam("courseId") int courseId);
 
     /**
      * 获取用户已经购买的课程
