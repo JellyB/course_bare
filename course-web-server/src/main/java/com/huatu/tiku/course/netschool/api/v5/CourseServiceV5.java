@@ -159,5 +159,5 @@ public interface CourseServiceV5 {
      * 课程详情活动促销
      */
     @GetMapping(value = "/v4/common/class/appClass_activity_details")
-    NetSchoolResponse appClassActivityDetails(@RequestParam("classIds") int classIds);
+    NetSchoolResponse appClassActivityDetails(@RequestParam("classId") int classIds);
 }
