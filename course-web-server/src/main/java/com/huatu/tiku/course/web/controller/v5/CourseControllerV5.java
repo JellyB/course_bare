@@ -40,7 +40,7 @@ public class CourseControllerV5 {
     private CourseUtil courseUtil;
 
     /**
-     * 查询直播列表
+     * 查询录播列表
      */
     @GetMapping("recordClassList")
     public Object recordClassList(
@@ -62,7 +62,7 @@ public class CourseControllerV5 {
     }
 
     /**
-     * 查询录播列表
+     * 查询直播列表
      */
     @GetMapping("liveClassList")
     public Object liveClassList(
@@ -343,6 +343,13 @@ public class CourseControllerV5 {
         return ResponseUtil.build(courseService.handouts(map));
     }
 
+    /**
+     * 获取课程促销详情
+     */
+    @GetMapping("{classId}/appClassActivityDetails")
+    public Object appClassActivityDetails(@PathVariable int classId){
+        return courseServiceBiz.appClassActivityDetails(classId);
+    }
 
     /**
      * 构造课程列表查询参数

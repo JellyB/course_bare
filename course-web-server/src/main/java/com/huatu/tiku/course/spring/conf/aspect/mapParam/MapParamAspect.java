@@ -111,7 +111,7 @@ public class MapParamAspect {
 
                 }
             }
-        } else if (localMapParam.checkToken()) {
+        } else if (localMapParam.needUserName() && localMapParam.checkToken()) {
             throw new BizException(FAIL_RESULT);
         }
         //1.2 处理其他的head 信息

@@ -38,4 +38,11 @@ public final class CourseCacheKey {
                 .append(":").append(pageSize)
                 .toString();
     }
+
+    /**
+     * 课程活动详情
+     */
+    public static String appClassActivityDetailsKeyV5(int classId){
+        return new StringBuilder("course:v5:appClassActivityDetail:").append(classId).toString();
+    }
 }

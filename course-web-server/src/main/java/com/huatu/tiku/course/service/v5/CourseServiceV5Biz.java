@@ -1,7 +1,5 @@
 package com.huatu.tiku.course.service.v5;
 
-import com.huatu.tiku.course.bean.NetSchoolResponse;
-
 import java.util.HashMap;
 
 /**
@@ -24,4 +22,10 @@ public interface CourseServiceV5Biz {
      * 课程大纲-售后
      */
     Object findPurchasesTimetable(long userId, HashMap<String, Object> map);
+
+    /**
+     * 课程详情活动促销
+     */
+    Object appClassActivityDetails(int classId);
+
 }

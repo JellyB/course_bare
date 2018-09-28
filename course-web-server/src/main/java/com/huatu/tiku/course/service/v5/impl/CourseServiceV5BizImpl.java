@@ -61,4 +61,14 @@ public class CourseServiceV5BizImpl implements CourseServiceV5Biz {
         NetSchoolResponse purchasesTimetable = courseService.findPurchasesTimetable(map);
         return ResponseUtil.build(purchasesTimetable);
     }
+
+    @Override
+    public Object appClassActivityDetails(int classId) {
+        Supplier key = () -> CourseCacheKey.appClassActivityDetailsKeyV5(classId);
+        Supplier<Object> value = () -> {
+            NetSchoolResponse response = courseService.appClassActivityDetails(classId);
+            return ResponseUtil.build(response);
+        };
+        return cacheUtil.getCacheStringValue(key, value, 30, TimeUnit.SECONDS);
+    }
 }
