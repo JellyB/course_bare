@@ -24,7 +24,7 @@ public interface IcUserCourseServiceV1 {
      * @param userId   用户ID
      * @param courseId 课程ID
      */
-    @GetMapping(value = "checkCourse")
+    @GetMapping(value = "checkBuyCourse")
     Object checkUserBuy(@RequestParam("userId") String userId, @RequestParam("courseId") int courseId);
 
     /**
