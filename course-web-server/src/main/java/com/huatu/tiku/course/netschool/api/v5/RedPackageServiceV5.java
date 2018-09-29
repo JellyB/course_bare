@@ -38,4 +38,10 @@ public interface RedPackageServiceV5 {
      */
     @GetMapping(value = "detail")
     NetSchoolResponse detail(@RequestParam Map<String, Object> params);
+
+    /**
+     * 判断用户是否有发起红包或领取红包
+     */
+    @GetMapping(value = "check_redEnv")
+    NetSchoolResponse checkRedEnv(@RequestParam Map<String, Object> params);
 }

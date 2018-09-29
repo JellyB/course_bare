@@ -64,4 +64,14 @@ public class RedPackageControllerV5 {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         return ResponseUtil.build(redPackageService.detail(map));
     }
+
+    /**
+     * 判断用户是否有发起红包或领取红包
+     */
+    @LocalMapParam(checkToken = true)
+    @GetMapping("checkRedEnv")
+    public Object checkRedEnv() {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return ResponseUtil.build(redPackageService.checkRedEnv(map));
+    }
 }
