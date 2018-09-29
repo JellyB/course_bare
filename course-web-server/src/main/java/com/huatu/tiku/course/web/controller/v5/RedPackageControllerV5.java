@@ -22,16 +22,6 @@ public class RedPackageControllerV5 {
     private RedPackageServiceV5 redPackageService;
 
     /**
-     * 插入待领取红并返回红包信息
-     */
-    @LocalMapParam(needUserName = false)
-    @PostMapping("add")
-    public Object add(@RequestParam int id, @RequestParam int orderId) {
-        HashMap<String, Object> map = LocalMapParamHandler.get();
-        return ResponseUtil.build(redPackageService.add(map));
-    }
-
-    /**
      * 获取用户的红包中心
      */
     @LocalMapParam(checkToken = true)

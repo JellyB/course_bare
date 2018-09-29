@@ -15,7 +15,7 @@ import java.util.Map;
 public interface RedPackageServiceV5 {
 
     /**
-     * 支付成功插入待领取红包接口及返回红包信息
+     * 支付成功插入待领取红包接口及返回红包信息（已废弃）
      * 失败 PHP直接出异常
      */
     @PostMapping(value = "add")
