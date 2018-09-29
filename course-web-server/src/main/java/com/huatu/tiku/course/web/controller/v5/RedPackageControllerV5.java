@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.web.controller.v5;
 
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
+import com.huatu.tiku.course.netschool.api.v5.MessageServiceV5;
 import com.huatu.tiku.course.netschool.api.v5.RedPackageServiceV5;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
@@ -20,6 +21,9 @@ public class RedPackageControllerV5 {
 
     @Autowired
     private RedPackageServiceV5 redPackageService;
+
+    @Autowired
+    private MessageServiceV5 messageService;
 
     /**
      * 获取用户的红包中心
@@ -73,5 +77,43 @@ public class RedPackageControllerV5 {
     public Object checkRedEnv() {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         return ResponseUtil.build(redPackageService.checkRedEnv(map));
+    }
+
+    /**
+     * 微信体现
+     */
+    @LocalMapParam(checkToken = true)
+    @PostMapping("withdrawWechat")
+    public Object withdrawWechat(
+            @RequestParam String openid,
+            @RequestParam String phone,
+            @RequestParam String verify
+    ){
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return ResponseUtil.build(redPackageService.withdrawWechat(map));
+    }
+
+    /**
+     * 支付宝提现
+     */
+    @LocalMapParam(checkToken = true)
+    @PostMapping("withdrawAli")
+    public Object withdrawAli(
+            @RequestParam String payeeAccount,
+            @RequestParam String phone,
+            @RequestParam String verify
+    ){
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return ResponseUtil.build(redPackageService.withdrawAli(map));
+    }
+
+    /**
+     * 发送短信
+     */
+    @LocalMapParam(needUserName = false)
+    @GetMapping("/sendVerify/{phone}")
+    public Object sendVerify(@PathVariable String phone){
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return ResponseUtil.build(messageService.sendVerify(map));
     }
 }
