@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Created by lijun on 2018/9/28
  */
-@FeignClient(value = "o-course-service", path = "/common/red/")
+@FeignClient(value = "o-course-service", path = "/lumenapi/v4/common/red/")
 public interface RedPackageServiceV5 {
 
     /**
