@@ -59,21 +59,23 @@ public class IcCourseServiceImpl implements IcCourseService {
 			response = ((Map<String, Object>) response).get("list");
 		}
 		List<HashMap<String, Object>> result = (List<HashMap<String, Object>>) response;
-		// 修改 PHP 端数据
-		String classIdList = result.stream().map(course -> course.get("classId").toString())
-				.collect(Collectors.joining(","));
-		Object courseCountList = userCourseServiceV1.courseCountList(classIdList);
-		Object build = ZTKResponseUtil.build(courseCountList);
-		if (null != build) {
-			HashMap<String, Object> buildResult = (HashMap<String, Object>) build;
-			List<HashMap<String, Object>> list = result.stream()
-					// 修改已购数量
-					.map(course -> {
-						Object count = buildResult.getOrDefault(course.get("classId"), 0);
-						course.put("count", count);
-						return course;
-					}).collect(Collectors.toList());
-			return list;
+		if (!result.isEmpty()) {
+			// 修改 PHP 端数据
+			String classIdList = result.stream().map(course -> course.get("classId").toString())
+					.collect(Collectors.joining(","));
+			Object courseCountList = userCourseServiceV1.courseCountList(classIdList);
+			Object build = ZTKResponseUtil.build(courseCountList);
+			if (null != build) {
+				HashMap<String, Object> buildResult = (HashMap<String, Object>) build;
+				List<HashMap<String, Object>> list = result.stream()
+						// 修改已购数量
+						.map(course -> {
+							Object count = buildResult.getOrDefault(course.get("classId"), 0);
+							course.put("count", count);
+							return course;
+						}).collect(Collectors.toList());
+				return list;
+			}
 		}
 		return result;
 	}
