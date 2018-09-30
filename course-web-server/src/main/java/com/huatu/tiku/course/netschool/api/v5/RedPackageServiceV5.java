@@ -44,4 +44,16 @@ public interface RedPackageServiceV5 {
      */
     @GetMapping(value = "check_redEnv")
     NetSchoolResponse checkRedEnv(@RequestParam Map<String, Object> params);
+
+    /**
+     * 微信提现
+     */
+    @PostMapping(value = "withdraw_wechat")
+    NetSchoolResponse withdrawWechat(@RequestParam Map<String, Object> params);
+
+    /**
+     * 支付宝提现
+     */
+    @PostMapping(value = "withdraw_ali")
+    NetSchoolResponse withdrawAli(@RequestParam Map<String, Object> params);
 }
