@@ -1,11 +1,15 @@
 package com.huatu.tiku.course.web.controller.v5;
 
+import com.huatu.common.SuccessMessage;
+import com.huatu.common.consts.TerminalType;
 import com.huatu.common.exception.BizException;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.course.netschool.api.v5.BarrageServiceV5;
+import com.huatu.tiku.course.service.v5.BarrageServiceV5Biz;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
+import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +26,9 @@ import java.util.HashMap;
 public class BarrageControllerV5 {
     @Autowired
     BarrageServiceV5 barrageServiceV5;
+
+    @Autowired
+    BarrageServiceV5Biz barrageServiceV5Biz;
 
     /**
      * 弹幕获取
@@ -49,6 +56,13 @@ public class BarrageControllerV5 {
             @RequestParam String videoNode,
             @RequestParam int background) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
-        return ResponseUtil.build(barrageServiceV5.barrageAdd(map));
+        //TODO: IOS 修改之后 去掉该部分代码
+        if (MapUtils.getInteger(map, "appType", -1) == TerminalType.IPHONE ||
+                MapUtils.getInteger(map, "appType", -1) == TerminalType.IPHONE_IPAD) {
+            return SuccessMessage.create();
+        } else {
+            barrageServiceV5Biz.barrageAdd(map);
+            return SuccessMessage.create();
+        }
     }
 }
