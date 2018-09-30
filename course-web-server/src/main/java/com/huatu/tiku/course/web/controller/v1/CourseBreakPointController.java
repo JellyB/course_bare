@@ -1,6 +1,5 @@
 package com.huatu.tiku.course.web.controller.v1;
 
-import com.huatu.common.ErrorResult;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.service.v1.CourseBreakpointService;
@@ -70,7 +69,8 @@ public class CourseBreakPointController {
     ) {
         HashMap<String, Object> map = service.buildCard(terminal, userSession.getSubject(), userSession.getId(), courseType, courseId);
         if (null == map){
-            return ErrorResult.create(5000000, "暂无答题卡信息");
+            //return ErrorResult.create(5000000, "暂无答题卡信息");
+            return null;
         }
         return map;
     }

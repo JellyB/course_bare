@@ -1,6 +1,5 @@
 package com.huatu.tiku.course.web.controller.v1;
 
-import com.huatu.common.ErrorResult;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.service.v1.CourseExercisesService;
@@ -44,7 +43,8 @@ public class CourseExercisesController {
     ) {
         List<Map<String, Object>> list = service.listQuestionByCourseId(courseType, courseId);
         if (CollectionUtils.isEmpty(list)) {
-            return ErrorResult.create(5000000, "暂无答题卡信息");
+            //return ErrorResult.create(5000000, "暂无答题卡信息");
+            return null;
         }
         int subjectId = userSession.getSubject();
         String questionId = list.stream()
@@ -57,7 +57,8 @@ public class CourseExercisesController {
         );
         HashMap<String, Object> result = (HashMap<String, Object>) ZTKResponseUtil.build(practiceCard);
         if (null == result) {
-            return ErrorResult.create(5000000, "暂无答题卡信息");
+            //return ErrorResult.create(5000000, "暂无答题卡信息");
+            return null;
         }
         result.computeIfPresent("id", (key, value) -> String.valueOf(value));
         return result;
