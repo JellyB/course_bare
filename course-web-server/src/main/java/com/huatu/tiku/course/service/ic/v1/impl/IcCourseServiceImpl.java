@@ -84,14 +84,19 @@ public class IcCourseServiceImpl implements IcCourseService {
 	public CourseDetailV3DTO getCourseDetail(int courseId, String userId)
 			throws InterruptedException, ExecutionException {
 		ListenableFuture<CourseDetailV3DTO> courseDetailV3 = courseAsyncService.getCourseDetailV3(courseId);
-		ListenableFuture<Map<String, String>> checkUserHasBuy = icCourseAsyncService.checkUserHasBuy(userId, courseId);
+		ListenableFuture<Map<String, String>> checkUserHasBuy = null;
+		if (userId != null) {
+			checkUserHasBuy = icCourseAsyncService.checkUserHasBuy(userId, courseId);
+		}
 		ListenableFuture<Map<String, Integer>> courseCount = icCourseAsyncService
 				.getCourseCount(String.valueOf(courseId));
 
-		CountDownLatch countDownLatch = new CountDownLatch(3);
+		CountDownLatch countDownLatch = new CountDownLatch(userId == null ? 2 : 3);
 
 		courseDetailV3.addCallback(new RequestCountDownFutureCallback(countDownLatch));
-		checkUserHasBuy.addCallback(new RequestCountDownFutureCallback(countDownLatch));
+		if (userId != null) {
+			checkUserHasBuy.addCallback(new RequestCountDownFutureCallback(countDownLatch));
+		}
 		courseCount.addCallback(new RequestCountDownFutureCallback(countDownLatch));
 
 		countDownLatch.await(10, TimeUnit.SECONDS);// 最多10秒等待
@@ -107,12 +112,16 @@ public class IcCourseServiceImpl implements IcCourseService {
 		Integer buyNum = courseCountMap.get(String.valueOf(courseId));
 		// 构建限购信息
 		CourseBizService.buildCourseLimitStatus(classInfo, buyNum);
-		// 是否购买
-		Integer hasBuy = Integer.parseInt(checkUserHasBuy.get().get("status"));
-		// 订单id
-		String orderId = checkUserHasBuy.get().get("orderId");
-		classInfo.setIsBuy(hasBuy);
-		classInfo.setOrderId(orderId);
+		if (userId != null) {
+			// 是否购买
+			Integer hasBuy = Integer.parseInt(checkUserHasBuy.get().get("status"));
+			// 订单id
+			String orderId = checkUserHasBuy.get().get("orderId");
+			classInfo.setIsBuy(hasBuy);
+			classInfo.setOrderId(orderId);
+		} else {
+			classInfo.setIsBuy(-1);
+		}
 		return courseDetail;
 	}
 

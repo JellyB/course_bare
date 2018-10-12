@@ -51,13 +51,13 @@ public class IcCourseControllerV1 {
     /**
      * 获取课程详情
      */
-    @LocalMapParam(checkToken = true, tokenType = TokenType.IC)
+    @LocalMapParam(checkToken = false, tokenType = TokenType.IC)
     @GetMapping("/{courseId}")
     public Object getCourseDetail() throws ExecutionException, InterruptedException {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         int courseId = Integer.valueOf(map.get("courseId").toString());
-        String userId = map.get("userId").toString();
-        return icCourseService.getCourseDetail(courseId, userId);
+        Object userId = map.get("userId");
+        return icCourseService.getCourseDetail(courseId, userId == null ? null : userId.toString());
     }
 
     /**
