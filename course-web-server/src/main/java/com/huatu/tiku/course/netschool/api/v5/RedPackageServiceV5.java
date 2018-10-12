@@ -56,4 +56,10 @@ public interface RedPackageServiceV5 {
      */
     @PostMapping(value = "withdraw_ali")
     NetSchoolResponse withdrawAli(@RequestParam Map<String, Object> params);
+
+    /**
+     * 判断红包是否显示
+     */
+    @GetMapping(value = "show_redEnv")
+    NetSchoolResponse showRedEvn();
 }
