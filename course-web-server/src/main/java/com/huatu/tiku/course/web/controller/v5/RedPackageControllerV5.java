@@ -116,4 +116,12 @@ public class RedPackageControllerV5 {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         return ResponseUtil.build(messageService.sendVerify(map));
     }
+
+    /**
+     * 判断红包是否显示
+     */
+    @GetMapping("/showRedEvn")
+    public Object showRedEvn(){
+        return ResponseUtil.build(redPackageService.showRedEvn());
+    }
 }
