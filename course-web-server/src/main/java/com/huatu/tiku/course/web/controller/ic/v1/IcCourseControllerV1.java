@@ -9,6 +9,7 @@ import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.TokenType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -31,10 +32,13 @@ public class IcCourseControllerV1 {
     @Autowired
     private IcCourseService icCourseService;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     /**
      * 查询面库课程列表 - 首页展示的课程列表信息
      */
-    @LocalMapParam(needUserName = false)
+    @LocalMapParam(checkToken = false, tokenType = TokenType.IC)
     @GetMapping("icClassList")
     public Object icClassList(
             @RequestParam(defaultValue = "1") int isFree,
@@ -42,11 +46,32 @@ public class IcCourseControllerV1 {
             @RequestParam int categoryId,
             @RequestParam(defaultValue = "1000") int subjectId,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "8") int pageSize
-    ) {
-        HashMap<String, Object> map = LocalMapParamHandler.get();
-        return icCourseService.icClassList(map);
-    }
+            @RequestParam(defaultValue = "8") int pageSize,
+            @RequestHeader int terminal,
+            @RequestHeader String cv
+	) {
+		HashMap<String, Object> map = LocalMapParamHandler.get();
+		// 是否显示内购课程
+		boolean audit = false;
+
+		if (terminal == 2) {
+			// 是否内购
+			Object userId = map.get("userId");
+			if (userId != null) {
+				// 用户白名单
+				audit = redisTemplate.opsForSet().isMember("ic.audit.uids", userId.toString());
+			}
+
+			// 客户端版本
+			if (!audit) {
+				audit = redisTemplate.opsForSet().isMember("ic.audit.cvs", cv);
+			}
+		}
+
+		map.put("audit", audit ? 1 : 0);
+
+		return icCourseService.icClassList(map);
+	}
 
     /**
      * 获取课程详情
