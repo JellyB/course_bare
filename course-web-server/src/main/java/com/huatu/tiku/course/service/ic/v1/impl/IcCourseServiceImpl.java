@@ -53,8 +53,6 @@ public class IcCourseServiceImpl implements IcCourseService {
         NetSchoolResponse netSchoolResponse = courseService.icClassList(map);
         Object response = ResponseUtil.build(netSchoolResponse);
         // PHP添加了一层list
-        log.info(" is collection = {}",response instanceof  Collection);
-        log.info("response = {}, is null = {},is null collection = {}",response,response instanceof Collection && CollectionUtils.isEmpty((Collection) response));
         if (null == response || (response instanceof Collection && CollectionUtils.isEmpty((Collection) response))) {
             return Lists.newArrayList();
         } else {
