@@ -33,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Created by lijun on 2018/7/18
  */
+@Slf4j
 @Service
 public class IcCourseServiceImpl implements IcCourseService {
 
@@ -56,6 +57,7 @@ public class IcCourseServiceImpl implements IcCourseService {
 		if (null == response) {
 			return Lists.newArrayList();
 		} else {
+			log.info("Response : {}", response);
 			response = ((Map<String, Object>) response).get("list");
 		}
 		List<HashMap<String, Object>> result = (List<HashMap<String, Object>>) response;
