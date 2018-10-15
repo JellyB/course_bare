@@ -50,7 +50,7 @@ public class RedPackageControllerV5 {
      */
     @LocalMapParam
     @GetMapping("/receiveDetailsForH5")
-    public Object receiveDetails(
+    public Object receiveDetailsForH5(
             @RequestParam String phone,
             @RequestParam int redEnvelopeId,
             @RequestParam String userName
