@@ -59,12 +59,14 @@ public class IcCourseControllerV1 {
 			Object userId = map.get("userId");
 			if (userId != null) {
 				// 用户白名单
-				audit = redisTemplate.opsForSet().isMember("ic.audit.uids", userId.toString());
+				audit = redisTemplate.getConnectionFactory().getConnection().sIsMember("ic.audit.uids".getBytes(),
+						userId.toString().getBytes());
 			}
 
 			// 客户端版本
 			if (!audit) {
-				audit = redisTemplate.opsForSet().isMember("ic.audit.cvs", cv);
+				audit = redisTemplate.getConnectionFactory().getConnection().sIsMember("ic.audit.cvs".getBytes(),
+						cv.getBytes());
 			}
 		}
 
