@@ -15,6 +15,7 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.connection.RedisConnection;
@@ -26,7 +27,9 @@ import org.springframework.web.servlet.HandlerMapping;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * 确认在其他数据处理完成之后再进行
@@ -245,7 +248,28 @@ public class MapParamAspect {
      * @param className  类名
      * @param methodName 方法名
      */
-    private String[] getFileName(String className, String methodName) throws
+    private String[] getFileName(String className, final String methodName) throws ClassNotFoundException {
+        Class<?> clazz = Class.forName(className);
+        LocalVariableTableParameterNameDiscoverer discoverer = new LocalVariableTableParameterNameDiscoverer();
+        Method[] methods = clazz.getDeclaredMethods();
+        Optional<Method> methodInfo = Arrays.stream(methods)
+                .filter(method -> method.getName().equals(methodName))
+                .findAny();
+        if (methodInfo.isPresent()) {
+            return discoverer.getParameterNames(methodInfo.get());
+        }
+        return null;
+    }
+
+
+    /**
+     * 获取字段名称 - 该实现有bug
+     *
+     * @param className  类名
+     * @param methodName 方法名
+     */
+    @Deprecated
+    private String[] getFileNameError(String className, String methodName) throws
             ClassNotFoundException, NotFoundException {
         Class<?> clazz = Class.forName(className);
         ClassPool classPool = ClassPool.getDefault();
