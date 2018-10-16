@@ -286,10 +286,14 @@ public class MapParamAspect {
         if (null == attribute) {
             return null;
         }
-        String[] paramsArgsName = new String[declaredMethod.getParameterTypes().length];
+        final int paramLength = declaredMethod.getParameterTypes().length;
+        String[] paramsArgsName = new String[paramLength];
         int pos = Modifier.isStatic(declaredMethod.getModifiers()) ? 0 : 1;
-        for (int index = 0; index < paramsArgsName.length; index++) {
-            paramsArgsName[index] = attribute.variableName(index + pos);
+        for (int i = 0; i < attribute.tableLength(); i++) {
+            int index = attribute.index(i);
+            if (index < paramsArgsName.length) {
+                paramsArgsName[index] = attribute.variableName(i + pos);
+            }
         }
         return paramsArgsName;
     }
