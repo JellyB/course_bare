@@ -116,7 +116,8 @@ public class OrderControllerV5 {
             @RequestParam String province,
             @RequestParam String city,
             @RequestParam String area,
-            @RequestParam String phone
+            @RequestParam String phone,
+            @RequestParam String consignee
     ) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         return orderServiceV5Biz.bigGiftOrder(map);
