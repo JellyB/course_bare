@@ -1,8 +1,10 @@
 package com.huatu.tiku.course.web.controller.v5;
 
+import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.netschool.api.v5.OrderServiceV5;
+import com.huatu.tiku.course.service.v5.OrderServiceV5Biz;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
@@ -24,6 +26,9 @@ public class OrderControllerV5 {
 
     @Autowired
     private OrderServiceV5 orderService;
+
+    @Autowired
+    private OrderServiceV5Biz orderServiceV5Biz;
 
     /**
      * 获取订单物流信息
@@ -80,7 +85,7 @@ public class OrderControllerV5 {
      * 获取小程序订单详情
      */
     @GetMapping("{orderId}/wechat")
-    public Object detailWeChat(@PathVariable("orderId") int orderId){
+    public Object detailWeChat(@PathVariable("orderId") int orderId) {
         return ResponseUtil.build(orderService.detailWeChat(orderId));
     }
 
@@ -98,5 +103,33 @@ public class OrderControllerV5 {
     ) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         return ResponseUtil.build(orderService.userOrderListZTK(map));
+    }
+
+    /**
+     * 生成订单
+     */
+    @LocalMapParam(checkToken = true)
+    @PostMapping("bigGiftOrder")
+    public Object bigGiftOrder(
+            @RequestParam int classId,
+            @RequestParam String address,
+            @RequestParam String province,
+            @RequestParam String city,
+            @RequestParam String area,
+            @RequestParam String phone
+    ) {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return orderServiceV5Biz.bigGiftOrder(map);
+    }
+
+    /**
+     * 判断用户是否已经领取
+     */
+    @GetMapping("hasGetBigGiftOrder")
+    public Object hasGetBigGiftOrder(@RequestParam String userName, @RequestParam int classId) {
+        boolean hasGetBigGiftOrder = orderServiceV5Biz.hasGetBigGiftOrder(classId, userName);
+        return HashMapBuilder.<String, Object>newBuilder()
+                .put("flag", hasGetBigGiftOrder)
+                .build();
     }
 }

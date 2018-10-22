@@ -2,10 +2,7 @@ package com.huatu.tiku.course.netschool.api.v5;
 
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -64,4 +61,16 @@ public interface OrderServiceV5 {
      */
     @GetMapping(value = "/v4/common/order/list?isInterview=1")
     NetSchoolResponse userOrderListIC(@RequestParam HashMap<String, Object> params);
+
+    /**
+     * 估分送课
+     */
+    @PostMapping(value = "/v4/common/order/zero_order")
+    NetSchoolResponse zeroOrder(@RequestParam Map<String, Object> params);
+
+    /**
+     * 用户是否已经有估分送课
+     */
+    @GetMapping(value = "/v4/common/order/has_free")
+    NetSchoolResponse hasGetBigGiftOrder(@RequestParam Map<String, Object> params);
 }
