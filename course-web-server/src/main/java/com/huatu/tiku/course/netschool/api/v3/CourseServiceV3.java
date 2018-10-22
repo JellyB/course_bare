@@ -55,7 +55,7 @@ public interface CourseServiceV3 {
      * @param rid
      * @return
      */
-    @GetMapping("/v3/Class_Details_Buy.php")
+    @GetMapping("/v3/Class_Details_Buy.php?cool=1")
     NetSchoolResponse getCourseDetail(@RequestParam("rid") int rid);
 
     /**

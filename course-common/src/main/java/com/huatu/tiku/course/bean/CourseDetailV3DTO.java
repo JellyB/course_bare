@@ -59,6 +59,9 @@ public class CourseDetailV3DTO implements Serializable{
         private int Province;
         //订单id
         private String orderId;
+        private int isShiWu;
+        private int isRushOut;
+        private int isSaleOut;
     }
 
     @Data
