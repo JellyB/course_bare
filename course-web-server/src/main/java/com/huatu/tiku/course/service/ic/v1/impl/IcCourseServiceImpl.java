@@ -142,8 +142,8 @@ public class IcCourseServiceImpl implements IcCourseService {
             courseDic.put(temp.get("class_id"), temp);
         });
         List<Object> sortedList = Lists.newArrayListWithExpectedSize(data.size());
-        ((List<String>) response).forEach(classId -> {
-            Object course = courseDic.get(classId);
+        ((List<Object>) response).forEach(classId -> {
+            Object course = courseDic.get(classId.toString());
             if (course != null) {
                 sortedList.add(course);
             }
