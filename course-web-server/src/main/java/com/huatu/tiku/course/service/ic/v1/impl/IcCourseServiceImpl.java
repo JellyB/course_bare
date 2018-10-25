@@ -133,7 +133,7 @@ public class IcCourseServiceImpl implements IcCourseService {
         if (null == response || ((Collection) response).size() == 0) {
             return Lists.newArrayList();
         }
-        String hasBuyCourseIds = ((List<Integer>) response).stream().map(temp -> temp.toString()).collect(Collectors.joining(","));
+        String hasBuyCourseIds = ((List<Object>) response).stream().map(temp -> temp.toString()).collect(Collectors.joining(","));
         NetSchoolResponse netSchoolResponse = courseService.courseInfoList(hasBuyCourseIds);
         // 添加有序逻辑
         List<Map<String, String>> data = (List<Map<String, String>>) netSchoolResponse.getData();
