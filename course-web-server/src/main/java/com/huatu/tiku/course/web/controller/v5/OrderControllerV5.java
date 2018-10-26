@@ -112,12 +112,12 @@ public class OrderControllerV5 {
     @PostMapping("bigGiftOrder")
     public Object bigGiftOrder(
             @RequestParam int classId,
-            @RequestParam String address,
-            @RequestParam String province,
-            @RequestParam String city,
-            @RequestParam String area,
-            @RequestParam String phone,
-            @RequestParam String consignee
+            @RequestParam(required = false) String address,
+            @RequestParam(required = false) String province,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String area,
+            @RequestParam(required = false) String phone,
+            @RequestParam(required = false) String consignee
     ) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         return orderServiceV5Biz.bigGiftOrder(map);

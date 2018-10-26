@@ -115,9 +115,9 @@ public class CourseControllerV5 {
      * 播放课程添加金币
      */
     @PutMapping("addPlayIcon")
-    public Object addPlayIcon(@Token UserSession userSession, @RequestParam("isFree") int isFree){
-       courseUtil.pushPlayEvent(userSession,1 == isFree);
-       return SuccessMessage.create("操作成功");
+    public Object addPlayIcon(@Token UserSession userSession, @RequestParam("isFree") int isFree) {
+        courseUtil.pushPlayEvent(userSession, 1 == isFree);
+        return SuccessMessage.create("操作成功");
     }
 
 
@@ -191,7 +191,7 @@ public class CourseControllerV5 {
                 .put("classId", classId)
                 .put("terminal", terminal)
                 .put("userName", userSession.getUname())
-                .put("collageActivityId",collageActivityId)
+                .put("collageActivityId", collageActivityId)
                 .build();
         log.warn("4$${}$${}$${}$${}$${}$${}", classId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
         return ResponseUtil.build(courseService.getClassDetailNotLive(map));
@@ -212,7 +212,7 @@ public class CourseControllerV5 {
                 .put("classId", classId)
                 .put("terminal", terminal)
                 .put("userName", "uname")
-                .put("collageActivityId",collageActivityId)
+                .put("collageActivityId", collageActivityId)
                 .build();
         log.warn("4$${}$${}$${}$${}$${}$${}", classId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
         return ResponseUtil.build(courseService.getClassDetailLive(map));
@@ -347,8 +347,18 @@ public class CourseControllerV5 {
      * 获取课程促销详情
      */
     @GetMapping("{classId}/appClassActivityDetails")
-    public Object appClassActivityDetails(@PathVariable int classId){
+    public Object appClassActivityDetails(@PathVariable int classId) {
         return courseServiceBiz.appClassActivityDetails(classId);
+    }
+
+    /**
+     * 试听列表
+     */
+    @LocalMapParam(checkToken = true)
+    @GetMapping("/{netClassId}/classAuditionList")
+    public Object classAuditionList(@PathVariable int netClassId) {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return ResponseUtil.build(courseService.classAuditionList(map));
     }
 
     /**

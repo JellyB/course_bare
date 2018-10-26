@@ -160,4 +160,10 @@ public interface CourseServiceV5 {
      */
     @GetMapping(value = "/v4/common/class/appClass_activity_details")
     NetSchoolResponse appClassActivityDetails(@RequestParam("classId") int classIds);
+
+    /**
+     * 试听列表
+     */
+    @GetMapping(value = "/v4/common/class/class_audition_list")
+    NetSchoolResponse classAuditionList(@RequestParam Map<String, Object> params);
 }
