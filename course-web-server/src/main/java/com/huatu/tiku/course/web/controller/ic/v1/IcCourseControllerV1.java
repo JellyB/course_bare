@@ -65,7 +65,7 @@ public class IcCourseControllerV1 {
 
 			// 客户端版本
 			if (!audit) {
-				audit = redisTemplate.getConnectionFactory().getConnection().sIsMember("ic.audit.cvs".getBytes(),
+				audit = redisTemplate.getConnectionFactory().getConnection().sIsMember("ic.ios.audit.versions".getBytes(),
 						cv.getBytes());
 			}
 		}

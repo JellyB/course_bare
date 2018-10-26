@@ -133,7 +133,7 @@ public class IcCourseServiceImpl implements IcCourseService {
         if (null == response || ((Collection) response).size() == 0) {
             return Lists.newArrayList();
         }
-        String hasBuyCourseIds = ((List<String>) response).stream().collect(Collectors.joining(","));
+        String hasBuyCourseIds = ((List<Object>) response).stream().map(temp -> temp.toString()).collect(Collectors.joining(","));
         NetSchoolResponse netSchoolResponse = courseService.courseInfoList(hasBuyCourseIds);
         // 添加有序逻辑
         List<Map<String, String>> data = (List<Map<String, String>>) netSchoolResponse.getData();
@@ -142,8 +142,8 @@ public class IcCourseServiceImpl implements IcCourseService {
             courseDic.put(temp.get("class_id"), temp);
         });
         List<Object> sortedList = Lists.newArrayListWithExpectedSize(data.size());
-        ((List<String>) response).forEach(classId -> {
-            Object course = courseDic.get(classId);
+        ((List<Object>) response).forEach(classId -> {
+            Object course = courseDic.get(classId.toString());
             if (course != null) {
                 sortedList.add(course);
             }
