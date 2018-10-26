@@ -130,7 +130,7 @@ public class MapParamAspect {
         String[] fileName = getFileName(className, methodName);
         if (null != fileName) {
             for (int index = 0; index < fileName.length; index++) {
-                if (!EXCEPT_PARAM.contains(args[index].getClass())) {
+                if (null != args[index] && !EXCEPT_PARAM.contains(args[index].getClass())) {
                     hashMapBuilder.put(fileName[index], args[index]);
                 }
             }

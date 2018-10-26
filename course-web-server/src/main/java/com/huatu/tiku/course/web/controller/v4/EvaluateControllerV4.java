@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.web.controller.v4;
 
 import com.huatu.common.ErrorResult;
+import com.huatu.common.exception.BizException;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v4.AppServiceV4;
@@ -51,7 +52,7 @@ public class EvaluateControllerV4 {
             @RequestParam(required = false) String bjySessionId,
             @RequestParam(required = false) String videoId) {
         if (StringUtils.isBlank(bjyRoomId) && StringUtils.isBlank(videoId)) {
-            return ErrorResult.create(50000, "服务器内部错误,缺少参数");
+            throw new BizException(ErrorResult.create(50000, "服务器内部错误,缺少参数"));
         }
         NetSchoolResponse netSchoolResponse = appService.lessionToken(bjyRoomId, bjySessionId, videoId);
         return ResponseUtil.build(netSchoolResponse);
