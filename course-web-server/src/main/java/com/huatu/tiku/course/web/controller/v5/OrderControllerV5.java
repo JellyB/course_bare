@@ -136,10 +136,11 @@ public class OrderControllerV5 {
         HashMap<String, Boolean> map = HashMapBuilder.<String, Boolean>newBuilder().build();
         int index = 0;
         String[] classIdArray = classId.split(",");
-        for (; index < classIdArray.length; index++) {
+        for (; index < classIdArray.length; ) {
             Integer classIdNum = Integer.valueOf(classIdArray[index]);
             boolean hasGetBigGiftOrder = orderServiceV5Biz.hasGetBigGiftOrder(classIdNum, userName);
             map.put(classIdArray[index], hasGetBigGiftOrder);
+            index++;
             if (hasGetBigGiftOrder) {
                 break;
             }
