@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.web.controller.v5;
 
+import com.huatu.common.SuccessMessage;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
@@ -10,6 +11,7 @@ import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -127,10 +129,24 @@ public class OrderControllerV5 {
      * 判断用户是否已经领取
      */
     @GetMapping("hasGetBigGiftOrder")
-    public Object hasGetBigGiftOrder(@RequestParam String userName, @RequestParam int classId) {
-        boolean hasGetBigGiftOrder = orderServiceV5Biz.hasGetBigGiftOrder(classId, userName);
-        return HashMapBuilder.<String, Object>newBuilder()
-                .put("flag", hasGetBigGiftOrder)
-                .build();
+    public Object hasGetBigGiftOrder(@RequestParam String userName, @RequestParam String classId) {
+        if (StringUtils.isBlank(classId)) {
+            return SuccessMessage.create("操作成功");
+        }
+        HashMap<String, Boolean> map = HashMapBuilder.<String, Boolean>newBuilder().build();
+        int index = 0;
+        String[] classIdArray = classId.split(",");
+        for (; index < classIdArray.length; index++) {
+            Integer classIdNum = Integer.valueOf(classIdArray[index]);
+            boolean hasGetBigGiftOrder = orderServiceV5Biz.hasGetBigGiftOrder(classIdNum, userName);
+            map.put(classIdArray[index], hasGetBigGiftOrder);
+            if (hasGetBigGiftOrder) {
+                break;
+            }
+        }
+        for (; index < classIdArray.length; index++) {
+            map.put(classIdArray[index], false);
+        }
+        return map;
     }
 }
