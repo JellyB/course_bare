@@ -62,6 +62,8 @@ public class CourseDetailV3DTO implements Serializable{
         private int isShiWu;
         private int isRushOut;
         private int isSaleOut;
+
+        private List<TeacherInfo> teacherInfo;
     }
 
     @Data
