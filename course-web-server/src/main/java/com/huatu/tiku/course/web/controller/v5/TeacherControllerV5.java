@@ -74,7 +74,7 @@ public class TeacherControllerV5 {
      * 老师详情页评价课件评价列表
      */
     @LocalMapParam
-    @GetMapping("{teacherId}/historyCourse")
+    @GetMapping("{teacherId}/lessonEvaluateList")
     public Object lessonEvaluateList(
             @PathVariable int teacherId,
             @RequestParam int classId,
