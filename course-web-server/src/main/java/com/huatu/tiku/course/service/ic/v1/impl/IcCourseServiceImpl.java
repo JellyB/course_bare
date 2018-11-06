@@ -123,6 +123,7 @@ public class IcCourseServiceImpl implements IcCourseService {
         } else {
             classInfo.setIsBuy(-1);
         }
+        courseDetail.getClassInfo().setTeacherInfo(courseDetail.getTeacherInfo());
         return courseDetail;
     }
 
