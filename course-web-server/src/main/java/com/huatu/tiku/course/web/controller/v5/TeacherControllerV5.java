@@ -42,4 +42,48 @@ public class TeacherControllerV5 {
     public Object getTeacherDetail(@PathVariable int teacherId) {
         return ResponseUtil.build(teacherService.getTeacherDetail(teacherId));
     }
+
+    /**
+     * 老师详情页 历史课件列表
+     */
+    @LocalMapParam
+    @GetMapping("{teacherId}/historyLessonList")
+    public Object historyLessonList(
+            @PathVariable int teacherId,
+                @RequestParam int classId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return ResponseUtil.build(teacherService.historyLessonList(map));
+    }
+
+    /**
+     * 老师详情页评价历史课程列表
+     */
+    @LocalMapParam
+    @GetMapping("{teacherId}/historyCourse")
+    public Object historyCourse(
+            @PathVariable int teacherId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return ResponseUtil.build(teacherService.historyCourse(map));
+    }
+
+    /**
+     * 老师详情页评价课件评价列表
+     */
+    @LocalMapParam
+    @GetMapping("{teacherId}/historyCourse")
+    public Object lessonEvaluateList(
+            @PathVariable int teacherId,
+            @RequestParam int classId,
+            @RequestParam int lessonId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize
+    ) {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return ResponseUtil.build(teacherService.lessonEvaluateList(map));
+    }
+
 }

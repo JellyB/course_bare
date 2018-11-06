@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.web.controller.v4;
 
+import com.google.common.base.Stopwatch;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.AreaConstants;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author hanchao
@@ -46,6 +48,9 @@ public class CourseControllerV4 {
             @RequestParam(required = false, defaultValue = "") String keywords,
             @RequestParam(required = false, defaultValue = "1000") int subjectid,
             @Token UserSession userSession) {
+
+        Stopwatch started = Stopwatch.createStarted();
+
         int provinceId = AreaConstants.getNetSchoolProvinceId(userSession.getArea());
         Map<String,Object> params = HashMapBuilder.<String,Object>newBuilder()
                 .put("categoryid",categoryid)
@@ -58,7 +63,11 @@ public class CourseControllerV4 {
                 .put("cv",cv)
                 .put("provinceid",provinceId).build();
         NetSchoolResponse recordingList = courseServiceV4.findRecordingList(params);
+        log.info(" V4 record courseRecord = {}",started.elapsed(TimeUnit.MILLISECONDS));
+
         courseServiceV4Fallback.setRecordingList(params,recordingList);
+        log.info(" V4 record callBack = {}",started.elapsed(TimeUnit.MILLISECONDS));
+
         log.warn("2$${}$${}$${}$${}$${}$${}$${}$${}$${}",categoryid,subjectid,userSession.getId(),userSession.getUname(),keywords,String.valueOf(System.currentTimeMillis()),cv,terminal,provinceId);
         return ResponseUtil.build(recordingList);
     }
