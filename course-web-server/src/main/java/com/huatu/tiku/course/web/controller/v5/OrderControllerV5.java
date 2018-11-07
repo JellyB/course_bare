@@ -78,17 +78,21 @@ public class OrderControllerV5 {
     /**
      * 获取订单详情
      */
+    @LocalMapParam
     @GetMapping("{orderId}")
     public Object detail(@PathVariable("orderId") int orderId) {
-        return ResponseUtil.build(orderService.detail(orderId));
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return ResponseUtil.build(orderService.detail(map));
     }
 
     /**
      * 获取小程序订单详情
      */
+    @LocalMapParam
     @GetMapping("{orderId}/wechat")
     public Object detailWeChat(@PathVariable("orderId") int orderId) {
-        return ResponseUtil.build(orderService.detailWeChat(orderId));
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return ResponseUtil.build(orderService.detailWeChat(map));
     }
 
     /**

@@ -42,13 +42,13 @@ public interface OrderServiceV5 {
      * 查询订单详情
      */
     @GetMapping(value = "/v4/common/order/detail")
-    NetSchoolResponse detail(@RequestParam("orderId") int orderId);
+    NetSchoolResponse detail(@RequestParam Map<String, Object> params);
 
     /**
      * 查看小程序订单详情
      */
     @GetMapping(value = "/v4/wechat/collage/order_details")
-    NetSchoolResponse detailWeChat(@RequestParam("orderId") int orderId);
+    NetSchoolResponse detailWeChat(@RequestParam Map<String, Object> params);
 
     /**
      * 查询我的订单列表 - ZTK
