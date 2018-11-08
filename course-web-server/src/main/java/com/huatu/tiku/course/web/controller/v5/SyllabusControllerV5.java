@@ -1,15 +1,19 @@
 package com.huatu.tiku.course.web.controller.v5;
 
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
+import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.netschool.api.v5.SyllabusServiceV5;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
+import com.huatu.tiku.course.web.controller.util.CourseUtil;
+import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  * 课程大纲
@@ -24,21 +28,28 @@ public class SyllabusControllerV5 {
     @Autowired
     private SyllabusServiceV5 syllabusService;
 
+    @Autowired
+    private CourseUtil courseUtil;
+
     /**
      * 大纲 售后
      */
-    @LocalMapParam
+    @LocalMapParam(checkToken = true)
     @GetMapping("{netClassId}/buyAfterSyllabus")
     public Object buyAfterSyllabus(
+            @Token UserSession userSession,
             @PathVariable int netClassId,
-            @RequestParam String classId,
-            @RequestParam String classNodeId,
-            @RequestParam String teacherId,
+            @RequestParam(defaultValue = "") String classId,
+            @RequestParam(defaultValue = "") String classNodeId,
+            @RequestParam(defaultValue = "") String teacherId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize
     ) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
-        return ResponseUtil.build(syllabusService.buyAfterSyllabus(map));
+        Object response = ResponseUtil.build(syllabusService.buyAfterSyllabus(map));
+        //添加答题信息
+        courseUtil.addExercisesCardInfo((LinkedHashMap) response, userSession.getId());
+        return response;
     }
 
     /**
