@@ -6,6 +6,7 @@ import com.huatu.tiku.course.service.cache.CourseCacheKey;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by lijun on 2018/7/5
@@ -14,7 +15,7 @@ import java.util.HashMap;
 public class AppServiceV4Fallback implements AppServiceV4 {
 
     @Override
-    public NetSchoolResponse lessionEvaluate(int lessionId, String userName) {
+    public NetSchoolResponse lessionEvaluate(Map<String, Object> params) {
         return NetSchoolResponse.DEFAULT;
     }
 
