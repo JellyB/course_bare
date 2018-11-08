@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by lijun on 2018/5/18
@@ -15,9 +16,7 @@ import java.util.HashMap;
 public interface AppServiceV4 {
 
     @GetMapping("/lession/evaluate")
-    NetSchoolResponse lessionEvaluate(
-            @RequestParam("lessionId") int lessionId,
-            @RequestParam("userName") String userName);
+    NetSchoolResponse lessionEvaluate(@RequestParam Map<String, Object> params);
 
     @GetMapping("/lession/token")
     NetSchoolResponse lessionToken(

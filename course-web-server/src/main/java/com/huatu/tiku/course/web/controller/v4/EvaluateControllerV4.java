@@ -36,12 +36,15 @@ public class EvaluateControllerV4 {
      *
      * @return
      */
+    @LocalMapParam
     @GetMapping("/lession")
     public Object lessionEvaluate(
             @Token UserSession userSession,
-            @RequestParam("lessionId") int lessionId
+            @RequestParam("lessionId") int lessionId,
+            @RequestParam(defaultValue = "0") int syllabusId
     ) {
-        NetSchoolResponse netSchoolResponse = appService.lessionEvaluate(lessionId, userSession.getUname());
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        NetSchoolResponse netSchoolResponse = appService.lessionEvaluate(map);
         return ResponseUtil.build(netSchoolResponse);
     }
 
