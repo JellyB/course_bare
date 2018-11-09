@@ -42,6 +42,8 @@ public class SyllabusControllerV5 {
             @RequestParam(defaultValue = "") String classId,
             @RequestParam(defaultValue = "") String classNodeId,
             @RequestParam(defaultValue = "") String teacherId,
+            @RequestParam(defaultValue = "0") int coursewareNodeId,
+            @RequestParam(defaultValue = "1") int position,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize
     ) {
