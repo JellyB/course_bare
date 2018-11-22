@@ -54,7 +54,7 @@ public class CourseAuditControllerV1 {
             if (page == 1) {
                 return bffService.getList(username, catgory, listType);
             } else {
-                ErrorResult errorResult = ErrorResult.create(Result.SUCCESS_CODE, "数据为空", ResponseUtil.MOCK_PAGE_RESPONSE);
+                ErrorResult errorResult = ErrorResult.create(0, "数据为空");
                 throw new BizException(errorResult);
             }
         }
