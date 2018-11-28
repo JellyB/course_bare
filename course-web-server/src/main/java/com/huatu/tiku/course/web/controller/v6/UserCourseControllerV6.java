@@ -36,7 +36,7 @@ public class UserCourseControllerV6 {
      * @param type
      * @return
      */
-    @LocalMapParam
+    @LocalMapParam(checkToken = true)
     @GetMapping(value = "learnCalendar")
     public Object obtainLearnCalendar(@Token UserSession userSession,
                                       @RequestParam(value = "type") String type){
@@ -51,7 +51,7 @@ public class UserCourseControllerV6 {
      * @param pageSize
      * @return
      */
-    @LocalMapParam
+    @LocalMapParam(checkToken = true)
     @GetMapping(value = "expiredCourses")
     public Object obtainExpiredCourses(@Token UserSession userSession,
                                        @RequestParam(value = "page", defaultValue = "1") int page,
@@ -67,7 +67,7 @@ public class UserCourseControllerV6 {
      * @param userSession
      * @return
      */
-    @LocalMapParam
+    @LocalMapParam(checkToken = true)
     @GetMapping(value = "filteredCourses")
     public Object obtainFilteredCourses(@Token UserSession userSession){
         Map<String,Object> params = LocalMapParamHandler.get();
@@ -87,7 +87,7 @@ public class UserCourseControllerV6 {
      * @param pageSize
      * @return
      */
-    @LocalMapParam
+    @LocalMapParam(checkToken = true)
     @GetMapping(value = "courses")
     public Object obtainMineCourses(
                                     @Token UserSession userSession,
