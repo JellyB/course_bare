@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.netschool.api.v5;
 
 import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.netschool.api.v5.configuration.CourseServiceV5Config;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,7 +11,7 @@ import java.util.Map;
  * 课程相关
  * Created by lijun on 2018/6/25
  */
-@FeignClient(value = "o-course-service", path = "/lumenapi")
+@FeignClient(value = "o-course-service", path = "/lumenapi", configuration = CourseServiceV5Config.class)
 public interface CourseServiceV5 {
 
     /**

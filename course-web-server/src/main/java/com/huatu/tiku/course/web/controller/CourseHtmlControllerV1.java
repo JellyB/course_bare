@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.web.controller;
 
 import com.huatu.tiku.course.netschool.api.HtmlServiceV1;
+import com.huatu.tiku.course.service.CourseBizService;
 import com.huatu.tiku.course.service.IosBffService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class CourseHtmlControllerV1 {
 
     @Autowired
     private HtmlServiceV1 htmlService;
+
+    @Autowired
+    private CourseBizService courseBizService;
     /**
      * h5页面
      * @param courseId
@@ -30,7 +34,7 @@ public class CourseHtmlControllerV1 {
      */
     @RequestMapping(value = "{courseId}",produces = MediaType.TEXT_HTML_VALUE+ ";charset=UTF-8")
     public Object detail(@PathVariable int courseId) throws Exception{
-        return htmlService.courseDetail(courseId);
+        return courseBizService.getCourseHtml(courseId);
     }
 
 

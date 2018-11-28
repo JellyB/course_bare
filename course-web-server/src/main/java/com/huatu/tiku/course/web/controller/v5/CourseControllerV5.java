@@ -213,6 +213,7 @@ public class CourseControllerV5 {
                 .put("terminal", terminal)
                 .put("userName", "uname")
                 .put("collageActivityId", collageActivityId)
+                .put("cv",cv)
                 .build();
         log.warn("4$${}$${}$${}$${}$${}$${}", classId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
         return ResponseUtil.build(courseService.getClassDetailLive(map));
