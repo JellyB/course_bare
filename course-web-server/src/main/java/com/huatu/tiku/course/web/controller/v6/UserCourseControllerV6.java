@@ -2,9 +2,11 @@ package com.huatu.tiku.course.web.controller.v6;
 
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
+import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
+import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +43,8 @@ public class UserCourseControllerV6 {
     public Object obtainLearnCalendar(@Token UserSession userSession,
                                       @RequestParam(value = "type") String type){
         Map<String,Object> params = LocalMapParamHandler.get();
-        return userCourseService.obtainLearnCalender(params);
+        NetSchoolResponse netSchoolResponse =  userCourseService.obtainLearnCalender(params);
+        return ResponseUtil.build(netSchoolResponse);
     }
 
     /**
@@ -58,7 +61,8 @@ public class UserCourseControllerV6 {
                                        @RequestParam(value = "pageSize", defaultValue = "20") int pageSize){
 
         Map<String,Object> params = LocalMapParamHandler.get();
-        return userCourseService.obtainExpiredCourses(params);
+        NetSchoolResponse netSchoolResponse = userCourseService.obtainExpiredCourses(params);
+        return ResponseUtil.build(netSchoolResponse);
     }
 
 
@@ -71,7 +75,8 @@ public class UserCourseControllerV6 {
     @GetMapping(value = "filteredCourses")
     public Object obtainFilteredCourses(@Token UserSession userSession){
         Map<String,Object> params = LocalMapParamHandler.get();
-        return userCourseService.obtainCourseFilterList(params);
+        NetSchoolResponse netSchoolResponse = userCourseService.obtainCourseFilterList(params);
+        return ResponseUtil.build(netSchoolResponse);
     }
 
     /**
@@ -91,16 +96,17 @@ public class UserCourseControllerV6 {
     @GetMapping(value = "courses")
     public Object obtainMineCourses(
                                     @Token UserSession userSession,
-                                    @RequestParam(value = "examStatus") String examStatus,
-                                    @RequestParam(value = "keyWord") String keyWord,
-                                    @RequestParam(value = "priceStatus") String priceStatus,
-                                    @RequestParam(value = "recentlyStudy", defaultValue = "0") int recentlyStudy,
-                                    @RequestParam(value = "studyStatus") String studyStatus,
-                                    @RequestParam(value = "teacherId") String teacherId,
-                                    @RequestParam(value = "page", defaultValue = "1") int page,
-                                    @RequestParam(value = "pageSize", defaultValue = "20") int pageSize){
+                                    @RequestParam(value = "examStatus", required = false) String examStatus,
+                                    @RequestParam(value = "keyWord", required = false) String keyWord,
+                                    @RequestParam(value = "priceStatus", required = false) String priceStatus,
+                                    @RequestParam(value = "recentlyStudy", defaultValue = "0", required = false) int recentlyStudy,
+                                    @RequestParam(value = "studyStatus", required = false) String studyStatus,
+                                    @RequestParam(value = "teacherId", required = false) String teacherId,
+                                    @RequestParam(value = "page", defaultValue = "1", required = false) int page,
+                                    @RequestParam(value = "pageSize", defaultValue = "20", required = false) int pageSize){
         Map<String,Object> params = LocalMapParamHandler.get();
-        return userCourseService.obtainMineCourses(params);
+        NetSchoolResponse netSchoolResponse = userCourseService.obtainMineCourses(params);
+        return ResponseUtil.build(netSchoolResponse);
     }
 
 }
