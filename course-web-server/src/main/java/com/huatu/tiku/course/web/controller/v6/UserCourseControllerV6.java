@@ -109,4 +109,19 @@ public class UserCourseControllerV6 {
         return ResponseUtil.build(netSchoolResponse);
     }
 
+
+    /**
+     * 一键清除我的已过期课程
+     * @param cv
+     * @param userSession
+     * @return
+     */
+    @LocalMapParam
+    @GetMapping(value = "clearExpired")
+    public Object clearExpiredCourses(@RequestHeader(value = "cv") String cv,
+                                      @Token UserSession userSession){
+        Map<String,Object> params = LocalMapParamHandler.get();
+        NetSchoolResponse netSchoolResponse = userCourseService.clearExpiredCourses(params);
+        return ResponseUtil.build(netSchoolResponse);
+    }
 }
