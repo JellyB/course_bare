@@ -1,11 +1,13 @@
 package com.huatu.tiku.course.web.controller.v6;
 
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
+import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
+import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -45,6 +47,8 @@ public class CourseControllerV6 {
 
     /**
      * 日志详情
+     * @param userSession
+     * @param cv
      * @param date
      * @param id
      * @param page
@@ -53,10 +57,13 @@ public class CourseControllerV6 {
      */
     @LocalMapParam
     @GetMapping(value = "calendarDetail")
-    public Object obtainCalendarDetail(@RequestParam(value = "date") String date,
-                                       @RequestParam(value = "id") String id,
-                                       @RequestParam(value = "page", defaultValue = "1") int page,
-                                       @RequestParam(value = "pageSize", defaultValue = "30") int pageSize){
+    public Object obtainCalendarDetail(
+            @Token UserSession userSession,
+            @RequestHeader(value = "cv") String cv,
+            @RequestParam(value = "date") String date,
+            @RequestParam(value = "id") String id,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "pageSize", defaultValue = "20") int pageSize){
         Map<String,Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = courseService.calendarDetail(params);
         return ResponseUtil.build(netSchoolResponse);
