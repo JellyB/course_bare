@@ -18,7 +18,7 @@ import java.lang.reflect.Method;
 @Configuration
 public class CourseServiceV5Config {
 
-    private static int connectTimeOutMillis = 30 * 1000;
+    private static int connectTimeOutMillis = 20 * 1000;
 
     @Bean
     public SetterFactory create() {

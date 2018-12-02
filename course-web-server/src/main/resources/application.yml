@@ -94,7 +94,7 @@ hystrix:
       execution:
         isolation:
           thread:
-            timeoutInMilliseconds: 30000 # 默认超时时间
+            timeoutInMilliseconds: 15000 # 默认超时时间
 
 ## 自定义配置
 
