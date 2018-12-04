@@ -49,14 +49,14 @@ public class CollectionControllerV6 {
 
     /**
      * App课程列表
-     * @param classId
+     * @param classIds
      * @param userSession
      * @return
      */
     @LocalMapParam
     @PutMapping(value = "cancel")
     public Object cancel( @Token UserSession userSession,
-                          @RequestParam(value = "classId") String classId){
+                          @RequestParam(value = "classIds") String classIds){
         Map<String,Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = collectionService.cancel(params);
         return ResponseUtil.build(netSchoolResponse);
