@@ -34,4 +34,20 @@ public interface CourseServiceV6 {
      */
     @GetMapping(value = "/v5/c/class/live_detail")
     NetSchoolResponse calendarDetail(@RequestParam Map<String, Object> params);
+
+    /**
+     * 课程分类详情
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/v5/c/class/type_detail")
+    NetSchoolResponse courseTypeDetail(@RequestParam Map<String,Object> params);
+
+    /**
+     * 课程搜索接口
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/v5/c/class/search")
+    NetSchoolResponse searchCourses(@RequestParam Map<String, Object> params);
 }

@@ -70,5 +70,40 @@ public class CourseControllerV6 {
     }
 
 
+    /**
+     * 课程分类详情
+     * @param cateId
+     * @param cv
+     * @param terminal
+     * @param page
+     * @param typeId
+     * @return
+     */
+    @LocalMapParam
+    @GetMapping(value = "typeDetail")
+    public Object courseTypeDetail(@RequestHeader(value = "cv") String cv,
+                                   @RequestHeader(value = "terminal") int terminal,
+                                   @RequestParam(value = "cateId") int cateId,
+                                   @RequestParam(value = "page", defaultValue = "1") int page,
+                                   @RequestParam(value = "typeId") int typeId){
+        Map<String,Object> params = LocalMapParamHandler.get();
+        NetSchoolResponse netSchoolResponse = courseService.courseTypeDetail(params);
+        return ResponseUtil.build(netSchoolResponse);
+    }
+    /**
+     * 课程搜索接口
+     * @param keyWord
+     * @param page
+     * @return
+     */
+    @LocalMapParam
+    @GetMapping(value = "search")
+    public  Object searchCourses(@RequestParam(value = "keyWord") String keyWord,
+                                 @RequestParam(value = "page", defaultValue = "1") int page){
+        Map<String,Object> params = LocalMapParamHandler.get();
+        NetSchoolResponse netSchoolResponse = courseService.searchCourses(params);
+        return ResponseUtil.build(netSchoolResponse);
+    }
+
 
 }

@@ -99,7 +99,7 @@ public class UserCourseControllerV6 {
                                     @RequestParam(value = "examStatus", required = false) String examStatus,
                                     @RequestParam(value = "keyWord", required = false) String keyWord,
                                     @RequestParam(value = "priceStatus", required = false) String priceStatus,
-                                    @RequestParam(value = "recentlyStudy", defaultValue = "0", required = false) int recentlyStudy,
+                                    @RequestParam(value = "recentlyStudy", defaultValue = "", required = false) String recentlyStudy,
                                     @RequestParam(value = "studyStatus", required = false) String studyStatus,
                                     @RequestParam(value = "teacherId", required = false) String teacherId,
                                     @RequestParam(value = "page", defaultValue = "1", required = false) int page,
