@@ -50,4 +50,13 @@ public interface CourseServiceV6 {
      */
     @GetMapping(value = "/v5/c/class/search")
     NetSchoolResponse searchCourses(@RequestParam Map<String, Object> params);
+
+
+    /**
+     * 合集课程列表
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/v5/c/class/collect_detail")
+    NetSchoolResponse collectDetail(@RequestParam Map<String, Object> params);
 }

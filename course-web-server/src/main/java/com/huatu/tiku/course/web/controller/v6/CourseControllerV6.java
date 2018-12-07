@@ -106,4 +106,17 @@ public class CourseControllerV6 {
     }
 
 
+    /**
+     * 合集课程列表
+     * @param collectId
+     * @return
+     */
+    @LocalMapParam
+    @GetMapping(value = "collectDetail")
+    public Object collectDetail(@RequestParam(value = "collectId") long collectId){
+        Map<String, Object> params = LocalMapParamHandler.get();
+        NetSchoolResponse netSchoolResponse = courseService.courseTypeDetail(params);
+        return ResponseUtil.build(netSchoolResponse);
+    }
+
 }
