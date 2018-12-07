@@ -36,12 +36,12 @@ public class ForTestController {
     @WebReport(value = "test", extraHandler = TestReportExtraHandler.class, holdResult = true)
     @RequestMapping("/report")
     public Object report(@Token UserSession session) {
-        return HashMapBuilder.newBuilder().put("llll", "llsdfdfd").buildUnsafe();
+        return HashMapBuilder.newBuilder().put("llll-1", "llsdfdfd").buildUnsafe();
     }
 
     @GetMapping("/exm")
     public void exMessage() {
-        throw new UnauthorizedException("测试异常");
+        throw new UnauthorizedException("测试异常-1");
     }
 
 
