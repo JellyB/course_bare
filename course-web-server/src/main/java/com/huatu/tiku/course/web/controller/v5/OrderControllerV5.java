@@ -4,6 +4,7 @@ import com.huatu.common.SuccessMessage;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
+import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v5.OrderServiceV5;
 import com.huatu.tiku.course.service.v5.OrderServiceV5Biz;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by lijun on 2018/6/25
@@ -153,5 +155,22 @@ public class OrderControllerV5 {
             map.put(classIdArray[index], false);
         }
         return map;
+    }
+
+
+    /**
+     * 拼团--正在拼团
+     * @param userSession
+     * @param activityId
+     * @return
+     */
+    @LocalMapParam
+    @GetMapping(value = "activityOn")
+    public Object activityAll(@Token UserSession userSession,
+                              @RequestParam(value = "activityId") long activityId){
+
+        Map<String,Object> params = LocalMapParamHandler.get();
+        NetSchoolResponse netSchoolResponse = orderService.activityAll(params);
+        return ResponseUtil.build(netSchoolResponse);
     }
 }

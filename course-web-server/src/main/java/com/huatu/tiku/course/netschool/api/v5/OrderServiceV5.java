@@ -73,4 +73,12 @@ public interface OrderServiceV5 {
      */
     @GetMapping(value = "/v4/common/order/has_free")
     NetSchoolResponse hasGetBigGiftOrder(@RequestParam Map<String, Object> params);
+
+    /**
+     * 拼团--正在拼团
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/v4/wechat/collage/collage_activity_all")
+    NetSchoolResponse activityAll(@RequestParam Map<String, Object> params);
 }
