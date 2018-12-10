@@ -46,6 +46,7 @@ public class RequestUtil {
         String paramsUrl = expandUrl(params);
         //加密
         String encryptparams = Crypt3Des.encryptMode(paramsUrl);
+        log.info("加密后结果批：{}",encryptparams);
         return encryptparams;
     }
 
