@@ -62,7 +62,7 @@ public class CourseControllerV6 {
             @RequestHeader(value = "cv") String cv,
             @RequestHeader(value = "terminal") int terminal,
             @RequestParam(value = "date") String date,
-            @RequestParam(value = "id") String id,
+            @RequestParam(value = "id", required = false) String id,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "pageSize", defaultValue = "20") int pageSize){
         Map<String,Object> params = LocalMapParamHandler.get();
