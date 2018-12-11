@@ -36,11 +36,17 @@ public class UserCourseControllerV6 {
      * 获取我的学习日历接口
      * @param userSession
      * @param type
+     * @param cv
+     * @param terminal
+     * @param date
      * @return
      */
     @LocalMapParam(checkToken = true)
     @GetMapping(value = "learnCalendar")
     public Object obtainLearnCalendar(@Token UserSession userSession,
+                                      @RequestHeader(value = "cv") String cv,
+                                      @RequestHeader(value = "terminal") int terminal,
+                                      @RequestParam(value = "date") String date,
                                       @RequestParam(value = "type") String type){
         Map<String,Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse =  userCourseService.obtainLearnCalender(params);
@@ -57,6 +63,7 @@ public class UserCourseControllerV6 {
     @LocalMapParam(checkToken = true)
     @GetMapping(value = "expiredCourses")
     public Object obtainExpiredCourses(@Token UserSession userSession,
+                                       @RequestHeader(value = "terminal") int terminal,
                                        @RequestParam(value = "page", defaultValue = "1") int page,
                                        @RequestParam(value = "pageSize", defaultValue = "20") int pageSize){
 

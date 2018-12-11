@@ -46,7 +46,7 @@ public class CourseControllerV6 {
 
 
     /**
-     * 日志详情
+     * 日历详情
      * @param userSession
      * @param cv
      * @param date
@@ -60,6 +60,7 @@ public class CourseControllerV6 {
     public Object obtainCalendarDetail(
             @Token UserSession userSession,
             @RequestHeader(value = "cv") String cv,
+            @RequestHeader(value = "terminal") int terminal,
             @RequestParam(value = "date") String date,
             @RequestParam(value = "id") String id,
             @RequestParam(value = "page", defaultValue = "1") int page,
