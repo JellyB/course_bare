@@ -131,4 +131,19 @@ public class UserCourseControllerV6 {
         NetSchoolResponse netSchoolResponse = userCourseService.clearExpiredCourses(params);
         return ResponseUtil.build(netSchoolResponse);
     }
+
+
+    /**
+     * 课程所属考试接口
+     * @param userSession
+     * @return
+     */
+    @LocalMapParam
+    @GetMapping(value = "cateList")
+    public Object cateList(@Token UserSession userSession){
+        Map<String,Object> params = LocalMapParamHandler.get();
+        NetSchoolResponse netSchoolResponse = userCourseService.cateList(params);
+        return ResponseUtil.build(netSchoolResponse);
+    }
+
 }

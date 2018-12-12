@@ -59,4 +59,12 @@ public interface UserCourseServiceV6 {
      */
     @GetMapping(value = "/v5/c/class/clear_expired")
     NetSchoolResponse clearExpiredCourses(@RequestParam Map<String, Object> params);
+
+    /**
+     * 课程所属考试接口
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/v5/c/class/cate_list")
+    NetSchoolResponse cateList(@RequestParam Map<String, Object> params);
 }
