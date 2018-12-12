@@ -146,4 +146,20 @@ public class UserCourseControllerV6 {
         return ResponseUtil.build(netSchoolResponse);
     }
 
+
+    /**
+     * 列表设置考试类型
+     * @param userSession
+     * @return
+     */
+    @LocalMapParam
+    @PutMapping(value = "category")
+    public Object setCategory(@Token UserSession userSession,
+                              @RequestParam(value = "setList") String setList){
+        Map<String,Object> params = LocalMapParamHandler.get();
+        NetSchoolResponse netSchoolResponse = userCourseService.setCategory(params);
+        return ResponseUtil.build(netSchoolResponse);
+    }
+
+
 }
