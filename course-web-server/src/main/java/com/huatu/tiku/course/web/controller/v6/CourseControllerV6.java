@@ -116,7 +116,7 @@ public class CourseControllerV6 {
     @GetMapping(value = "collectDetail")
     public Object collectDetail(@RequestParam(value = "collectId") long collectId){
         Map<String, Object> params = LocalMapParamHandler.get();
-        NetSchoolResponse netSchoolResponse = courseService.courseTypeDetail(params);
+        NetSchoolResponse netSchoolResponse = courseService.collectDetail(params);
         return ResponseUtil.build(netSchoolResponse);
     }
 
