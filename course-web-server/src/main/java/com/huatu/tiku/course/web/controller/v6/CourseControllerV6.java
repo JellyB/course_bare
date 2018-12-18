@@ -46,7 +46,7 @@ public class CourseControllerV6 {
 
 
     /**
-     * 日志详情
+     * 日历详情
      * @param userSession
      * @param cv
      * @param date
@@ -60,8 +60,9 @@ public class CourseControllerV6 {
     public Object obtainCalendarDetail(
             @Token UserSession userSession,
             @RequestHeader(value = "cv") String cv,
+            @RequestHeader(value = "terminal") int terminal,
             @RequestParam(value = "date") String date,
-            @RequestParam(value = "id") String id,
+            @RequestParam(value = "id", required = false) String id,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "pageSize", defaultValue = "20") int pageSize){
         Map<String,Object> params = LocalMapParamHandler.get();
@@ -115,7 +116,7 @@ public class CourseControllerV6 {
     @GetMapping(value = "collectDetail")
     public Object collectDetail(@RequestParam(value = "collectId") long collectId){
         Map<String, Object> params = LocalMapParamHandler.get();
-        NetSchoolResponse netSchoolResponse = courseService.courseTypeDetail(params);
+        NetSchoolResponse netSchoolResponse = courseService.collectDetail(params);
         return ResponseUtil.build(netSchoolResponse);
     }
 

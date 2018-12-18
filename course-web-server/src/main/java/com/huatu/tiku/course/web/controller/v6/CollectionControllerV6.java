@@ -39,6 +39,7 @@ public class CollectionControllerV6 {
     @LocalMapParam(checkToken = true)
     @GetMapping(value = "list")
     public Object list(@Token UserSession userSession,
+                       @RequestHeader(value = "terminal") int terminal,
                        @RequestParam(value = "page", defaultValue = "1", required = false) int page,
                        @RequestParam(value = "pageSize", defaultValue = "20", required = false) int pageSize){
         Map<String,Object> params = LocalMapParamHandler.get();
@@ -56,6 +57,7 @@ public class CollectionControllerV6 {
     @LocalMapParam
     @PutMapping(value = "cancel")
     public Object cancel( @Token UserSession userSession,
+                          @RequestHeader(value = "terminal") int terminal,
                           @RequestParam(value = "classIds") String classIds){
         Map<String,Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = collectionService.cancel(params);
@@ -72,6 +74,7 @@ public class CollectionControllerV6 {
     @LocalMapParam
     @PutMapping(value = "add")
     public Object add(@Token UserSession userSession,
+                      @RequestHeader(value = "terminal") int terminal,
                       @RequestParam(value = "classId") String classId){
         Map<String,Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = collectionService.add(params);

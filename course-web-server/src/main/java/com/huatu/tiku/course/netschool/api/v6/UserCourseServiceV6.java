@@ -3,6 +3,7 @@ package com.huatu.tiku.course.netschool.api.v6;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
@@ -59,4 +60,21 @@ public interface UserCourseServiceV6 {
      */
     @GetMapping(value = "/v5/c/class/clear_expired")
     NetSchoolResponse clearExpiredCourses(@RequestParam Map<String, Object> params);
+
+    /**
+     * 课程所属考试接口
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/v5/c/class/cate_list")
+    NetSchoolResponse cateList(@RequestParam Map<String, Object> params);
+
+
+    /**
+     * 列表设置考试类型
+     * @param params
+     * @return
+     */
+    @PutMapping(value = "/v5/c/class/set_category")
+    NetSchoolResponse setCategory(@RequestParam Map<String, Object> params);
 }
