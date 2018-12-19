@@ -146,6 +146,7 @@ public class OrderControllerV3 {
         params.put("source", (terminal == 2 || terminal == 5) ? 'I' : 'A');//不是ios，就传android
         params.put("tjCode", tjCode);
         params.put("username", userSession.getUname());
+        log.info(" createOrder param ={}",params);
         log.warn("6$${}$${}$${}$${}$${}$${}$${}$${}$${}$${}", addressid, rid, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal, fromuser, tjCode, FreeCardID);
         Object result = null;
         try {
