@@ -137,6 +137,8 @@ public class OrderControllerV3 {
         orderCacheQPS.orderCreateQPS();
         Map<String, Object> params = Maps.newHashMap();
         params.put("action", "createOrder");
+        params.put("terminal",terminal);
+        params.put("cv",cv);
         params.put("addressid", addressid);
         params.put("FreeCardID", FreeCardID);
         params.put("fromuser", fromuser);
