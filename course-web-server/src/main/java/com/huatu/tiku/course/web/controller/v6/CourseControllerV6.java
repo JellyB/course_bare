@@ -100,6 +100,7 @@ public class CourseControllerV6 {
     @LocalMapParam
     @GetMapping(value = "search")
     public  Object searchCourses(@RequestParam(value = "keyWord") String keyWord,
+                                 @RequestParam(value = "cateId") int cateId,
                                  @RequestParam(value = "page", defaultValue = "1") int page){
         Map<String,Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = courseService.searchCourses(params);
