@@ -70,6 +70,8 @@ public class OrderControllerV3 {
         Map<String, Object> params = Maps.newHashMap();
         params.put("rid", rid);
         params.put("action", "placeOrder");
+        params.put("terminal",terminal);
+        params.put("cv",cv);
         params.put("username", userSession.getUname());
         log.warn("5$${}$${}$${}$${}$${}$${}", rid, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
         //释放
