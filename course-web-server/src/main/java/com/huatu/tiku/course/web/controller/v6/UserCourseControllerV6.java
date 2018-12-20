@@ -104,6 +104,7 @@ public class UserCourseControllerV6 {
     public Object obtainMineCourses(
                                     @Token UserSession userSession,
                                     @RequestParam(value = "examStatus", required = false) String examStatus,
+                                    @RequestParam(value = "isDelete", required = false) int isDelete,
                                     @RequestParam(value = "keyWord", required = false) String keyWord,
                                     @RequestParam(value = "priceStatus", required = false) String priceStatus,
                                     @RequestParam(value = "recentlyStudy", defaultValue = "", required = false) String recentlyStudy,
