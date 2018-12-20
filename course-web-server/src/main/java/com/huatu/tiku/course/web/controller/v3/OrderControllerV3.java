@@ -70,6 +70,8 @@ public class OrderControllerV3 {
         Map<String, Object> params = Maps.newHashMap();
         params.put("rid", rid);
         params.put("action", "placeOrder");
+        params.put("terminal",terminal);
+        params.put("cv",cv);
         params.put("username", userSession.getUname());
         log.warn("5$${}$${}$${}$${}$${}$${}", rid, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
         //释放
@@ -135,6 +137,8 @@ public class OrderControllerV3 {
         orderCacheQPS.orderCreateQPS();
         Map<String, Object> params = Maps.newHashMap();
         params.put("action", "createOrder");
+        params.put("terminal",terminal);
+        params.put("cv",cv);
         params.put("addressid", addressid);
         params.put("FreeCardID", FreeCardID);
         params.put("fromuser", fromuser);
@@ -142,6 +146,7 @@ public class OrderControllerV3 {
         params.put("source", (terminal == 2 || terminal == 5) ? 'I' : 'A');//不是ios，就传android
         params.put("tjCode", tjCode);
         params.put("username", userSession.getUname());
+        log.info(" createOrder param ={}",params);
         log.warn("6$${}$${}$${}$${}$${}$${}$${}$${}$${}$${}", addressid, rid, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal, fromuser, tjCode, FreeCardID);
         Object result = null;
         try {

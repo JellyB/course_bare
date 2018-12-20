@@ -51,6 +51,8 @@ public class RewardMessageListener implements ChannelAwareMessageListener{
 
     @Override
     public void onMessage(Message message, Channel channel) throws Exception{
+
+        channel.basicQos(2);
         log.info("~~~~~~~~~~~~test into adding gold function~~~~~~~~~~~~~~~");
         try {
             RewardMessage rewardMessage = objectMapper.readValue(message.getBody(), RewardMessage.class);

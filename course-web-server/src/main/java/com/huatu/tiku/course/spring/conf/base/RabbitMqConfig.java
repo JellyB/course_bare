@@ -30,31 +30,32 @@ import static com.huatu.tiku.common.consts.RabbitConsts.*;
 @Configuration
 public class RabbitMqConfig {
     @Bean
-    public Jackson2JsonMessageConverter jackson2JsonMessageConverter(@Autowired ObjectMapper objectMapper){
+    public Jackson2JsonMessageConverter jackson2JsonMessageConverter(@Autowired ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
     }
 
     /**
      * queue声明
+     *
      * @return
      */
     @Bean
-    public Queue sendFreeCourseQueue(){
+    public Queue sendFreeCourseQueue() {
         return new Queue(QUEUE_SEND_FREE_COURSE);
     }
 
     @Bean
-    public Queue userNickUpdateQueue(){
+    public Queue userNickUpdateQueue() {
         return new Queue(QUEUE_USER_NICK_UPDATE);
     }
 
 
     @Bean
-    public Queue rewardActionQueue(){
+    public Queue rewardActionQueue() {
         Map<String, Object> arguments = Maps.newHashMap();
-        arguments.put(ARG_DLX,DLX_DEFAULT);
-        arguments.put(ARG_DLK,DLK_DEFAULT);
-        Queue rewardActionQueue = new Queue(QUEUE_REWARD_ACTION,true,false,false,arguments);
+        arguments.put(ARG_DLX, DLX_DEFAULT);
+        arguments.put(ARG_DLK, DLK_DEFAULT);
+        Queue rewardActionQueue = new Queue(QUEUE_REWARD_ACTION, true, false, false, arguments);
         return rewardActionQueue;
     }
 
@@ -63,19 +64,19 @@ public class RabbitMqConfig {
     public SimpleMessageListenerContainer rewardMessageListenerContainer(@Autowired ConnectionFactory connectionFactory,
                                                                          @Autowired(required = false) @Qualifier("coreThreadPool") ThreadPoolTaskExecutor threadPoolTaskExecutor,
                                                                          @Autowired RewardMessageListener rewardMessageListener,
-                                                                         @Autowired AmqpAdmin amqpAdmin){
+                                                                         @Autowired AmqpAdmin amqpAdmin) {
         SimpleMessageListenerContainer manualRabbitContainer = new SimpleMessageListenerContainer();
         manualRabbitContainer.setQueueNames(QUEUE_REWARD_ACTION);
         manualRabbitContainer.setConnectionFactory(connectionFactory);
-        if(amqpAdmin instanceof RabbitAdmin){
+        if (amqpAdmin instanceof RabbitAdmin) {
             manualRabbitContainer.setRabbitAdmin((RabbitAdmin) amqpAdmin);
         }
-        if(threadPoolTaskExecutor != null){
+        if (threadPoolTaskExecutor != null) {
             manualRabbitContainer.setTaskExecutor(threadPoolTaskExecutor);
         }
         manualRabbitContainer.setAcknowledgeMode(AcknowledgeMode.MANUAL);
-        //manualRabbitContainer.setConcurrentConsumers(threadPoolTaskExecutor.getCorePoolSize()/4);
-        //manualRabbitContainer.setMaxConcurrentConsumers(threadPoolTaskExecutor.getCorePoolSize()/4);
+        manualRabbitContainer.setConcurrentConsumers(threadPoolTaskExecutor.getCorePoolSize() / 4);
+        manualRabbitContainer.setMaxConcurrentConsumers(threadPoolTaskExecutor.getCorePoolSize() / 4);
         manualRabbitContainer.setMessageListener(rewardMessageListener);
         return manualRabbitContainer;
     }

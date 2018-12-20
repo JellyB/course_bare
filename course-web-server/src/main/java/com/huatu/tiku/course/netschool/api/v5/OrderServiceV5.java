@@ -30,7 +30,7 @@ public interface OrderServiceV5 {
      * 取消订单
      */
     @PutMapping(value = "/v4/common/order/cacel")
-    NetSchoolResponse cancelOrder(@RequestParam("orderId") int orderId, @RequestParam("userName") String userName);
+    NetSchoolResponse cancelOrder(@RequestParam Map<String, Object> params);
 
     /**
      * 删除订单

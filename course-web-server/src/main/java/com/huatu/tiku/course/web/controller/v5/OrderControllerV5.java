@@ -53,6 +53,7 @@ public class OrderControllerV5 {
     /**
      * 取消订单
      */
+    @LocalMapParam(checkToken = true)
     @PutMapping("{orderId}/cancelOrder")
     public Object cancelOrder(
             @RequestHeader(required = false) int terminal,
@@ -61,7 +62,8 @@ public class OrderControllerV5 {
             @PathVariable("orderId") int orderId
     ) {
         log.warn("12$${}$${}$${}$${}$${}$${}", orderId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
-        return ResponseUtil.build(orderService.cancelOrder(orderId, userSession.getUname()));
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return ResponseUtil.build(orderService.cancelOrder(map));
     }
 
     /**
