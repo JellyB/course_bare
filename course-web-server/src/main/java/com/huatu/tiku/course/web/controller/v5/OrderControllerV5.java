@@ -10,6 +10,7 @@ import com.huatu.tiku.course.service.v5.OrderServiceV5Biz;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
+import com.huatu.tiku.course.web.controller.util.SecrectUtil;
 import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -134,6 +135,21 @@ public class OrderControllerV5 {
     }
 
     /**
+     * 用户注册送课
+     */
+    @PostMapping("userRegisterOrder")
+    public Object userRegisterOrder(@RequestParam String userName, @RequestParam int classId, @RequestParam String secret) {
+        if (secret.equals(SecrectUtil.MD5(userName))) {
+            HashMap<String, Object> param = HashMapBuilder.<String, Object>newBuilder()
+                    .put("userName", userName)
+                    .put("classId", classId)
+                    .build();
+            orderService.zeroOrder(param);
+        }
+        return SuccessMessage.create("操作成功");
+    }
+
+    /**
      * 判断用户是否已经领取
      */
     @GetMapping("hasGetBigGiftOrder")
@@ -162,6 +178,7 @@ public class OrderControllerV5 {
 
     /**
      * 拼团--正在拼团
+     *
      * @param userSession
      * @param activityId
      * @return
@@ -169,9 +186,9 @@ public class OrderControllerV5 {
     @LocalMapParam
     @GetMapping(value = "activityOn")
     public Object activityAll(@Token UserSession userSession,
-                              @RequestParam(value = "activityId") long activityId){
+                              @RequestParam(value = "activityId") long activityId) {
 
-        Map<String,Object> params = LocalMapParamHandler.get();
+        Map<String, Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = orderService.activityAll(params);
         return ResponseUtil.build(netSchoolResponse);
     }
