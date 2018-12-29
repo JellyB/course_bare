@@ -167,4 +167,10 @@ public interface CourseServiceV5 {
      */
     @GetMapping(value = "/v4/common/class/class_audition_list")
     NetSchoolResponse classAuditionList(@RequestParam Map<String, Object> params);
+
+    /**
+     * 获取课程埋点数据
+     */
+    @GetMapping(value = "/v4/common/class/class_sensors")
+    NetSchoolResponse classSensors(@RequestParam("classId") int classIds);
 }

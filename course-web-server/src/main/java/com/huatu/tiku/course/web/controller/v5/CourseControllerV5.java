@@ -213,7 +213,7 @@ public class CourseControllerV5 {
                 .put("terminal", terminal)
                 .put("userName", "uname")
                 .put("collageActivityId", collageActivityId)
-                .put("cv",cv)
+                .put("cv", cv)
                 .build();
         log.warn("4$${}$${}$${}$${}$${}$${}", classId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
         return ResponseUtil.build(courseService.getClassDetailLive(map));
@@ -360,6 +360,14 @@ public class CourseControllerV5 {
     public Object classAuditionList(@PathVariable int netClassId) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         return ResponseUtil.build(courseService.classAuditionList(map));
+    }
+
+    /**
+     * 课程埋点数据
+     */
+    @GetMapping("/{netClassId}/classSensors")
+    public Object classSensors(@PathVariable int netClassId) {
+        return ResponseUtil.build(courseService.classSensors(netClassId));
     }
 
     /**

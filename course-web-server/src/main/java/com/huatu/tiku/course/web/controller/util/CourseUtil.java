@@ -11,6 +11,7 @@ import com.huatu.tiku.course.util.ZTKResponseUtil;
 import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
 import com.huatu.tiku.springboot.basic.reward.event.RewardActionEvent;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 /**
  * Created by lijun on 2018/6/25
  */
+@Slf4j
 @Component
 public class CourseUtil {
 
@@ -165,6 +167,7 @@ public class CourseUtil {
                             })
                             .collect(Collectors.toList());
                     //查询用户答题信息
+                    log.info("获取课后练习的答题卡信息,参数信息，userId = {},paramsList = {}", userId, paramsList);
                     Object courseExercisesCardInfo = practiceCardServiceV1.getCourseExercisesCardInfo(userId, paramsList);
                     Object build = ZTKResponseUtil.build(courseExercisesCardInfo);
 
