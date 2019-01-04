@@ -88,7 +88,9 @@ public class SyllabusControllerV6 {
             @RequestParam(defaultValue = "0") int coursewareNodeId,
             @RequestParam(defaultValue = "1") int position,
             @RequestParam(defaultValue = "0") int nextClassNodeId,
+            @RequestParam(defaultValue = "0") int nextCoursewareNodeId,
             @RequestParam(defaultValue = "0") int stageNodeId,
+            @RequestParam(defaultValue = "0") int parentNodeId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize
     ) {
