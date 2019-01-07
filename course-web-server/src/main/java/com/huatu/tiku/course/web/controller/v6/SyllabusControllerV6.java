@@ -101,4 +101,22 @@ public class SyllabusControllerV6 {
         courseUtil.addExercisesCardInfo((LinkedHashMap) response, userSession.getId());
         return response;
     }
+
+    /**
+     * 获取课程大纲-售前
+     */
+    @LocalMapParam
+    @GetMapping("/{classId}/classSyllabus")
+    public Object classSyllabus(
+            @Token UserSession userSession,
+            @RequestHeader(value = "terminal") int terminal,
+            @PathVariable("classId") int classId,
+            @RequestParam int parentId,
+            @RequestParam(defaultValue = "0") int onlyTrial,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int pageSize
+    ) {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        return ResponseUtil.build(syllabusService.classSyllabus(map));
+    }
 }

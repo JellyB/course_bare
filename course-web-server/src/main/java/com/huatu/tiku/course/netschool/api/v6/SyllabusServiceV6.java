@@ -42,4 +42,13 @@ public interface SyllabusServiceV6 {
      */
     @GetMapping(value = "/class/buy_after_syllabus")
     NetSchoolResponse buyAfterSyllabus(@RequestParam Map<String, Object> params);
+
+
+    /**
+     * 课程大纲-售前
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/class/class_syllabus")
+    NetSchoolResponse classSyllabus(@RequestParam Map<String, Object> params);
 }
