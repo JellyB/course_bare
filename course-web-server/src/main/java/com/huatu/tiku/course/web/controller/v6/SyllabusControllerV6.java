@@ -80,19 +80,20 @@ public class SyllabusControllerV6 {
     @GetMapping("{netClassId}/buyAfterSyllabus")
     public Object buyAfterSyllabus(
             @Token UserSession userSession,
+            @RequestHeader(value = "terminal") int terminal,
             @RequestHeader(value = "cv") String cv,
-            @PathVariable int netClassId,
-            @RequestParam(defaultValue = "") String classId,
-            @RequestParam(defaultValue = "") String classNodeId,
             @RequestParam(defaultValue = "") String teacherId,
-            @RequestParam(defaultValue = "0") int coursewareNodeId,
+            @RequestParam(defaultValue = "0") int stageNodeId,
             @RequestParam(defaultValue = "1") int position,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(defaultValue = "0") int nextClassNodeId,
             @RequestParam(defaultValue = "0") int nextCoursewareNodeId,
-            @RequestParam(defaultValue = "0") int stageNodeId,
-            @RequestParam(defaultValue = "0") int parentNodeId,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int pageSize
+            @PathVariable int netClassId,
+            @RequestParam(defaultValue = "0") int coursewareNodeId,
+            @RequestParam(defaultValue = "") String classNodeId,
+            @RequestParam(defaultValue = "0") int afterNodeId,
+            @RequestParam(defaultValue = "0") int beforeNodeId
     ) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         Object response = ResponseUtil.build(syllabusService.buyAfterSyllabus(map));

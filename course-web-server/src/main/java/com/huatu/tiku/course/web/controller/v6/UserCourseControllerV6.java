@@ -162,5 +162,22 @@ public class UserCourseControllerV6 {
         return ResponseUtil.build(netSchoolResponse);
     }
 
+    /**
+     * 直播学习记录上报
+     * @param userSession
+     * @param syllabusId
+     * @return
+     */
+    @LocalMapParam
+    @PostMapping(value = "liveRecord")
+    public Object saveLiveRecord(@Token UserSession userSession,
+                                 @RequestParam(defaultValue = "0") int syllabusId){
+
+        Map<String,Object> params = LocalMapParamHandler.get();
+        NetSchoolResponse netSchoolResponse = userCourseService.saveLiveRecord(params);
+        return ResponseUtil.build(netSchoolResponse);
+
+    }
+
 
 }
