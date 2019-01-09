@@ -4,6 +4,7 @@ import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
+import com.huatu.tiku.course.service.v6.CourseServiceV6Biz;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -30,7 +32,8 @@ public class CourseControllerV6 {
     @Autowired
     private CourseServiceV6 courseService;
 
-
+    @Autowired
+    private CourseServiceV6Biz courseServiceV6Biz;
     /**
      * App课程列表
      * @param cateId
@@ -122,4 +125,14 @@ public class CourseControllerV6 {
         return ResponseUtil.build(netSchoolResponse);
     }
 
+    /**
+     * 模考大赛解析课信息
+     * @param classId
+     * @return
+     */
+    @GetMapping(value = "courseAnalysis")
+    public Object courseAnalysis(@RequestParam(value = "classId") int classId){
+        LinkedHashMap<String, Object> result = courseServiceV6Biz.getClassAnalysis(classId);
+        return result;
+    }
 }

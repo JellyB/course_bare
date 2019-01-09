@@ -31,7 +31,7 @@ public class CourseCacheKey {
      */
     private static final String COURSE_DETAIL_V2 = "course_detail$%s";
     private static final String COURSE_DETAIL_V3 = "course_detail_v3$%s";
-
+    private static final String COURSE_ANALYSIS_V6 = "course_analysis_v6$%s";
     /**
      * 直播列表
      */
@@ -52,6 +52,8 @@ public class CourseCacheKey {
     public static String courseDetailV3(Integer courseId){
         return String.format(COURSE_DETAIL_V3,courseId);
     }
+
+    public static String courseAnalysisV6(String classId){ return String.format(COURSE_ANALYSIS_V6, classId); }
 
     public static String courseListV2(String sign){
         return String.format(COURSE_LIST_V2,sign);

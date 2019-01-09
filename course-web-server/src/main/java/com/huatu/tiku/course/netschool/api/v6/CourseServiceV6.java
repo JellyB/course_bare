@@ -59,4 +59,12 @@ public interface CourseServiceV6 {
      */
     @GetMapping(value = "/v5/c/class/collect_detail")
     NetSchoolResponse collectDetail(@RequestParam Map<String, Object> params);
+
+    /**
+     * 获取解析课课程信息 pc 端模考大赛专用
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/v5/c/class/analysis")
+    NetSchoolResponse analysis(@RequestParam Map<String,Object> params);
 }

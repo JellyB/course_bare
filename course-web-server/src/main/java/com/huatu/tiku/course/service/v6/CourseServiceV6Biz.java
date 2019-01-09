@@ -1,0 +1,26 @@
+package com.huatu.tiku.course.service.v6;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/**
+ * 描述：
+ *
+ * @author biguodong
+ * Create time 2019-01-08 下午11:12
+ **/
+public interface CourseServiceV6Biz {
+
+    String USER_NAME = "userName";
+    String CLASS_ID = "classId";
+    String COURSE_PRICE = "price";
+    String COURSE_LIVE = "liveDate";
+
+    /**
+     * 获取次课程classId的解析课信息
+     * 模考大赛专用
+     * @param classId
+     * @return
+     */
+    LinkedHashMap<String, Object> getClassAnalysis(int classId);
+}
