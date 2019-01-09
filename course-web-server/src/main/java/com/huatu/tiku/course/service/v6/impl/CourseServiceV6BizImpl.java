@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
@@ -60,6 +59,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             NetSchoolResponse netSchoolResponse = obtainNetNetSchoolResponseFromCache(classId);
             @SuppressWarnings("unchecked")
             LinkedHashMap<String,Object> result = (LinkedHashMap<String, Object>)netSchoolResponse.getData();
+            if(!result.containsKey(COURSE_PRICE) || !result.containsKey(COURSE_LIVE)){
+                return Maps.newLinkedHashMap();
+            }
             String price = String.valueOf(result.get(COURSE_PRICE));
             String liveDate = String.valueOf(result.get(COURSE_LIVE));
             if(StringUtils.isEmpty(liveDate)){
@@ -79,7 +81,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             linkedHashMap.put(RESPONSE_CLASS_ID, classId);
             return linkedHashMap;
         }catch (Exception e){
-            log.error("parse time info error!");
+            log.error("parse time info error, for classId:{}", classId);
             return Maps.newLinkedHashMap();
         }
     }
@@ -98,7 +100,12 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         NetSchoolResponse netSchoolResponse;
         if(null == valueOperations.get(key)){
             netSchoolResponse = courseService.analysis(params);
-            valueOperations.set(key, JSONObject.toJSONString(netSchoolResponse.getData()), 30, TimeUnit.DAYS);
+            if(null != netSchoolResponse.getData()){
+                valueOperations.set(key, JSONObject.toJSONString(netSchoolResponse.getData()), 30, TimeUnit.DAYS);
+            }else{
+                log.info("obtain course info from php client error, classId:{}", classId);
+                return NetSchoolResponse.newInstance(Maps.newLinkedHashMap());
+            }
         }else{
             String valueStr = String.valueOf(valueOperations.get(key));
             LinkedHashMap valueData = JSONObject.parseObject(valueStr, LinkedHashMap.class);
