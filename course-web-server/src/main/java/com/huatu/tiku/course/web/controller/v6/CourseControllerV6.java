@@ -108,14 +108,12 @@ public class CourseControllerV6 {
      */
     @LocalMapParam
     @GetMapping(value = "search")
-    public Object searchCourses(@Token UserSession usersession,
-                                @RequestParam(value = "keyWord") String keyWord,
+    public Object searchCourses(@RequestParam(value = "keyWord") String keyWord,
                                 @RequestParam(value = "cateId") int cateId,
                                 @RequestParam(value = "page", defaultValue = "1") int page,
                                 @RequestParam(value = "isHistory", defaultValue = "-1") int isHistory,
                                 @RequestParam(value = "isRecommend", defaultValue = "-1") int isRecommend) {
         Map<String, Object> params = LocalMapParamHandler.get();
-        params.put("userName", usersession.getUname());
         NetSchoolResponse netSchoolResponse = courseService.searchCourses(params);
         return ResponseUtil.build(netSchoolResponse);
     }
