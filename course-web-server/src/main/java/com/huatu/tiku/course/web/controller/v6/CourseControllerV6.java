@@ -34,15 +34,17 @@ public class CourseControllerV6 {
 
     @Autowired
     private CourseServiceV6Biz courseServiceV6Biz;
+
     /**
      * App课程列表
+     *
      * @param cateId
      * @return
      */
     @LocalMapParam
     @GetMapping(value = "list")
-    public Object obtainCourseList(@RequestParam(value = "cateId") String cateId){
-        Map<String,Object> params = LocalMapParamHandler.get();
+    public Object obtainCourseList(@RequestParam(value = "cateId") String cateId) {
+        Map<String, Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = courseService.obtainCourseList(params);
         return ResponseUtil.build(netSchoolResponse);
     }
@@ -50,6 +52,7 @@ public class CourseControllerV6 {
 
     /**
      * 日历详情
+     *
      * @param userSession
      * @param cv
      * @param date
@@ -67,8 +70,8 @@ public class CourseControllerV6 {
             @RequestParam(value = "date") String date,
             @RequestParam(value = "id", required = false) String id,
             @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "pageSize", defaultValue = "20") int pageSize){
-        Map<String,Object> params = LocalMapParamHandler.get();
+            @RequestParam(value = "pageSize", defaultValue = "20") int pageSize) {
+        Map<String, Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = courseService.calendarDetail(params);
         return ResponseUtil.build(netSchoolResponse);
     }
@@ -76,6 +79,7 @@ public class CourseControllerV6 {
 
     /**
      * 课程分类详情
+     *
      * @param cateId
      * @param cv
      * @param terminal
@@ -89,23 +93,29 @@ public class CourseControllerV6 {
                                    @RequestHeader(value = "terminal") int terminal,
                                    @RequestParam(value = "cateId") int cateId,
                                    @RequestParam(value = "page", defaultValue = "1") int page,
-                                   @RequestParam(value = "typeId") int typeId){
-        Map<String,Object> params = LocalMapParamHandler.get();
+                                   @RequestParam(value = "typeId") int typeId) {
+        Map<String, Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = courseService.courseTypeDetail(params);
         return ResponseUtil.build(netSchoolResponse);
     }
+
     /**
      * 课程搜索接口
+     *
      * @param keyWord
      * @param page
      * @return
      */
     @LocalMapParam
     @GetMapping(value = "search")
-    public  Object searchCourses(@RequestParam(value = "keyWord") String keyWord,
-                                 @RequestParam(value = "cateId") int cateId,
-                                 @RequestParam(value = "page", defaultValue = "1") int page){
-        Map<String,Object> params = LocalMapParamHandler.get();
+    public Object searchCourses(@Token UserSession usersession,
+                                @RequestParam(value = "keyWord") String keyWord,
+                                @RequestParam(value = "cateId") int cateId,
+                                @RequestParam(value = "page", defaultValue = "1") int page,
+                                @RequestParam(value = "isHistory", defaultValue = "-1") int isHistory,
+                                @RequestParam(value = "isRecommend", defaultValue = "-1") int isRecommend) {
+        Map<String, Object> params = LocalMapParamHandler.get();
+        params.put("userName", usersession.getUname());
         NetSchoolResponse netSchoolResponse = courseService.searchCourses(params);
         return ResponseUtil.build(netSchoolResponse);
     }
@@ -113,13 +123,14 @@ public class CourseControllerV6 {
 
     /**
      * 合集课程列表
+     *
      * @param collectId
      * @return
      */
     @LocalMapParam
     @GetMapping(value = "collectDetail")
     public Object collectDetail(@RequestParam(value = "collectId") long collectId,
-                                @RequestParam(value = "page", defaultValue = "1") int page){
+                                @RequestParam(value = "page", defaultValue = "1") int page) {
         Map<String, Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = courseService.collectDetail(params);
         return ResponseUtil.build(netSchoolResponse);
@@ -127,11 +138,12 @@ public class CourseControllerV6 {
 
     /**
      * 模考大赛解析课信息
+     *
      * @param classId
      * @return
      */
     @GetMapping(value = "courseAnalysis")
-    public Object courseAnalysis(@RequestParam(value = "classId") int classId){
+    public Object courseAnalysis(@RequestParam(value = "classId") int classId) {
         LinkedHashMap<String, Object> result = courseServiceV6Biz.getClassAnalysis(classId);
         return result;
     }
