@@ -14,7 +14,6 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -31,11 +30,20 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
-    private static final String COURSE_TITLE_FORMAT = "￥%s元领取解析课";
-    private static final String COURSE_TIME_INFO_FORMAT = "%s月%s日（%s）%s开始直播";
+    /**
+     * response from php
+     */
+    private static final String ORIGIN_TITLE = "title";
+    private static final String ORIGIN_PRICE = "price";
+    private static final String ORIGIN_LIVE_TIME = "liveDate";
+    /**
+     * response
+     */
     private static final String RESPONSE_TITLE = "courseTitle";
-    private static final String RESPONSE_LIVE_INFO = "liveInfo";
+    private static final String RESPONSE_LIVE_TIME = "liveDate";
+    private static final String RESPONSE_PRICE = "price";
     private static final String RESPONSE_CLASS_ID = "classId";
+
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -54,30 +62,21 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
     public LinkedHashMap<String, Object> getClassAnalysis(int classId) {
         LinkedHashMap<String,Object> linkedHashMap = Maps.newLinkedHashMap();
         SimpleDateFormat courseDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-        SimpleDateFormat hourMinuteFormat = new SimpleDateFormat("HH:mm");
         try{
             NetSchoolResponse netSchoolResponse = obtainNetNetSchoolResponseFromCache(classId);
             @SuppressWarnings("unchecked")
             LinkedHashMap<String,Object> result = (LinkedHashMap<String, Object>)netSchoolResponse.getData();
-            if(!result.containsKey(COURSE_PRICE) || !result.containsKey(COURSE_LIVE)){
+            if(!result.containsKey(ORIGIN_PRICE) || !result.containsKey(ORIGIN_LIVE_TIME)){
                 return Maps.newLinkedHashMap();
             }
-            String price = String.valueOf(result.get(COURSE_PRICE));
-            String liveDate = String.valueOf(result.get(COURSE_LIVE));
+            String liveDate = String.valueOf(result.get(ORIGIN_LIVE_TIME));
             if(StringUtils.isEmpty(liveDate)){
                 liveDate = courseDateFormat.format(new Date());
             }
             Date date = courseDateFormat.parse(liveDate);
-            Calendar instance = Calendar.getInstance();
-            instance.setTime(date);
-            int month  = instance.get(Calendar.MONTH) + 1;
-            int day = instance.get(Calendar.DAY_OF_MONTH);
-            String dayOfWeek = getDayInfo(instance);
-            String hourMinute = hourMinuteFormat.format(date);
-            String courseTitle = String.format(COURSE_TITLE_FORMAT, price);
-            String courseTimeInfo = String.format(COURSE_TIME_INFO_FORMAT, month, day, dayOfWeek, hourMinute);
-            linkedHashMap.put(RESPONSE_TITLE, courseTitle);
-            linkedHashMap.put(RESPONSE_LIVE_INFO, courseTimeInfo);
+            linkedHashMap.put(RESPONSE_TITLE, result.get(ORIGIN_TITLE));
+            linkedHashMap.put(RESPONSE_LIVE_TIME, date.getTime());
+            linkedHashMap.put(RESPONSE_PRICE, result.get(ORIGIN_PRICE));
             linkedHashMap.put(RESPONSE_CLASS_ID, classId);
             return linkedHashMap;
         }catch (Exception e){
@@ -93,7 +92,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
      */
     private NetSchoolResponse obtainNetNetSchoolResponseFromCache(int classId){
         Map<String, Object> params = Maps.newHashMap();
-        params.put(CourseServiceV6Biz.CLASS_ID, classId);
+        params.put(RESPONSE_CLASS_ID, classId);
         String key = CourseCacheKey.courseAnalysisV6(String.valueOf(classId));
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
 
@@ -112,47 +111,5 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             netSchoolResponse = NetSchoolResponse.newInstance(valueData);
         }
         return netSchoolResponse;
-    }
-    /**
-     * 返回每周 day 对应的中文
-     * @param calendar
-     * @return
-     */
-    private static String getDayInfo(Calendar calendar){
-        String dayString = StringUtils.EMPTY;
-        if(null == calendar){
-            return dayString;
-        }
-
-        int day = calendar.get(Calendar.DAY_OF_WEEK);
-        switch (day) {
-            case Calendar.SUNDAY:
-                dayString = "周日";
-                break;
-
-            case Calendar.MONDAY:
-                dayString = "周一";
-                break;
-
-            case Calendar.TUESDAY:
-                dayString = "周二";
-                break;
-            case Calendar.WEDNESDAY:
-                dayString = "周三";
-                break;
-            case Calendar.THURSDAY:
-                dayString = "周四";
-                break;
-            case Calendar.FRIDAY:
-                dayString = "周五";
-                break;
-
-            case Calendar.SATURDAY:
-                dayString = "周六";
-                break;
-            default:
-                break;
-        }
-        return dayString;
     }
 }

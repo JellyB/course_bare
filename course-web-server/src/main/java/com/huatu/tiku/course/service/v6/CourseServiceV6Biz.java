@@ -11,11 +11,6 @@ import java.util.Map;
  **/
 public interface CourseServiceV6Biz {
 
-    String USER_NAME = "userName";
-    String CLASS_ID = "classId";
-    String COURSE_PRICE = "price";
-    String COURSE_LIVE = "liveDate";
-
     /**
      * 获取次课程classId的解析课信息
      * 模考大赛专用
