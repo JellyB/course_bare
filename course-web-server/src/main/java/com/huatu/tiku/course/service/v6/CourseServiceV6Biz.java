@@ -12,7 +12,7 @@ import java.util.LinkedHashMap;
 public interface CourseServiceV6Biz {
 
     /**
-     * 获取次课程classId的解析课信息
+     * 模考大赛解析课信息,多个id使用逗号分隔
      * 模考大赛专用
      * @param classIds
      * @return
