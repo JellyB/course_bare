@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -126,13 +127,13 @@ public class CourseControllerV6 {
     }
 
     /**
-     * 模考大赛解析课信息
-     * @param classId
+     * 模考大赛解析课信息,多个id使用逗号分隔
+     * @param classIds
      * @return
      */
     @GetMapping(value = "courseAnalysis")
-    public Object courseAnalysis(@RequestParam(value = "classId") int classId){
-        LinkedHashMap<String, Object> result = courseServiceV6Biz.getClassAnalysis(classId);
+    public Object courseAnalysis(@RequestParam(value = "classIds") String classIds){
+        HashMap<String, LinkedHashMap> result = courseServiceV6Biz.getClassAnalysis(classIds);
         return result;
     }
 }

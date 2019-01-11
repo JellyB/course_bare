@@ -7,6 +7,7 @@ import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
 import com.huatu.tiku.course.service.v6.CourseServiceV6Biz;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -14,9 +15,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -55,32 +54,42 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
      * 获取次课程classId的解析课信息
      * 模考大赛专用
      *
-     * @param classId
+     * @param classIds
      * @return
      */
     @Override
-    public LinkedHashMap<String, Object> getClassAnalysis(int classId) {
-        LinkedHashMap<String,Object> linkedHashMap = Maps.newLinkedHashMap();
+    public HashMap<String, LinkedHashMap> getClassAnalysis(String classIds) {
+        HashMap<String,LinkedHashMap> responseMap = Maps.newHashMap();
         SimpleDateFormat courseDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         try{
-            NetSchoolResponse netSchoolResponse = obtainNetNetSchoolResponseFromCache(classId);
-            @SuppressWarnings("unchecked")
-            LinkedHashMap<String,Object> result = (LinkedHashMap<String, Object>)netSchoolResponse.getData();
-            if(!result.containsKey(ORIGIN_PRICE) || !result.containsKey(ORIGIN_LIVE_TIME)){
-                return Maps.newLinkedHashMap();
+            String[] classArray = classIds.split(",");
+            if(ArrayUtils.isEmpty(classArray)){
+                return responseMap;
             }
-            String liveDate = String.valueOf(result.get(ORIGIN_LIVE_TIME));
-            if(StringUtils.isEmpty(liveDate)){
-                liveDate = courseDateFormat.format(new Date());
+            for (String s : classArray) {
+                LinkedHashMap<String,Object> linkedHashMap = Maps.newLinkedHashMap();
+                int classId = Integer.valueOf(s);
+                NetSchoolResponse netSchoolResponse = obtainNetNetSchoolResponseFromCache(classId);
+                @SuppressWarnings("unchecked")
+                LinkedHashMap<String,Object> result = (LinkedHashMap<String, Object>)netSchoolResponse.getData();
+                if(!result.containsKey(ORIGIN_PRICE) || !result.containsKey(ORIGIN_LIVE_TIME)){
+                    return Maps.newLinkedHashMap();
+                }
+                String liveDate = String.valueOf(result.get(ORIGIN_LIVE_TIME));
+                if(StringUtils.isEmpty(liveDate)){
+                    liveDate = courseDateFormat.format(new Date());
+                }
+                Date date = courseDateFormat.parse(liveDate);
+                linkedHashMap.put(RESPONSE_TITLE, result.get(ORIGIN_TITLE));
+                linkedHashMap.put(RESPONSE_LIVE_TIME, date.getTime());
+                linkedHashMap.put(RESPONSE_PRICE, result.get(ORIGIN_PRICE));
+                linkedHashMap.put(RESPONSE_CLASS_ID, classId);
+                responseMap.put(s, linkedHashMap);
             }
-            Date date = courseDateFormat.parse(liveDate);
-            linkedHashMap.put(RESPONSE_TITLE, result.get(ORIGIN_TITLE));
-            linkedHashMap.put(RESPONSE_LIVE_TIME, date.getTime());
-            linkedHashMap.put(RESPONSE_PRICE, result.get(ORIGIN_PRICE));
-            linkedHashMap.put(RESPONSE_CLASS_ID, classId);
-            return linkedHashMap;
+
+            return responseMap;
         }catch (Exception e){
-            log.error("parse time info error, for classId:{}", classId);
+            log.error("parse time info error, for classId:{}", classIds);
             return Maps.newLinkedHashMap();
         }
     }
