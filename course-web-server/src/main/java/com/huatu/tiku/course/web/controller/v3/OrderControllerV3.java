@@ -104,6 +104,7 @@ public class OrderControllerV3 {
         final HashMap<String, Object> parameterMap = HashMapBuilder.newBuilder()
                 .put("username", uname)
                 .put("source", NetschoolTerminalType.transform(terminal))
+                .put("terminal", terminal)
                 .put("userid", -1)
                 .put("rid", courseId)
                 .put("pageSource", pageSource)
