@@ -128,6 +128,7 @@ public class CourseControllerV5 {
     @GetMapping("/{classId}/classSyllabus")
     public Object classSyllabus(
             @Token UserSession userSession,
+            @RequestHeader String cv,
             @PathVariable("classId") int classId,
             @RequestParam int parentId,
             @RequestParam(defaultValue = "1") int page,
@@ -148,6 +149,7 @@ public class CourseControllerV5 {
     @LocalMapParam
     @GetMapping("/{classId}/classSyllabusWithoutSession")
     public Object classSyllabusWithoutSession(
+            @RequestHeader String cv,
             @PathVariable("classId") int classId,
             @RequestParam int parentId,
             @RequestParam(defaultValue = "1") int page,
