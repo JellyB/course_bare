@@ -149,7 +149,7 @@ public class CourseControllerV5 {
     @LocalMapParam
     @GetMapping("/{classId}/classSyllabusWithoutSession")
     public Object classSyllabusWithoutSession(
-            @RequestHeader String cv,
+            @RequestHeader(required = false, defaultValue = "7.0.0") String cv,
             @PathVariable("classId") int classId,
             @RequestParam int parentId,
             @RequestParam(defaultValue = "1") int page,
