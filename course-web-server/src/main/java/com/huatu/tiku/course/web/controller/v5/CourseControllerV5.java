@@ -128,7 +128,7 @@ public class CourseControllerV5 {
     @GetMapping("/{classId}/classSyllabus")
     public Object classSyllabus(
             @Token UserSession userSession,
-            @RequestHeader String cv,
+            @RequestHeader(required = false, defaultValue = "7.0.0") String cv,
             @PathVariable("classId") int classId,
             @RequestParam int parentId,
             @RequestParam(defaultValue = "1") int page,
