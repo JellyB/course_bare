@@ -117,7 +117,11 @@ public class SyllabusControllerV6 {
             @RequestParam(defaultValue = "20") int pageSize
     ) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
-        return ResponseUtil.build(syllabusService.classSyllabus(map));
+        //添加答题信息
+        Object timeTable = ResponseUtil.build(syllabusService.classSyllabus(map));
+        //添加答题信息
+        courseUtil.addExercisesCardInfo((LinkedHashMap) timeTable, userSession.getId());
+        return timeTable;
     }
 
 
