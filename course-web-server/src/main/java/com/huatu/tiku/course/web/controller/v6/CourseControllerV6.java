@@ -68,7 +68,11 @@ public class CourseControllerV6 {
             @RequestParam(value = "date") String date,
             @RequestParam(value = "id", required = false) String id,
             @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "pageSize", defaultValue = "20") int pageSize){
+            @RequestParam(value = "pageSize", defaultValue = "20") int pageSize,
+
+
+
+            @RequestParam(value = "hystrix", defaultValue = "", required = false) String hystrix){
         Map<String,Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = courseService.calendarDetail(params);
         return ResponseUtil.build(netSchoolResponse);
