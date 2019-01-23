@@ -47,11 +47,7 @@ public class UserCourseControllerV6 {
                                       @RequestHeader(value = "cv") String cv,
                                       @RequestHeader(value = "terminal") int terminal,
                                       @RequestParam(value = "date") String date,
-                                      @RequestParam(value = "type") String type,
-
-
-
-                                      @RequestParam(value = "hystrix", defaultValue = "", required = false) String hystrix){
+                                      @RequestParam(value = "type") String type){
         Map<String,Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse =  userCourseService.obtainLearnCalender(params);
         return ResponseUtil.build(netSchoolResponse);
@@ -115,10 +111,7 @@ public class UserCourseControllerV6 {
                                     @RequestParam(value = "studyStatus", required = false) String studyStatus,
                                     @RequestParam(value = "teacherId", required = false) String teacherId,
                                     @RequestParam(value = "page", defaultValue = "1", required = false) int page,
-                                    @RequestParam(value = "pageSize", defaultValue = "20", required = false) int pageSize,
-
-
-                                    @RequestParam(value = "hystrix", defaultValue = "", required = false) String hystrix ){
+                                    @RequestParam(value = "pageSize", defaultValue = "20", required = false) int pageSize){
         Map<String,Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = userCourseService.obtainMineCourses(params);
         return ResponseUtil.build(netSchoolResponse);

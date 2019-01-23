@@ -93,7 +93,8 @@ public class SyllabusControllerV6 {
             @RequestParam(defaultValue = "0") int coursewareNodeId,
             @RequestParam(defaultValue = "") String classNodeId,
             @RequestParam(defaultValue = "0") int afterNodeId,
-            @RequestParam(defaultValue = "0") int beforeNodeId
+            @RequestParam(defaultValue = "0") int beforeNodeId,
+            @RequestParam(defaultValue = "0", required = false) int parentNodeId
     ) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         Object response = ResponseUtil.build(syllabusService.buyAfterSyllabus(map));
