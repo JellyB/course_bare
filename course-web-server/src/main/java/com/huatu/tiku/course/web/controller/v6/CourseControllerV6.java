@@ -4,6 +4,7 @@ import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
+import com.huatu.tiku.course.service.v6.CourseBizV6Service;
 import com.huatu.tiku.course.service.v6.CourseServiceV6Biz;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * 描述：课程接口v6
@@ -32,6 +34,9 @@ public class CourseControllerV6 {
 
     @Autowired
     private CourseServiceV6 courseService;
+
+    @Autowired
+    private CourseBizV6Service courseBizV6Service;
 
     @Autowired
     private CourseServiceV6Biz courseServiceV6Biz;
@@ -70,8 +75,7 @@ public class CourseControllerV6 {
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "pageSize", defaultValue = "20") int pageSize){
         Map<String,Object> params = LocalMapParamHandler.get();
-        NetSchoolResponse netSchoolResponse = courseService.calendarDetail(params);
-        return ResponseUtil.build(netSchoolResponse);
+        return courseBizV6Service.calendarDetail(params);
     }
 
 

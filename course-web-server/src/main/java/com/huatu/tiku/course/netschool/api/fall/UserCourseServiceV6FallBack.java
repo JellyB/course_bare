@@ -1,11 +1,16 @@
 package com.huatu.tiku.course.netschool.api.fall;
 
+import com.huatu.common.utils.web.RequestUtil;
+import com.huatu.tiku.course.bean.CourseListV3DTO;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
+import com.huatu.tiku.course.util.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+
+import static com.huatu.tiku.course.bean.NetSchoolResponse.DEFAULT_ERROR;
 
 /**
  * 描述：
@@ -17,6 +22,10 @@ import java.util.Map;
 @Component
 public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
 
+
+    private static final String CALENDAR_LEARN_PRE = "_mock_calendar_learn$";
+    private static final String COURSE_MINE_PRE = "_course_mine_learn$";
+
     /**
      * 我的学习-日历接口
      *
@@ -26,7 +35,12 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
     @Override
     public NetSchoolResponse obtainLearnCalender(Map<String, Object> params) {
         log.error("response from call back obtainLearnCalender");
-        return NetSchoolResponse.DEFAULT;
+        String key = CALENDAR_LEARN_PRE + RequestUtil.getParamSign(params);
+        NetSchoolResponse response = FallbackCacheHolder.get(key);
+        if(response == null){
+            return DEFAULT_ERROR;
+        }
+        return response;
     }
 
     /**
@@ -60,7 +74,16 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
     @Override
     public NetSchoolResponse obtainMineCourses(Map<String, Object> params) {
         log.error("response from call back obtainMineCourses");
-        return NetSchoolResponse.DEFAULT;
+        String key = COURSE_MINE_PRE + RequestUtil.getParamSign(params);
+        NetSchoolResponse response = FallbackCacheHolder.get(key);
+        if(response == null){
+            return NetSchoolResponse.DEFAULT_ERROR;
+        }else{
+            CourseListV3DTO courseListV3DTO = ResponseUtil.build(response, CourseListV3DTO.class, false);
+            courseListV3DTO.setCache(true);
+            response.setData(courseListV3DTO);
+        }
+        return response;
     }
 
     /**
@@ -105,5 +128,29 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
     @Override
     public NetSchoolResponse saveLiveRecord(Map<String, Object> params) {
         return NetSchoolResponse.DEFAULT;
+    }
+
+    /**
+     * 换粗我的学习日历接口
+     * @param params
+     * @param response
+     */
+    public void setCalendarLearnStaticData(Map<String,Object> params, NetSchoolResponse response){
+        String key = CALENDAR_LEARN_PRE + RequestUtil.getParamSign(params);
+        if(ResponseUtil.isSuccess(response)){
+            FallbackCacheHolder.put(key, response);
+        }
+    }
+
+    /**
+     * 缓存我的课程数据接口
+     * @param params
+     * @param response
+     */
+    public void setCourseMineStaticData(Map<String,Object> params, NetSchoolResponse response){
+        String key = COURSE_MINE_PRE + RequestUtil.getParamSign(params);
+        if(ResponseUtil.isSuccess(response)){
+            FallbackCacheHolder.put(key, response);
+        }
     }
 }

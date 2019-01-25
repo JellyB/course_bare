@@ -1,11 +1,16 @@
 package com.huatu.tiku.course.netschool.api.fall;
 
+import com.huatu.common.utils.web.RequestUtil;
+import com.huatu.tiku.course.bean.CourseListV3DTO;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
+import com.huatu.tiku.course.util.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+
+import static com.huatu.tiku.course.bean.NetSchoolResponse.DEFAULT_ERROR;
 
 /**
  * 描述：
@@ -16,6 +21,9 @@ import java.util.Map;
 @Slf4j
 @Component
 public class CourseServiceV6FallBack implements CourseServiceV6 {
+
+
+    private static final String CALENDAR_DETAIL_PRE = "_mock_calendar_detail$";
 
 
     /**
@@ -38,7 +46,12 @@ public class CourseServiceV6FallBack implements CourseServiceV6 {
     @Override
     public NetSchoolResponse calendarDetail(Map<String, Object> params) {
         log.error("response from call back calendarDetail");
-        return NetSchoolResponse.DEFAULT;
+        String key = CALENDAR_DETAIL_PRE + RequestUtil.getParamSign(params);
+        NetSchoolResponse response = FallbackCacheHolder.get(key);
+        if(response == null){
+            return DEFAULT_ERROR;
+        }
+        return response;
     }
 
     /**
@@ -83,5 +96,17 @@ public class CourseServiceV6FallBack implements CourseServiceV6 {
     @Override
     public NetSchoolResponse analysis(Map<String, Object> params) {
         return NetSchoolResponse.DEFAULT;
+    }
+
+    /**
+     * 缓存日历详情接口数据
+     * @param params
+     * @param response
+     */
+    public void setCalendarDetailStaticData(Map<String,Object> params, NetSchoolResponse response){
+        String key = CALENDAR_DETAIL_PRE + RequestUtil.getParamSign(params);
+        if(ResponseUtil.isSuccess(response)){
+            FallbackCacheHolder.put(key, response);
+        }
     }
 }

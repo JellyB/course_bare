@@ -32,6 +32,7 @@ public class CourseCacheKey {
     private static final String COURSE_DETAIL_V2 = "course_detail$%s";
     private static final String COURSE_DETAIL_V3 = "course_detail_v3$%s";
     private static final String COURSE_ANALYSIS_V6 = "course_analysis_v6$%s";
+    private static final String COURSE_MINE_V6 = "course_mine_v6$%s";
     /**
      * 直播列表
      */
@@ -39,6 +40,12 @@ public class CourseCacheKey {
     private static final String COURSE_LIST_V3 = "live_list_v3$%s";
 
     private static final String REWARD_RECORD = "reward_record$%s$%s";
+    /**
+     * 日历详情
+     */
+    private static final String CALENDAR_DETAIL_V6 = "calendar_detail_v6$%s";
+    private static final String CALENDAR_LEARN_V6 = "calendar_learn_v6$%s";
+
 
     /**
      * IOS 内侧版本信息
@@ -61,6 +68,18 @@ public class CourseCacheKey {
 
     public static String courseListV3(String sign){
         return String.format(COURSE_LIST_V3,sign);
+    }
+
+    public static String calendarDetailV6(String sign){
+        return String.format(CALENDAR_DETAIL_V6,sign);
+    }
+
+    public static String calendarLearnV6(String sign){
+        return String.format(CALENDAR_LEARN_V6, sign);
+    }
+
+    public static String courseMineV6(String sign){
+        return String.format(COURSE_MINE_V6, sign);
     }
 
     public static String rewardRecord(String action,int uid){

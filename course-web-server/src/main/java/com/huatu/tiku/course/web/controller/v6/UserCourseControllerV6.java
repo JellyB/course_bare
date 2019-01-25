@@ -4,6 +4,7 @@ import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
+import com.huatu.tiku.course.service.v6.CourseBizV6Service;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Random;
 
 /**
  * 描述：我的课程接口
@@ -30,6 +32,9 @@ public class UserCourseControllerV6 {
 
     @Autowired
     private UserCourseServiceV6 userCourseService;
+
+    @Autowired
+    private CourseBizV6Service courseBizV6Service;
 
 
     /**
@@ -49,8 +54,7 @@ public class UserCourseControllerV6 {
                                       @RequestParam(value = "date") String date,
                                       @RequestParam(value = "type") String type){
         Map<String,Object> params = LocalMapParamHandler.get();
-        NetSchoolResponse netSchoolResponse =  userCourseService.obtainLearnCalender(params);
-        return ResponseUtil.build(netSchoolResponse);
+        return courseBizV6Service.obtainLearnCalender(params);
     }
 
     /**
@@ -113,8 +117,8 @@ public class UserCourseControllerV6 {
                                     @RequestParam(value = "page", defaultValue = "1", required = false) int page,
                                     @RequestParam(value = "pageSize", defaultValue = "20", required = false) int pageSize){
         Map<String,Object> params = LocalMapParamHandler.get();
-        NetSchoolResponse netSchoolResponse = userCourseService.obtainMineCourses(params);
-        return ResponseUtil.build(netSchoolResponse);
+        //params.put("random_", new Random().nextInt(2000));
+        return courseBizV6Service.obtainMineCourses(params);
     }
 
 

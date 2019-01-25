@@ -96,7 +96,7 @@ hystrix:
           thread:
             timeoutInMilliseconds: 15000 # 默认超时时间
 
-hystrix.command.default.circuitBreaker.requestVolumeThreshold: 1000
+#hystrix.command.default.circuitBreaker.requestVolumeThreshold: 1000
 
 ## 自定义配置
 
