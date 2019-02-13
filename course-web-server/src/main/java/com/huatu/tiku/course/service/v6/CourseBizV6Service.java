@@ -90,20 +90,39 @@ public class CourseBizV6Service {
      * @return
      */
     @Degrade(key = "obtainMineCourses", name = "我的课程")
-    public CourseListV3DTO obtainMineCourses(Map<String,Object> params){
-        String cacheKey = CourseCacheKey.courseMineV6(RequestUtil.getParamSign(params));
-        CourseListV3DTO result = (CourseListV3DTO) valueOperations.get(cacheKey);
-        if(null == result){
-            //log.info("---------------------------:{}", params.get("random_"));
-            NetSchoolResponse netSchoolResponse = userCourseService.obtainMineCourses(params);
-            result = ResponseUtil.build(netSchoolResponse, CourseListV3DTO.class, false);
-            if(null != result){
-                result.setCacheTimestamp(System.currentTimeMillis());
-                valueOperations.set(cacheKey, result, 1, TimeUnit.MINUTES);
+    public Object obtainMineCourses(Map<String,Object> params){
+        try{
+            String cacheKey = CourseCacheKey.courseMineV6(RequestUtil.getParamSign(params));
+            NetSchoolResponse netSchoolResponse = (NetSchoolResponse) valueOperations.get(cacheKey);
+            if(null == netSchoolResponse){
+                netSchoolResponse = userCourseService.obtainMineCourses(params);
+                if(null != netSchoolResponse && null != netSchoolResponse.getData()){
+                    valueOperations.set(cacheKey, netSchoolResponse, 1, TimeUnit.MINUTES);
+                    userCourseServiceV6FallBack.setCourseMineStaticData(params, netSchoolResponse);
+                }
+            }
+            return ResponseUtil.build(netSchoolResponse);
+        }catch (Exception e){
+            log.error("obtain mine course caught an unexpected error:{}", e);
+            return ResponseUtil.build(NetSchoolResponse.newInstance(null));
+        }
+
+    }
+
+    /**
+     * 我的课程降级方法
+     * @param params
+     * @return
+     */
+    public Object obtainMineCoursesDegrade(Map<String,Object> params){
+        NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainMineCourses(params);
+        if (null == netSchoolResponse.getData()) {
+            netSchoolResponse = courseService.calendarDetail(params);
+            if(null != netSchoolResponse && null != netSchoolResponse.getData()){
                 userCourseServiceV6FallBack.setCourseMineStaticData(params, netSchoolResponse);
             }
         }
-        return result;
+        return ResponseUtil.build(netSchoolResponse);
     }
 
     /**

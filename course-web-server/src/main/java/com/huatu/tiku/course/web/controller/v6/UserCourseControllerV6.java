@@ -117,7 +117,6 @@ public class UserCourseControllerV6 {
                                     @RequestParam(value = "page", defaultValue = "1", required = false) int page,
                                     @RequestParam(value = "pageSize", defaultValue = "20", required = false) int pageSize){
         Map<String,Object> params = LocalMapParamHandler.get();
-        //params.put("random_", new Random().nextInt(2000));
         return courseBizV6Service.obtainMineCourses(params);
     }
 
