@@ -118,12 +118,12 @@ public class CourseBizV6Service {
     public Object obtainMineCoursesDegrade(Map<String,Object> params){
         log.warn("obtain mine courses from degrade...");
         NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainMineCourses(params);
-        if (null == netSchoolResponse.getData()) {
+        /*if (null == netSchoolResponse.getData()) {
             netSchoolResponse = courseService.calendarDetail(params);
             if(null != netSchoolResponse && null != netSchoolResponse.getData()){
                 userCourseServiceV6FallBack.setCourseMineStaticData(params, netSchoolResponse);
             }
-        }
+        }*/
         log.warn("obtainMineCoursesDegrade.data:{}", JSONObject.toJSONString(netSchoolResponse));
         return ResponseUtil.build(netSchoolResponse);
     }
@@ -137,12 +137,12 @@ public class CourseBizV6Service {
     public Object obtainLearnCalenderDegrade(Map<String,Object> params){
         log.warn("obtain learn calender from degrade...");
         NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainLearnCalender(params);
-        if (null == netSchoolResponse.getData()) {
+        /*if (null == netSchoolResponse.getData()) {
             netSchoolResponse = userCourseService.obtainLearnCalender(params);
             if(null != netSchoolResponse && null != netSchoolResponse.getData()){
                 userCourseServiceV6FallBack.setCalendarLearnStaticData(params, netSchoolResponse);
             }
-        }
+        }*/
         log.warn("obtainLearnCalenderDegrade.data:{}", JSONObject.toJSONString(netSchoolResponse));
         return ResponseUtil.build(netSchoolResponse);
     }
@@ -155,12 +155,12 @@ public class CourseBizV6Service {
     public Object calendarDetailDegrade(Map<String,Object> params){
         log.warn("obtain calendar detail from degrade...");
         NetSchoolResponse netSchoolResponse = courseServiceV6FallBack.calendarDetail(params);
-        if (null == netSchoolResponse.getData()) {
+        /*if (null == netSchoolResponse.getData()) {
             netSchoolResponse = courseService.calendarDetail(params);
             if(null != netSchoolResponse && null != netSchoolResponse.getData()){
                 courseServiceV6FallBack.setCalendarDetailStaticData(params, netSchoolResponse);
             }
-        }
+        }*/
         log.warn("calendarDetailDegrade.data:{}", JSONObject.toJSONString(netSchoolResponse));
         return ResponseUtil.build(netSchoolResponse);
     }
