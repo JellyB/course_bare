@@ -34,10 +34,11 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
      */
     @Override
     public NetSchoolResponse obtainLearnCalender(Map<String, Object> params) {
-        log.info("response from call back obtainLearnCalender");
+        log.warn("response from call back obtainLearnCalender");
         String key = CALENDAR_LEARN_PRE + RequestUtil.getParamSign(params);
         NetSchoolResponse response = FallbackCacheHolder.get(key);
         if(null == response){
+            log.warn("obtain learn calender not in fallbackHolder...");
             return NetSchoolResponse.newInstance(null);
         }
         return response;
@@ -73,10 +74,11 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
      */
     @Override
     public NetSchoolResponse obtainMineCourses(Map<String, Object> params) {
-        log.error("response from call back obtainMineCourses");
+        log.warn("response from call back obtainMineCourses");
         String key = COURSE_MINE_PRE + RequestUtil.getParamSign(params);
         NetSchoolResponse response = FallbackCacheHolder.get(key);
         if(null == response){
+            log.warn("obtain mine courses not in fallbackHolder...");
             return NetSchoolResponse.newInstance(null);
         }
         return response;
@@ -127,7 +129,7 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
     }
 
     /**
-     * 换粗我的学习日历接口
+     * 缓存我的学习日历接口
      * @param params
      * @param response
      */

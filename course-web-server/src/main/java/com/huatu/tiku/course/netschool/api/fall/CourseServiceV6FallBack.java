@@ -45,11 +45,12 @@ public class CourseServiceV6FallBack implements CourseServiceV6 {
      */
     @Override
     public NetSchoolResponse calendarDetail(Map<String, Object> params) {
-        log.error("response from call back calendarDetail");
+        log.warn("response from call back calendarDetail");
         String key = CALENDAR_DETAIL_PRE + RequestUtil.getParamSign(params);
         NetSchoolResponse response = FallbackCacheHolder.get(key);
         if(response == null){
-            return DEFAULT_ERROR;
+            log.warn("obtain calendar detail not in fallbackHolder");
+            return NetSchoolResponse.newInstance(null);
         }
         return response;
     }
