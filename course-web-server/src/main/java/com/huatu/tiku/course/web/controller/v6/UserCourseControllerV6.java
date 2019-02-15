@@ -1,16 +1,22 @@
 package com.huatu.tiku.course.web.controller.v6;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.huatu.common.SuccessMessage;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.service.v6.CourseBizV6Service;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
+import jdk.nashorn.internal.objects.annotations.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -56,6 +62,69 @@ public class UserCourseControllerV6 {
         Map<String,Object> params = LocalMapParamHandler.get();
         return courseBizV6Service.obtainLearnCalender(params);
     }
+
+    /**
+     * 我的学习界面 - 课后作业&阶段考试未完成数量
+     * @param userSession
+     * @param cv
+     * @param terminal
+     * @return
+     */
+    @LocalMapParam(checkToken = true)
+    @GetMapping(value = "unFinishNum")
+    public Object obtainUnFinishedNum(@Token UserSession userSession,
+                                      @RequestHeader(value = "cv") String cv,
+                                      @RequestHeader(value = "terminal") int terminal){
+        Map<String,Integer> result = Maps.newHashMap();
+        result.put(StudyTypeEnum.COURSE_WORK.getType(), 5);
+        result.put(StudyTypeEnum.PERIOD_TEST.getType(), 10);
+        return result;
+    }
+
+    /**
+     * 全部已读
+     * @param userSession
+     * @param type
+     * @return
+     */
+    @PutMapping(value = "allRead/{type}")
+    public Object allReadCourseWork(@Token UserSession userSession,
+                                    @PathVariable(value = "type")String type){
+
+        return SuccessMessage.create("操作成功！");
+    }
+
+    /**
+     * 课后作业&阶段测试 单条已读
+     * @param userSession
+     * @param type
+     * @param id
+     * @return
+     */
+    @PutMapping(value = "oneRead/{type}/{id}")
+    public Object readOneCourseWork(@Token UserSession userSession,
+                                    @PathVariable(value = "type") String type,
+                                    @PathVariable(value = "id")int id){
+        return SuccessMessage.create("操作成功");
+    }
+
+    /**
+     * 课后作业&阶段考试列表
+     * @param userSession
+     * @param type
+     * @return
+     */
+    @GetMapping(value = "{type}/detailList")
+    public Object studyList(@Token UserSession userSession,
+                            @PathVariable(value = "type") String type,
+                            @RequestParam(value = "page", defaultValue = "1")int page,
+                            @RequestParam(value = "size", defaultValue = "20") int size){
+
+        return Lists.newArrayList();
+    }
+
+
+
 
     /**
      * 获取已过期课程
