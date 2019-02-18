@@ -13,14 +13,16 @@ import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
-import jdk.nashorn.internal.objects.annotations.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * 描述：我的课程接口
@@ -111,16 +113,102 @@ public class UserCourseControllerV6 {
     /**
      * 课后作业&阶段考试列表
      * @param userSession
-     * @param type
      * @return
      */
-    @GetMapping(value = "{type}/detailList")
+    @GetMapping(value = "courseWork/detailList")
     public Object studyList(@Token UserSession userSession,
-                            @PathVariable(value = "type") String type,
                             @RequestParam(value = "page", defaultValue = "1")int page,
                             @RequestParam(value = "size", defaultValue = "20") int size){
 
-        return Lists.newArrayList();
+        List<CourseInfo> list = Lists.newArrayList();
+        List<CourseWareInfo> courseWareInfoList1 = Lists.newArrayList();
+        List<CourseWareInfo> courseWareInfoList2 = Lists.newArrayList();
+        courseWareInfoList1.add(CourseWareInfo.builder()
+                .courseWareTitle("2014年资料分析真题-1")
+                .courseWareId(942913)
+                .videoLength("高清 - 28分钟37秒")
+                .serialNumber(1)
+                .answerCardId(12345678L)
+                .questionIds("26603,26604,26605,26606,26607,26608")
+                .answerCardInfo("剩余4/6题")
+                .isAlert(1)
+                .build());
+        courseWareInfoList1.add(CourseWareInfo.builder()
+                .courseWareTitle("2014年资料分析真题-2")
+                .courseWareId(942914)
+                .videoLength("高清 - 28分钟51秒")
+                .serialNumber(2)
+                .answerCardId(12345679L)
+                .questionIds("26613,26614,26615,26616,26617,26618")
+                .answerCardInfo("剩余4/6题")
+                .isAlert(0)
+                .build());
+
+        courseWareInfoList2.add(CourseWareInfo.builder()
+                .courseWareTitle("管理常识-1")
+                .courseWareId(942951)
+                .videoLength("高清 - 28分钟37秒")
+                .serialNumber(1)
+                .answerCardId(12345681L)
+                .questionIds("26613,26614,26615,26616,26617,26618")
+                .answerCardInfo("剩余4/6题")
+                .isAlert(1)
+                .build());
+        courseWareInfoList2.add(CourseWareInfo.builder()
+                .courseWareTitle("管理常识-3")
+                .courseWareId(942952)
+                .videoLength("高清 - 28分钟37秒")
+                .serialNumber(3)
+                .answerCardId(12345683L)
+                .questionIds("26633,26634,26635,26636,26637,26638")
+                .answerCardInfo("剩余4/6题")
+                .isAlert(1)
+                .build());
+        courseWareInfoList2.add(CourseWareInfo.builder()
+                .courseWareTitle("管理常识-5")
+                .courseWareId(942955)
+                .videoLength("高清 - 28分钟37秒")
+                .serialNumber(5)
+                .answerCardId(12345685L)
+                .questionIds("26653,26654,26655,26656,26657,26658")
+                .answerCardInfo("剩余4/6题")
+                .isAlert(1)
+                .build());
+        courseWareInfoList2.add(CourseWareInfo.builder()
+                .courseWareTitle("管理常识-7")
+                .courseWareId(942957)
+                .videoLength("高清 - 28分钟37秒")
+                .serialNumber(7)
+                .answerCardId(12345687L)
+                .questionIds("26673,26674,26675,26676,26677,26678")
+                .answerCardInfo("剩余4/6题")
+                .isAlert(1)
+                .build());
+        courseWareInfoList2.add(CourseWareInfo.builder()
+                .courseWareTitle("管理常识-9")
+                .courseWareId(942959)
+                .videoLength("高清 - 28分钟37秒")
+                .serialNumber(9)
+                .answerCardId(12345689L)
+                .questionIds("26693,26694,26695,26696,26697,26698")
+                .answerCardInfo("剩余4/6题")
+                .isAlert(1)
+                .build());
+
+
+        list.add(CourseInfo.builder()
+                .courseId(98017)
+                .courseTitle("模考专用】14年国考资料分析真题")
+                .undoCount(2)
+                .wareInfoList(courseWareInfoList1)
+                .build());
+        list.add(CourseInfo.builder()
+                .courseId(98018)
+                .courseTitle("《管理常识》模块真题精讲")
+                .undoCount(5)
+                .wareInfoList(courseWareInfoList2)
+                .build());
+        return list;
     }
 
 
@@ -251,5 +339,29 @@ public class UserCourseControllerV6 {
 
     }
 
+    @AllArgsConstructor
+    @Setter
+    @Getter
+    @Builder
+    public static class CourseInfo{
+        private String courseTitle;
+        private int courseId;
+        private int undoCount;
+        private List<CourseWareInfo> wareInfoList;
+    }
 
+    @AllArgsConstructor
+    @Setter
+    @Getter
+    @Builder
+    public static class CourseWareInfo{
+        private String courseWareTitle;
+        private int courseWareId;
+        private String videoLength;
+        private int serialNumber;
+        private long answerCardId;
+        private String questionIds;
+        private String answerCardInfo;
+        private int isAlert;
+    }
 }
