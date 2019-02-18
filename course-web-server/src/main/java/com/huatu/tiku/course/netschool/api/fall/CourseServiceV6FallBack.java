@@ -2,7 +2,6 @@ package com.huatu.tiku.course.netschool.api.fall;
 
 import com.google.common.collect.Lists;
 import com.huatu.common.utils.web.RequestUtil;
-import com.huatu.tiku.course.bean.CourseListV3DTO;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
 import com.huatu.tiku.course.util.ResponseUtil;
@@ -10,14 +9,10 @@ import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
-
-import static com.huatu.tiku.course.bean.NetSchoolResponse.DEFAULT_ERROR;
 
 /**
  * 描述：
@@ -63,15 +58,16 @@ public class CourseServiceV6FallBack implements CourseServiceV6 {
                     .msg(StringUtils.EMPTY)
                     .type(0)
                     .current_page("1")
+                    .data(Lists.newArrayList())
                     .date(String.valueOf(params.getOrDefault("date", defaultDate)))
                     .month(String.valueOf(params.getOrDefault("date", defaultDate)).split("-")[1])
                     .day(String.valueOf(params.getOrDefault("date", defaultDate)).split("-")[2])
+                    .per_page(String.valueOf(params.getOrDefault("pageSize", 20)))
                     .last_page(1)
                     .total(0)
                     .liveTotal(0)
                     .from(1)
                     .to(1)
-                    .data(Lists.newArrayList())
                     .build();
             return NetSchoolResponse.newInstance(defaultCalenderDetail);
         }
