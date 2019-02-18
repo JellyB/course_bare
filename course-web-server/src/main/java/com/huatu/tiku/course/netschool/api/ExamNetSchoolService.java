@@ -24,9 +24,11 @@ public interface ExamNetSchoolService {
     @GetMapping("/lumenapi/v4/common/service/detail")
     NetSchoolResponse detail(@RequestParam Map<String, Object> params);
 
-
     @PostMapping("/lumenapi/v5/c/article/like")
     NetSchoolResponse like(@RequestParam Map<String, Object> params);
+
+    @GetMapping("/lumenapi/v5/c/article/cate_list")
+    NetSchoolResponse  typeList();
 
 
 }

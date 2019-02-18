@@ -87,5 +87,15 @@ public class ExamController {
         return ResponseUtil.build(like);
     }
 
+    /**
+     *备考精华分类列表
+     *
+     * @return
+     */
+    @GetMapping(value = "typeList")
+    public Object typeList() {
+        return ResponseUtil.build(examNetSchoolService.typeList());
+    }
+
 
 }
