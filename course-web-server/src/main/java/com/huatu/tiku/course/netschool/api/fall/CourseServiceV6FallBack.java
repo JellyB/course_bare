@@ -74,7 +74,10 @@ public class CourseServiceV6FallBack implements CourseServiceV6 {
             }
             return response;
         }catch (Exception e){
-            return NetSchoolResponse.newInstance(DefaultCalenderDetail.builder().build());
+            return NetSchoolResponse.newInstance(DefaultCalenderDetail.builder()
+                    .msg(StringUtils.EMPTY).type(0).current_page("1").data(Lists.newArrayList())
+                    .date(StringUtils.EMPTY).month(StringUtils.EMPTY).day(StringUtils.EMPTY).per_page(StringUtils.EMPTY)
+                    .last_page(1).total(0).liveTotal(0).from(1).to(1).build());
         }
     }
 
