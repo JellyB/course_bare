@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.netschool.api.fall;
 
+import com.google.common.collect.Lists;
 import com.huatu.common.utils.web.RequestUtil;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
@@ -37,7 +38,7 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
         NetSchoolResponse response = FallbackCacheHolder.get(key);
         if(null == response){
             log.warn("obtain learn calender not in fallbackHolder...");
-            return NetSchoolResponse.newInstance(null);
+            return NetSchoolResponse.newInstance(Lists.newArrayList());
         }
         return response;
     }
@@ -77,7 +78,7 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
         NetSchoolResponse response = FallbackCacheHolder.get(key);
         if(null == response){
             log.warn("obtain mine courses not in fallbackHolder...");
-            return NetSchoolResponse.newInstance(null);
+            return NetSchoolResponse.newInstance(Lists.newArrayList());
         }
         return response;
     }
