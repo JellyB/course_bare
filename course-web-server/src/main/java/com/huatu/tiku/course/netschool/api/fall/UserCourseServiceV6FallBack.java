@@ -1,7 +1,6 @@
 package com.huatu.tiku.course.netschool.api.fall;
 
 import com.huatu.common.utils.web.RequestUtil;
-import com.huatu.tiku.course.bean.CourseListV3DTO;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.util.ResponseUtil;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-import static com.huatu.tiku.course.bean.NetSchoolResponse.DEFAULT_ERROR;
 
 /**
  * 描述：
