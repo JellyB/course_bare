@@ -1,11 +1,9 @@
 package com.huatu.tiku.course.test;
 
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.huatu.common.test.BaseWebTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -20,7 +18,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 描述：
+ * 描述：多线程获取线上用户token保存为 csv 文件->压力测试
  *
  * @author biguodong
  * Create time 2019-02-13 下午4:05

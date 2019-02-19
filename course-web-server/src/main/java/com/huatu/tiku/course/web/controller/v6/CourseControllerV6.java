@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * 描述：课程接口v6

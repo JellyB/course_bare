@@ -3,7 +3,6 @@ package com.huatu.tiku.course.service.v6;
 import com.alibaba.fastjson.JSONObject;
 import com.huatu.common.utils.web.RequestUtil;
 import com.huatu.springboot.degrade.core.Degrade;
-import com.huatu.tiku.course.bean.CourseListV3DTO;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.fall.CourseServiceV6FallBack;
 import com.huatu.tiku.course.netschool.api.fall.UserCourseServiceV6FallBack;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 描述：
@@ -42,6 +40,8 @@ public class CourseBizV6Service {
     @Autowired
     private UserCourseServiceV6FallBack userCourseServiceV6FallBack;
 
+    @Resource(name = "redisTemplate")
+    private ValueOperations valueOperations;
 
     /**
      * 课程日历详情接口
@@ -51,9 +51,13 @@ public class CourseBizV6Service {
     @Degrade(key = "calendarDetail", name = "课程日历详情")
     public Object calendarDetail(Map<String,Object> params){
         try{
-            NetSchoolResponse netSchoolResponse = courseService.calendarDetail(params);
-            if (null != netSchoolResponse && null != netSchoolResponse.getData()) {
-                courseServiceV6FallBack.setCalendarDetailStaticData(params, netSchoolResponse);
+            String cacheKey = CourseCacheKey.calendarDetailV6(RequestUtil.getParamSign(params));
+            NetSchoolResponse netSchoolResponse = (NetSchoolResponse) valueOperations.get(cacheKey);
+            if(null == netSchoolResponse){
+                netSchoolResponse = courseService.calendarDetail(params);
+                if (null != netSchoolResponse && null != netSchoolResponse.getData()) {
+                    courseServiceV6FallBack.setCalendarDetailStaticData(params, netSchoolResponse);
+                }
             }
             return ResponseUtil.build(netSchoolResponse);
         }catch (Exception e){
@@ -71,9 +75,13 @@ public class CourseBizV6Service {
     @Degrade(key = "obtainLearnCalender", name = "我的学习日历")
     public Object obtainLearnCalender(Map<String,Object> params){
         try{
-            NetSchoolResponse netSchoolResponse = userCourseService.obtainLearnCalender(params);
-            if(null != netSchoolResponse && null != netSchoolResponse.getData()){
-                userCourseServiceV6FallBack.setCalendarLearnStaticData(params, netSchoolResponse);
+            String cacheKey = CourseCacheKey.calendarLearnV6(RequestUtil.getParamSign(params));
+            NetSchoolResponse netSchoolResponse =  (NetSchoolResponse)valueOperations.get(cacheKey);
+            if(null == netSchoolResponse){
+                netSchoolResponse = userCourseService.obtainLearnCalender(params);
+                if(null != netSchoolResponse && null != netSchoolResponse.getData()){
+                    userCourseServiceV6FallBack.setCalendarLearnStaticData(params, netSchoolResponse);
+                }
             }
             return ResponseUtil.build(netSchoolResponse);
         }catch (Exception e){
