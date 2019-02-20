@@ -109,7 +109,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         if(null == valueOperations.get(key)){
             netSchoolResponse = courseService.analysis(params);
             if(null != netSchoolResponse.getData()){
-                valueOperations.set(key, JSONObject.toJSONString(netSchoolResponse.getData()), 30, TimeUnit.DAYS);
+                valueOperations.set(key, JSONObject.toJSONString(netSchoolResponse.getData()), 1, TimeUnit.DAYS);
             }else{
                 log.info("obtain course info from php client error, classId:{}", classId);
                 return NetSchoolResponse.newInstance(Maps.newLinkedHashMap());
