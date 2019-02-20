@@ -78,8 +78,9 @@ public class UserCourseControllerV6 {
                                       @RequestHeader(value = "cv") String cv,
                                       @RequestHeader(value = "terminal") int terminal){
         Map<String,Integer> result = Maps.newHashMap();
-        result.put(StudyTypeEnum.COURSE_WORK.getType(), 5);
-        result.put(StudyTypeEnum.PERIOD_TEST.getType(), 10);
+        result.put(StudyTypeEnum.COURSE_WORK.getKey(), 5);
+        result.put(StudyTypeEnum.PERIOD_TEST.getKey(), 5);
+        result.put(StudyTypeEnum.PRE_TEST_ESSENCE.getKey(), 5);
         return result;
     }
 
