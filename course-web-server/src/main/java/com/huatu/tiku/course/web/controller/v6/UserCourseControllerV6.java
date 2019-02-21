@@ -212,7 +212,20 @@ public class UserCourseControllerV6 {
         return list;
     }
 
-
+    /**
+     * 阶段测试列表
+     * @param userSession
+     * @param page
+     * @param size
+     * @return
+     */
+    @GetMapping(value = "periodTest/detailList")
+    public Object periodTestList(@Token UserSession userSession,
+                            @RequestParam(value = "page", defaultValue = "1")int page,
+                            @RequestParam(value = "size", defaultValue = "20") int size){
+    	//TODO add logic
+        return Lists.newArrayList();
+    }
 
 
     /**
