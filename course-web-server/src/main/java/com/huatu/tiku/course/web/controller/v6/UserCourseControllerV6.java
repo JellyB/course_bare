@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -212,6 +213,47 @@ public class UserCourseControllerV6 {
         return list;
     }
 
+    @GetMapping(value = "/courseWork/{id}")
+    public Object testReport(@Token UserSession userSession,
+                             @RequestHeader(value = "cv") String cv,
+                             @RequestHeader(value = "terminal") int terminal,
+                             @PathVariable(value = "id") int id){
+
+        HashMap<String,Object> result = Maps.newHashMap();
+        List<RankInfo> rankInfos = Lists.newArrayList();
+        List<Points> points = Lists.newArrayList();
+        points.add(Points.builder().id(642).name("判断推理").qnum(40).rnum(20).wnum(10).unum(10).times(45).speed(1).level(3).accuracy(22.5f).build());
+        points.add(Points.builder().id(644).name("数量类").qnum(40).rnum(20).wnum(10).unum(10).times(45).speed(1).level(3).accuracy(22.5f).build());
+        points.add(Points.builder().id(661).name("位置类").qnum(40).rnum(20).wnum(10).unum(10).times(45).speed(1).level(3).accuracy(22.5f).build());
+        points.add(Points.builder().id(680).name("实体信息").qnum(40).rnum(20).wnum(10).unum(10).times(45).speed(1).level(3).accuracy(22.5f).build());
+        points.add(Points.builder().id(1023).name("属性类").qnum(40).rnum(20).wnum(10).unum(10).times(45).speed(1).level(3).accuracy(22.5f).build());
+        rankInfos.add(RankInfo.builder().rank(1).uid(233982730L).uname("app_ztk1156193081").avatar("http://tiku.huatu.com/cdn/images/vhuatu/avatars/default.png").rcount(20).expendTime(300).build());
+        rankInfos.add(RankInfo.builder().rank(2).uid(233982729L).uname("app_ztk1665335536").avatar("http://tiku.huatu.com/cdn/images/vhuatu/avatars/default.png").rcount(20).expendTime(300).build());
+        rankInfos.add(RankInfo.builder().rank(3).uid(233982728L).uname("app_ztk1095938062").avatar("http://tiku.huatu.com/cdn/images/vhuatu/avatars/default.png").rcount(20).expendTime(300).build());
+        rankInfos.add(RankInfo.builder().rank(4).uid(233982727L).uname("0013590408802").avatar("http://tiku.huatu.com/cdn/images/vhuatu/avatars/default.png").rcount(20).expendTime(300).build());
+        rankInfos.add(RankInfo.builder().rank(5).uid(233982726L).uname("app_ztk969032785").avatar("http://tiku.huatu.com/cdn/images/vhuatu/avatars/default.png").rcount(20).expendTime(300).build());
+        rankInfos.add(RankInfo.builder().rank(6).uid(233982725L).uname("app_ztk1972809520").avatar("http://tiku.huatu.com/cdn/images/vhuatu/avatars/default.png").rcount(20).expendTime(300).build());
+        rankInfos.add(RankInfo.builder().rank(7).uid(233982724L).uname("app_ztk1552890135").avatar("http://tiku.huatu.com/cdn/images/vhuatu/avatars/default.png").rcount(20).expendTime(300).build());
+        rankInfos.add(RankInfo.builder().rank(8).uid(233982723L).uname("app_ztk988802909").avatar("http://tiku.huatu.com/cdn/images/vhuatu/avatars/default.png").rcount(20).expendTime(300).build());
+        rankInfos.add(RankInfo.builder().rank(9).uid(233982722L).uname("app_ztk1572338085").avatar("http://tiku.huatu.com/cdn/images/vhuatu/avatars/default.png").rcount(20).expendTime(300).build());
+        rankInfos.add(RankInfo.builder().rank(10).uid(233982721L).uname("app_ztk722506085").avatar("http://tiku.huatu.com/cdn/images/vhuatu/avatars/default.png").rcount(20).expendTime(300).build());
+        result.put("id", "8205958822857731640");
+        result.put("testTimeInfo", "2018-12-12");//测试时间
+        result.put("submitTimeInfo", "2018-12-12:16:45");//交卷时间
+        result.put("rcount", 10);//正确数
+        result.put("tcount",100);//总题数
+        result.put("avgTimeCost", 200);//平均耗时
+        result.put("maxCorrect", 15);//最高答对题数
+        result.put("avgCorrect", 14);//平均答对题数
+        result.put("points", points);//知识点掌握情况
+        result.put("ranks", rankInfos);
+        result.put("corrects", new int[]{1,2,2,2,2,1,1,1,1,1});
+        result.put("answers", new String[]{"1", "2", "3", "4", "4", "3", "2", "1", "2", "2"});
+        result.put("times", new int[] {1, 2, 2, 2, 1, 1, 2, 2, 3, 1});
+        result.put("doubts", new int[] {1,1,1,1,1,0,0,0,0,0});
+        return result;
+    }
+
 
 
 
@@ -364,5 +406,36 @@ public class UserCourseControllerV6 {
         private String questionIds;
         private String answerCardInfo;
         private int isAlert;
+    }
+
+    @AllArgsConstructor
+    @Setter
+    @Getter
+    @Builder
+    public static class RankInfo{
+        private int rank;
+        private long uid;
+        private String uname;
+        private String avatar;
+        private int rcount;
+        private int expendTime;
+        private int submitTimeInfo;
+    }
+
+    @AllArgsConstructor
+    @Setter
+    @Getter
+    @Builder
+    public static class Points{
+        private int id;
+        private String name;
+        private int qnum;
+        private int rnum;
+        private int wnum;
+        private int unum;
+        private int times;
+        private int speed;
+        private int level;
+        private float accuracy;
     }
 }
