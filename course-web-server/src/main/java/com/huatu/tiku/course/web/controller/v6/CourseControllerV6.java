@@ -4,6 +4,8 @@ import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
+import com.huatu.tiku.course.service.v6.CourseBizV6Service;
+import com.huatu.tiku.course.service.v6.CourseServiceV6Biz;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
@@ -12,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -30,7 +34,11 @@ public class CourseControllerV6 {
     @Autowired
     private CourseServiceV6 courseService;
 
+    @Autowired
+    private CourseBizV6Service courseBizV6Service;
 
+    @Autowired
+    private CourseServiceV6Biz courseServiceV6Biz;
     /**
      * App课程列表
      * @param cateId
@@ -66,8 +74,7 @@ public class CourseControllerV6 {
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "pageSize", defaultValue = "20") int pageSize){
         Map<String,Object> params = LocalMapParamHandler.get();
-        NetSchoolResponse netSchoolResponse = courseService.calendarDetail(params);
-        return ResponseUtil.build(netSchoolResponse);
+        return courseBizV6Service.calendarDetail(params);
     }
 
 
@@ -99,10 +106,12 @@ public class CourseControllerV6 {
      */
     @LocalMapParam
     @GetMapping(value = "search")
-    public  Object searchCourses(@RequestParam(value = "keyWord") String keyWord,
-                                 @RequestParam(value = "cateId") int cateId,
-                                 @RequestParam(value = "page", defaultValue = "1") int page){
-        Map<String,Object> params = LocalMapParamHandler.get();
+    public Object searchCourses(@RequestParam(value = "keyWord") String keyWord,
+                                @RequestParam(value = "cateId") int cateId,
+                                @RequestParam(value = "page", defaultValue = "1") int page,
+                                @RequestParam(value = "isHistory", defaultValue = "-1") int isHistory,
+                                @RequestParam(value = "isRecommend", defaultValue = "-1") int isRecommend) {
+        Map<String, Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = courseService.searchCourses(params);
         return ResponseUtil.build(netSchoolResponse);
     }
@@ -122,4 +131,14 @@ public class CourseControllerV6 {
         return ResponseUtil.build(netSchoolResponse);
     }
 
+    /**
+     * 模考大赛解析课信息,多个id使用逗号分隔
+     * @param classIds
+     * @return
+     */
+    @GetMapping(value = "courseAnalysis")
+    public Object courseAnalysis(@RequestParam(value = "classIds") String classIds){
+        HashMap<String, LinkedHashMap> result = courseServiceV6Biz.getClassAnalysis(classIds);
+        return result;
+    }
 }

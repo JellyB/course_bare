@@ -64,6 +64,7 @@ public class OrderControllerV3 {
             @RequestParam int rid,
             @RequestHeader(required = false) int terminal,
             @RequestHeader(required = false) String cv,
+            @RequestParam(required = false, defaultValue = "")String pageSource,
             @Token UserSession userSession) {
         //设置QPS
         orderCacheQPS.orderPreInfoQPS();
@@ -73,6 +74,7 @@ public class OrderControllerV3 {
         params.put("terminal",terminal);
         params.put("cv",cv);
         params.put("username", userSession.getUname());
+        params.put("pageSource", pageSource);
         log.warn("5$${}$${}$${}$${}$${}$${}", rid, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
         //释放
         Object result;
@@ -95,14 +97,17 @@ public class OrderControllerV3 {
     @PostMapping("/free")
     public Object freeCourse(@RequestHeader int terminal, @RequestHeader(required = false) String cv,
                              @RequestParam int courseId,
-                             @Token UserSession userSession) throws Exception {
+                             @Token UserSession userSession,
+                             @RequestParam(required = false, defaultValue = "") String pageSource) throws Exception {
         String uname = userSession.getUname();
         int catgory = userSession.getCategory();
         final HashMap<String, Object> parameterMap = HashMapBuilder.newBuilder()
                 .put("username", uname)
                 .put("source", NetschoolTerminalType.transform(terminal))
+                .put("terminal", terminal)
                 .put("userid", -1)
                 .put("rid", courseId)
+                .put("pageSource", pageSource)
                 .buildUnsafe();
 
         // return ResponseUtil.build(orderServiceV3.getFree(RequestUtil.encryptJsonParams(parameterMap)));

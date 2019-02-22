@@ -1,8 +1,10 @@
 package com.huatu.tiku.course.netschool.api.v6;
 
 import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.netschool.api.fall.UserCourseServiceV6FallBack;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -15,7 +17,7 @@ import java.util.Map;
  * Create time 2018-11-26 下午5:28
  **/
 
-@FeignClient(value = "o-course-service", path = "/lumenapi")
+@FeignClient(value = "o-course-service", path = "/lumenapi",fallback = UserCourseServiceV6FallBack.class)
 public interface UserCourseServiceV6 {
 
     /**
@@ -77,4 +79,13 @@ public interface UserCourseServiceV6 {
      */
     @PutMapping(value = "/v5/c/class/set_category")
     NetSchoolResponse setCategory(@RequestParam Map<String, Object> params);
+
+
+    /**
+     * 直播学习记录上报
+     * @param params
+     * @return
+     */
+    @PostMapping(value = "/v4/common/user/live_record")
+    NetSchoolResponse saveLiveRecord(@RequestParam Map<String, Object> params);
 }
