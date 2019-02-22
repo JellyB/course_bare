@@ -31,8 +31,15 @@ public class ProcessReportServiceImpl implements ProcessReportService {
      * @return
      */
     @Override
-    public Object report(Map<String, Object> params) {
-        log.error("params:{}", params);
+    public Object liveReport(Map<String, Object> params) {
+        log.warn("liveReport:{}", params);
+        return SuccessMessage.create();
+    }
+
+
+    @Override
+    public Object playBackReport(Map<String, Object> params) {
+        log.warn("playBackReport:{}", params);
         return SuccessMessage.create();
     }
 }

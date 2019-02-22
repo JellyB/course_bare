@@ -9,10 +9,21 @@ import java.util.Map;
  * Create time 2019-02-22 上午11:16
  **/
 public interface ProcessReportService {
+
+    int TYPE_LIVE = 1;
+    int TYPE_PLAYBACK = 2;
     /**
      * 数据上报接口
      * @param params
      * @return
      */
-    Object report(Map<String,Object> params);
+    Object liveReport(Map<String,Object> params);
+
+
+    /**
+     * 录播数据回放
+     * @param params
+     * @return
+     */
+    Object playBackReport(Map<String,Object> params);
 }
