@@ -2,6 +2,7 @@ package com.huatu.tiku.course.service.v1;
 
 import com.huatu.tiku.course.bean.CourseBreakpointQuestionDTO;
 import com.huatu.tiku.entity.CourseBreakpoint;
+import com.huatu.tiku.entity.CourseBreakpointQuestion;
 import service.BaseServiceHelper;
 
 import java.util.HashMap;
@@ -20,6 +21,22 @@ public interface CourseBreakpointService extends BaseServiceHelper<CourseBreakpo
      * @return
      */
     List<CourseBreakpointQuestionDTO> listAllQuestionId(int courseType, long courseId);
+
+    /**
+     * 获取所有断点信息
+     * @param courseType 课程类型
+     * @param courseId   课程ID
+     * @return
+     */
+    List<CourseBreakpoint> listByCourseTypeAndId(Integer courseType, Long courseId);
+
+    /**
+     * 获取所有断点信息
+     * @param courseType 课程类型
+     * @param courseId   课程ID
+     * @return
+     */
+    List<CourseBreakpointQuestion> listQuestionByCourseTypeAndId(Integer courseType, Long courseId);
 
     /**
      * 创建答题卡

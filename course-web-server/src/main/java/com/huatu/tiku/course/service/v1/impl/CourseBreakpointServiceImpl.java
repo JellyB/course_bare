@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.service.v1.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
 import com.huatu.common.spring.cache.Cached;
 import com.huatu.tiku.course.bean.CourseBreakpointQuestionDTO;
 import com.huatu.tiku.course.service.cache.CacheUtil;
@@ -93,7 +94,8 @@ public class CourseBreakpointServiceImpl extends BaseServiceHelperImpl<CourseBre
      * @param courseId   课程ID
      * @return
      */
-    protected List<CourseBreakpoint> listByCourseTypeAndId(Integer courseType, Long courseId) {
+    @Override
+    public List<CourseBreakpoint> listByCourseTypeAndId(Integer courseType, Long courseId) {
         //生成value
         WeekendSqls<CourseBreakpoint> sql = WeekendSqls.custom();
         sql.andEqualTo(CourseBreakpoint::getCourseType, courseType);
@@ -104,10 +106,23 @@ public class CourseBreakpointServiceImpl extends BaseServiceHelperImpl<CourseBre
                 .orderBy("position ")
                 .build();
         List<CourseBreakpoint> courseBreakpoints = selectByExample(example);
-        if (courseBreakpoints.size() == 0) {
-            return null;
+        if (CollectionUtils.isEmpty(courseBreakpoints)) {
+            return Lists.newArrayList();
         }
         return courseBreakpoints;
+    }
+
+    @Override
+    public List<CourseBreakpointQuestion> listQuestionByCourseTypeAndId(Integer courseType, Long courseId) {
+        List<CourseBreakpoint> courseBreakpointList = listByCourseTypeAndId(courseType, courseId);
+        if (CollectionUtils.isNotEmpty(courseBreakpointList)) {
+            List<Long> beakPointIdList = courseBreakpointList.stream()
+                    .map(CourseBreakpoint::getId)
+                    .collect(Collectors.toList());
+            List<CourseBreakpointQuestion> courseBreakpointQuestionList = courseBreakpointQuestionService.listQuestionIdByBreakpointIdList(beakPointIdList);
+            return courseBreakpointQuestionList;
+        }
+        return Lists.newArrayList();
     }
 
     @Override
