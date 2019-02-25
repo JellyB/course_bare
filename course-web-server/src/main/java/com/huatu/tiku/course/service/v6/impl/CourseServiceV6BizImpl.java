@@ -1,12 +1,13 @@
 package com.huatu.tiku.course.service.v6.impl;
 
-import com.alibaba.fastjson.JSONObject;
-import com.google.common.collect.Maps;
-import com.huatu.tiku.course.bean.NetSchoolResponse;
-import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
-import com.huatu.tiku.course.service.v6.CourseServiceV6Biz;
-import com.huatu.tiku.course.util.CourseCacheKey;
-import lombok.extern.slf4j.Slf4j;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +15,22 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.bean.vo.PeriodTestListVO;
+import com.huatu.tiku.course.bean.vo.PeriodTestListVO.PeriodTestInfo;
+import com.huatu.tiku.course.bean.vo.PeriodTestListVO.PeriodTestListVOBuilder;
+import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
+import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
+import com.huatu.tiku.course.service.v6.CourseServiceV6Biz;
+import com.huatu.tiku.course.util.CourseCacheKey;
+import com.huatu.tiku.course.util.ResponseUtil;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 描述：
@@ -49,6 +63,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
     @Autowired
     private CourseServiceV6 courseService;
+    
+    @Autowired
+    private UserCourseServiceV6 userCourseServiceV6;
 
     /**
      * 模考大赛解析课信息,多个id使用逗号分隔
@@ -121,4 +138,59 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         }
         return netSchoolResponse;
     }
+    
+
+	@Override
+	public Object periodTestList(Map<String, Object> params) {
+		NetSchoolResponse response = userCourseServiceV6.unfinishStageExamList(params);
+		if (ResponseUtil.isSuccess(response)) {
+			List<PeriodTestListVO> periodTestList = Lists.newArrayList();
+			String responseStr = JSON.toJSONString(response.getData());
+			JSONObject data = JSON.parseObject(responseStr);
+			String listStr = JSON.toJSONString(data.get("list"));
+			LinkedHashMap<String, Object> jsonMap = JSON.parseObject(listStr,
+					new TypeReference<LinkedHashMap<String, Object>>() {
+					});
+			for (Map.Entry<String, Object> courseInfo : jsonMap.entrySet()) {
+				// 课程集合
+				PeriodTestListVOBuilder periodTestListVOBuilder = PeriodTestListVO.builder();
+				// log.info(courseInfo.getKey() + ":" + courseInfo.getValue());
+				// 获取每个课程相关信息
+				String courseInfoStr = JSON.toJSONString(courseInfo.getValue());
+				JSONObject courseJson = JSON.parseObject(courseInfoStr);
+				String classId = courseJson.getString("classId");
+				String className = courseJson.getString("className");
+				periodTestListVOBuilder.courseId(Integer.parseInt(classId)).courseTitle(className);
+				String periodTestStr = JSON.toJSONString(courseJson.get("child"));
+				LinkedHashMap<String, Object> periodTestMap = JSON.parseObject(periodTestStr,
+						new TypeReference<LinkedHashMap<String, Object>>() {
+						});
+
+				List<PeriodTestListVO.PeriodTestInfo> periodList = Lists.newArrayList();
+				for (Map.Entry<String, Object> periodTestInfo : periodTestMap.entrySet()) {
+					// 阶段测试集合
+					String periodTestInfoStr = JSON.toJSONString(periodTestInfo.getValue());
+					PeriodTestInfo periodTestVo = JSON.parseObject(periodTestInfoStr,
+							PeriodTestListVO.PeriodTestInfo.class);
+					// TODO 校验是否开启提醒
+					long examId = periodTestVo.getExamId();
+					periodList.add(periodTestVo);
+				}
+				periodTestList
+						.add(periodTestListVOBuilder.periodTestList(periodList).undoCount(periodList.size()).build());
+			}
+			Integer total = 2;
+			Integer currentPage = 2;
+			Integer lastPage = 2;
+			Integer perPage = 2;
+			Map<String, Object> retMap = Maps.newHashMap();
+			retMap.put("total", total);
+			retMap.put("currentPage", currentPage);
+			retMap.put("lastPage", lastPage);
+			retMap.put("perPage", perPage);
+			retMap.put("list", periodTestList);
+			return retMap;
+		}
+		return null;
+	}
 }

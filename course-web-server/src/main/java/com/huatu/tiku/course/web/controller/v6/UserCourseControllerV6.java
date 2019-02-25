@@ -1,5 +1,18 @@
 package com.huatu.tiku.course.web.controller.v6;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.huatu.common.SuccessMessage;
@@ -9,20 +22,17 @@ import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.service.v6.CourseBizV6Service;
+import com.huatu.tiku.course.service.v6.CourseServiceV6Biz;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * 描述：我的课程接口
@@ -43,6 +53,9 @@ public class UserCourseControllerV6 {
 
     @Autowired
     private CourseBizV6Service courseBizV6Service;
+    
+    @Autowired
+    private CourseServiceV6Biz courseServiceV6Biz;
 
 
     /**
@@ -219,12 +232,13 @@ public class UserCourseControllerV6 {
      * @param size
      * @return
      */
+    @LocalMapParam(checkToken = true)
     @GetMapping(value = "periodTest/detailList")
     public Object periodTestList(@Token UserSession userSession,
                             @RequestParam(value = "page", defaultValue = "1")int page,
-                            @RequestParam(value = "size", defaultValue = "20") int size){
-    	//TODO add logic
-        return Lists.newArrayList();
+                            @RequestParam(value = "pageSize", defaultValue = "20") int size){
+    	 Map<String,Object> params = LocalMapParamHandler.get();
+        return courseServiceV6Biz.periodTestList(params);
     }
 
 
