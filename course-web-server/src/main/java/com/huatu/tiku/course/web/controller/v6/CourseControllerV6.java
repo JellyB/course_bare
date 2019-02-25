@@ -141,4 +141,17 @@ public class CourseControllerV6 {
         HashMap<String, LinkedHashMap> result = courseServiceV6Biz.getClassAnalysis(classIds);
         return result;
     }
+
+    /**
+     * 小模考历史解析课信息列表
+     * @param classIds
+     * @return
+     */
+    @LocalMapParam
+    @GetMapping(value = "analysisClassList")
+    public Object courseList(@RequestParam(value = "classIds") String classIds){
+        Map<String, Object> params = LocalMapParamHandler.get();
+        NetSchoolResponse netSchoolResponse = courseService.analysisClassList(params);
+        return ResponseUtil.build(netSchoolResponse);
+    }
 }
