@@ -239,6 +239,7 @@ public class UserCourseControllerV6 {
                             @RequestParam(value = "page", defaultValue = "1")int page,
                             @RequestParam(value = "pageSize", defaultValue = "20") int size){
     	 Map<String,Object> params = LocalMapParamHandler.get();
+    	 params.put("userId", userSession.getId());
         return courseServiceV6Biz.periodTestList(params);
     }
     

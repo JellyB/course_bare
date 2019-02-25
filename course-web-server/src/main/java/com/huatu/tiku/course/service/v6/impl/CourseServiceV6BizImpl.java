@@ -24,13 +24,16 @@ import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.vo.PeriodTestListVO;
 import com.huatu.tiku.course.bean.vo.PeriodTestListVO.PeriodTestInfo;
 import com.huatu.tiku.course.bean.vo.PeriodTestListVO.PeriodTestListVOBuilder;
+import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
 import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.service.v6.CourseServiceV6Biz;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.ResponseUtil;
+import com.huatu.tiku.entity.CourseExercisesProcessLog;
 
 import lombok.extern.slf4j.Slf4j;
+import tk.mybatis.mapper.entity.Example;
 
 /**
  * 描述：
@@ -66,6 +69,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
     
     @Autowired
     private UserCourseServiceV6 userCourseServiceV6;
+    
+    @Autowired
+    private CourseExercisesProcessLogMapper courseExercisesProcessLogMapper;
 
     /**
      * 模考大赛解析课信息,多个id使用逗号分隔
@@ -174,6 +180,12 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 							PeriodTestListVO.PeriodTestInfo.class);
 					// TODO 校验是否开启提醒
 					long examId = periodTestVo.getExamId();
+					Example example = new Example(CourseExercisesProcessLog.class);
+					example.or().andEqualTo("courseId", classId).andEqualTo("userId", params.get("userId"));
+					int count = courseExercisesProcessLogMapper.selectCountByExample(example);
+					if (count > 0) {
+						periodTestVo.setIsAlert(1);
+					}
 					periodList.add(periodTestVo);
 				}
 				periodTestList
