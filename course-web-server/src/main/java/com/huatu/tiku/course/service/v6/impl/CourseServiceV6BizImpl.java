@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
@@ -148,7 +149,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
 	@Override
 	public Object periodTestList(Map<String, Object> params) {
+		 Stopwatch stopwatch = Stopwatch.createStarted();
 		NetSchoolResponse response = userCourseServiceV6.unfinishStageExamList(params);
+		log.info("接口unfinish_stage_exam_list调用php响应用时:{}", String.valueOf(stopwatch.stop()));
 		if (ResponseUtil.isSuccess(response)) {
 			List<PeriodTestListVO> periodTestList = Lists.newArrayList();
 			String responseStr = JSON.toJSONString(response.getData());
