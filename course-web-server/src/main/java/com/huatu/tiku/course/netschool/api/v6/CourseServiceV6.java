@@ -75,5 +75,5 @@ public interface CourseServiceV6 {
      * @return
      */
     @GetMapping(value = "/v5/c/class/analysis_class_list")
-    NetSchoolResponse analysisClassList(Map<String, Object> params);
+    NetSchoolResponse analysisClassList(@RequestParam Map<String, Object> params);
 }
