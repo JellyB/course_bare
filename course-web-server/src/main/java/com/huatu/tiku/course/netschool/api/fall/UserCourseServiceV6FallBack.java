@@ -150,4 +150,9 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
             FallbackCacheHolder.put(key, response);
         }
     }
+
+	@Override
+	public NetSchoolResponse unfinishStageExamList(Map<String, Object> params) {
+		return NetSchoolResponse.DEFAULT;
+	}
 }
