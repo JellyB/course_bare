@@ -1,5 +1,7 @@
 package com.huatu.tiku.course.service.v6;
 
+import com.huatu.tiku.course.bean.NetSchoolResponse;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
@@ -18,4 +20,14 @@ public interface CourseServiceV6Biz {
      * @return
      */
     HashMap<String, LinkedHashMap> getClassAnalysis(String classIds);
+
+    /**
+     * 小模考历史解析课分页查询
+     * @param subject
+     * @param page
+     * @param size
+     * @param startTime
+     *@param endTime @return
+     */
+    NetSchoolResponse analysisClassList(int subject, int page, int size, long startTime, long endTime);
 }
