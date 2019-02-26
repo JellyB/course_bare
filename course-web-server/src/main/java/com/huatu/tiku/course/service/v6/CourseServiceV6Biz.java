@@ -2,6 +2,7 @@ package com.huatu.tiku.course.service.v6;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * 描述：
@@ -18,4 +19,11 @@ public interface CourseServiceV6Biz {
      * @return
      */
     HashMap<String, LinkedHashMap> getClassAnalysis(String classIds);
+
+    /**
+     * 获取未完成的阶段测试列表
+     * @param params
+     * @return
+     */
+	Object periodTestList(Map<String, Object> params);
 }

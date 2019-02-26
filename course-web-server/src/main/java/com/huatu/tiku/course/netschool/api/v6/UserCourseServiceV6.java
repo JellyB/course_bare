@@ -88,4 +88,13 @@ public interface UserCourseServiceV6 {
      */
     @PostMapping(value = "/v4/common/user/live_record")
     NetSchoolResponse saveLiveRecord(@RequestParam Map<String, Object> params);
+    
+	/**
+	 * 获取未完成的阶段测试列表
+	 * 
+	 * @param params
+	 * @return
+	 */
+	@GetMapping(value = "/v5/c/class/unfinish_stage_exam_list")
+	NetSchoolResponse unfinishStageExamList(@RequestParam Map<String, Object> params);
 }
