@@ -244,6 +244,7 @@ public class UserCourseControllerV6 {
     }
     
     @GetMapping(value = "/courseWork/{id}")
+    @LocalMapParam(checkToken = true)
     public Object testReport(@Token UserSession userSession,
                              @RequestHeader(value = "cv") String cv,
                              @RequestHeader(value = "terminal") int terminal,
@@ -283,6 +284,52 @@ public class UserCourseControllerV6 {
         return result;
     }
 
+
+
+    @GetMapping(value = "/learnReport/{syllabusId}")
+    @LocalMapParam(checkToken = true)
+    public Object learnReport(@Token UserSession userSession,
+                              @RequestHeader(value = "terminal") int terminal,
+                              @RequestHeader(value = "cv") String cv,
+                              @PathVariable(value = "syllabusId") int syllabusId){
+
+        Map<String,Object> result = Maps.newHashMap();
+        Map<String,Object> report = Maps.newHashMap();
+        Map<String,Object> classPractice = Maps.newHashMap();
+        Map<String,Object> workPractice = Maps.newHashMap();
+
+        classPractice.put("corrects", new int[]{1,2,2,2,2,1,1,1,1,1});
+        classPractice.put("answers", new String[]{"1", "2", "3", "4", "4", "3", "2", "1", "2", "2"});
+        classPractice.put("doubts", new int[] {1,1,1,1,1,0,0,0,0,0});
+        classPractice.put("id","8205958822857731640");
+        classPractice.put("correctCount", 5);//答对
+        classPractice.put("avgTimeOut", 150);//平均用时；
+        classPractice.put("avgCorrectCount", 6);//平均答对;
+        classPractice.put("avgTimeOut", 150);
+        classPractice.put("timeInfo", "09/30 13:30");
+
+        workPractice.put("corrects", new int[]{1,2,2,2,2,1,1,1,1,1});
+        workPractice.put("answers", new String[]{"1", "2", "3", "4", "4", "3", "2", "1", "2", "2"});
+        workPractice.put("doubts", new int[] {1,1,1,1,1,0,0,0,0,0});
+        workPractice.put("id","8205958822857731640");
+        workPractice.put("correctCount", 5);//答对
+        workPractice.put("avgTimeOut", 150);//平均用时；
+        workPractice.put("avgCorrectCount", 6);//平均答对;
+        workPractice.put("avgTimeOut", 150);
+        workPractice.put("timeInfo", "09/30 13:30");
+        workPractice.put("points", new int[] {1234,22345,4567,5678});
+        workPractice.put("finishInfo", "完成了课程89%的内容，课后作业正确率低于45%，勤加练习才能将学到的内容转化为自己的技能。");
+
+        report.put("learnTime", 123);//学习时长
+        report.put("gold", 15);//获取 15 图币
+        report.put("learnPercent", 86);//学习课程内容
+        report.put("abovePercent", 34);
+
+        result.put("classPractice", classPractice);
+        result.put("courseWorkPractice", workPractice);
+        result.put("liveReport", report);
+        return result;
+    }
 
 
 
