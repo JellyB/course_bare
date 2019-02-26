@@ -152,6 +152,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 			periodTestListVO.getList().forEach(courseInfo -> {
 				courseInfo.setUndoCount(courseInfo.getChild().size());
 				courseInfo.getChild().forEach(periodTestInfo -> {
+					// TODO 后续变为从redis获取
 					Example example = new Example(CourseExercisesProcessLog.class);
 					example.or().andEqualTo("syllabusId", periodTestInfo.getSyllabusId())
 							.andEqualTo("userId", params.get("userId")).andEqualTo("isAlert", 1)
