@@ -301,10 +301,11 @@ public class UserCourseControllerV6 {
         classPractice.put("corrects", new int[]{1,2,2,2,2,1,1,1,1,1});
         classPractice.put("answers", new String[]{"1", "2", "3", "4", "4", "3", "2", "1", "2", "2"});
         classPractice.put("doubts", new int[] {1,1,1,1,1,0,0,0,0,0});
-        classPractice.put("id","8205958822857731640");
+        classPractice.put("id", "8205958822857731640");
         classPractice.put("correctCount", 5);//答对
-        classPractice.put("avgTimeOut", 150);//平均用时；
-        classPractice.put("avgCorrectCount", 6);//平均答对;
+        classPractice.put("classAvgTimeOut", 150);//班级平均用时；
+        classPractice.put("classAvgCorrect", 6);//班级平均答对;
+        workPractice.put("classAvgTimeOut", 150);
         classPractice.put("avgTimeOut", 150);
         classPractice.put("timeInfo", "09/30 13:30");
 
@@ -314,8 +315,9 @@ public class UserCourseControllerV6 {
         workPractice.put("id","8205958822857731640");
         workPractice.put("correctCount", 5);//答对
         workPractice.put("avgTimeOut", 150);//平均用时；
-        workPractice.put("avgCorrectCount", 6);//平均答对;
-        workPractice.put("avgTimeOut", 150);
+        workPractice.put("classAvgCorrect", 6);//平均答对;
+        workPractice.put("classAvgTimeOut", 150);
+        workPractice.put("classAvgTimeOut", 150);
         workPractice.put("timeInfo", "09/30 13:30");
         workPractice.put("points", new int[] {1234,22345,4567,5678});
         workPractice.put("finishInfo", "完成了课程89%的内容，课后作业正确率低于45%，勤加练习才能将学到的内容转化为自己的技能。");
