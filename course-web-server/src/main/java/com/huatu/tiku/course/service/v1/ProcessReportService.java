@@ -1,5 +1,7 @@
 package com.huatu.tiku.course.service.v1;
 
+import com.huatu.tiku.course.consts.ReportMsg;
+
 import java.util.Map;
 
 /**
@@ -9,7 +11,8 @@ import java.util.Map;
  * Create time 2019-02-22 上午11:16
  **/
 public interface ProcessReportService {
-
+    String SYLLABUS_ID = "syllabusId";
+    String EXPIRATION = "expiration";
     int TYPE_LIVE = 1;
     int TYPE_PLAYBACK = 2;
     /**
@@ -26,4 +29,11 @@ public interface ProcessReportService {
      * @return
      */
     Object playBackReport(Map<String,Object> params);
+
+    /**
+     * 处理数据上报信息
+     * @param reportMsg
+     * @return
+     */
+    Object dealReportMsg(ReportMsg reportMsg);
 }

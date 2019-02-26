@@ -19,7 +19,7 @@ import java.util.Map;
 @RequestMapping(value = "/report")
 @ApiVersion(value = "/v1")
 @RestController
-public class ProcessReportController {
+public class ProcessReportControllerV1 {
 
     @Autowired
     private ProcessReportService processReportService;
