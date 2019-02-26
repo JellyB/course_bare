@@ -29,6 +29,7 @@ import com.huatu.tiku.entity.CourseExercisesProcessLog;
 
 import lombok.extern.slf4j.Slf4j;
 import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.weekend.WeekendSqls;
 
 /**
  * 描述：
@@ -153,11 +154,15 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 				courseInfo.setUndoCount(courseInfo.getChild().size());
 				courseInfo.getChild().forEach(periodTestInfo -> {
 					// TODO 后续变为从redis获取
-					Example example = new Example(CourseExercisesProcessLog.class);
-					example.or().andEqualTo("syllabusId", periodTestInfo.getSyllabusId())
-							.andEqualTo("userId", params.get("userId")).andEqualTo("isAlert", 1)
-							.andEqualTo("status", 0);
-					int count = courseExercisesProcessLogMapper.selectCountByExample(example);
+					int count = courseExercisesProcessLogMapper
+							.selectCountByExample(new Example.Builder(CourseExercisesProcessLog.class)
+									.where(WeekendSqls.<CourseExercisesProcessLog>custom()
+											.andEqualTo(CourseExercisesProcessLog::getSyllabusId,
+													periodTestInfo.getSyllabusId())
+											.andEqualTo(CourseExercisesProcessLog::getUserId, params.get("userId"))
+											.andEqualTo(CourseExercisesProcessLog::getIsAlert, 1)
+											.andEqualTo(CourseExercisesProcessLog::getStatus, 0))
+									.build());
 					if (count > 0) {
 						periodTestInfo.setIsAlert(1);
 					}
