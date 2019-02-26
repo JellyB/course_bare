@@ -1,11 +1,13 @@
 package com.huatu.tiku.course.service.v1.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.huatu.common.SuccessMessage;
 import com.huatu.tiku.course.service.v1.ProcessReportService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 
 import java.util.Map;
 
@@ -23,7 +25,6 @@ public class ProcessReportServiceImpl implements ProcessReportService {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
-
     /**
      * 数据上报接口
      *
@@ -32,14 +33,13 @@ public class ProcessReportServiceImpl implements ProcessReportService {
      */
     @Override
     public Object liveReport(Map<String, Object> params) {
-        log.warn("liveReport:{}", params);
         return SuccessMessage.create();
     }
 
 
     @Override
     public Object playBackReport(Map<String, Object> params) {
-        log.warn("playBackReport:{}", params);
         return SuccessMessage.create();
     }
+
 }

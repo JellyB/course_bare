@@ -1,12 +1,19 @@
 package com.huatu.tiku.course.service.v6.impl;
 
+
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.bean.vo.PeriodTestListVO;
 import com.huatu.tiku.course.common.EstimateCourseRedisKey;
+import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
 import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
+import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.service.v6.CourseServiceV6Biz;
 import com.huatu.tiku.course.util.CourseCacheKey;
+import com.huatu.tiku.course.util.ResponseUtil;
+import com.huatu.tiku.entity.CourseExercisesProcessLog;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -16,11 +23,15 @@ import org.springframework.data.redis.connection.RedisZSetCommands;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
+import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.weekend.WeekendSqls;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+
 
 /**
  * 描述：
@@ -54,7 +65,13 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
     @Autowired
     private CourseServiceV6 courseService;
-
+    
+    @Autowired
+    private UserCourseServiceV6 userCourseServiceV6;
+    
+    @Autowired
+    private CourseExercisesProcessLogMapper courseExercisesProcessLogMapper;
+    
     /**
      * 模考大赛解析课信息,多个id使用逗号分隔
      * 模考大赛专用
@@ -181,4 +198,37 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         }
         return netSchoolResponse;
     }
+    
+
+	@Override
+	public Object periodTestList(Map<String, Object> params) {
+		Stopwatch stopwatch = Stopwatch.createStarted();
+		NetSchoolResponse<PeriodTestListVO> response = userCourseServiceV6.unfinishStageExamList(params);
+		log.info("接口unfinish_stage_exam_list调用php响应用时:{}", String.valueOf(stopwatch.stop()));
+		if (ResponseUtil.isSuccess(response)) {
+			Stopwatch stopwatchExplain = Stopwatch.createStarted();
+			PeriodTestListVO periodTestListVO = response.getData();
+			periodTestListVO.getList().forEach(courseInfo -> {
+				courseInfo.setUndoCount(courseInfo.getChild().size());
+				courseInfo.getChild().forEach(periodTestInfo -> {
+					// TODO 后续变为从redis获取
+					int count = courseExercisesProcessLogMapper
+							.selectCountByExample(new Example.Builder(CourseExercisesProcessLog.class)
+									.where(WeekendSqls.<CourseExercisesProcessLog>custom()
+											.andEqualTo(CourseExercisesProcessLog::getSyllabusId,
+													periodTestInfo.getSyllabusId())
+											.andEqualTo(CourseExercisesProcessLog::getUserId, params.get("userId"))
+											.andEqualTo(CourseExercisesProcessLog::getIsAlert, 1)
+											.andEqualTo(CourseExercisesProcessLog::getStatus, 0))
+									.build());
+					if (count > 0) {
+						periodTestInfo.setIsAlert(1);
+					}
+				});
+			});
+			log.info("接口unfinish_stage_exam_list解析用时:{}", String.valueOf(stopwatchExplain.stop()));
+			return periodTestListVO;
+		}
+		return null;
+	}
 }

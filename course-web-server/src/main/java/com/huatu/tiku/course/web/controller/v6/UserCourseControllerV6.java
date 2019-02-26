@@ -1,5 +1,19 @@
 package com.huatu.tiku.course.web.controller.v6;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.huatu.common.SuccessMessage;
@@ -9,22 +23,17 @@ import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.service.v6.CourseBizV6Service;
+import com.huatu.tiku.course.service.v6.CourseServiceV6Biz;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * 描述：我的课程接口
  *
@@ -44,6 +53,9 @@ public class UserCourseControllerV6 {
 
     @Autowired
     private CourseBizV6Service courseBizV6Service;
+    
+    @Autowired
+    private CourseServiceV6Biz courseServiceV6Biz;
 
 
     /**
@@ -213,12 +225,30 @@ public class UserCourseControllerV6 {
         return list;
     }
 
+   
+    /**
+     * 阶段测试列表
+     * @param userSession
+     * @param page
+     * @param size
+     * @return
+     */
+    @LocalMapParam(checkToken = true)
+    @GetMapping(value = "periodTest/detailList")
+    public Object periodTestList(@Token UserSession userSession,
+                            @RequestParam(value = "page", defaultValue = "1")int page,
+                            @RequestParam(value = "pageSize", defaultValue = "20") int size){
+    	 Map<String,Object> params = LocalMapParamHandler.get();
+    	 params.put("userId", userSession.getId());
+        return courseServiceV6Biz.periodTestList(params);
+    }
+    
     @GetMapping(value = "/courseWork/{id}")
+    @LocalMapParam(checkToken = true)
     public Object testReport(@Token UserSession userSession,
                              @RequestHeader(value = "cv") String cv,
                              @RequestHeader(value = "terminal") int terminal,
                              @PathVariable(value = "id") int id){
-
         HashMap<String,Object> result = Maps.newHashMap();
         List<RankInfo> rankInfos = Lists.newArrayList();
         List<Points> points = Lists.newArrayList();
@@ -254,6 +284,52 @@ public class UserCourseControllerV6 {
         return result;
     }
 
+
+
+    @GetMapping(value = "/learnReport/{syllabusId}")
+    @LocalMapParam(checkToken = true)
+    public Object learnReport(@Token UserSession userSession,
+                              @RequestHeader(value = "terminal") int terminal,
+                              @RequestHeader(value = "cv") String cv,
+                              @PathVariable(value = "syllabusId") int syllabusId){
+
+        Map<String,Object> result = Maps.newHashMap();
+        Map<String,Object> report = Maps.newHashMap();
+        Map<String,Object> classPractice = Maps.newHashMap();
+        Map<String,Object> workPractice = Maps.newHashMap();
+
+        classPractice.put("corrects", new int[]{1,2,2,2,2,1,1,1,1,1});
+        classPractice.put("answers", new String[]{"1", "2", "3", "4", "4", "3", "2", "1", "2", "2"});
+        classPractice.put("doubts", new int[] {1,1,1,1,1,0,0,0,0,0});
+        classPractice.put("id","8205958822857731640");
+        classPractice.put("correctCount", 5);//答对
+        classPractice.put("avgTimeOut", 150);//平均用时；
+        classPractice.put("avgCorrectCount", 6);//平均答对;
+        classPractice.put("avgTimeOut", 150);
+        classPractice.put("timeInfo", "09/30 13:30");
+
+        workPractice.put("corrects", new int[]{1,2,2,2,2,1,1,1,1,1});
+        workPractice.put("answers", new String[]{"1", "2", "3", "4", "4", "3", "2", "1", "2", "2"});
+        workPractice.put("doubts", new int[] {1,1,1,1,1,0,0,0,0,0});
+        workPractice.put("id","8205958822857731640");
+        workPractice.put("correctCount", 5);//答对
+        workPractice.put("avgTimeOut", 150);//平均用时；
+        workPractice.put("avgCorrectCount", 6);//平均答对;
+        workPractice.put("avgTimeOut", 150);
+        workPractice.put("timeInfo", "09/30 13:30");
+        workPractice.put("points", new int[] {1234,22345,4567,5678});
+        workPractice.put("finishInfo", "完成了课程89%的内容，课后作业正确率低于45%，勤加练习才能将学到的内容转化为自己的技能。");
+
+        report.put("learnTime", 123);//学习时长
+        report.put("gold", 15);//获取 15 图币
+        report.put("learnPercent", 86);//学习课程内容
+        report.put("abovePercent", 34);
+
+        result.put("classPractice", classPractice);
+        result.put("courseWorkPractice", workPractice);
+        result.put("liveReport", report);
+        return result;
+    }
 
 
 

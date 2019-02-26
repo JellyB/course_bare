@@ -1,21 +1,18 @@
 package com.huatu.tiku.course.web.controller;
 
 
-import com.alibaba.fastjson.JSON;
+import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
-import com.huatu.tiku.course.common.ArticleTypeListEnum;
 import com.huatu.tiku.course.netschool.api.ExamNetSchoolService;
+import com.huatu.tiku.course.service.exam.ExamService;
 import com.huatu.tiku.course.util.ResponseUtil;
-import com.huatu.tiku.springboot.users.service.UserSessionService;
+import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.core.util.JsonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * @创建人 lizhenjuan
@@ -32,6 +29,9 @@ public class ExamController {
     @Autowired
     ExamNetSchoolService examNetSchoolService;
 
+    @Autowired
+    ExamService examService;
+
     /**
      * 获取备考精华文章列表
      *
@@ -43,12 +43,10 @@ public class ExamController {
     @RequestMapping(value = "{type}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public Object getArticleList(@PathVariable int type,
                                  @RequestParam(defaultValue = "1") int page,
-                                 @RequestParam(defaultValue = "10") int pageSize) {
-        HashMap param = new HashMap();
-        param.put("type", type);
-        param.put("page", page);
-        param.put("pageSize", pageSize);
-        return ResponseUtil.build(examNetSchoolService.getArticleList(param));
+                                 @RequestParam(defaultValue = "10") int pageSize,
+                                 @Token UserSession userSession) {
+        int category = userSession.getCategory();
+        return examService.getArticleList(type, page, pageSize,category);
     }
 
     /**
@@ -59,10 +57,7 @@ public class ExamController {
      */
     @GetMapping(value = "detail/{aid}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public Object detail(@PathVariable int aid) {
-        HashMap map = new HashMap();
-        map.put("id", aid);
-        NetSchoolResponse detail = examNetSchoolService.detail(map);
-        return ResponseUtil.build(detail);
+        return examService.detail(aid);
     }
 
     /**
@@ -90,15 +85,6 @@ public class ExamController {
      */
     @GetMapping(value = "typeList", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public Object typeList() {
-        ArticleTypeListEnum[] values = ArticleTypeListEnum.values();
-        List<HashMap<String, Object>> result = new ArrayList<>();
-        for (ArticleTypeListEnum article : values) {
-            HashMap map = new HashMap();
-            map.put("sort", article.getSort());
-            map.put("type", article.getCode());
-            map.put("name", article.getName());
-            result.add(map);
-        }
-        return result;
+        return examService.typeList();
     }
 }
