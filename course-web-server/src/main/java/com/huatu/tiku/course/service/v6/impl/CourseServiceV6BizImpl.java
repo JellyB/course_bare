@@ -4,7 +4,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -15,16 +14,11 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.vo.PeriodTestListVO;
-import com.huatu.tiku.course.bean.vo.PeriodTestListVO.PeriodTestInfo;
-import com.huatu.tiku.course.bean.vo.PeriodTestListVO.PeriodTestListVOBuilder;
 import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
 import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
@@ -73,7 +67,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
     
     @Autowired
     private CourseExercisesProcessLogMapper courseExercisesProcessLogMapper;
-
+    
     /**
      * 模考大赛解析课信息,多个id使用逗号分隔
      * 模考大赛专用
@@ -149,62 +143,27 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
 	@Override
 	public Object periodTestList(Map<String, Object> params) {
-		 Stopwatch stopwatch = Stopwatch.createStarted();
-		NetSchoolResponse response = userCourseServiceV6.unfinishStageExamList(params);
+		Stopwatch stopwatch = Stopwatch.createStarted();
+		NetSchoolResponse<PeriodTestListVO> response = userCourseServiceV6.unfinishStageExamList(params);
 		log.info("接口unfinish_stage_exam_list调用php响应用时:{}", String.valueOf(stopwatch.stop()));
 		if (ResponseUtil.isSuccess(response)) {
-			List<PeriodTestListVO> periodTestList = Lists.newArrayList();
-			String responseStr = JSON.toJSONString(response.getData());
-			JSONObject data = JSON.parseObject(responseStr);
-			String listStr = JSON.toJSONString(data.get("list"));
-			LinkedHashMap<String, Object> jsonMap = JSON.parseObject(listStr,
-					new TypeReference<LinkedHashMap<String, Object>>() {
-					});
-			for (Map.Entry<String, Object> courseInfo : jsonMap.entrySet()) {
-				// 课程集合
-				PeriodTestListVOBuilder periodTestListVOBuilder = PeriodTestListVO.builder();
-				// log.info(courseInfo.getKey() + ":" + courseInfo.getValue());
-				// 获取每个课程相关信息
-				String courseInfoStr = JSON.toJSONString(courseInfo.getValue());
-				JSONObject courseJson = JSON.parseObject(courseInfoStr);
-				String classId = courseJson.getString("classId");
-				String className = courseJson.getString("className");
-				periodTestListVOBuilder.courseId(Integer.parseInt(classId)).courseTitle(className);
-				String periodTestStr = JSON.toJSONString(courseJson.get("child"));
-				LinkedHashMap<String, Object> periodTestMap = JSON.parseObject(periodTestStr,
-						new TypeReference<LinkedHashMap<String, Object>>() {
-						});
-
-				List<PeriodTestListVO.PeriodTestInfo> periodList = Lists.newArrayList();
-				for (Map.Entry<String, Object> periodTestInfo : periodTestMap.entrySet()) {
-					// 阶段测试集合
-					String periodTestInfoStr = JSON.toJSONString(periodTestInfo.getValue());
-					PeriodTestInfo periodTestVo = JSON.parseObject(periodTestInfoStr,
-							PeriodTestListVO.PeriodTestInfo.class);
-					// TODO 校验是否开启提醒
-					long examId = periodTestVo.getExamId();
+			Stopwatch stopwatchExplain = Stopwatch.createStarted();
+			PeriodTestListVO periodTestListVO = response.getData();
+			periodTestListVO.getList().forEach(courseInfo -> {
+				courseInfo.setUndoCount(courseInfo.getChild().size());
+				courseInfo.getChild().forEach(periodTestInfo -> {
 					Example example = new Example(CourseExercisesProcessLog.class);
-					example.or().andEqualTo("courseId", classId).andEqualTo("userId", params.get("userId"));
+					example.or().andEqualTo("syllabusId", periodTestInfo.getSyllabusId())
+							.andEqualTo("userId", params.get("userId")).andEqualTo("isAlert", 1)
+							.andEqualTo("status", 0);
 					int count = courseExercisesProcessLogMapper.selectCountByExample(example);
 					if (count > 0) {
-						periodTestVo.setIsAlert(1);
+						periodTestInfo.setIsAlert(1);
 					}
-					periodList.add(periodTestVo);
-				}
-				periodTestList
-						.add(periodTestListVOBuilder.periodTestList(periodList).undoCount(periodList.size()).build());
-			}
-			Integer total = 2;
-			Integer currentPage = 2;
-			Integer lastPage = 2;
-			Integer perPage = 2;
-			Map<String, Object> retMap = Maps.newHashMap();
-			retMap.put("total", total);
-			retMap.put("currentPage", currentPage);
-			retMap.put("lastPage", lastPage);
-			retMap.put("perPage", perPage);
-			retMap.put("list", periodTestList);
-			return retMap;
+				});
+			});
+			log.info("接口unfinish_stage_exam_list解析用时:{}", String.valueOf(stopwatchExplain.stop()));
+			return periodTestListVO;
 		}
 		return null;
 	}

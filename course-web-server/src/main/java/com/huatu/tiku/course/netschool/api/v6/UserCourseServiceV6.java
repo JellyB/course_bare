@@ -1,14 +1,16 @@
 package com.huatu.tiku.course.netschool.api.v6;
 
-import com.huatu.tiku.course.bean.NetSchoolResponse;
-import com.huatu.tiku.course.netschool.api.fall.UserCourseServiceV6FallBack;
+import java.util.Map;
+
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.Map;
+import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.bean.vo.PeriodTestListVO;
+import com.huatu.tiku.course.netschool.api.fall.UserCourseServiceV6FallBack;
 
 /**
  * 描述：
@@ -96,5 +98,5 @@ public interface UserCourseServiceV6 {
 	 * @return
 	 */
 	@GetMapping(value = "/v5/c/class/unfinish_stage_exam_list")
-	NetSchoolResponse unfinishStageExamList(@RequestParam Map<String, Object> params);
+	NetSchoolResponse<PeriodTestListVO> unfinishStageExamList(@RequestParam Map<String, Object> params);
 }
