@@ -1,6 +1,5 @@
 package com.huatu.tiku.course.service.v1;
 
-import com.huatu.tiku.course.consts.ReportMsg;
 
 import java.util.Map;
 
@@ -30,10 +29,4 @@ public interface ProcessReportService {
      */
     Object playBackReport(Map<String,Object> params);
 
-    /**
-     * 处理数据上报信息
-     * @param reportMsg
-     * @return
-     */
-    Object dealReportMsg(ReportMsg reportMsg);
 }
