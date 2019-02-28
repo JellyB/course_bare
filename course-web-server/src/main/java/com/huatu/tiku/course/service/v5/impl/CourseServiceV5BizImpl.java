@@ -33,7 +33,7 @@ public class CourseServiceV5BizImpl implements CourseServiceV5Biz {
             String classExt = courseService.getClassExt(classId, terminal);
             return classExt;
         };
-        return cacheUtil.getCacheStringValue(key, value, 30, TimeUnit.MINUTES);
+        return cacheUtil.getCacheStringValue(key, value, 2, TimeUnit.MINUTES);
     }
 
     @Override

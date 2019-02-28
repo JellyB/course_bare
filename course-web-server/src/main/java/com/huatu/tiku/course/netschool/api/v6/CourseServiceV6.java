@@ -68,4 +68,12 @@ public interface CourseServiceV6 {
      */
     @GetMapping(value = "/v5/c/class/analysis")
     NetSchoolResponse analysis(@RequestParam Map<String,Object> params);
+
+    /**
+     * 小模考课程列表
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/v5/c/class/analysis_class_list")
+    NetSchoolResponse analysisClassList(@RequestParam Map<String, Object> params);
 }
