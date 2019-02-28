@@ -1,13 +1,15 @@
 package com.huatu.tiku.course.spring.conf.queue;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import java.io.IOException;
 import java.util.Set;
@@ -24,7 +26,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Create time 2019-02-26 下午2:46
  **/
 
-public class RedisDelayQueue implements DelayQueue{
+public class RedisDelayQueue implements DelayQueue,BeanPostProcessor {
 
     private transient final ReentrantLock lock = new ReentrantLock();
 
@@ -64,6 +66,18 @@ public class RedisDelayQueue implements DelayQueue{
     }
 
     @Override
+    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+        return bean;
+    }
+
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        RedisDelayQueue redisDelayQueue = (RedisDelayQueue) bean;
+        redisDelayQueue.listen();
+        return bean;
+    }
+
+    @Override
     public boolean push(Message message) {
         if (message.getTimeout() > MAX_TIMEOUT) {
             throw new RuntimeException("Maximum delay time should not be exceed 10 days");
@@ -87,6 +101,7 @@ public class RedisDelayQueue implements DelayQueue{
     }
 
     @Override
+    @Scheduled(fixedRate = 5000)
     public void listen() {
         while (true) {
             String id = peekId();
@@ -259,7 +274,7 @@ public class RedisDelayQueue implements DelayQueue{
     }*/
 
     private String getUnAckQueueName(String queueName) {
-        return queueName + UNACK;
+        return queueName + UN_ACK;
     }
 
     @Override

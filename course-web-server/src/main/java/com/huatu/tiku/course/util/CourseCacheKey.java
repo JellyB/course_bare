@@ -48,6 +48,12 @@ public class CourseCacheKey {
 
 
     /**
+     * 直播录播数据上报key
+     */
+    private static final String PROCESS_REPORT_DELAY_QUEUE = "process_report_delay";
+
+
+    /**
      * IOS 内侧版本信息
      */
     public static final String IOS_AUDIT_VERSION = "ios_audit_versions";
@@ -86,5 +92,8 @@ public class CourseCacheKey {
         return String.format(REWARD_RECORD,action,uid);
     }
 
+    public static String getProcessReportDelayQueue(){
+        return PROCESS_REPORT_DELAY_QUEUE;
+    }
 
 }

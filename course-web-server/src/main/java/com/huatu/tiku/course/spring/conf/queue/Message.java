@@ -15,16 +15,16 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Message implements Serializable{
+public class Message<T> implements Serializable{
 
     private String id;
-    private String payload;
+    private T payload;
     private long timeout;
     private int priority;
     private long createTime=System.currentTimeMillis();
 
     @Builder
-    public Message(String id, String payload, long timeout, int priority, long createTime) {
+    public Message(String id, T payload, long timeout, int priority, long createTime) {
         this.id = id;
         this.payload = payload;
         this.timeout = timeout;

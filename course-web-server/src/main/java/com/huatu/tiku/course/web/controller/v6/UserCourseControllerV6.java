@@ -94,7 +94,6 @@ public class UserCourseControllerV6 {
         Map<String,Integer> result = Maps.newHashMap();
         result.put(StudyTypeEnum.COURSE_WORK.getKey(), 5);
         result.put(StudyTypeEnum.PERIOD_TEST.getKey(), 5);
-        result.put(StudyTypeEnum.PRE_TEST_ESSENCE.getKey(), 5);
         return result;
     }
 

@@ -10,7 +10,7 @@ public interface DelayQueue {
 
     String MESSAGE = "$message";
     String QUEUE = "$queue";
-    String UNACK = "$unAck";
+    String UN_ACK = "$unAck";
     String getName();
 
     int getUnAckTime();

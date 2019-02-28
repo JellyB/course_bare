@@ -1,10 +1,15 @@
 package com.huatu.tiku.course.test;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.huatu.common.test.BaseWebTest;
 import com.huatu.tiku.course.spring.conf.queue.DelayQueue;
 import com.huatu.tiku.course.spring.conf.queue.DelayQueueProcessListener;
 import com.huatu.tiku.course.spring.conf.queue.Message;
 import com.huatu.tiku.course.spring.conf.queue.RedisDelayQueue;
+import com.huatu.tiku.course.util.CourseCacheKey;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +31,16 @@ public class DelayQueueTest extends BaseWebTest {
 
     @Before
     public void init(){
-        redisDelayQueue = new RedisDelayQueue("delayQueuetest", "", redisTemplate, 60 * 1000, new DelayQueueProcessListener() {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false);
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        objectMapper.disable(SerializationFeature.INDENT_OUTPUT);
+
+        redisDelayQueue = new RedisDelayQueue(CourseCacheKey.getProcessReportDelayQueue(), redisTemplate, 60 * 1000,objectMapper, new DelayQueueProcessListener() {
             @Override
             public void ackCallback(Message message) {
 
