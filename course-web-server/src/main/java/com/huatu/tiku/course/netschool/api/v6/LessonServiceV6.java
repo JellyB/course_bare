@@ -54,6 +54,15 @@ public interface LessonServiceV6 {
     NetSchoolResponse collectionCancel(@RequestParam Map<String, Object> params);
 
 
+    /**
+     * 学习时长
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/v5/c/lesson/study_report")
+    NetSchoolResponse studyReport(@RequestParam Map<String, Object> params);
+
+
 
 
 }
