@@ -1,12 +1,8 @@
 package com.huatu.tiku.course.web.controller.v6.practice;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
-import com.google.common.collect.Lists;
 import com.huatu.common.SuccessMessage;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.course.bean.practice.QuestionMetaBo;
-import com.huatu.tiku.course.bean.practice.StudentRankBo;
 import com.huatu.tiku.course.service.v1.practice.TeacherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +33,8 @@ public class TeacherController {
      * 1.更新各个试题绑定开始考试时间
      */
     @PutMapping("{roomId}/{questionId}/practice")
-    public Object putQuestionPractice(@PathVariable Long roomId, @PathVariable Integer questionId, @RequestParam Integer practiceTime) {
+    public Object putQuestionPractice(@PathVariable Long roomId, @PathVariable Long questionId, @RequestParam Integer practiceTime) {
+        teacherService.saveQuestionPracticeInfo(roomId, questionId, practiceTime);
         return SuccessMessage.create();
     }
 
@@ -57,8 +54,7 @@ public class TeacherController {
             @PathVariable Long roomId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize) {
-        PageInfo<StudentRankBo> pageInfo = PageHelper.startPage(page, pageSize)
-                .doSelectPageInfo(() -> Lists.newArrayList(StudentRankBo.builder().build()));
-        return pageInfo;
+
+        return null;
     }
 }

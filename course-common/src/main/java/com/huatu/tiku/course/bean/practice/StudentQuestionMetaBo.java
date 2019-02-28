@@ -1,13 +1,15 @@
 package com.huatu.tiku.course.bean.practice;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Created by lijun on 2019/2/19
  */
 @Data
-@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class StudentQuestionMetaBo extends QuestionMetaBo{
 
     /**
@@ -39,4 +41,5 @@ public class StudentQuestionMetaBo extends QuestionMetaBo{
      * 正确试题数量
      */
     private Integer rightQuestionNum;
+
 }
