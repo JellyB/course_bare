@@ -53,14 +53,23 @@ public interface LessonServiceV6 {
     @PutMapping(value = "/v5/c/lesson/collection_cancel")
     NetSchoolResponse collectionCancel(@RequestParam Map<String, Object> params);
 
-
     /**
-     * 学习时长
-     * @param params
+     * 我的学习时长
+     * @param bjyRoomId 百家云 roomId
+     * @param userName 学员昵称
+     * @param classId 课件上层课程id
+     * @param netClassId 课程上层售课id
+     * @param courseWareId 课件id
+     * @param videoType 视频类型 2 直播 3 回放
      * @return
      */
     @GetMapping(value = "/v5/c/lesson/study_report")
-    NetSchoolResponse studyReport(@RequestParam Map<String, Object> params);
+    NetSchoolResponse studyReport(@RequestParam(value = "bjyRoomId") int bjyRoomId,
+                                  @RequestParam(value = "userName") String userName,
+                                  @RequestParam(value = "classId") int classId,
+                                  @RequestParam(value = "netClassId") int netClassId,
+                                  @RequestParam(value = "lessonId") int courseWareId,
+                                  @RequestParam(value = "videoType") int videoType);
 
 
 

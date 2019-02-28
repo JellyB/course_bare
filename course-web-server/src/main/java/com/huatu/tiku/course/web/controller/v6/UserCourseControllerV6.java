@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.huatu.common.utils.collection.HashMapBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -297,6 +298,8 @@ public class UserCourseControllerV6 {
         Map<String,Object> report = Maps.newHashMap();
         Map<String,Object> classPractice = Maps.newHashMap();
         Map<String,Object> workPractice = Maps.newHashMap();
+        List<HashMap> points = Lists.newArrayList();
+
 
         classPractice.put("corrects", new int[]{1,2,2,2,2,1,1,1,1,1});
         classPractice.put("answers", new String[]{"1", "2", "3", "4", "4", "3", "2", "1", "2", "2"});
@@ -317,7 +320,12 @@ public class UserCourseControllerV6 {
         workPractice.put("avgCorrectCount", 6);//平均答对;
         workPractice.put("avgTimeOut", 150);
         workPractice.put("timeInfo", "09/30 13:30");
-        workPractice.put("points", new int[] {1234,22345,4567,5678});
+
+        points.add(HashMapBuilder.newBuilder().put("name", "公文").put("id", 12345).build());
+        points.add(HashMapBuilder.newBuilder().put("name", "管理").put("id", 2345).build());
+        points.add(HashMapBuilder.newBuilder().put("name", "科技").put("id", 3456).build());
+        points.add(HashMapBuilder.newBuilder().put("name", "人文").put("id", 4567).build());
+        workPractice.put("points", points);
         workPractice.put("finishInfo", "完成了课程89%的内容，课后作业正确率低于45%，勤加练习才能将学到的内容转化为自己的技能。");
 
         report.put("learnTime", 123);//学习时长
