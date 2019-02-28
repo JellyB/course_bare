@@ -1,3 +1,4 @@
+/*
 package com.huatu.tiku.course.test;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -16,12 +17,14 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 
+*/
 /**
  * 描述：
  *
  * @author biguodong
  * Create time 2019-02-26 下午3:29
- **/
+ **//*
+
 @Slf4j
 public class DelayQueueTest extends BaseWebTest {
 
@@ -75,3 +78,4 @@ public class DelayQueueTest extends BaseWebTest {
         redisDelayQueue.listen();
     }
 }
+*/

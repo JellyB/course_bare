@@ -6,12 +6,9 @@ import com.huatu.common.SuccessMessage;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.service.v1.ProcessReportService;
 import com.huatu.tiku.course.spring.conf.queue.Message;
+import com.huatu.tiku.course.spring.conf.queue.Payload;
 import com.huatu.tiku.course.spring.conf.queue.RedisDelayQueue;
 import com.huatu.tiku.course.util.ResponseUtil;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -96,23 +93,6 @@ public class ProcessReportServiceImpl<T> implements ProcessReportService<T> {
         if(t instanceof Payload){
             Payload payload = (Payload) t;
             dealPayload(payload);
-        }
-    }
-
-    /**
-     * 直播延迟处理payload
-     */
-    @NoArgsConstructor
-    @Getter
-    @Setter
-    public static class Payload{
-        private int syllabusId;
-        private String userName;
-
-        @Builder
-        public Payload(int syllabusId, String userName) {
-            this.syllabusId = syllabusId;
-            this.userName = userName;
         }
     }
 

@@ -2,22 +2,20 @@ package com.huatu.tiku.course.spring.conf.queue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.BeanPostProcessor;
+import com.huatu.tiku.course.util.CourseCacheKey;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.LockSupport;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 描述：基于redis 实现的 delay queue
@@ -26,12 +24,11 @@ import java.util.concurrent.locks.ReentrantLock;
  * Create time 2019-02-26 下午2:46
  **/
 
-public class RedisDelayQueue implements DelayQueue,BeanPostProcessor {
+@Component
+@Slf4j
+public class RedisDelayQueue implements DelayQueue {
 
-    private transient final ReentrantLock lock = new ReentrantLock();
-
-    private final Condition available = lock.newCondition();
-
+    @Autowired
     private RedisTemplate redisTemplate;
 
     /**
@@ -39,44 +36,28 @@ public class RedisDelayQueue implements DelayQueue,BeanPostProcessor {
      */
     private long MAX_TIMEOUT = TimeUnit.DAYS.toSeconds(10);
 
-    private ObjectMapper objectMapper;
+    private static int unAckTime = 50 * 60;
 
-    private int unAckTime;
-
-    private String messageStoreKey;
-
-    private String realQueueName;
-
-    private String queueName;
-
+    @Autowired
     private DelayQueueProcessListener delayQueueProcessListener;
 
     private AtomicBoolean nextAvailable = new AtomicBoolean(false);
 
-    public RedisDelayQueue(String queueName, RedisTemplate redisTemplate, int unAckTime,
-                           ObjectMapper objectMapper,
-                           DelayQueueProcessListener delayQueueProcessListener) {
-        this.objectMapper = objectMapper;
-        this.queueName = queueName;
-        this.messageStoreKey =  queueName + MESSAGE;
-        this.unAckTime = unAckTime;
-        this.redisTemplate = redisTemplate;
-        realQueueName = queueName + QUEUE;
-        this.delayQueueProcessListener = delayQueueProcessListener;
-    }
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    @Override
-    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        return bean;
-    }
+    @Autowired
+    private HashOperations<String,String,String> hashOperations;
 
-    @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        RedisDelayQueue redisDelayQueue = (RedisDelayQueue) bean;
-        redisDelayQueue.listen();
-        return bean;
-    }
+    @Autowired
+    private ZSetOperations zSetOperations;
 
+
+    /**
+     * 压入新的消息
+     * @param message
+     * @return
+     */
     @Override
     public boolean push(Message message) {
         if (message.getTimeout() > MAX_TIMEOUT) {
@@ -84,60 +65,53 @@ public class RedisDelayQueue implements DelayQueue,BeanPostProcessor {
         }
         try {
             String json = objectMapper.writeValueAsString(message);
-            HashOperations hashOperations = redisTemplate.opsForHash();
-            ZSetOperations zSetOperations = redisTemplate.opsForZSet();
-            hashOperations.put(messageStoreKey, message.getId(), json);
+            hashOperations.put(messageStoreKey(), message.getId(), json);
             double priority = message.getPriority() / 100;
             double score = Long.valueOf(System.currentTimeMillis() + message.getTimeout()).doubleValue() + priority;
-            zSetOperations.add(realQueueName, message.getId(), score);
-            delayQueueProcessListener.pushCallback(message);
+            zSetOperations.add(realQueueName(), message.getId(), score);
             nextAvailable.set(true);
             return true;
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
         return false;
-
     }
 
     @Override
     @Scheduled(fixedRate = 5000)
     public void listen() {
-        while (true) {
-            String id = peekId();
-            if (id == null) {
-                continue;
+        String id = peekId();
+        if (id == null) {
+            return;
+        }
+        HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
+        String json = hashOperations.get(messageStoreKey(), id);
+        try {
+            Message message = objectMapper.readValue(json, Message.class);
+            if (message == null) {
+                return;
             }
-            HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
-            String json = hashOperations.get(messageStoreKey, id);
-            try {
-                Message message = objectMapper.readValue(json, Message.class);
-                if (message == null) {
-                    continue;
-                }
-                long delay = message.getCreateTime() + message.getTimeout() - System.currentTimeMillis();
-                System.out.println(delay);
-                if (delay <= 0) {
-                    delayQueueProcessListener.peekCallback(message);
-                } else {
-                    LockSupport.parkNanos(this, TimeUnit.NANOSECONDS.convert(delay, TimeUnit.MILLISECONDS));
-                    delayQueueProcessListener.peekCallback(message);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+            long delay = message.getCreateTime() + message.getTimeout() - System.currentTimeMillis();
+            System.out.println(delay);
+            if (delay <= 0) {
+                delayQueueProcessListener.peekCallback(message);
+            } else {
+                LockSupport.parkNanos(this, TimeUnit.NANOSECONDS.convert(delay, TimeUnit.MILLISECONDS));
+                delayQueueProcessListener.peekCallback(message);
             }
-
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     @Override
     public boolean ack(String messageId) {
-        String unAckQueueName = getUnAckQueueName(queueName);
+        String unAckQueueName = getUnAckQueueName();
         ZSetOperations zSetOperations = redisTemplate.opsForZSet();
         HashOperations hashOperations = redisTemplate.opsForHash();
         zSetOperations.remove(unAckQueueName, messageId);
-        Long removed = zSetOperations.remove(realQueueName, messageId);
-        Long msgRemoved = hashOperations.delete(messageStoreKey, messageId);
+        Long removed = zSetOperations.remove(realQueueName(), messageId);
+        Long msgRemoved = hashOperations.delete(messageStoreKey(), messageId);
         if (removed > 0 && msgRemoved > 0) {
             return true;
         }
@@ -145,20 +119,22 @@ public class RedisDelayQueue implements DelayQueue,BeanPostProcessor {
 
     }
 
+    /**
+     * 设置un ack 时间
+     * @param messageId
+     * @param timeout
+     * @return
+     */
     @Override
     public boolean setUnAckTimeout(String messageId, long timeout) {
         double unAckScore = Long.valueOf(System.currentTimeMillis() + timeout).doubleValue();
-        String unAckQueueName = getUnAckQueueName(queueName);
-
-        ZSetOperations zSetOperations = redisTemplate.opsForZSet();
+        String unAckQueueName = getUnAckQueueName();
         Double score = zSetOperations.score(unAckQueueName, messageId);
         if (score != null) {
-
             zSetOperations.add(unAckQueueName, messageId, unAckScore);
             return true;
         }
         return false;
-
     }
 
     /*@Override
@@ -197,7 +173,7 @@ public class RedisDelayQueue implements DelayQueue,BeanPostProcessor {
     @Override
     public Message get(String messageId) {
         HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
-        String json = hashOperations.get(messageStoreKey, messageId);
+        String json = hashOperations.get(messageStoreKey(), messageId);
         if (json == null) {
             return null;
         }
@@ -215,41 +191,39 @@ public class RedisDelayQueue implements DelayQueue,BeanPostProcessor {
     @Override
     public long size() {
         ZSetOperations zSetOperations = redisTemplate.opsForZSet();
-        return zSetOperations.zCard(realQueueName);
+        return zSetOperations.zCard(realQueueName());
     }
 
     @Override
     public void clear() {
-        String unAckShard = getUnAckQueueName(queueName);
-        redisTemplate.delete(realQueueName);
+        String unAckShard = getUnAckQueueName();
+        redisTemplate.delete(realQueueName());
         redisTemplate.delete(unAckShard);
-        redisTemplate.delete(messageStoreKey);
+        redisTemplate.delete(messageStoreKey());
 
     }
 
+    /**
+     * peek 一个 message id
+     * @return
+     */
     private String peekId() {
         try {
             if (nextAvailable.get()) {
-                lock.lockInterruptibly();
                 double max = Long.valueOf(System.currentTimeMillis() + MAX_TIMEOUT).doubleValue();
-                ZSetOperations zSetOperations = redisTemplate.opsForZSet();
-                Set<String> scanned = zSetOperations.rangeByScore(realQueueName, 0, max, 0 ,1);
+                Set<String> scanned = zSetOperations.rangeByScore(realQueueName(), 0, max, 0 ,1);
                 if (scanned.size() > 0) {
                     String messageId = scanned.toArray()[0].toString();
-                    zSetOperations.remove(realQueueName, messageId);
+                    zSetOperations.remove(realQueueName(), messageId);
                     setUnAckTimeout(messageId, unAckTime);
                     if (size() == 0) {
                         nextAvailable.set(false);
                     }
-                    available.signal();
-                    lock.unlock();
                     return messageId;
                 }
             }
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-            available.signal();
-            lock.unlock();
         }
         return null;
     }
@@ -273,17 +247,20 @@ public class RedisDelayQueue implements DelayQueue,BeanPostProcessor {
         }
     }*/
 
-    private String getUnAckQueueName(String queueName) {
-        return queueName + UN_ACK;
+    private static String getUnAckQueueName() {
+        return CourseCacheKey.getProcessReportDelayQueue().concat(UN_ACK);
     }
 
-    @Override
-    public String getName() {
-        return this.realQueueName;
+
+    private static String messageStoreKey(){
+        return CourseCacheKey.getProcessReportDelayQueue().concat(MESSAGE);
     }
 
-    @Override
-    public int getUnAckTime() {
-        return this.unAckTime;
+    private static String realQueueName(){
+        return CourseCacheKey.getProcessReportDelayQueue().concat(QUEUE);
+    }
+
+    private static String queueName(){
+        return CourseCacheKey.getProcessReportDelayQueue();
     }
 }

@@ -11,9 +11,6 @@ public interface DelayQueue {
     String MESSAGE = "$message";
     String QUEUE = "$queue";
     String UN_ACK = "$unAck";
-    String getName();
-
-    int getUnAckTime();
 
     boolean ack(String messageId);
 

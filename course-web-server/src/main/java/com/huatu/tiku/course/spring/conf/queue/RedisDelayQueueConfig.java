@@ -4,16 +4,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.huatu.tiku.course.service.v1.ProcessReportService;
-import com.huatu.tiku.course.service.v1.impl.ProcessReportServiceImpl;
-import com.huatu.tiku.course.util.CourseCacheKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.event.EventListener;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.annotation.Async;
-import redis.clients.jedis.JedisCluster;
+import org.springframework.data.redis.core.ZSetOperations;
 
 /**
  * 描述：
@@ -25,17 +21,10 @@ import redis.clients.jedis.JedisCluster;
 public class RedisDelayQueueConfig {
 
     @Autowired
-    private ProcessReportService processReportService;
-
-
-    @Autowired
     private RedisTemplate redisTemplate;
 
-    @Bean(value = "redisDelayQueue")
-    @Async
-    @EventListener
-    public RedisDelayQueue redisDelayQueue(){
-
+    @Bean
+    public ObjectMapper objectMapper(){
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
@@ -43,24 +32,19 @@ public class RedisDelayQueueConfig {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         objectMapper.disable(SerializationFeature.INDENT_OUTPUT);
-        RedisDelayQueue redisDelayQueue = new RedisDelayQueue(CourseCacheKey.getProcessReportDelayQueue(), redisTemplate, 60 * 1000, objectMapper, new DelayQueueProcessListener() {
-            @Override
-            public void ackCallback(Message message) {
-
-            }
-
-            @Override
-            public void peekCallback(Message message) {
-                Object obj = message.getPayload();
-                processReportService.ack(obj);
-            }
-
-            @Override
-            public void pushCallback(Message message) {
-
-            }
-        });
-        redisDelayQueue.listen();
-        return redisDelayQueue;
+        return objectMapper;
     }
+
+    @Bean
+    public HashOperations<String,String,String> hashOperations(){
+        return redisTemplate.opsForHash();
+    }
+
+
+    @Bean
+    public ZSetOperations zSetOperations(){
+        return redisTemplate.opsForZSet();
+    }
+
+
 }
