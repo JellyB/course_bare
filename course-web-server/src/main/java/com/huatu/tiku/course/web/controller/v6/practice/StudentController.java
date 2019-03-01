@@ -1,12 +1,12 @@
 package com.huatu.tiku.course.web.controller.v6.practice;
 
-import com.google.common.collect.Lists;
 import com.huatu.common.SuccessMessage;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.practice.StudentQuestionMetaBo;
-import com.huatu.tiku.course.bean.practice.StudentRankBo;
+import com.huatu.tiku.course.service.v1.practice.StudentService;
 import com.huatu.tiku.springboot.users.support.Token;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -14,15 +14,20 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("practice/student")
+@RequiredArgsConstructor
 @ApiVersion("v6")
 public class StudentController {
+
+    final StudentService studentService;
 
     /**
      * 用户提交答案
      */
-    @PostMapping("{courseId}/putAnswer")
-    public Object putAnswer(@Token UserSession userSession, @PathVariable Integer courseId,
-                            @RequestParam String answer, @RequestParam Integer time) {
+    @PutMapping("{roomId}/{questionId}/putAnswer")
+    public Object putAnswer(@Token UserSession userSession,
+                            @PathVariable Long roomId, @PathVariable Long questionId,
+                            @RequestParam Long courseId, @RequestParam String answer, @RequestParam Integer time) {
+        studentService.putAnswer(roomId, courseId, userSession.getId(), userSession.getNick(), questionId, answer, time);
         return SuccessMessage.create();
     }
 
@@ -38,8 +43,8 @@ public class StudentController {
      * 获取排名信息
      */
     @GetMapping("{roomId}/questionRankInfo")
-    public Object getQuestionRankInfo(@PathVariable Long roomId, @PathVariable Integer questionId) {
-        return Lists.newArrayList(StudentRankBo.builder().build());
+    public Object getQuestionRankInfo(@PathVariable Long roomId) {
+        return studentService.listPracticeRoomRankUser(roomId, 0, 10);
     }
 
     /**
@@ -47,6 +52,7 @@ public class StudentController {
      */
     @GetMapping("{roomId}/userRankInfo")
     public Object getUserRankInfo(@Token UserSession userSession) {
-        return StudentRankBo.builder().build();
+
+        return null;
     }
 }

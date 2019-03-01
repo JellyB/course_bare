@@ -14,4 +14,9 @@ public interface TeacherService {
      * 通过roomId 获取绑定的试题信息
      */
     List<TeacherQuestionBo> getQuestionInfoByRoomId(Long roomId) throws ExecutionException, InterruptedException;
+
+    /**
+     * 存储 试题练习信息
+     */
+    void saveQuestionPracticeInfo(Long roomId, Long questionId, Integer practiceTime);
 }
