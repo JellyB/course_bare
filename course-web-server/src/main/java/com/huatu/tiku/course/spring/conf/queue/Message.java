@@ -21,7 +21,7 @@ public class Message<T> implements Serializable{
     private T payload;
     private long timeout;
     private int priority;
-    private long createTime=System.currentTimeMillis();
+    private long createTime;
 
     @Builder
     public Message(String id, T payload, long timeout, int priority, long createTime) {

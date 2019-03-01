@@ -1,20 +1,21 @@
 package com.huatu.tiku.course.test;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.huatu.common.test.BaseWebTest;
-import com.huatu.tiku.course.spring.conf.queue.DelayQueue;
-import com.huatu.tiku.course.spring.conf.queue.DelayQueueProcessListener;
-import com.huatu.tiku.course.spring.conf.queue.Message;
-import com.huatu.tiku.course.spring.conf.queue.RedisDelayQueue;
+import com.huatu.tiku.course.service.v1.impl.ProcessReportServiceImpl;
+import com.huatu.tiku.course.spring.conf.queue.*;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+
+import java.util.Random;
 
 /**
  * 描述：
@@ -26,8 +27,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 public class DelayQueueTest extends BaseWebTest {
 
     private RedisDelayQueue redisDelayQueue;
-    @Autowired
-    private RedisTemplate redisTemplate;
 
     @Before
     public void init(){
@@ -40,7 +39,7 @@ public class DelayQueueTest extends BaseWebTest {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         objectMapper.disable(SerializationFeature.INDENT_OUTPUT);
 
-        redisDelayQueue = new RedisDelayQueue(CourseCacheKey.getProcessReportDelayQueue(), redisTemplate, 60 * 1000,objectMapper, new DelayQueueProcessListener() {
+        redisDelayQueue = new RedisDelayQueue(CourseCacheKey.getProcessReportDelayQueue(), 60 * 1000,objectMapper, new DelayQueueProcessListener() {
             @Override
             public void ackCallback(Message message) {
 
@@ -63,15 +62,16 @@ public class DelayQueueTest extends BaseWebTest {
     @Test
     public void testCreate() throws InterruptedException {
         Message message = new Message();
+        Random random = new Random();
         for (int i = 0; i < 10; i++) {
-            message.setId(i + "");
-            message.setPayload("test");
+            Payload payload = Payload.builder().syllabusId(i).userName( "test" + i).build();
+            message.setId("messageId" + i);
+            message.setPayload(payload);
             message.setPriority(0);
-            message.setTimeout(2000 * i);
+            message.setTimeout(random.nextInt(100) * 1000);
             redisDelayQueue.push(message);
+            log.info("message info :{}", JSONObject.toJSONString(message));
         }
-        // message = queue.peek();
-        // queue.ack("1234");
         redisDelayQueue.listen();
     }
 }
