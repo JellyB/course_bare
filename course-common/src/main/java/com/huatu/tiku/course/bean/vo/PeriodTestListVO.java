@@ -52,6 +52,7 @@ public class PeriodTestListVO {
 		private int isAlert;
 		private String questionIds;
 		private long syllabusId;
+		private int coursewareNum;//排序
 
 	}
 }
