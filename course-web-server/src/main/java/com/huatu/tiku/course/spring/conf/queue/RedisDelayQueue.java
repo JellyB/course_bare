@@ -32,7 +32,6 @@ public class RedisDelayQueue implements DelayQueue {
 
     private final Condition available = lock.newCondition();
 
-    @Autowired
     private RedisTemplate redisTemplate;
 
     /**
@@ -57,9 +56,10 @@ public class RedisDelayQueue implements DelayQueue {
     private AtomicBoolean nextAvailable = new AtomicBoolean(false);
 
     @Builder
-    public RedisDelayQueue(String queueName, int unAckTime,
+    public RedisDelayQueue(RedisTemplate redisTemplate, String queueName, int unAckTime,
                            ObjectMapper objectMapper,
                            DelayQueueProcessListener delayQueueProcessListener) {
+        this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;
         this.queueName = queueName;
         this.messageStoreKey =  queueName + MESSAGE;
@@ -97,7 +97,7 @@ public class RedisDelayQueue implements DelayQueue {
     @Scheduled(fixedRate = 1000)
     public void listen() {
         String id = peekId();
-        log.debug("current message id:{}", id);
+        //log.debug("current message id:{}", id);
         if (id == null) {
             return;
         }

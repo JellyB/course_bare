@@ -7,8 +7,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 
 /**
  * 描述：
@@ -20,6 +22,9 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 public class RedisDelayQueueConfig {
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     @Bean(value = "redisDelayQueue")
     public RedisDelayQueue redisDelayQueue(){
 
@@ -30,7 +35,7 @@ public class RedisDelayQueueConfig {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         objectMapper.disable(SerializationFeature.INDENT_OUTPUT);
-        RedisDelayQueue redisDelayQueue = new RedisDelayQueue(CourseCacheKey.getProcessReportDelayQueue(), 60 * 1000, objectMapper, new DelayQueueProcessListener() {
+        RedisDelayQueue redisDelayQueue = new RedisDelayQueue(redisTemplate, CourseCacheKey.getProcessReportDelayQueue(), 60 * 1000, objectMapper, new DelayQueueProcessListener() {
             @Override
             public void ackCallback(Message message) {
 

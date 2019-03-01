@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 
 /**
@@ -56,15 +57,20 @@ public class ProcessReportServiceImpl<T> implements ProcessReportService<T> {
         long endTime = Long.valueOf(String.valueOf(params.get(END_TIME)));
         String userName = String.valueOf(params.get(USER_NAME));
 
-        Payload payload = Payload.builder()
+        Random random = new Random();
+        int id = random.nextInt(100);
+
+        Payload payload = Payload.builder().syllabusId(id).userName( "test" + id).build();
+
+        /*Payload payload = Payload.builder()
                 .syllabusId(syllabusId)
                 .userName(userName)
-                .build();
+                .build();*/
 
         Message message = Message
                 .builder()
                 .id(UUID.randomUUID().toString())
-                .timeout(endTime)
+                .timeout(id * 1000)
                 .payload(payload)
                 .createTime(System.currentTimeMillis())
                 .build();
