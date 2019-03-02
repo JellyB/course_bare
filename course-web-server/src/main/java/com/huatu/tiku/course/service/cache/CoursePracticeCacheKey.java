@@ -30,6 +30,13 @@ public final class CoursePracticeCacheKey {
     }
 
     /**
+     * 房间中已经练习试题
+     */
+    public static String roomPractedQuestionNumKey(Long roomId) {
+        return "course:practice:roomPracticedQuestionNumKey:" + roomId;
+    }
+
+    /**
      * 获取试题统计信息key
      *
      * @param roomId     房间ID
@@ -47,7 +54,7 @@ public final class CoursePracticeCacheKey {
         return 7;
     }
 
-    public static TimeUnit getDefaultTimeUnit(){
+    public static TimeUnit getDefaultTimeUnit() {
         return TimeUnit.DAYS;
     }
 }

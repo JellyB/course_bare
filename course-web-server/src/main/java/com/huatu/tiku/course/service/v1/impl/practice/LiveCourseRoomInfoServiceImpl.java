@@ -19,7 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LiveCourseRoomInfoServiceImpl implements LiveCourseRoomInfoService {
 
-    final LiveCourseServiceV6 liveCourseService;
+    private final LiveCourseServiceV6 liveCourseService;
 
     @Override
     public List<Integer> getLiveCourseIdListByRoomId(Long roomId) {

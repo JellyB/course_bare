@@ -13,11 +13,6 @@ import lombok.NoArgsConstructor;
 public class StudentQuestionMetaBo extends QuestionMetaBo{
 
     /**
-     * 正确答案
-     */
-    private String rightAnswer;
-
-    /**
      * 用户答案
      */
     private String userAnswer;

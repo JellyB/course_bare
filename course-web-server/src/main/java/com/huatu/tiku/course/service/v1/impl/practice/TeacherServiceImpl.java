@@ -1,8 +1,13 @@
 package com.huatu.tiku.course.service.v1.impl.practice;
 
+import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import com.huatu.common.ErrorResult;
+import com.huatu.common.exception.BizException;
 import com.huatu.tiku.common.CourseQuestionTypeEnum;
+import com.huatu.tiku.course.bean.practice.PracticeRoomRankUserBo;
 import com.huatu.tiku.course.bean.practice.QuestionInfo;
+import com.huatu.tiku.course.bean.practice.QuestionMetaBo;
 import com.huatu.tiku.course.bean.practice.TeacherQuestionBo;
 import com.huatu.tiku.course.service.v1.CourseBreakpointService;
 import com.huatu.tiku.course.service.v1.practice.CoursePracticeQuestionInfoService;
@@ -37,12 +42,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TeacherServiceImpl implements TeacherService {
 
-    final LiveCourseRoomInfoService liveCourseRoomInfoService;
+    private final LiveCourseRoomInfoService liveCourseRoomInfoService;
 
-    final CourseBreakpointService courseBreakpointService;
-    final CoursePracticeQuestionInfoService coursePracticeQuestionInfoService;
+    private final CourseBreakpointService courseBreakpointService;
+    private final CoursePracticeQuestionInfoService coursePracticeQuestionInfoService;
 
-    final QuestionInfoService questionInfoService;
+    private final QuestionInfoService questionInfoService;
+    private final PracticeMetaComponent practiceMetaComponent;
 
     @Override
     public List<TeacherQuestionBo> getQuestionInfoByRoomId(Long roomId) throws ExecutionException, InterruptedException {
@@ -109,6 +115,38 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Override
     public void saveQuestionPracticeInfo(Long roomId, Long questionId, Integer practiceTime) {
+        CoursePracticeQuestionInfo coursePracticeQuestionInfo = getCoursePracticeQuestionInfoByRoomIdAndQuestionId(roomId, questionId);
+        if (null != coursePracticeQuestionInfo
+                && null != coursePracticeQuestionInfo.getStartPracticeTime()
+                && 0 != coursePracticeQuestionInfo.getStartPracticeTime()) {
+            throw new BizException(ErrorResult.create(5000000, "该试题已经开始考试"));
+        }
+        final CoursePracticeQuestionInfo info = CoursePracticeQuestionInfo.builder()
+                .roomId(roomId)
+                .questionId(questionId.intValue())
+                .startPracticeTime(System.currentTimeMillis())
+                .practiceTime(practiceTime)
+                .build();
+        coursePracticeQuestionInfoService.save(info);
+    }
+
+    @Override
+    public void updateQuestionPracticeTime(Long roomId, Long questionId, Integer practiceTime) {
+        CoursePracticeQuestionInfo coursePracticeQuestionInfo = getCoursePracticeQuestionInfoByRoomIdAndQuestionId(roomId, questionId);
+        if (coursePracticeQuestionInfo != null) {
+            final CoursePracticeQuestionInfo info = CoursePracticeQuestionInfo.builder()
+                    .roomId(roomId)
+                    .questionId(questionId.intValue())
+                    .practiceTime(practiceTime)
+                    .build();
+            coursePracticeQuestionInfoService.save(info);
+        } else {
+            coursePracticeQuestionInfo.setPracticeTime(practiceTime);
+            coursePracticeQuestionInfoService.save(coursePracticeQuestionInfo);
+        }
+    }
+
+    private CoursePracticeQuestionInfo getCoursePracticeQuestionInfoByRoomIdAndQuestionId(Long roomId, Long questionId) {
         WeekendSqls<CoursePracticeQuestionInfo> weekendSql = WeekendSqls.<CoursePracticeQuestionInfo>custom()
                 .andEqualTo(CoursePracticeQuestionInfo::getRoomId, roomId)
                 .andEqualTo(CoursePracticeQuestionInfo::getQuestionId, questionId);
@@ -117,18 +155,34 @@ public class TeacherServiceImpl implements TeacherService {
                 .build();
         final List<CoursePracticeQuestionInfo> practiceQuestionInfoList = coursePracticeQuestionInfoService.selectByExample(example);
         if (CollectionUtils.isEmpty(practiceQuestionInfoList)) {
-            final CoursePracticeQuestionInfo info = CoursePracticeQuestionInfo.builder()
-                    .roomId(roomId)
-                    .questionId(questionId.intValue())
-                    .startPracticeTime(System.currentTimeMillis())
-                    .practiceTime(practiceTime)
-                    .build();
-            coursePracticeQuestionInfoService.save(info);
-        } else {
-            final CoursePracticeQuestionInfo coursePracticeQuestionInfo = practiceQuestionInfoList.get(0);
-            coursePracticeQuestionInfo.setPracticeTime(practiceTime);
-            coursePracticeQuestionInfoService.save(coursePracticeQuestionInfo);
+            return null;
         }
+        return practiceQuestionInfoList.get(0);
+    }
+
+    @Override
+    public QuestionMetaBo getQuestionStatisticsByRoomIdAndQuestionId(Long roomId, Long questionId) throws ExecutionException, InterruptedException {
+        ListenableFuture<List<CoursePracticeQuestionInfo>> asyncCoursePracticeQuestionInfoByRoomId = getAsyncCoursePracticeQuestionInfoByRoomId(roomId, Lists.newArrayList(questionId));
+        final QuestionMetaBo questionMetaBo = practiceMetaComponent.getQuestionMetaBo(roomId, questionId);
+        List<CoursePracticeQuestionInfo> practiceQuestionInfoList = asyncCoursePracticeQuestionInfoByRoomId.get();
+        if (CollectionUtils.isNotEmpty(practiceQuestionInfoList)) {
+            CoursePracticeQuestionInfo coursePracticeQuestionInfo = practiceQuestionInfoList.get(0);
+            Long practiceTime = (System.currentTimeMillis() - coursePracticeQuestionInfo.getStartPracticeTime()) / 1000;
+            //计算剩余时间
+            questionMetaBo.setLastPracticeTime(practiceTime > coursePracticeQuestionInfo.getPracticeTime() ? -1 : coursePracticeQuestionInfo.getPracticeTime() - practiceTime.intValue());
+        } else {
+            questionMetaBo.setLastPracticeTime(-1);
+        }
+        return questionMetaBo;
+    }
+
+    @Override
+    public PageInfo<PracticeRoomRankUserBo> getQuestionRankInfo(Long roomId, Integer page, Integer pageSize) {
+        List<PracticeRoomRankUserBo> roomRankInfoList = practiceMetaComponent.getRoomRankInfo(roomId, (page - 1) * pageSize, page * pageSize);
+        Long totalInfo = practiceMetaComponent.getRoomRankTotalInfo(roomId);
+        PageInfo<PracticeRoomRankUserBo> pageInfo = PageInfo.of(roomRankInfoList);
+        pageInfo.setTotal(totalInfo);
+        return pageInfo;
     }
 
     /**

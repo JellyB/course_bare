@@ -3,6 +3,7 @@ package com.huatu.tiku.course.service.v1.impl.practice;
 import com.google.common.collect.Lists;
 import com.huatu.tiku.course.bean.practice.PracticeRoomRankUserBo;
 import com.huatu.tiku.course.bean.practice.QuestionInfo;
+import com.huatu.tiku.course.bean.practice.StudentQuestionMetaBo;
 import com.huatu.tiku.course.service.v1.practice.QuestionInfoService;
 import com.huatu.tiku.course.service.v1.practice.StudentService;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +22,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class StudentServiceImpl implements StudentService {
 
-    final QuestionInfoService questionInfoService;
-    final PracticeMetaComponent practiceMetaComponent;
+    private final QuestionInfoService questionInfoService;
+    private final PracticeMetaComponent practiceMetaComponent;
 
     @Override
     public void putAnswer(Long roomId, Long courseId, Integer userId, String userName, Long questionId, String answer, Integer time) {
@@ -39,8 +40,23 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    public StudentQuestionMetaBo getStudentQuestionMetaBo(Integer userId, Long roomId, Long courseId, Long questionId) {
+        StudentQuestionMetaBo studentQuestionMetaBo = practiceMetaComponent.getStudentQuestionMetaBo(userId, roomId, courseId, questionId);
+        //构建用户的答题信息
+        List<Long> roomPracticedQuestionList = practiceMetaComponent.getRoomPracticedQuestion(roomId);
+        //设置已答总题量
+        studentQuestionMetaBo.setTotalQuestionNum(roomPracticedQuestionList.size());
+        return studentQuestionMetaBo;
+    }
+
+    @Override
     public List<PracticeRoomRankUserBo> listPracticeRoomRankUser(Long roomId, Integer start, Integer end) {
         return practiceMetaComponent.getRoomRankInfo(roomId, start, end);
+    }
+
+    @Override
+    public PracticeRoomRankUserBo getUserRankInfo(Integer userId, Long courseId) {
+        return practiceMetaComponent.getPracticeRoomRankUser(userId, courseId);
     }
 
     /**
@@ -52,6 +68,5 @@ public class StudentServiceImpl implements StudentService {
         }
         return Arrays.stream(answer.split("")).sorted().collect(Collectors.joining(""));
     }
-
 
 }

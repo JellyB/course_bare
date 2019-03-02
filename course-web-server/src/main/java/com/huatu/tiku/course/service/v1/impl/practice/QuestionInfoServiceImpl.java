@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class QuestionInfoServiceImpl implements QuestionInfoService {
 
-    final QuestionServiceV1 questionService;
+    private final QuestionServiceV1 questionService;
 
     /**
      * 试题缓存信息

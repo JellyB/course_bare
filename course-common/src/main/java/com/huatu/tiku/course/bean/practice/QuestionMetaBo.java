@@ -40,4 +40,14 @@ public class QuestionMetaBo {
      */
     private Integer avgTime;
 
+    /**
+     * 正确率 - 需要考虑多选
+     */
+    private Double correctCate;
+
+    /**
+     * 剩余练习时间
+     */
+    private Integer lastPracticeTime;
+
 }
