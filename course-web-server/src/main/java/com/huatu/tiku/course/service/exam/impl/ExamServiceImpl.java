@@ -58,7 +58,7 @@ public class ExamServiceImpl implements ExamService {
             hashOperations.put(articleListKey, category + "", article1List.getData());
             redisTemplate.expire(articleListKey, 5, TimeUnit.MINUTES);
         }
-        return article1List;
+        return article1List.getData();
     }
 
     /**
@@ -82,7 +82,7 @@ public class ExamServiceImpl implements ExamService {
             hashOperations.put(articleDetailKey, String.valueOf(id), detailResponse.getData());
             redisTemplate.expire(articleDetailKey, 5, TimeUnit.MINUTES);
         }
-        return detailResponse;
+        return detailResponse.getData();
     }
 
     /**
