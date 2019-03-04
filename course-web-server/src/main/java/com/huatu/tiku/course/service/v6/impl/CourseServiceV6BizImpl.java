@@ -7,6 +7,7 @@ import com.google.common.collect.Maps;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.vo.PeriodTestListVO;
 import com.huatu.tiku.course.common.EstimateCourseRedisKey;
+import com.huatu.tiku.course.common.PeriodTestStatus;
 import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
 import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
@@ -226,7 +227,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 						periodTestInfo.setIsAlert(1);
 					}
 					//填充考试状态
-					periodTestInfo.setStatus(1);
+					periodTestInfo.setStatus(PeriodTestStatus.NOT_START);
 				});
 			});
 			log.info("接口unfinish_stage_exam_list解析用时:{}", String.valueOf(stopwatchExplain.stop()));

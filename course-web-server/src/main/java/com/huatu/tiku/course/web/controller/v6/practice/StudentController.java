@@ -26,8 +26,8 @@ public class StudentController {
     public Object putAnswer(@Token UserSession userSession,
                             @PathVariable Long roomId, @PathVariable Long questionId,
                             @RequestParam Long courseId, @RequestParam String answer, @RequestParam Integer time) {
-        studentService.putAnswer(roomId, courseId, userSession.getId(), userSession.getNick(), questionId, answer, time);
-        return SuccessMessage.create();
+        
+        return studentService.putAnswer(roomId, courseId, userSession.getId(), userSession.getNick(), questionId, answer, time);
     }
 
     /**

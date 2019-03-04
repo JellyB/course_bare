@@ -4,6 +4,7 @@ import com.huatu.tiku.course.bean.practice.PracticeRoomRankUserBo;
 import com.huatu.tiku.course.bean.practice.StudentQuestionMetaBo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by lijun on 2019/2/27
@@ -21,7 +22,7 @@ public interface StudentService {
      * @param answer     答案
      * @param time       用时
      */
-    void putAnswer(Long roomId, Long courseId, Integer userId, String userName, Long questionId, String answer, Integer time);
+	Map<String,Object> putAnswer(Long roomId, Long courseId, Integer userId, String userName, Long questionId, String answer, Integer time);
 
     /**
      * 获取 答题情况
