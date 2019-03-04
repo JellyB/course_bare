@@ -7,6 +7,7 @@ import com.google.common.collect.Maps;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.vo.PeriodTestListVO;
 import com.huatu.tiku.course.common.EstimateCourseRedisKey;
+import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
 import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
@@ -218,8 +219,8 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 											.andEqualTo(CourseExercisesProcessLog::getSyllabusId,
 													periodTestInfo.getSyllabusId())
 											.andEqualTo(CourseExercisesProcessLog::getUserId, params.get("userId"))
-											.andEqualTo(CourseExercisesProcessLog::getIsAlert, 1)
-											.andEqualTo(CourseExercisesProcessLog::getStatus, 0))
+											.andEqualTo(CourseExercisesProcessLog::getIsAlert, YesOrNoStatus.YES.getCode())
+											.andEqualTo(CourseExercisesProcessLog::getStatus, YesOrNoStatus.NO.getCode()))
 									.build());
 					if (count > 0) {
 						periodTestInfo.setIsAlert(1);
