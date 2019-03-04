@@ -22,7 +22,7 @@ public class StudentController {
     /**
      * 用户提交答案
      */
-    @PostMapping("{roomId}/{questionId}/putAnswer")
+    @PutMapping("{roomId}/{questionId}/putAnswer")
     public Object putAnswer(@Token UserSession userSession,
                             @PathVariable Long roomId, @PathVariable Long questionId,
                             @RequestParam Long courseId, @RequestParam String answer, @RequestParam Integer time) {
