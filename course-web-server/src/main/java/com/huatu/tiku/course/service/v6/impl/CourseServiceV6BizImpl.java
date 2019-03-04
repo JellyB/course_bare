@@ -225,6 +225,8 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 					if (count > 0) {
 						periodTestInfo.setIsAlert(1);
 					}
+					//填充考试状态
+					periodTestInfo.setStatus(1);
 				});
 			});
 			log.info("接口unfinish_stage_exam_list解析用时:{}", String.valueOf(stopwatchExplain.stop()));
