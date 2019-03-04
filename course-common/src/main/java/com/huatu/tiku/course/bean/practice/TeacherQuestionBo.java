@@ -75,12 +75,22 @@ public class TeacherQuestionBo {
     private Long startPracticeTime;
 
     /**
+     * 剩余练习时间
+     */
+    private Integer lastPracticeTime;
+
+    /**
      * 练习时长
      */
     private Integer practiceTime;
 
+    /**
+     * 知识点信息
+     */
+    private String pointName;
+
     @Builder
-    public TeacherQuestionBo(Long id, Integer pptIndex, Integer type, String typeName, List<String> materialList, String stem, List<String> choiceList, String answer, String analysis, String extend, String from, Long startPracticeTime, Integer practiceTime) {
+    public TeacherQuestionBo(Long id, Integer pptIndex, Integer type, String typeName, List<String> materialList, String stem, List<String> choiceList, String answer, String analysis, String extend, String from, Long startPracticeTime, Integer lastPracticeTime, Integer practiceTime, String pointName) {
         this.id = id;
         this.pptIndex = pptIndex;
         this.type = type;
@@ -93,6 +103,8 @@ public class TeacherQuestionBo {
         this.extend = extend;
         this.from = from;
         this.startPracticeTime = startPracticeTime;
+        this.lastPracticeTime = lastPracticeTime;
         this.practiceTime = practiceTime;
+        this.pointName = pointName;
     }
 }

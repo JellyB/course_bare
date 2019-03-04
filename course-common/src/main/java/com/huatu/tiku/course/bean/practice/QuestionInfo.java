@@ -61,9 +61,13 @@ public class QuestionInfo {
      */
     private String from;
 
+    /**
+     * 知识点信息
+     */
+    private String pointName;
 
     @Builder
-    public QuestionInfo(Long id, Integer type, String typeName, List<String> materialList, String stem, List<String> choiceList, String answer, String analysis, String extend, String from) {
+    public QuestionInfo(Long id, Integer type, String typeName, List<String> materialList, String stem, List<String> choiceList, String answer, String analysis, String extend, String from, String pointName) {
         this.id = id;
         this.type = type;
         this.typeName = typeName;
@@ -74,5 +78,6 @@ public class QuestionInfo {
         this.analysis = analysis;
         this.extend = extend;
         this.from = from;
+        this.pointName = pointName;
     }
 }
