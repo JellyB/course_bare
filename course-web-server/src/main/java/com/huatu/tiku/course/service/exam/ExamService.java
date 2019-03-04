@@ -1,5 +1,7 @@
 package com.huatu.tiku.course.service.exam;
 
+import com.huatu.tiku.course.bean.NetSchoolResponse;
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -16,4 +18,8 @@ public interface ExamService {
     Object detail(int id);
 
     List<HashMap<String, Object>> typeList();
+
+    NetSchoolResponse like(HashMap map);
+
+
 }

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,18 +47,18 @@ public class ExamServiceImpl implements ExamService {
         param.put("page", page);
         param.put("pageSize", pageSize);
 
-        String articleListKey = articleListKey(type, page, pageSize, category);
+     /*   String articleListKey = articleListKey(type, page, pageSize, category);
         log.info("articleListKey是:{},category是:{}", articleListKey, category);
         HashOperations hashOperations = redisTemplate.opsForHash();
         Object article = hashOperations.get(articleListKey, category + "");
         if (null != article) {
             return article;
-        }
+        }*/
         NetSchoolResponse article1List = examNetSchoolService.getArticleList(param);
-        if (article1List.getData() != null) {
+       /* if (article1List.getData() != null) {
             hashOperations.put(articleListKey, category + "", article1List.getData());
             redisTemplate.expire(articleListKey, 5, TimeUnit.MINUTES);
-        }
+        }*/
         return article1List.getData();
     }
 
@@ -102,6 +103,25 @@ public class ExamServiceImpl implements ExamService {
         }
         return result;
     }
+
+
+    /**
+     * 用户点赞
+     *
+     * @param map
+     * @return
+     */
+    public NetSchoolResponse like(HashMap map) {
+        NetSchoolResponse like = examNetSchoolService.like(map);
+        //清除文章详情缓存
+        int id = (int) map.get("id");
+        HashOperations hashOperations = redisTemplate.opsForHash();
+        hashOperations.delete(articleDetail(id), String.valueOf(id));
+        //文章列表清除缓存
+
+        return like;
+    }
+
 
     /**
      * 备考精华列表缓存key
