@@ -18,11 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.huatu.common.SuccessMessage;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
-import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.service.v6.CourseBizV6Service;
 import com.huatu.tiku.course.service.v6.CourseServiceV6Biz;
@@ -122,7 +120,7 @@ public class UserCourseControllerV6 {
     public Object readOneCourseWork(@Token UserSession userSession,
                                     @PathVariable(value = "type") String type,
                                     @PathVariable(value = "id")int id){
-        return courseExercisesProcessLogManager.readyOnece(id, type);
+        return courseExercisesProcessLogManager.readyOne(id, type);
     }
 
     /**

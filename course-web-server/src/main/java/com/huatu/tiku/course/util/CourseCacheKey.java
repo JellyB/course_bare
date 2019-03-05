@@ -52,6 +52,7 @@ public class CourseCacheKey {
      */
     private static final String PROCESS_REPORT_DELAY_QUEUE = "process_report_delay";
 
+    private static final String PROCESS_LOG_SYLLABUS_INFO = "process_log_syllabus_v6$%s";
 
     /**
      * IOS 内侧版本信息
@@ -96,4 +97,5 @@ public class CourseCacheKey {
         return PROCESS_REPORT_DELAY_QUEUE;
     }
 
+    public static String getProcessLogSyllabusInfo(String syllabusId){return String.format(PROCESS_LOG_SYLLABUS_INFO, syllabusId);}
 }
