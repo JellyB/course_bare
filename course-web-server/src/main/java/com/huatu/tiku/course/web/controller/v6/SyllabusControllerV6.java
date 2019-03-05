@@ -101,6 +101,7 @@ public class SyllabusControllerV6 {
         //添加答题信息
         courseUtil.addExercisesCardInfo((LinkedHashMap) response, userSession.getId());
         courseUtil.addPeriodTestInfo((LinkedHashMap) response, userSession.getId());
+        courseUtil.addStudyReportInfo((LinkedHashMap) response, userSession.getId());
         return response;
     }
 

@@ -14,9 +14,17 @@ import lombok.Getter;
 public enum  StudyTypeEnum {
 
     COURSE_WORK("courseWork", "课后作业", 1),
-    PERIOD_TEST("periodTest", "阶段考试", 2),
-    PRE_TEST_ESSENCE("preTestEssence", "备考精华", 3);
+    PERIOD_TEST("periodTest", "阶段考试", 2);
     private String key;
     private String name;
     private int order;
+
+    public static StudyTypeEnum create (String key){
+        for(StudyTypeEnum studyTypeEnum : values()){
+            if(studyTypeEnum.getKey().equals(key)){
+                return studyTypeEnum;
+            }
+        }
+        return null;
+    }
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.huatu.common.utils.collection.HashMapBuilder;
+import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -58,6 +59,9 @@ public class UserCourseControllerV6 {
     @Autowired
     private CourseServiceV6Biz courseServiceV6Biz;
 
+    @Autowired
+    private CourseExercisesProcessLogManager courseExercisesProcessLogManager;
+
 
     /**
      * 获取我的学习日历接口
@@ -91,10 +95,7 @@ public class UserCourseControllerV6 {
     public Object obtainUnFinishedNum(@Token UserSession userSession,
                                       @RequestHeader(value = "cv") String cv,
                                       @RequestHeader(value = "terminal") int terminal){
-        Map<String,Integer> result = Maps.newHashMap();
-        result.put(StudyTypeEnum.COURSE_WORK.getKey(), 5);
-        result.put(StudyTypeEnum.PERIOD_TEST.getKey(), 5);
-        return result;
+        return courseExercisesProcessLogManager.getCountByType(userSession.getId());
     }
 
     /**
@@ -107,7 +108,7 @@ public class UserCourseControllerV6 {
     public Object allReadCourseWork(@Token UserSession userSession,
                                     @PathVariable(value = "type")String type){
 
-        return SuccessMessage.create("操作成功！");
+        return courseExercisesProcessLogManager.allReadByType(userSession.getId(), type);
     }
 
     /**
@@ -121,7 +122,7 @@ public class UserCourseControllerV6 {
     public Object readOneCourseWork(@Token UserSession userSession,
                                     @PathVariable(value = "type") String type,
                                     @PathVariable(value = "id")int id){
-        return SuccessMessage.create("操作成功");
+        return courseExercisesProcessLogManager.readyOnece(id, type);
     }
 
     /**
