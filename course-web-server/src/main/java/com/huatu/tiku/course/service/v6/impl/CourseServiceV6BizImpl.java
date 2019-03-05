@@ -2,17 +2,13 @@ package com.huatu.tiku.course.service.v6.impl;
 
 
 import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +39,6 @@ import com.huatu.tiku.entity.CourseExercisesProcessLog;
 import lombok.extern.slf4j.Slf4j;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.weekend.WeekendSqls;
-
 
 
 /**
@@ -78,16 +73,16 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
     @Autowired
     private CourseServiceV6 courseService;
-    
+
     @Autowired
     private UserCourseServiceV6 userCourseServiceV6;
-    
+
     @Autowired
     private CourseExercisesProcessLogMapper courseExercisesProcessLogMapper;
-    
+
     @Autowired
     private PeriodTestServiceV4 periodTestServiceV4;
-    
+
     /**
      * 模考大赛解析课信息,多个id使用逗号分隔
      * 模考大赛专用
@@ -167,13 +162,14 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             params.put(RESPONSE_CLASS_IDS, courseIds);
             NetSchoolResponse netSchoolResponse = courseService.analysisClassList(params);
             Object data = netSchoolResponse.getData();
-            if(data instanceof LinkedHashMap){
-                ((LinkedHashMap) data).put("current_page",page);
-                ((LinkedHashMap) data).put("last_page",page*size>=all.size()?page:page+1);
-                ((LinkedHashMap) data).put("per_page",size);
-                ((LinkedHashMap) data).put("from",startIndex);
-                ((LinkedHashMap) data).put("to",endIndex);
-                ((LinkedHashMap) data).put("total",all.size());
+            if (data instanceof LinkedHashMap) {
+                sortClassById((LinkedHashMap) data, courseIds);
+                ((LinkedHashMap) data).put("current_page", page);
+                ((LinkedHashMap) data).put("last_page", page * size >= all.size() ? page : page + 1);
+                ((LinkedHashMap) data).put("per_page", size);
+                ((LinkedHashMap) data).put("from", startIndex);
+                ((LinkedHashMap) data).put("to", endIndex);
+                ((LinkedHashMap) data).put("total", all.size());
 
             }
             return netSchoolResponse;
@@ -184,6 +180,35 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         }
 
         return NetSchoolResponse.DEFAULT;
+    }
+
+    /**
+     * 返回列表倒序排序
+     *
+     * @param data
+     * @param courseIds
+     */
+    private void sortClassById(LinkedHashMap data, String courseIds) {
+        try{
+            List<LinkedHashMap> list = (List<LinkedHashMap>) data.get("data");
+            String[] split = courseIds.split(",");
+            if (CollectionUtils.isEmpty(list)) {
+                return;
+            }
+            List<LinkedHashMap> result = Lists.newArrayList();
+            for (String id : split) {
+                Optional<LinkedHashMap> any = list.stream().filter(i ->
+                        id.equals(MapUtils.getString(i, "classId")) ||
+                                id.equals(MapUtils.getString(i, "id")))
+                        .findAny();
+                if(any.isPresent()){
+                    result.add(any.get());
+                }
+            }
+            data.put("data",result);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -214,65 +239,65 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         }
         return netSchoolResponse;
     }
-    
 
-	@Override
-	public Object periodTestList(Map<String, Object> params) {
-		Stopwatch stopwatch = Stopwatch.createStarted();
-		int uid = (int) params.get("userId");
-		NetSchoolResponse<PeriodTestListVO> response = userCourseServiceV6.unfinishStageExamList(params);
-		log.info("接口unfinish_stage_exam_list调用php响应用时:{}", String.valueOf(stopwatch.stop()));
-		if (ResponseUtil.isSuccess(response)) {
-			Stopwatch stopwatchExplain = Stopwatch.createStarted();
-			PeriodTestListVO periodTestListVO = response.getData();
-			//key为paperid_syllabusId value 为试卷信息
-			Map<String, PeriodTestListVO.PeriodTestInfo> paperMap = Maps.newHashMap();
-			periodTestListVO.getList().forEach(courseInfo -> {
-				courseInfo.setUndoCount(courseInfo.getChild().size());
-				courseInfo.getChild().forEach(periodTestInfo -> {
-					// TODO 后续变为从redis获取
-					int count = courseExercisesProcessLogMapper
-							.selectCountByExample(new Example.Builder(CourseExercisesProcessLog.class)
-									.where(WeekendSqls.<CourseExercisesProcessLog>custom()
-											.andEqualTo(CourseExercisesProcessLog::getSyllabusId,
-													periodTestInfo.getSyllabusId())
-											.andEqualTo(CourseExercisesProcessLog::getUserId, uid)
-											.andEqualTo(CourseExercisesProcessLog::getIsAlert,
-													YesOrNoStatus.YES.getCode())
-											.andEqualTo(CourseExercisesProcessLog::getStatus,
-													YesOrNoStatus.YES.getCode())
-											.andEqualTo(CourseExercisesProcessLog::getDataType,
-													StudyTypeEnum.PERIOD_TEST.getKey()))
 
-									.build());
-					if (count > 0) {
-						periodTestInfo.setIsAlert(1);
-					}
-					
-					paperMap.put(periodTestInfo.getExamId()+"_"+periodTestInfo.getSyllabusId(),periodTestInfo);
-					// 填充考试状态
+    @Override
+    public Object periodTestList(Map<String, Object> params) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        int uid = (int) params.get("userId");
+        NetSchoolResponse<PeriodTestListVO> response = userCourseServiceV6.unfinishStageExamList(params);
+        log.info("接口unfinish_stage_exam_list调用php响应用时:{}", String.valueOf(stopwatch.stop()));
+        if (ResponseUtil.isSuccess(response)) {
+            Stopwatch stopwatchExplain = Stopwatch.createStarted();
+            PeriodTestListVO periodTestListVO = response.getData();
+            //key为paperid_syllabusId value 为试卷信息
+            Map<String, PeriodTestListVO.PeriodTestInfo> paperMap = Maps.newHashMap();
+            periodTestListVO.getList().forEach(courseInfo -> {
+                courseInfo.setUndoCount(courseInfo.getChild().size());
+                courseInfo.getChild().forEach(periodTestInfo -> {
+                    // TODO 后续变为从redis获取
+                    int count = courseExercisesProcessLogMapper
+                            .selectCountByExample(new Example.Builder(CourseExercisesProcessLog.class)
+                                    .where(WeekendSqls.<CourseExercisesProcessLog>custom()
+                                            .andEqualTo(CourseExercisesProcessLog::getSyllabusId,
+                                                    periodTestInfo.getSyllabusId())
+                                            .andEqualTo(CourseExercisesProcessLog::getUserId, uid)
+                                            .andEqualTo(CourseExercisesProcessLog::getIsAlert,
+                                                    YesOrNoStatus.YES.getCode())
+                                            .andEqualTo(CourseExercisesProcessLog::getStatus,
+                                                    YesOrNoStatus.YES.getCode())
+                                            .andEqualTo(CourseExercisesProcessLog::getDataType,
+                                                    StudyTypeEnum.PERIOD_TEST.getKey()))
+
+                                    .build());
+                    if (count > 0) {
+                        periodTestInfo.setIsAlert(1);
+                    }
+
+                    paperMap.put(periodTestInfo.getExamId() + "_" + periodTestInfo.getSyllabusId(), periodTestInfo);
+                    // 填充考试状态
 //					NetSchoolResponse netSchoolResponse = periodTestServiceV4.getPaperStatus(uid,
 //							periodTestInfo.getSyllabusId(), periodTestInfo.getExamId());
 //					if (ResponseUtil.isSuccess(netSchoolResponse)) {
 //						periodTestInfo.setStatus((int) netSchoolResponse.getData());
 //					}
-				});
-			});
-			Set<String> paperSyllabusSet = paperMap.keySet();
-			NetSchoolResponse<Map<String, Integer>> bathResponse = periodTestServiceV4.getPaperStatusBath(uid,
-					paperSyllabusSet);
-			if (ResponseUtil.isSuccess(bathResponse)) {
-				// key为paperid_syllabusId value 为试卷状态
-				Map<String, Integer> retMap = bathResponse.getData();
-				// 修改试卷状态
-				for (Entry<String, Integer> paperRet : retMap.entrySet()) {
-					paperMap.get(paperRet.getKey()).setStatus(paperRet.getValue());
-				}
-			}
-			log.info("getpaper param is:{}", paperSyllabusSet.toString());
-			log.info("接口unfinish_stage_exam_list解析用时:{}", String.valueOf(stopwatchExplain.stop()));
-			return periodTestListVO;
-		}
-		return null;
-	}
+                });
+            });
+            Set<String> paperSyllabusSet = paperMap.keySet();
+            NetSchoolResponse<Map<String, Integer>> bathResponse = periodTestServiceV4.getPaperStatusBath(uid,
+                    paperSyllabusSet);
+            if (ResponseUtil.isSuccess(bathResponse)) {
+                // key为paperid_syllabusId value 为试卷状态
+                Map<String, Integer> retMap = bathResponse.getData();
+                // 修改试卷状态
+                for (Entry<String, Integer> paperRet : retMap.entrySet()) {
+                    paperMap.get(paperRet.getKey()).setStatus(paperRet.getValue());
+                }
+            }
+            log.info("getpaper param is:{}", paperSyllabusSet.toString());
+            log.info("接口unfinish_stage_exam_list解析用时:{}", String.valueOf(stopwatchExplain.stop()));
+            return periodTestListVO;
+        }
+        return null;
+    }
 }
