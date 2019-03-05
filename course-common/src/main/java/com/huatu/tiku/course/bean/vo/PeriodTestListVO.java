@@ -53,6 +53,7 @@ public class PeriodTestListVO {
 		private String questionIds;
 		private long syllabusId;
 		private int coursewareNum;//排序
+		private int status;//阶段测试状态
 
 	}
 }

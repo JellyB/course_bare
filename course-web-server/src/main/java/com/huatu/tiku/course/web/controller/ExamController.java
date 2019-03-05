@@ -46,7 +46,7 @@ public class ExamController {
                                  @RequestParam(defaultValue = "10") int pageSize,
                                  @Token UserSession userSession) {
         int category = userSession.getCategory();
-        return examService.getArticleList(type, page, pageSize,category);
+        return examService.getArticleList(type, page, pageSize, category);
     }
 
     /**
@@ -74,7 +74,7 @@ public class ExamController {
         HashMap paramMap = new HashMap();
         paramMap.put("id", aid);
         paramMap.put("type", type);
-        NetSchoolResponse like = examNetSchoolService.like(paramMap);
+        NetSchoolResponse like = examService.like(paramMap);
         return ResponseUtil.build(like);
     }
 
