@@ -131,7 +131,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         String smallEstimateCourseIdKey = EstimateCourseRedisKey.getSmallEstimateCourseIdKey(subject);
         String courseIds = "";
         try {
-            Set<RedisZSetCommands.Tuple> tuples = connection.zRangeWithScores(smallEstimateCourseIdKey.getBytes(), 0, -1);
+            Set<RedisZSetCommands.Tuple> tuples = connection.zRevRangeWithScores(smallEstimateCourseIdKey.getBytes(), 0, -1);
             List<RedisZSetCommands.Tuple> all = tuples.stream().filter(i -> i.getScore().longValue() >= startTime)
                     .filter(i -> i.getScore().longValue() <= endTime)
                     .collect(Collectors.toList());
