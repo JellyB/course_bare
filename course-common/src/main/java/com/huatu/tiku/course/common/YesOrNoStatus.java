@@ -4,7 +4,7 @@ package com.huatu.tiku.course.common;
  * 0 1常量
  */
 public enum YesOrNoStatus {
-	YES(0, "是"), NO(1, "否");
+	YES(1, "是"), NO(0, "否");
 
 	private final Integer code;
 	private final String des;
