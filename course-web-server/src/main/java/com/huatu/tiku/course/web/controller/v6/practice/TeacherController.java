@@ -1,12 +1,7 @@
 package com.huatu.tiku.course.web.controller.v6.practice;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
-import com.google.common.collect.Lists;
 import com.huatu.common.SuccessMessage;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
-import com.huatu.tiku.course.bean.practice.QuestionMetaBo;
-import com.huatu.tiku.course.bean.practice.StudentRankBo;
 import com.huatu.tiku.course.service.v1.practice.TeacherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +17,7 @@ import java.util.concurrent.ExecutionException;
 @RequiredArgsConstructor
 public class TeacherController {
 
-    final TeacherService teacherService;
+    private final TeacherService teacherService;
 
     /**
      * 根据 roomId 获取试题详情
@@ -34,10 +29,19 @@ public class TeacherController {
 
     /**
      * 点击练一下
-     * 1.更新各个试题绑定开始考试时间
      */
     @PutMapping("{roomId}/{questionId}/practice")
-    public Object putQuestionPractice(@PathVariable Long roomId, @PathVariable Integer questionId, @RequestParam Integer practiceTime) {
+    public Object putQuestionPractice(@PathVariable Long roomId, @PathVariable Long questionId, @RequestParam Integer practiceTime) {
+        teacherService.saveQuestionPracticeInfo(roomId, questionId, practiceTime);
+        return SuccessMessage.create();
+    }
+
+    /**
+     * 更新各个试题绑定开始考试时间
+     */
+    @PutMapping("{roomId}/{questionId}/updateQuestionPracticeTime")
+    public Object updateQuestionPracticeTime(@PathVariable Long roomId, @PathVariable Long questionId, @RequestParam Integer practiceTime) {
+        teacherService.updateQuestionPracticeTime(roomId, questionId, practiceTime);
         return SuccessMessage.create();
     }
 
@@ -45,8 +49,8 @@ public class TeacherController {
      * 获取答题情况
      */
     @GetMapping("{roomId}/{questionId}/questionStatistics")
-    public Object getQuestionStatistics(@PathVariable Long roomId, @PathVariable Integer questionId) {
-        return new QuestionMetaBo();
+    public Object getQuestionStatistics(@PathVariable Long roomId, @PathVariable Long questionId) throws ExecutionException, InterruptedException {
+        return teacherService.getQuestionStatisticsByRoomIdAndQuestionId(roomId, questionId);
     }
 
     /**
@@ -57,8 +61,10 @@ public class TeacherController {
             @PathVariable Long roomId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize) {
-        PageInfo<StudentRankBo> pageInfo = PageHelper.startPage(page, pageSize)
-                .doSelectPageInfo(() -> Lists.newArrayList(StudentRankBo.builder().build()));
-        return pageInfo;
+        page = page < 1 ? 1 : page;
+        if (pageSize < 0 || pageSize > 50) {
+            pageSize = 10;
+        }
+        return teacherService.getQuestionRankInfo(roomId, page, pageSize);
     }
 }

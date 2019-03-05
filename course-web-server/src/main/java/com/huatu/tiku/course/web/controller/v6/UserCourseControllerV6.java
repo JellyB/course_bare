@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.huatu.common.utils.collection.HashMapBuilder;
+import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -57,6 +59,9 @@ public class UserCourseControllerV6 {
     @Autowired
     private CourseServiceV6Biz courseServiceV6Biz;
 
+    @Autowired
+    private CourseExercisesProcessLogManager courseExercisesProcessLogManager;
+
 
     /**
      * 获取我的学习日历接口
@@ -90,11 +95,7 @@ public class UserCourseControllerV6 {
     public Object obtainUnFinishedNum(@Token UserSession userSession,
                                       @RequestHeader(value = "cv") String cv,
                                       @RequestHeader(value = "terminal") int terminal){
-        Map<String,Integer> result = Maps.newHashMap();
-        result.put(StudyTypeEnum.COURSE_WORK.getKey(), 5);
-        result.put(StudyTypeEnum.PERIOD_TEST.getKey(), 5);
-        result.put(StudyTypeEnum.PRE_TEST_ESSENCE.getKey(), 5);
-        return result;
+        return courseExercisesProcessLogManager.getCountByType(userSession.getId());
     }
 
     /**
@@ -107,7 +108,7 @@ public class UserCourseControllerV6 {
     public Object allReadCourseWork(@Token UserSession userSession,
                                     @PathVariable(value = "type")String type){
 
-        return SuccessMessage.create("操作成功！");
+        return courseExercisesProcessLogManager.allReadByType(userSession.getId(), type);
     }
 
     /**
@@ -121,7 +122,7 @@ public class UserCourseControllerV6 {
     public Object readOneCourseWork(@Token UserSession userSession,
                                     @PathVariable(value = "type") String type,
                                     @PathVariable(value = "id")int id){
-        return SuccessMessage.create("操作成功");
+        return courseExercisesProcessLogManager.readyOnece(id, type);
     }
 
     /**
@@ -297,14 +298,17 @@ public class UserCourseControllerV6 {
         Map<String,Object> report = Maps.newHashMap();
         Map<String,Object> classPractice = Maps.newHashMap();
         Map<String,Object> workPractice = Maps.newHashMap();
+        List<HashMap> points = Lists.newArrayList();
+
 
         classPractice.put("corrects", new int[]{1,2,2,2,2,1,1,1,1,1});
         classPractice.put("answers", new String[]{"1", "2", "3", "4", "4", "3", "2", "1", "2", "2"});
         classPractice.put("doubts", new int[] {1,1,1,1,1,0,0,0,0,0});
-        classPractice.put("id","8205958822857731640");
+        classPractice.put("id", "8205958822857731640");
         classPractice.put("correctCount", 5);//答对
-        classPractice.put("avgTimeOut", 150);//平均用时；
-        classPractice.put("avgCorrectCount", 6);//平均答对;
+        classPractice.put("classAvgTimeOut", 150);//班级平均用时；
+        classPractice.put("classAvgCorrect", 6);//班级平均答对;
+        workPractice.put("classAvgTimeOut", 150);
         classPractice.put("avgTimeOut", 150);
         classPractice.put("timeInfo", "09/30 13:30");
 
@@ -314,10 +318,16 @@ public class UserCourseControllerV6 {
         workPractice.put("id","8205958822857731640");
         workPractice.put("correctCount", 5);//答对
         workPractice.put("avgTimeOut", 150);//平均用时；
-        workPractice.put("avgCorrectCount", 6);//平均答对;
-        workPractice.put("avgTimeOut", 150);
+        workPractice.put("classAvgCorrect", 6);//平均答对;
+        workPractice.put("classAvgTimeOut", 150);
+        workPractice.put("classAvgTimeOut", 150);
         workPractice.put("timeInfo", "09/30 13:30");
-        workPractice.put("points", new int[] {1234,22345,4567,5678});
+
+        points.add(HashMapBuilder.newBuilder().put("name", "公文").put("id", 12345).build());
+        points.add(HashMapBuilder.newBuilder().put("name", "管理").put("id", 2345).build());
+        points.add(HashMapBuilder.newBuilder().put("name", "科技").put("id", 3456).build());
+        points.add(HashMapBuilder.newBuilder().put("name", "人文").put("id", 4567).build());
+        workPractice.put("points", points);
         workPractice.put("finishInfo", "完成了课程89%的内容，课后作业正确率低于45%，勤加练习才能将学到的内容转化为自己的技能。");
 
         report.put("learnTime", 123);//学习时长

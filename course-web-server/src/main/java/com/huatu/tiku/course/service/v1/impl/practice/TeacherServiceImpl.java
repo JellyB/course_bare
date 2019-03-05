@@ -1,30 +1,33 @@
 package com.huatu.tiku.course.service.v1.impl.practice;
 
+import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import com.huatu.common.ErrorResult;
+import com.huatu.common.exception.BizException;
 import com.huatu.tiku.common.CourseQuestionTypeEnum;
+import com.huatu.tiku.course.bean.practice.PracticeRoomRankUserBo;
 import com.huatu.tiku.course.bean.practice.QuestionInfo;
+import com.huatu.tiku.course.bean.practice.QuestionMetaBo;
 import com.huatu.tiku.course.bean.practice.TeacherQuestionBo;
 import com.huatu.tiku.course.service.v1.CourseBreakpointService;
 import com.huatu.tiku.course.service.v1.practice.CoursePracticeQuestionInfoService;
 import com.huatu.tiku.course.service.v1.practice.LiveCourseRoomInfoService;
+import com.huatu.tiku.course.service.v1.practice.QuestionInfoService;
 import com.huatu.tiku.course.service.v1.practice.TeacherService;
-import com.huatu.tiku.course.util.ZTKResponseUtil;
-import com.huatu.tiku.course.ztk.api.v1.question.QuestionServiceV1;
 import com.huatu.tiku.entity.CourseBreakpointQuestion;
 import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
+import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.weekend.WeekendSqls;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -39,12 +42,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TeacherServiceImpl implements TeacherService {
 
-    final LiveCourseRoomInfoService liveCourseRoomInfoService;
+    private final LiveCourseRoomInfoService liveCourseRoomInfoService;
 
-    final CourseBreakpointService courseBreakpointService;
-    final CoursePracticeQuestionInfoService coursePracticeQuestionInfoService;
+    private final CourseBreakpointService courseBreakpointService;
+    private final CoursePracticeQuestionInfoService coursePracticeQuestionInfoService;
 
-    final QuestionServiceV1 questionService;
+    private final QuestionInfoService questionInfoService;
+    private final PracticeMetaComponent practiceMetaComponent;
 
     @Override
     public List<TeacherQuestionBo> getQuestionInfoByRoomId(Long roomId) throws ExecutionException, InterruptedException {
@@ -64,7 +68,7 @@ public class TeacherServiceImpl implements TeacherService {
                 .collect(Collectors.toList());
         //查询
         ListenableFuture<List<CoursePracticeQuestionInfo>> coursePracticeQuestionInfoByRoomId = getAsyncCoursePracticeQuestionInfoByRoomId(roomId, questionIdList);
-        ListenableFuture<List<QuestionInfo>> baseQuestionInfoByRoomId = getAsyncBaseQuestionInfoByRoomId(questionIdList);
+        ListenableFuture<List<QuestionInfo>> baseQuestionInfoByRoomId = getAsyncBaseQuestionInfo(questionIdList);
         final CountDownLatch questionSearchTask = new CountDownLatch(2);
 
         Consumer<ListenableFuture> addCallBack = future ->
@@ -90,54 +94,11 @@ public class TeacherServiceImpl implements TeacherService {
 
 
     /**
-     * 通过 roomId 获取试题详情
+     * 通过 试题ID 获取试题详情
      */
     @Async
-    public ListenableFuture<List<QuestionInfo>> getAsyncBaseQuestionInfoByRoomId(List<Long> questionIdList) {
-        if (CollectionUtils.isEmpty(questionIdList)) {
-            return new AsyncResult<>(Lists.newArrayList());
-        }
-        //获取所有的试题信息
-        final String questionIds = questionIdList.stream()
-                .map(String::valueOf)
-                .collect(Collectors.joining(","));
-        Object listQuestionByIds = questionService.listQuestionByIds(questionIds);
-        List<Map<String, Object>> result;
-        try {
-            result = (List<Map<String, Object>>) ZTKResponseUtil.build(listQuestionByIds);
-        } catch (Exception e) {
-            return new AsyncResult<>(Lists.newArrayList());
-        }
-        if (CollectionUtils.isEmpty(result)) {
-            return new AsyncResult<>(Lists.newArrayList());
-        }
-        List<QuestionInfo> questionInfoList = result.stream()
-                .map(map -> {
-                    final QuestionInfo questionInfo = QuestionInfo.builder()
-                            .id(MapUtils.getLong(map, "id"))
-                            .stem(MapUtils.getString(map, "stem"))
-                            .choiceList((List<String>) MapUtils.getObject(map, "choiceList"))
-                            .answer(MapUtils.getString(map, "answer"))
-                            .analysis(MapUtils.getString(map, "analysis"))
-                            .extend(MapUtils.getString(map, "extend"))
-                            .from(MapUtils.getString(map, "from"))
-                            .build();
-                    //材料
-                    List<String> materialList = (List<String>) MapUtils.getObject(map, "materials");
-                    if (CollectionUtils.isEmpty(materialList)) {
-                        String material = MapUtils.getString(map, "material");
-                        if (!StringUtils.isEmpty(material)) {
-                            materialList = Lists.newArrayList(material);
-                        }
-                    }
-                    questionInfo.setMaterialList(materialList);
-                    Integer type = MapUtils.getInteger(map, "type");
-                    questionInfo.setType(type);
-                    questionInfo.setTypeName(questionService.getQuestionTypeName(type));
-                    return questionInfo;
-                })
-                .collect(Collectors.toList());
-        return new AsyncResult<>(questionInfoList);
+    public ListenableFuture<List<QuestionInfo>> getAsyncBaseQuestionInfo(List<Long> questionIdList) {
+        return new AsyncResult<>(questionInfoService.getBaseQuestionInfo(questionIdList));
     }
 
     /**
@@ -150,6 +111,78 @@ public class TeacherServiceImpl implements TeacherService {
         }
         List<CoursePracticeQuestionInfo> questionInfoList = coursePracticeQuestionInfoService.listByRoomIdAndQuestionId(roomId, questionIdList);
         return new AsyncResult<>(questionInfoList);
+    }
+
+    @Override
+    public void saveQuestionPracticeInfo(Long roomId, Long questionId, Integer practiceTime) {
+        CoursePracticeQuestionInfo coursePracticeQuestionInfo = getCoursePracticeQuestionInfoByRoomIdAndQuestionId(roomId, questionId);
+        if (null != coursePracticeQuestionInfo
+                && null != coursePracticeQuestionInfo.getStartPracticeTime()
+                && 0 != coursePracticeQuestionInfo.getStartPracticeTime()) {
+            throw new BizException(ErrorResult.create(5000000, "该试题已经开始考试"));
+        }
+        final CoursePracticeQuestionInfo info = CoursePracticeQuestionInfo.builder()
+                .roomId(roomId)
+                .questionId(questionId.intValue())
+                .startPracticeTime(System.currentTimeMillis())
+                .practiceTime(practiceTime)
+                .build();
+        coursePracticeQuestionInfoService.save(info);
+    }
+
+    @Override
+    public void updateQuestionPracticeTime(Long roomId, Long questionId, Integer practiceTime) {
+        CoursePracticeQuestionInfo coursePracticeQuestionInfo = getCoursePracticeQuestionInfoByRoomIdAndQuestionId(roomId, questionId);
+        if (coursePracticeQuestionInfo != null) {
+            final CoursePracticeQuestionInfo info = CoursePracticeQuestionInfo.builder()
+                    .roomId(roomId)
+                    .questionId(questionId.intValue())
+                    .practiceTime(practiceTime)
+                    .build();
+            coursePracticeQuestionInfoService.save(info);
+        } else {
+            coursePracticeQuestionInfo.setPracticeTime(practiceTime);
+            coursePracticeQuestionInfoService.save(coursePracticeQuestionInfo);
+        }
+    }
+
+    private CoursePracticeQuestionInfo getCoursePracticeQuestionInfoByRoomIdAndQuestionId(Long roomId, Long questionId) {
+        WeekendSqls<CoursePracticeQuestionInfo> weekendSql = WeekendSqls.<CoursePracticeQuestionInfo>custom()
+                .andEqualTo(CoursePracticeQuestionInfo::getRoomId, roomId)
+                .andEqualTo(CoursePracticeQuestionInfo::getQuestionId, questionId);
+        Example example = Example.builder(CoursePracticeQuestionInfo.class)
+                .where(weekendSql)
+                .build();
+        final List<CoursePracticeQuestionInfo> practiceQuestionInfoList = coursePracticeQuestionInfoService.selectByExample(example);
+        if (CollectionUtils.isEmpty(practiceQuestionInfoList)) {
+            return null;
+        }
+        return practiceQuestionInfoList.get(0);
+    }
+
+    @Override
+    public QuestionMetaBo getQuestionStatisticsByRoomIdAndQuestionId(Long roomId, Long questionId) throws ExecutionException, InterruptedException {
+        ListenableFuture<List<CoursePracticeQuestionInfo>> asyncCoursePracticeQuestionInfoByRoomId = getAsyncCoursePracticeQuestionInfoByRoomId(roomId, Lists.newArrayList(questionId));
+        final QuestionMetaBo questionMetaBo = practiceMetaComponent.getQuestionMetaBo(roomId, questionId);
+        List<CoursePracticeQuestionInfo> practiceQuestionInfoList = asyncCoursePracticeQuestionInfoByRoomId.get();
+        if (CollectionUtils.isNotEmpty(practiceQuestionInfoList)) {
+            CoursePracticeQuestionInfo coursePracticeQuestionInfo = practiceQuestionInfoList.get(0);
+            Long practiceTime = (System.currentTimeMillis() - coursePracticeQuestionInfo.getStartPracticeTime()) / 1000;
+            //计算剩余时间
+            questionMetaBo.setLastPracticeTime(practiceTime > coursePracticeQuestionInfo.getPracticeTime() ? -1 : coursePracticeQuestionInfo.getPracticeTime() - practiceTime.intValue());
+        } else {
+            questionMetaBo.setLastPracticeTime(-1);
+        }
+        return questionMetaBo;
+    }
+
+    @Override
+    public PageInfo<PracticeRoomRankUserBo> getQuestionRankInfo(Long roomId, Integer page, Integer pageSize) {
+        List<PracticeRoomRankUserBo> roomRankInfoList = practiceMetaComponent.getRoomRankInfo(roomId, (page - 1) * pageSize, page * pageSize);
+        Long totalInfo = practiceMetaComponent.getRoomRankTotalInfo(roomId);
+        PageInfo<PracticeRoomRankUserBo> pageInfo = PageInfo.of(roomRankInfoList);
+        pageInfo.setTotal(totalInfo);
+        return pageInfo;
     }
 
     /**
@@ -177,14 +210,16 @@ public class TeacherServiceImpl implements TeacherService {
                         BeanUtils.copyProperties(baseQuestionInfoOptional.get(), teacherQuestionBo);
                     }
                     Optional<CoursePracticeQuestionInfo> practiceQuestionInfoOptional = coursePracticeQuestionInfoList.stream()
-                            .filter(coursePracticeQuestionInfo -> coursePracticeQuestionInfo.getId().equals(courseBreakpointQuestion.getId()))
+                            .filter(coursePracticeQuestionInfo -> coursePracticeQuestionInfo.getQuestionId().equals(courseBreakpointQuestion.getQuestionId().intValue()))
                             .findAny();
                     if (practiceQuestionInfoOptional.isPresent()) {
                         final CoursePracticeQuestionInfo coursePracticeQuestionInfo = practiceQuestionInfoOptional.get();
-                        teacherQuestionBo.setPracticeTime(coursePracticeQuestionInfo.getPracticeTime());
-                        Long practiceTime = System.currentTimeMillis() - coursePracticeQuestionInfo.getStartPracticeTime();
+                        teacherQuestionBo.setStartPracticeTime(coursePracticeQuestionInfo.getStartPracticeTime());
+                        Long practiceTime = (System.currentTimeMillis() - coursePracticeQuestionInfo.getStartPracticeTime()) / 1000;
                         //计算剩余时间
-                        teacherQuestionBo.setStartPracticeTime(practiceTime < 0 ? -1 : practiceTime);
+                        teacherQuestionBo.setLastPracticeTime(practiceTime > coursePracticeQuestionInfo.getPracticeTime() ? -1 : coursePracticeQuestionInfo.getPracticeTime() - practiceTime.intValue());
+                        //设置的练习时间
+                        teacherQuestionBo.setPracticeTime(coursePracticeQuestionInfo.getPracticeTime());
                     }
                     teacherQuestionBo.setPptIndex(courseBreakpointQuestion.getPptIndex());
                     return teacherQuestionBo;

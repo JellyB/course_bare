@@ -1,15 +1,24 @@
 package com.huatu.tiku.course.bean.practice;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /**
  * 试题统计信息
  * Created by lijun on 2019/2/18
  */
+@Data
+@NoArgsConstructor
+@Builder
+@AllArgsConstructor
 public class QuestionMetaBo {
 
     /**
      * ID
      */
-    private Integer id;
+    private Long id;
 
     /**
      * 做题次数
@@ -24,7 +33,7 @@ public class QuestionMetaBo {
     /**
      * 正确答案序号
      */
-    private Integer rightIndex;
+    private String answer;
 
     /**
      * 平均答题用时
@@ -32,8 +41,13 @@ public class QuestionMetaBo {
     private Integer avgTime;
 
     /**
-     * 剩余时间
+     * 正确率 - 需要考虑多选
      */
-    private Integer remainingTime;
+    private Double correctCate;
+
+    /**
+     * 剩余练习时间
+     */
+    private Integer lastPracticeTime;
 
 }

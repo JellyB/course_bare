@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.web.controller.util;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Maps;
 import com.huatu.common.spring.event.EventPublisher;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.common.bean.user.UserSession;
@@ -12,6 +13,7 @@ import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
 import com.huatu.tiku.springboot.basic.reward.event.RewardActionEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -217,5 +219,96 @@ public class CourseUtil {
                 }
         );
     }
+
+
+    /**
+     * 处理阶段考试状态信息
+     * @param response
+     * @param userId
+     */
+    public void addPeriodTestInfo(LinkedHashMap response, long userId){
+                response.computeIfPresent("list", (key, value) -> {
+                        List<Integer> courseWareIds = ((List<Map>) value).stream()
+                                .filter(map -> MapUtils.getString(map, "videoType").equals("4"))
+                                .filter(map -> null != map.get("videoType") && null != map.get("coursewareId"))
+                                .map(map -> MapUtils.getIntValue(map, "coursewareId", 0))
+                                .collect(Collectors.toList());
+
+                        //查询用户答题信息
+                        log.info("获取阶段测试完成情况，userId = {},courseWareIds = {}", userId, courseWareIds);
+
+                        //todo 阶段测试完成情况，查询数据库获取数据
+                        int defaultStatus = -1;
+                        Map<Integer, Integer> periodMaps = Maps.newHashMap();
+                        periodMaps.put(3528232, 1);
+
+
+
+                        if (null != periodMaps && periodMaps.size() > 0) {
+                            List<Map> mapList = ((List<Map>) value).stream()
+                                    .map(valueData -> {
+                                        Integer status = periodMaps.getOrDefault(MapUtils.getIntValue(valueData, "coursewareId", 0), defaultStatus);
+                                        valueData.put("testStatus", status);
+                                        return valueData;
+                                    })
+                                    .collect(Collectors.toList());
+                            return mapList;
+                        } else {
+                            List<Map> mapList = ((List<Map>) value).stream()
+                                    .map(valueData -> {
+                                        valueData.put("testStatus", defaultStatus);
+                                        return valueData;
+                                    })
+                                    .collect(Collectors.toList());
+                            return mapList;
+                        }
+                    }
+            );
+    }
+
+    /**
+     * 处理阶段考试状态信息
+     * @param response
+     * @param userId
+     */
+    public void addStudyReportInfo(LinkedHashMap response, long userId){
+        response.computeIfPresent("list", (key, value) -> {
+                    List<Integer> courseWareIds = ((List<Map>) value).stream()
+                            .filter(map -> (null != map.get("classExercisesNum")) && (MapUtils.getInteger(map,"classExercisesNum") > 0))
+                            .map(map -> MapUtils.getIntValue(map, "coursewareId", 0))
+                            .collect(Collectors.toList());
+
+                    //查询用户答题信息
+                    log.info("获取阶段测试报告，userId = {},courseWareIds = {}", userId, courseWareIds);
+
+                    //todo 获取阶段测试报告，查看报告是否已出
+                    int defaultStatus = -1;
+                    Map<Integer, Integer> periodMaps = Maps.newHashMap();
+                    periodMaps.put(3528232, 1);
+
+                    if (null != periodMaps && periodMaps.size() > 0) {
+                        List<Map> mapList = ((List<Map>) value).stream()
+                                .map(valueData -> {
+                                    Integer status = periodMaps.getOrDefault(MapUtils.getIntValue(valueData, "coursewareId", 0), defaultStatus);
+                                    valueData.put("reportStatus", status);
+                                    valueData.remove("classExercisesNum");
+                                    return valueData;
+                                })
+                                .collect(Collectors.toList());
+                        return mapList;
+                    } else {
+                        List<Map> mapList = ((List<Map>) value).stream()
+                                .map(valueData -> {
+                                    valueData.put("reportStatus", defaultStatus);
+                                    valueData.remove("classExercisesNum");
+                                    return valueData;
+                                })
+                                .collect(Collectors.toList());
+                        return mapList;
+                    }
+                }
+        );
+    }
+
 
 }

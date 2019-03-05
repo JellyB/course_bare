@@ -9,11 +9,7 @@ import java.util.Map;
  * @author biguodong
  * Create time 2019-02-22 上午11:16
  **/
-public interface ProcessReportService {
-    String SYLLABUS_ID = "syllabusId";
-    String EXPIRATION = "expiration";
-    int TYPE_LIVE = 1;
-    int TYPE_PLAYBACK = 2;
+public interface ProcessReportService<T> {
     /**
      * 数据上报接口
      * @param params
@@ -28,5 +24,12 @@ public interface ProcessReportService {
      * @return
      */
     Object playBackReport(Map<String,Object> params);
+
+    /**
+     * 确认并删除消息
+     * @param t
+     * @return
+     */
+    void ack(T t);
 
 }
