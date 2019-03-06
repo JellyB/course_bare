@@ -216,9 +216,17 @@ public class TeacherServiceImpl implements TeacherService {
                     if (practiceQuestionInfoOptional.isPresent()) {
                         final CoursePracticeQuestionInfo coursePracticeQuestionInfo = practiceQuestionInfoOptional.get();
                         teacherQuestionBo.setStartPracticeTime(coursePracticeQuestionInfo.getStartPracticeTime());
-                        Long practiceTime = (System.currentTimeMillis() - coursePracticeQuestionInfo.getStartPracticeTime()) / 1000;
-                        //计算剩余时间
-                        teacherQuestionBo.setLastPracticeTime(practiceTime > coursePracticeQuestionInfo.getPracticeTime() ? -1 : coursePracticeQuestionInfo.getPracticeTime() - practiceTime.intValue());
+                        //开始答题时间
+                        Long startPracticeTime = coursePracticeQuestionInfo.getStartPracticeTime();
+						// 已经开始
+						if (startPracticeTime != null) {
+							Long practiceTime = (System.currentTimeMillis()
+									- coursePracticeQuestionInfo.getStartPracticeTime()) / 1000;
+							// 计算剩余时间
+							teacherQuestionBo.setLastPracticeTime(
+									practiceTime > coursePracticeQuestionInfo.getPracticeTime() ? -1
+											: coursePracticeQuestionInfo.getPracticeTime() - practiceTime.intValue());
+						}
                         //设置的练习时间
                         teacherQuestionBo.setPracticeTime(coursePracticeQuestionInfo.getPracticeTime());
                     }
