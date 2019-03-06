@@ -134,7 +134,7 @@ public class TeacherServiceImpl implements TeacherService {
     @Override
     public void updateQuestionPracticeTime(Long roomId, Long questionId, Integer practiceTime) {
         CoursePracticeQuestionInfo coursePracticeQuestionInfo = getCoursePracticeQuestionInfoByRoomIdAndQuestionId(roomId, questionId);
-        if (coursePracticeQuestionInfo != null) {
+        if (coursePracticeQuestionInfo == null) {
             final CoursePracticeQuestionInfo info = CoursePracticeQuestionInfo.builder()
                     .roomId(roomId)
                     .questionId(questionId.intValue())
