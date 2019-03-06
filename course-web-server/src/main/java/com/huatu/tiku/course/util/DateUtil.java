@@ -13,13 +13,13 @@ public class DateUtil {
 	public static String getSimpleDate(String startTime, String endTime) {
 		DateTimeFormatter dtfOld = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH:mm");
-		DateTimeFormatter dtfShort = DateTimeFormatter.ofPattern("MM月-dd日 HH:mm");
+		DateTimeFormatter dtfShort = DateTimeFormatter.ofPattern("MM月dd日 HH:mm");
 		DateTimeFormatter dtfDay = DateTimeFormatter.ofPattern("dd日 HH:mm");
 		DateTimeFormatter dtfMin = DateTimeFormatter.ofPattern("HH:mm");
 		LocalDateTime startDate = LocalDateTime.parse(startTime, dtfOld);
 		LocalDateTime endDate = LocalDateTime.parse(endTime, dtfOld);
 		if (startDate.getYear() == endDate.getYear()) {
-			// 年相等判断越是否相等
+			// 年相等判断月是否相等
 			if (startDate.getMonthValue() == endDate.getMonthValue()) {
 				if (startDate.getDayOfMonth() == endDate.getDayOfMonth()) {
 					// 日相等
