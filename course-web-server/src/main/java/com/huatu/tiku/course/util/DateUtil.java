@@ -23,17 +23,20 @@ public class DateUtil {
 			if (startDate.getMonthValue() == endDate.getMonthValue()) {
 				if (startDate.getDayOfMonth() == endDate.getDayOfMonth()) {
 					// 日相等
-					return startDate.format(dtfDay) + "-" + endDate.format(dtfMin);
+					return new StringBuilder(startDate.format(dtfDay)).append("-").append(endDate.format(dtfMin))
+							.toString();
 				} else {
 					// 月相等
-					return startDate.format(dtfDay) + "-" + endDate.format(dtfDay);
+					return new StringBuilder(startDate.format(dtfDay)).append("-").append(endDate.format(dtfDay))
+							.toString();
 				}
 			} else {
 				// 返回 月-日 - 月-日
-				return startDate.format(dtfShort) + "-" + endDate.format(dtfShort);
+				return new StringBuilder(startDate.format(dtfShort)).append("-").append(endDate.format(dtfShort))
+						.toString();
 			}
 		} else {
-			return startDate.format(dtf) + "-" + endDate.format(dtf);
+			return new StringBuilder(startDate.format(dtf)).append("-").append(endDate.format(dtf)).toString();
 		}
 
 	}
