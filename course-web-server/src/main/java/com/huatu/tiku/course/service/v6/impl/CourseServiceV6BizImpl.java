@@ -292,6 +292,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 			if (ResponseUtil.isSuccess(bathResponse)) {
 				// key为paperid_syllabusId value 为试卷状态
 				Map<String, Integer> retMap = bathResponse.getData();
+				log.info("getPaperStatusBath ret is:{}", retMap.toString());
 				// 修改试卷状态
 				for (Entry<String, Integer> paperRet : retMap.entrySet()) {
 					paperMap.get(paperRet.getKey()).setStatus(paperRet.getValue());
