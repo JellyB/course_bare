@@ -97,5 +97,5 @@ public class CourseCacheKey {
         return PROCESS_REPORT_DELAY_QUEUE;
     }
 
-    public static String getProcessLogSyllabusInfo(String syllabusId){return String.format(PROCESS_LOG_SYLLABUS_INFO, syllabusId);}
+    public static String getProcessLogSyllabusInfo(Long syllabusId){return String.format(PROCESS_LOG_SYLLABUS_INFO, syllabusId);}
 }
