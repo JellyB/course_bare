@@ -2,6 +2,7 @@ package com.huatu.tiku.course.test;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
 import com.huatu.common.test.BaseWebTest;
 import com.huatu.tiku.course.bean.vo.SyllabusWareInfo;
 import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
@@ -45,8 +46,9 @@ public class CourseExercisesProcessLogMapperTest extends BaseWebTest {
         syllabusId.add(8361564L);
         syllabusId.add(8361562L);
         syllabusId.add(8361565L);
-        Map<Long, SyllabusWareInfo> map =  courseExercisesProcessLogManager.dealSyllabusInfo(syllabusId);
-        map.values().forEach(item -> {
+        Table<String, Long, SyllabusWareInfo> table =  courseExercisesProcessLogManager.dealSyllabusInfo(syllabusId);
+
+        table.row("lesson").values().forEach(item -> {
             log.info("SyllabusWareInfo:{}", JSONObject.toJSONString(item));
         });
     }

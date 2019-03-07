@@ -5,9 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.huatu.common.exception.BizException;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
@@ -56,6 +54,10 @@ public class CourseExercisesProcessLogManager {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    private static final String LESSON_LABEL = "lesson";
+
+    private static final String COURSE_LABEL = "course";
 
     /**
      * 获取类型未读量
@@ -138,7 +140,7 @@ public class CourseExercisesProcessLogManager {
             Set<Long> temp = Arrays.stream(ids.split(",")).map(Long::valueOf).collect(Collectors.toSet());
             allSyllabusIds.addAll(temp);
         });
-        Map<Long, SyllabusWareInfo> allSyllabusWareInfoMap = this.dealSyllabusInfo(allSyllabusIds);
+        Table<String, Long, SyllabusWareInfo> syllabusWareInfoTable = this.dealSyllabusInfo(allSyllabusIds);
 
         Example example = new Example(CourseExercisesProcessLog.class);
         example.and()
@@ -153,6 +155,7 @@ public class CourseExercisesProcessLogManager {
         dataList.forEach(item->{
             CourseWorkCourseVo courseWorkCourseVo = new CourseWorkCourseVo();
             courseWorkCourseVo.setCourseId(Long.valueOf(String.valueOf(item.get("courseId"))));
+            courseWorkCourseVo.setCourseTitle(syllabusWareInfoTable.get(COURSE_LABEL, courseWorkCourseVo.getCourseId()).getClassName());
             String ids = String.valueOf(item.get("syllabusIds"));
             Set<Long> temp = Arrays.stream(ids.split(",")).map(Long::valueOf).collect(Collectors.toSet());
             if(CollectionUtils.isEmpty(temp)){
@@ -163,11 +166,11 @@ public class CourseExercisesProcessLogManager {
 
             List<CourseWorkWareVo> wareVos = Arrays.stream(ids.split(","))
                     .filter(ware ->
-                            null !=  allSyllabusWareInfoMap.get(Long.valueOf(ware)) &&
+                            null !=  syllabusWareInfoTable.get(LESSON_LABEL, Long.valueOf(ware)) &&
                             null !=  courseExercisesProcessLogMap.get(Long.valueOf(ware)) &&
                             null != courseExercisesProcessLogMap.get(Long.valueOf(ware)).getDataInfo())
                     .map(ware -> {
-                    SyllabusWareInfo syllabusWareInfo = allSyllabusWareInfoMap.get(Long.valueOf(ware));
+                    SyllabusWareInfo syllabusWareInfo = syllabusWareInfoTable.get(LESSON_LABEL, Long.valueOf(ware));
                     CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogMap.get(Long.valueOf(ware));
                     JSONObject jsonObject = JSONObject.parseObject(courseExercisesProcessLog.getDataInfo());
                     CourseWorkWareVo courseWorkWareVo = CourseWorkWareVo
@@ -198,11 +201,11 @@ public class CourseExercisesProcessLogManager {
      * @return
      * @throws BizException
      */
-    public Map<Long, SyllabusWareInfo> dealSyllabusInfo(Set<Long> syllabusIds) throws BizException{
+    public Table<String, Long, SyllabusWareInfo> dealSyllabusInfo(Set<Long> syllabusIds) throws BizException{
         log.debug("deal syllabusId info:{}", syllabusIds);
-        Map<Long, SyllabusWareInfo> maps = Maps.newHashMap();
+        Table<String, Long, SyllabusWareInfo> table = TreeBasedTable.create();
         if(CollectionUtils.isEmpty(syllabusIds)){
-            return Maps.newHashMap();
+            return table;
         }
         ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
         syllabusIds.forEach(item -> {
@@ -210,14 +213,15 @@ public class CourseExercisesProcessLogManager {
             if(redisTemplate.hasKey(key)){
                 String value = valueOperations.get(key);
                 SyllabusWareInfo syllabusWareInfo = JSONObject.parseObject(value, SyllabusWareInfo.class);
-                maps.put(item, syllabusWareInfo);
+                table.put(LESSON_LABEL, item, syllabusWareInfo);
+                table.put(COURSE_LABEL, syllabusWareInfo.getClassId(), syllabusWareInfo);
                 syllabusIds.remove(item);
             }
         });
         if(CollectionUtils.isNotEmpty(syllabusIds)){
-            maps.putAll(requestSyllabusWareInfoPut2Cache(syllabusIds));
+            table.putAll(requestSyllabusWareInfoPut2Cache(syllabusIds));
         }
-        return maps;
+        return table;
     }
 
     /**
@@ -226,13 +230,13 @@ public class CourseExercisesProcessLogManager {
      * @return
      * @throws BizException
      */
-    private Map<Long, SyllabusWareInfo> requestSyllabusWareInfoPut2Cache(Set<Long> syllabusIds)throws BizException{
-        Map<Long, SyllabusWareInfo> maps = Maps.newHashMap();
+    private Table<String, Long, SyllabusWareInfo> requestSyllabusWareInfoPut2Cache(Set<Long> syllabusIds)throws BizException{
+        Table<String, Long, SyllabusWareInfo> table = TreeBasedTable.create();
         try{
             String ids = Joiner.on(",").join(syllabusIds);
             NetSchoolResponse<LinkedHashMap<String, Object>> netSchoolResponse = syllabusService.courseWareInfo(ids);
             if(ResponseUtil.isFailure(netSchoolResponse)){
-                return maps;
+                return table;
             }
             ObjectMapper objectMapper = new ObjectMapper();
             List<LinkedHashMap<String, Object>> data = (List<LinkedHashMap<String, Object>>)netSchoolResponse.getData();
@@ -247,19 +251,21 @@ public class CourseExercisesProcessLogManager {
                     return null;
                 }
             }).collect(Collectors.toList());
+
             if(CollectionUtils.isNotEmpty(list)){
                 ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
                 list.forEach(item -> {
-                    maps.put(item.getSyllabusId(), item);
+                    table.put(LESSON_LABEL, item.getSyllabusId(), item);
+                    table.put(COURSE_LABEL, item.getClassId(), item);
                     String key = CourseCacheKey.getProcessLogSyllabusInfo(item.getSyllabusId());
                     valueOperations.set(key, JSONObject.toJSONString(item));
                     redisTemplate.expire(key, 2, TimeUnit.SECONDS);
                 });
             }
-            return maps;
+            return table;
         }catch (Exception e) {
             log.error("request syllabusInfo error!:{}", e);
-            return maps;
+            return table;
         }
     }
 
