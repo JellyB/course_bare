@@ -187,6 +187,7 @@ public class UserCourseControllerV6 {
         result.put("maxCorrect", 15);//最高答对题数
         result.put("avgCorrect", 14);//平均答对题数
         result.put("points", points);//知识点掌握情况
+        result.put("myRank", 25);
         result.put("ranks", rankInfos);
         result.put("corrects", new int[]{1,2,2,2,2,1,1,1,1,1});
         result.put("answers", new String[]{"1", "2", "3", "4", "4", "3", "2", "1", "2", "2"});
