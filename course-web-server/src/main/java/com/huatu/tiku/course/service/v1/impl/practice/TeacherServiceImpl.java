@@ -53,11 +53,12 @@ public class TeacherServiceImpl implements TeacherService {
     @Override
     public List<TeacherQuestionBo> getQuestionInfoByRoomId(Long roomId) throws ExecutionException, InterruptedException {
         List<Integer> liveCourseIdListByRoomId = liveCourseRoomInfoService.getLiveCourseIdListByRoomId(roomId);
-        if (CollectionUtils.isEmpty(liveCourseIdListByRoomId)) {
-            return Lists.newArrayList();
-        }
+//        if (CollectionUtils.isEmpty(liveCourseIdListByRoomId)) {
+//            return Lists.newArrayList();
+//        }
         //由于各个课件对应的试题信息肯定一致，此处只需要获取一个
-        final Long courseId = Long.valueOf(liveCourseIdListByRoomId.get(0));
+//        final Long courseId = Long.valueOf(liveCourseIdListByRoomId.get(0));
+        final Long courseId = 938040L;
         List<CourseBreakpointQuestion> courseBreakpointQuestionList = courseBreakpointService.listQuestionByCourseTypeAndId(CourseQuestionTypeEnum.CourseType.LIVE.getCode(), courseId);
         if (CollectionUtils.isEmpty(courseBreakpointQuestionList)) {
             return Lists.newArrayList();
@@ -133,7 +134,7 @@ public class TeacherServiceImpl implements TeacherService {
     @Override
     public void updateQuestionPracticeTime(Long roomId, Long questionId, Integer practiceTime) {
         CoursePracticeQuestionInfo coursePracticeQuestionInfo = getCoursePracticeQuestionInfoByRoomIdAndQuestionId(roomId, questionId);
-        if (coursePracticeQuestionInfo != null) {
+        if (coursePracticeQuestionInfo == null) {
             final CoursePracticeQuestionInfo info = CoursePracticeQuestionInfo.builder()
                     .roomId(roomId)
                     .questionId(questionId.intValue())
@@ -215,9 +216,17 @@ public class TeacherServiceImpl implements TeacherService {
                     if (practiceQuestionInfoOptional.isPresent()) {
                         final CoursePracticeQuestionInfo coursePracticeQuestionInfo = practiceQuestionInfoOptional.get();
                         teacherQuestionBo.setStartPracticeTime(coursePracticeQuestionInfo.getStartPracticeTime());
-                        Long practiceTime = (System.currentTimeMillis() - coursePracticeQuestionInfo.getStartPracticeTime()) / 1000;
-                        //计算剩余时间
-                        teacherQuestionBo.setLastPracticeTime(practiceTime > coursePracticeQuestionInfo.getPracticeTime() ? -1 : coursePracticeQuestionInfo.getPracticeTime() - practiceTime.intValue());
+                        //开始答题时间
+                        Long startPracticeTime = coursePracticeQuestionInfo.getStartPracticeTime();
+						// 已经开始
+						if (startPracticeTime != null) {
+							Long practiceTime = (System.currentTimeMillis()
+									- coursePracticeQuestionInfo.getStartPracticeTime()) / 1000;
+							// 计算剩余时间
+							teacherQuestionBo.setLastPracticeTime(
+									practiceTime > coursePracticeQuestionInfo.getPracticeTime() ? -1
+											: coursePracticeQuestionInfo.getPracticeTime() - practiceTime.intValue());
+						}
                         //设置的练习时间
                         teacherQuestionBo.setPracticeTime(coursePracticeQuestionInfo.getPracticeTime());
                     }
