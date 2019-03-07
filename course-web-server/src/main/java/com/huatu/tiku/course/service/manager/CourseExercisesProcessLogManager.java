@@ -7,10 +7,12 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.huatu.common.exception.BizException;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
-import com.huatu.tiku.course.bean.vo.CourseWorkListVo;
+import com.huatu.tiku.course.bean.vo.CourseWorkCourseVo;
+import com.huatu.tiku.course.bean.vo.CourseWorkWareVo;
 import com.huatu.tiku.course.bean.vo.SyllabusWareInfo;
 import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.common.YesOrNoStatus;
@@ -22,6 +24,7 @@ import com.huatu.tiku.entity.CourseExercisesProcessLog;
 import lombok.extern.slf4j.Slf4j;
 import netscape.javascript.JSObject;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -66,10 +69,10 @@ public class CourseExercisesProcessLogManager {
         criteria.andEqualTo("userId", userId);
         criteria.andEqualTo("isAlert", YesOrNoStatus.YES.getCode());
         criteria.andEqualTo("status", YesOrNoStatus.YES.getCode());
-        criteria.andEqualTo("dataType", StudyTypeEnum.COURSE_WORK.getKey());
+        criteria.andEqualTo("dataType", StudyTypeEnum.COURSE_WORK.getOrder());
         int countWork = courseExercisesProcessLogMapper.selectCountByExample(example);
         result.put(StudyTypeEnum.COURSE_WORK.getKey(), countWork);
-        criteria.andEqualTo("dataType", StudyTypeEnum.PERIOD_TEST.getKey());
+        criteria.andEqualTo("dataType", StudyTypeEnum.PERIOD_TEST.getOrder());
         int countTest = courseExercisesProcessLogMapper.selectCountByExample(example);
         result.put(StudyTypeEnum.PERIOD_TEST.getKey(), countTest);
         return result;
@@ -125,40 +128,68 @@ public class CourseExercisesProcessLogManager {
      * @throws BizException
      */
     public Object courseWorkList(long userId, int page, int size) throws BizException{
+
+        List<CourseWorkCourseVo> courseWorkCourseVos = Lists.newArrayList();
+        List<HashMap<String, Object>> dataList = courseExercisesProcessLogMapper.getCoursePageInfo(userId, page, size);
+
+        Set<Long> allSyllabusIds = Sets.newHashSet();
+        dataList.forEach(item -> {
+            String ids = String.valueOf(item.get("syllabusIds"));
+            Set<Long> temp = Arrays.stream(ids.split(",")).map(Long::valueOf).collect(Collectors.toSet());
+            allSyllabusIds.addAll(temp);
+        });
+        Map<Long, SyllabusWareInfo> allSyllabusWareInfoMap = this.dealSyllabusInfo(allSyllabusIds);
+
         Example example = new Example(CourseExercisesProcessLog.class);
         example.and()
                 .andEqualTo("userId", userId)
-                .andEqualTo("dataType", StudyTypeEnum.COURSE_WORK.getKey())
-                .andEqualTo("status", YesOrNoStatus.YES.getCode());
-        PageInfo pageInfo = PageHelper.startPage(page, size).doSelectPageInfo(() -> courseExercisesProcessLogMapper.selectByExample(example));
-        if(CollectionUtils.isEmpty(pageInfo.getList())){
-            return pageInfo;
-        }
-        Set<Long> syllabusIds = ((List<CourseExercisesProcessLog>)pageInfo.getList()).stream()
-                .filter(item -> null != item.getSyllabusId())
-                .map(CourseExercisesProcessLog::getSyllabusId)
-                .collect(Collectors.toSet());
+                .andEqualTo("dataType", StudyTypeEnum.COURSE_WORK.getOrder())
+                .andEqualTo("status", YesOrNoStatus.YES.getCode())
+                .andIn("syllabusId", allSyllabusIds);
 
-        Map<Long, SyllabusWareInfo> syllabusWareInfoMap = dealSyllabusInfo(syllabusIds);
+        Map<Long, CourseExercisesProcessLog> courseExercisesProcessLogMap = courseExercisesProcessLogMapper
+                .selectByExample(example).stream().collect(Collectors.toMap(wareLog -> wareLog.getSyllabusId(), wareLog -> wareLog));
 
-        List<CourseWorkListVo> courseWorkListVoList = Lists.newArrayList();
-        pageInfo.getList().forEach(item -> {
-            CourseExercisesProcessLog courseExercisesProcessLog = (CourseExercisesProcessLog) item;
-            JSONObject jsonObject = JSONObject.parseObject(courseExercisesProcessLog.getDataInfo());
-            CourseWorkListVo courseWorkListVo = CourseWorkListVo.builder()
-                    .courseWareId(courseExercisesProcessLog.getLessonId())
-                    .courseWareTitle(courseExercisesProcessLog.getLessonTitle())
-                    .videoLength(jsonObject.getString("length"))
-                    .serialNumber(jsonObject.getInteger("serialNumber"))
-                    .answerCardId(0L)
-                    .questionIds("")
-                    .answerCardInfo("")
-                    .build();
+        dataList.forEach(item->{
+            CourseWorkCourseVo courseWorkCourseVo = new CourseWorkCourseVo();
+            courseWorkCourseVo.setCourseId(Long.valueOf(String.valueOf(item.get("courseId"))));
+            String ids = String.valueOf(item.get("syllabusIds"));
+            Set<Long> temp = Arrays.stream(ids.split(",")).map(Long::valueOf).collect(Collectors.toSet());
+            if(CollectionUtils.isEmpty(temp)){
+                courseWorkCourseVo.setUndoCount(0);
+                courseWorkCourseVo.setWareInfoList(Lists.newArrayList());
+                courseWorkCourseVo.setCourseTitle(StringUtils.EMPTY);
+            }
 
-            courseWorkListVoList.add(courseWorkListVo);
+            List<CourseWorkWareVo> wareVos = Arrays.stream(ids.split(","))
+                    .filter(ware ->
+                            null !=  allSyllabusWareInfoMap.get(Long.valueOf(ware)) &&
+                            null !=  courseExercisesProcessLogMap.get(Long.valueOf(ware)) &&
+                            null != courseExercisesProcessLogMap.get(Long.valueOf(ware)).getDataInfo())
+                    .map(ware -> {
+                    SyllabusWareInfo syllabusWareInfo = allSyllabusWareInfoMap.get(Long.valueOf(ware));
+                    CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogMap.get(Long.valueOf(ware));
+                    JSONObject jsonObject = JSONObject.parseObject(courseExercisesProcessLog.getDataInfo());
+                    CourseWorkWareVo courseWorkWareVo = CourseWorkWareVo
+                        .builder()
+                        .courseWareId(syllabusWareInfo.getCoursewareId())
+                        .courseWareTitle(syllabusWareInfo.getCoursewareName())
+                        .videoLength(syllabusWareInfo.getLength())
+                        .serialNumber(syllabusWareInfo.getSerialNumber())
+                        .answerCardId(jsonObject.getLongValue("id"))
+                        .answerCardInfo(jsonObject.getString("info"))
+                        .questionIds("")
+                        .isAlert(courseExercisesProcessLog.getIsAlert())
+                        .build();
+                return courseWorkWareVo;
+            }).collect(Collectors.toList());
+
+
+            courseWorkCourseVo.setUndoCount(temp.size());
+            courseWorkCourseVo.setWareInfoList(wareVos);
+            courseWorkCourseVos.add(courseWorkCourseVo);
         });
-        pageInfo.setList(courseWorkListVoList);
-        return pageInfo;
+        return courseWorkCourseVos;
     }
 
     /**
@@ -183,7 +214,9 @@ public class CourseExercisesProcessLogManager {
                 syllabusIds.remove(item);
             }
         });
-        maps.putAll(requestSyllabusWareInfoPut2Cache(syllabusIds));
+        if(CollectionUtils.isNotEmpty(syllabusIds)){
+            maps.putAll(requestSyllabusWareInfoPut2Cache(syllabusIds));
+        }
         return maps;
     }
 
@@ -228,7 +261,6 @@ public class CourseExercisesProcessLogManager {
             log.error("request syllabusInfo error!:{}", e);
             return maps;
         }
-
     }
 
 }

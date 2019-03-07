@@ -1,31 +1,33 @@
 package com.huatu.tiku.course.bean.vo;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * 描述：
  *
  * @author biguodong
- * Create time 2019-03-05 10:41 AM
+ * Create time 2019-03-06 7:34 PM
  **/
 
-
 @NoArgsConstructor
-@Setter
 @Getter
-public class CourseWorkListVo {
+@Setter
+public class CourseWorkWareVo {
 
     private String courseWareTitle;
-    private Long courseWareId;
+    private long courseWareId;
     private String videoLength;
     private int serialNumber;
     private long answerCardId;
     private String questionIds;
     private String answerCardInfo;
-    private Integer isAlert;
+    private int isAlert;
 
     @Builder
-    public CourseWorkListVo(String courseWareTitle, Long courseWareId, String videoLength, int serialNumber, long answerCardId, String questionIds, String answerCardInfo, int isAlert) {
+    public CourseWorkWareVo(String courseWareTitle, long courseWareId, String videoLength, int serialNumber, long answerCardId, String questionIds, String answerCardInfo, int isAlert) {
         this.courseWareTitle = courseWareTitle;
         this.courseWareId = courseWareId;
         this.videoLength = videoLength;

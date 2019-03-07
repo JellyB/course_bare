@@ -5,6 +5,7 @@ import com.huatu.common.Result;
 import com.huatu.common.SuccessMessage;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.service.v1.ProcessReportService;
+import com.huatu.tiku.course.service.v1.UserAccountService;
 import com.huatu.tiku.course.spring.conf.queue.Message;
 import com.huatu.tiku.course.spring.conf.queue.Payload;
 import com.huatu.tiku.course.spring.conf.queue.RedisDelayQueue;
@@ -40,9 +41,11 @@ public class ProcessReportServiceImpl<T> implements ProcessReportService<T> {
 
     @Autowired
     private RedisDelayQueue redisDelayQueue;
+    @Autowired
+    private UserAccountService userAccountService;
 
     /**
-     * 数据上报接口
+     * 数据上报接口直播类型
      *
      * @param params
      * @return
@@ -56,7 +59,8 @@ public class ProcessReportServiceImpl<T> implements ProcessReportService<T> {
         int syllabusId = Integer.valueOf(String.valueOf(params.get(SYLLABUS_ID)));
         long endTime = Long.valueOf(String.valueOf(params.get(END_TIME)));
         String userName = String.valueOf(params.get(USER_NAME));
-
+        Long userId =  userAccountService.userId(userName);
+        log.info("userId:{}", userId);
         Random random = new Random();
         int id = random.nextInt(100);
 
