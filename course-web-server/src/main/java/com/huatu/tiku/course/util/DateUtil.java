@@ -44,12 +44,12 @@ public class DateUtil {
 
 	}
 
-	public static void main(String[] args) {
-		System.out.println(getSimpleDate("2018-02-10 17:20:20", "2019-02-10 17:20:20"));
-		System.out.println(getSimpleDate("2019-02-10 17:20:20", "2019-03-10 17:20:20"));
-		System.out.println(getSimpleDate("2019-02-10 17:20:20", "2019-02-11 17:20:20"));
-		System.out.println(getSimpleDate("2019-02-11 17:20:20", "2019-02-11 17:21:20"));
-	}
+//	public static void main(String[] args) {
+//		System.out.println(getSimpleDate("2018-02-10 17:20:20", "2019-02-10 17:20:20"));
+//		System.out.println(getSimpleDate("2019-02-10 17:20:20", "2019-03-10 17:20:20"));
+//		System.out.println(getSimpleDate("2019-02-10 17:20:20", "2019-02-11 17:20:20"));
+//		System.out.println(getSimpleDate("2019-02-11 17:20:20", "2019-02-11 17:21:20"));
+//	}
 
 //	public static void main(String[] args) {
 //		Map<String, Integer> result = new HashMap<>();
