@@ -6,6 +6,7 @@ import com.huatu.tiku.course.bean.practice.QuestionMetaBo;
 import com.huatu.tiku.course.bean.practice.TeacherQuestionBo;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -16,7 +17,7 @@ public interface TeacherService {
     /**
      * 通过roomId 获取绑定的试题信息
      */
-    List<TeacherQuestionBo> getQuestionInfoByRoomId(Long roomId) throws ExecutionException, InterruptedException;
+	Map<String,Object> getQuestionInfoByRoomId(Long roomId) throws ExecutionException, InterruptedException;
 
     /**
      * 存储 试题练习信息
