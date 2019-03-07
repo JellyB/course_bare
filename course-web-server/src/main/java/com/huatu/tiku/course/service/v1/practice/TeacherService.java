@@ -1,13 +1,11 @@
 package com.huatu.tiku.course.service.v1.practice;
 
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
 import com.github.pagehelper.PageInfo;
 import com.huatu.tiku.course.bean.practice.PracticeRoomRankUserBo;
 import com.huatu.tiku.course.bean.practice.QuestionMetaBo;
-import com.huatu.tiku.course.bean.practice.TeacherQuestionBo;
-
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Created by lijun on 2019/2/21
@@ -38,4 +36,11 @@ public interface TeacherService {
      * 教师端分页获取统计数据
      */
     PageInfo<PracticeRoomRankUserBo> getQuestionRankInfo(Long roomId, Integer page, Integer pageSize);
+
+    /**
+     * 结束作答指定题目
+     * @param roomId
+     * @param questionId
+     */
+	void stopAnswer(Long roomId, Long questionId);
 }

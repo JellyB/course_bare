@@ -221,27 +221,46 @@ public class TeacherServiceImpl implements TeacherService {
                     Optional<CoursePracticeQuestionInfo> practiceQuestionInfoOptional = coursePracticeQuestionInfoList.stream()
                             .filter(coursePracticeQuestionInfo -> coursePracticeQuestionInfo.getQuestionId().equals(courseBreakpointQuestion.getQuestionId().intValue()))
                             .findAny();
-                    if (practiceQuestionInfoOptional.isPresent()) {
-                        final CoursePracticeQuestionInfo coursePracticeQuestionInfo = practiceQuestionInfoOptional.get();
-                        teacherQuestionBo.setStartPracticeTime(coursePracticeQuestionInfo.getStartPracticeTime());
-                        //开始答题时间
-                        Long startPracticeTime = coursePracticeQuestionInfo.getStartPracticeTime();
+					if (practiceQuestionInfoOptional.isPresent()) {
+						final CoursePracticeQuestionInfo coursePracticeQuestionInfo = practiceQuestionInfoOptional
+								.get();
+						teacherQuestionBo.setStartPracticeTime(coursePracticeQuestionInfo.getStartPracticeTime());
+						// 开始答题时间
+						Long startPracticeTime = coursePracticeQuestionInfo.getStartPracticeTime();
 						// 已经开始
 						if (startPracticeTime != null) {
-							Long practiceTime = (System.currentTimeMillis()
-									- coursePracticeQuestionInfo.getStartPracticeTime()) / 1000;
-							// 计算剩余时间
-							teacherQuestionBo.setLastPracticeTime(
-									practiceTime > coursePracticeQuestionInfo.getPracticeTime() ? -1
-											: coursePracticeQuestionInfo.getPracticeTime() - practiceTime.intValue());
+							if (startPracticeTime == -1) {
+								// 此时该试题考试状态为老师强制关闭
+								teacherQuestionBo.setLastPracticeTime(-1);
+							} else {
+								Long practiceTime = (System.currentTimeMillis()
+										- coursePracticeQuestionInfo.getStartPracticeTime()) / 1000;
+								// 计算剩余时间
+								teacherQuestionBo.setLastPracticeTime(
+										practiceTime > coursePracticeQuestionInfo.getPracticeTime() ? -1
+												: coursePracticeQuestionInfo.getPracticeTime()
+														- practiceTime.intValue());
+							}
 						}
-                        //设置的练习时间
-                        teacherQuestionBo.setPracticeTime(coursePracticeQuestionInfo.getPracticeTime());
-                    }
+						// 设置的练习时间
+						teacherQuestionBo.setPracticeTime(coursePracticeQuestionInfo.getPracticeTime());
+					}
                     teacherQuestionBo.setPptIndex(courseBreakpointQuestion.getPptIndex());
                     return teacherQuestionBo;
                 })
                 .collect(Collectors.toList());
         return result;
     }
+
+
+	@Override
+	public void stopAnswer(Long roomId, Long questionId) {
+		CoursePracticeQuestionInfo coursePracticeQuestionInfo = getCoursePracticeQuestionInfoByRoomIdAndQuestionId(
+				roomId, questionId);
+		if (coursePracticeQuestionInfo != null) {
+			coursePracticeQuestionInfo.setStartPracticeTime(-1L);
+		}
+		coursePracticeQuestionInfoService.save(coursePracticeQuestionInfo);
+
+	}
 }
