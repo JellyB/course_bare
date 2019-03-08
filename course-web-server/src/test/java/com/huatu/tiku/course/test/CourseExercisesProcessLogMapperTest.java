@@ -15,6 +15,7 @@ import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 描述：
@@ -51,5 +52,21 @@ public class CourseExercisesProcessLogMapperTest extends BaseWebTest {
         table.row("lesson").values().forEach(item -> {
             log.info("SyllabusWareInfo:{}", JSONObject.toJSONString(item));
         });
+    }
+
+    @Test
+    public void dealList(){
+        Set<Long> syllabusId = Sets.newHashSet(8351423L,8361641L,8361871L,8361872L,8361874L, 8361907L, 8361908L,
+                8361909L,8361911L,4227738L,8353913L,8353914L,8353915L,8353916L,4227745L,4227746L);
+
+        syllabusId.forEach(item ->{
+            try{
+                courseExercisesProcessLogManager.putIntoDealList(item);
+                TimeUnit.SECONDS.sleep(1);
+            }catch (InterruptedException e){
+                log.error("and intterrupted error!");
+            }
+        });
+
     }
 }

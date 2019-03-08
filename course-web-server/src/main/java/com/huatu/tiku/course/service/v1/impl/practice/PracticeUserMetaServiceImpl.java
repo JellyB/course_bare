@@ -15,3 +15,17 @@
 //        super(CoursePracticeUserMeta.class);
 //    }
 //}
+//package com.huatu.tiku.course.service.v1.impl.practice;
+
+/**
+ * Created by lijun on 2019/3/7
+ */
+/*
+@Service
+public class PracticeUserMetaServiceImpl extends BaseServiceHelperImpl<CoursePracticeUserMeta> implements PracticeUserMetaService {
+
+    public PracticeUserMetaServiceImpl() {
+        super(CoursePracticeUserMeta.class);
+    }
+}
+*/
