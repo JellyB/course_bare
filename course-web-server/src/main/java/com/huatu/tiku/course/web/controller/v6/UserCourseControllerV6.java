@@ -159,7 +159,8 @@ public class UserCourseControllerV6 {
     public Object testReport(@Token UserSession userSession,
                              @RequestHeader(value = "cv") String cv,
                              @RequestHeader(value = "terminal") int terminal,
-                             @PathVariable(value = "id") int id){
+                             @PathVariable(value = "id") int id,
+                             @RequestParam(value = "type", defaultValue = "0") int videoType){
         HashMap<String,Object> result = Maps.newHashMap();
         List<RankInfo> rankInfos = Lists.newArrayList();
         List<Points> points = Lists.newArrayList();

@@ -1,10 +1,10 @@
 package com.huatu.tiku.course.dao.provider;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import com.huatu.tiku.course.common.BizStatusEnum;
+import com.huatu.ztk.paper.common.AnswerCardStatus;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 描述：
@@ -26,7 +26,7 @@ public class CourseExercisesProcessLogProvider {
     }
 
     private String tempTable(long userId){
-        List<BizStatusEnum> list = Lists.newArrayList(BizStatusEnum.UN_DONE, BizStatusEnum.UN_FINISH);
+        List<Integer> list = Lists.newArrayList(AnswerCardStatus.CREATE, AnswerCardStatus.UNDONE);
 
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(" SELECT");
@@ -36,7 +36,7 @@ public class CourseExercisesProcessLogProvider {
         stringBuilder.append(" course_exercises_process_log");
         stringBuilder.append(" WHERE");
         stringBuilder.append(" biz_status in (");
-        stringBuilder.append(list.stream().map(BizStatusEnum::getKey).map(String::valueOf).collect(Collectors.joining(",")));
+        stringBuilder.append(Joiner.on(",").join(list));
         stringBuilder.append(" )");
         stringBuilder.append(" AND user_id = ").append(userId);
         stringBuilder.append(" GROUP BY");
