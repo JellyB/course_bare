@@ -8,6 +8,7 @@ import service.impl.BaseServiceHelperImpl;
 /**
  * Created by lijun on 2019/3/7
  */
+/*
 @Service
 public class PracticeUserMetaServiceImpl extends BaseServiceHelperImpl<CoursePracticeUserMeta> implements PracticeUserMetaService {
 
@@ -15,3 +16,4 @@ public class PracticeUserMetaServiceImpl extends BaseServiceHelperImpl<CoursePra
         super(CoursePracticeUserMeta.class);
     }
 }
+*/
