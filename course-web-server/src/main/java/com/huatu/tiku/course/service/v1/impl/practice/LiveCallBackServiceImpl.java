@@ -10,6 +10,7 @@ import com.huatu.tiku.course.service.v1.practice.TeacherService;
 import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections.CollectionUtils;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.weekend.WeekendSqls;
@@ -30,9 +31,10 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
     private final PracticeQuestionInfoService practiceQuestionInfoService;
 
     @Override
+    @Async
     public void liveCallBackAllInfo(Long roomId, List<LiveCallbackBo> liveCallbackBoList) throws ExecutionException, InterruptedException {
         //获取所有试题信息
-       
+
     }
 
     /**
@@ -41,7 +43,15 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
      */
     private void enduranceUserMeta(Long roomId) {
         List<PracticeRoomRankUserBo> roomRankInfoList = practiceMetaComponent.getRoomRankInfo(roomId, 0, -1);
-        //1.远程处理
+        //1.远程处理 - 创建答题卡信息 - 获取答题卡ID
+        //1.1 获取用户排名 集合
+        practiceMetaComponent.getRoomRankInfo(roomId,0 ,-1);
+        //1.2 获取获取所有的答题信息
+        // teacher.getQuestion() 作为试题基础数组
+        //1.3 获取用的所有答题信息
+        //practiceMetaComponent.getUserMeta()
+
+        //2.
 
     }
 

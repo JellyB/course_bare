@@ -113,6 +113,7 @@ public class PracticeMetaComponent {
                     return PracticeRoomRankUserBo.builder()
                             .id(jsonObject.getInteger("id"))
                             .name(jsonObject.getString("name"))
+                            .courseId(jsonObject.getLong("courseId"))
                             .totalTime(totalTime)
                             .totalScore(totalScore < 0 ? 0 : totalScore)
                             .build();
