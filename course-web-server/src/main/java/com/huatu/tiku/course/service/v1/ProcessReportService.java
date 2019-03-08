@@ -11,12 +11,7 @@ import java.util.Map;
  **/
 public interface
 ProcessReportService<T> {
-    /**
-     * 数据上报接口
-     * @param params
-     * @return
-     */
-    Object liveReport(Map<String,Object> params);
+
 
 
     /**
@@ -31,6 +26,4 @@ ProcessReportService<T> {
      * @param t
      * @return
      */
-    void ack(T t);
-
 }

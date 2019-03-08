@@ -283,6 +283,8 @@ public class CourseExercisesProcessLogManager {
     public Table<String, Long, SyllabusWareInfo> dealSyllabusInfo(Set<Long> syllabusIds) throws BizException{
         log.debug("deal syllabusId info:{}", syllabusIds);
         Table<String, Long, SyllabusWareInfo> table = TreeBasedTable.create();
+        Set<Long> copy = Sets.newHashSet();
+        copy.addAll(syllabusIds);
         if(CollectionUtils.isEmpty(syllabusIds)){
             return table;
         }
@@ -294,11 +296,11 @@ public class CourseExercisesProcessLogManager {
                 SyllabusWareInfo syllabusWareInfo = JSONObject.parseObject(value, SyllabusWareInfo.class);
                 table.put(LESSON_LABEL, item, syllabusWareInfo);
                 table.put(COURSE_LABEL, syllabusWareInfo.getClassId(), syllabusWareInfo);
-                syllabusIds.remove(item);
+                copy.remove(item);
             }
         });
-        if(CollectionUtils.isNotEmpty(syllabusIds)){
-            table.putAll(requestSyllabusWareInfoPut2Cache(syllabusIds));
+        if(CollectionUtils.isNotEmpty(copy)){
+            table.putAll(requestSyllabusWareInfoPut2Cache(copy));
         }
         return table;
     }
