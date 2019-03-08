@@ -238,7 +238,7 @@ public class CourseUtil {
                         log.info("获取阶段测试完成情况，userId = {},courseWareIds = {}", userId, courseWareIds);
 
                         //todo 阶段测试完成情况，查询数据库获取数据
-                        int defaultStatus = -1;
+                        int defaultStatus = 2;
                         Map<Integer, Integer> periodMaps = Maps.newHashMap();
                         periodMaps.put(3528232, 1);
 
