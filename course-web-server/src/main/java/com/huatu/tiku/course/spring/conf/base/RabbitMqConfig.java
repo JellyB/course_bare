@@ -83,11 +83,6 @@ public class RabbitMqConfig {
     }
 
     @Bean
-    public Queue courseWorkCreateCardInfo(){
-        return new Queue(RabbitMqConstants.COURSE_WORK_CREATE_CARD_INFO);
-    }
-
-    @Bean
     public Queue courseWorkSubmitCardInfo(){
         return new Queue(RabbitMqConstants.COURSE_WORK_SUBMIT_CARD_INFO);
     }
