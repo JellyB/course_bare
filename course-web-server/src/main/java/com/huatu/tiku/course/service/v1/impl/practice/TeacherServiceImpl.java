@@ -59,12 +59,12 @@ public class TeacherServiceImpl implements TeacherService {
     public Map<String,Object> getQuestionInfoByRoomId(Long roomId) throws ExecutionException, InterruptedException {
     	Map<String,Object> retMap = Maps.newHashMap();
         List<Integer> liveCourseIdListByRoomId = liveCourseRoomInfoService.getLiveCourseIdListByRoomId(roomId);
-//        if (CollectionUtils.isEmpty(liveCourseIdListByRoomId)) {
-//            return Lists.newArrayList();
-//        }
+        if (CollectionUtils.isEmpty(liveCourseIdListByRoomId)) {
+            return retMap;
+        }
         //由于各个课件对应的试题信息肯定一致，此处只需要获取一个
-//        final Long courseId = Long.valueOf(liveCourseIdListByRoomId.get(0));
-        final Long courseId = 938040L;
+       final Long courseId = Long.valueOf(liveCourseIdListByRoomId.get(0));
+       // final Long courseId = 938040L;
         List<CourseBreakpointQuestion> courseBreakpointQuestionList = courseBreakpointService.listQuestionByCourseTypeAndId(CourseQuestionTypeEnum.CourseType.LIVE.getCode(), courseId);
         if (CollectionUtils.isEmpty(courseBreakpointQuestionList)) {
         	return retMap;
