@@ -99,4 +99,14 @@ public interface UserCourseServiceV6 {
 	 */
 	@GetMapping(value = "/v5/c/class/unfinish_stage_exam_list")
 	NetSchoolResponse<PeriodTestListVO> unfinishStageExamList(@RequestParam Map<String, Object> params);
+	
+	/**
+	 * 阶段测完成试状态上报php
+	 * @param params
+	 * @return
+	 */
+	@GetMapping(value = "/v5/c/class/stage_test_study_record")
+	NetSchoolResponse<Integer> stageTestStudyRecord(@RequestParam Map<String, Object> params);
+	
+	
 }

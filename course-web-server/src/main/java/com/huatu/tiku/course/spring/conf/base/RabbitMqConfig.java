@@ -1,10 +1,16 @@
 package com.huatu.tiku.course.spring.conf.base;
 
-import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Maps;
-import com.huatu.tiku.course.consts.RabbitMqConstants;
-import com.huatu.tiku.course.mq.listeners.RewardMessageListener;
+import static com.huatu.common.consts.ApolloConfigConsts.NAMESPACE_TIKU_RABBIT;
+import static com.huatu.tiku.common.consts.RabbitConsts.ARG_DLK;
+import static com.huatu.tiku.common.consts.RabbitConsts.ARG_DLX;
+import static com.huatu.tiku.common.consts.RabbitConsts.DLK_DEFAULT;
+import static com.huatu.tiku.common.consts.RabbitConsts.DLX_DEFAULT;
+import static com.huatu.tiku.common.consts.RabbitConsts.QUEUE_REWARD_ACTION;
+import static com.huatu.tiku.common.consts.RabbitConsts.QUEUE_SEND_FREE_COURSE;
+import static com.huatu.tiku.common.consts.RabbitConsts.QUEUE_USER_NICK_UPDATE;
+
+import java.util.Map;
+
 import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.Queue;
@@ -18,10 +24,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.util.Map;
-
-import static com.huatu.common.consts.ApolloConfigConsts.NAMESPACE_TIKU_RABBIT;
-import static com.huatu.tiku.common.consts.RabbitConsts.*;
+import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
+import com.huatu.tiku.course.consts.RabbitMqConstants;
+import com.huatu.tiku.course.mq.listeners.RewardMessageListener;
 
 /**
  * @author hanchao
@@ -91,6 +98,14 @@ public class RabbitMqConfig {
     public Queue courseWorkSubmitCardInfo(){
         return new Queue(RabbitMqConstants.COURSE_WORK_SUBMIT_CARD_INFO);
     }
-
+    
+    /**
+     * 阶段测试提交答题卡队列
+     * @return
+     */
+    @Bean
+    public Queue periodTestSubmitCardInfo(){
+        return new Queue(RabbitMqConstants.PERIOD_TEST_SUBMIT_CARD_INFO);
+    }
 
 }
