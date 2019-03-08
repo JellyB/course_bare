@@ -1,19 +1,39 @@
 package com.huatu.tiku.course.service.manager;
 
-import com.google.common.collect.Maps;
-import com.huatu.common.bean.BaseStatusEnum;
+import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Joiner;
+import com.google.common.collect.*;
 import com.huatu.common.exception.BizException;
+import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.bean.vo.CourseWorkCourseVo;
+import com.huatu.tiku.course.bean.vo.CourseWorkWareVo;
+import com.huatu.tiku.course.bean.vo.SyllabusWareInfo;
 import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
+import com.huatu.tiku.course.netschool.api.v7.SyllabusServiceV7;
+import com.huatu.tiku.course.service.v1.UserAccountService;
+import com.huatu.tiku.course.util.CourseCacheKey;
+import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.entity.CourseExercisesProcessLog;
+import com.huatu.ztk.paper.bean.PracticeCard;
+import com.huatu.ztk.paper.bo.CourseWorkAnswerCardBo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import tk.mybatis.mapper.entity.Example;
 
 import java.sql.Timestamp;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 描述：
@@ -29,7 +49,20 @@ public class CourseExercisesProcessLogManager {
     @Autowired
     private CourseExercisesProcessLogMapper courseExercisesProcessLogMapper;
 
+    @Autowired
+    private SyllabusServiceV7 syllabusService;
 
+    @Autowired
+    private UserAccountService userAccountService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    private static final String LESSON_LABEL = "lesson";
+
+    private static final String COURSE_LABEL = "course";
+
+    private static final String DEFAULT_WORK_INFO = "课后作业";
     /**
      * 获取类型未读量
      * @param userId
@@ -42,14 +75,16 @@ public class CourseExercisesProcessLogManager {
         criteria.andEqualTo("userId", userId);
         criteria.andEqualTo("isAlert", YesOrNoStatus.YES.getCode());
         criteria.andEqualTo("status", YesOrNoStatus.YES.getCode());
-        criteria.andEqualTo("dataType", StudyTypeEnum.COURSE_WORK.getKey());
+        criteria.andEqualTo("dataType", StudyTypeEnum.COURSE_WORK.getOrder());
         int countWork = courseExercisesProcessLogMapper.selectCountByExample(example);
         result.put(StudyTypeEnum.COURSE_WORK.getKey(), countWork);
-        criteria.andEqualTo("dataType", StudyTypeEnum.PERIOD_TEST.getKey());
+        criteria.andEqualTo("dataType", StudyTypeEnum.PERIOD_TEST.getOrder());
         int countTest = courseExercisesProcessLogMapper.selectCountByExample(example);
         result.put(StudyTypeEnum.PERIOD_TEST.getKey(), countTest);
         return result;
     }
+
+
 
     /**
      * 单种类型全部已读
@@ -83,7 +118,7 @@ public class CourseExercisesProcessLogManager {
      * @return
      * @throws BizException
      */
-    public int readyOnece(long id, String type) throws BizException{
+    public int readyOne(long id, String type) throws BizException{
         StudyTypeEnum studyTypeEnum = StudyTypeEnum.create(type);
         CourseExercisesProcessLog courseExercisesProcessLog = new CourseExercisesProcessLog();
         courseExercisesProcessLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
@@ -93,5 +128,224 @@ public class CourseExercisesProcessLogManager {
     }
 
 
+    /**
+     * 课后作业创建答题卡异步处理方法
+     * @param courseWorkAnswerCardBo
+     */
+    @Async
+    public void createCourseWorkAnswerCard(CourseWorkAnswerCardBo courseWorkAnswerCardBo){
+        Example example = new Example(CourseExercisesProcessLog.class);
+        example.and().andEqualTo("lessonId", courseWorkAnswerCardBo.getCourseId())
+                .andEqualTo("courseType", courseWorkAnswerCardBo.getCourseType())
+                .andEqualTo("userId", courseWorkAnswerCardBo.getPracticeCard().getUserId())
+                .andEqualTo("dataType", StudyTypeEnum.COURSE_WORK.getOrder())
+                .andEqualTo("status", YesOrNoStatus.YES.getCode());
+        CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogMapper.selectOneByExample(example);
+        if(null == courseExercisesProcessLog){
+            /**
+             * 新增数据
+             */
+            CourseExercisesProcessLog newLog = newLog();
+            newLog.setCourseType(courseWorkAnswerCardBo.getCourseType());
+            newLog.setSyllabusId(courseWorkAnswerCardBo.getSyllabusId());
+            newLog.setUserId(courseWorkAnswerCardBo.getPracticeCard().getUserId());
+            newLog.setCourseId(courseWorkAnswerCardBo.getCourseId());
+            newLog.setLessonId(courseWorkAnswerCardBo.getLessonId());
+            newLog.setCardId(courseWorkAnswerCardBo.getPracticeCard().getId());
+            newLog.setBizStatus(courseWorkAnswerCardBo.getPracticeCard().getStatus());
+            courseExercisesProcessLogMapper.insertSelective(newLog);
+        }else{
+            /**
+             * 更新答题卡字段
+             */
+            int status = courseWorkAnswerCardBo.getPracticeCard().getStatus();
+            CourseExercisesProcessLog update = new CourseExercisesProcessLog();
+            BeanUtils.copyProperties(courseExercisesProcessLog, update);
+            update.setGmtModify(new Timestamp(System.currentTimeMillis()));
+            update.setBizStatus(courseWorkAnswerCardBo.getPracticeCard().getStatus());
+            courseExercisesProcessLogMapper.updateByExampleSelective(update, example);
+        }
+    }
+
+
+    public void submitCourseWorkAnswerCard(PracticeCard answerCard)throws BizException{
+        //todo 更新答题卡状态标记为已完成
+        Example example = new Example(CourseExercisesProcessLog.class);
+        example.and()
+                .andEqualTo("status", YesOrNoStatus.YES.getCode())
+                .andEqualTo("userId", answerCard.getUserId())
+                .andEqualTo("cardId", answerCard.getId());
+
+        CourseExercisesProcessLog updateLog = new CourseExercisesProcessLog();
+        updateLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
+        updateLog.setBizStatus(answerCard.getStatus());
+        courseExercisesProcessLogMapper.updateByExampleSelective(updateLog, example);
+    }
+    /**
+     * new courseExercisesProcessLog
+     * @return
+     */
+    private static CourseExercisesProcessLog newLog(){
+        CourseExercisesProcessLog courseExercisesProcessLog = new CourseExercisesProcessLog();
+        courseExercisesProcessLog.setIsAlert(YesOrNoStatus.YES.getCode());
+        courseExercisesProcessLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
+        courseExercisesProcessLog.setGmtCreate(new Timestamp(System.currentTimeMillis()));
+        courseExercisesProcessLog.setDataType(StudyTypeEnum.COURSE_WORK.getOrder());
+        courseExercisesProcessLog.setStatus(YesOrNoStatus.YES.getCode());
+        courseExercisesProcessLog.setCreatorId(0L);
+        courseExercisesProcessLog.setModifierId(0L);
+        return courseExercisesProcessLog;
+    }
+
+    /**
+     * 获取我的课后作业列表
+     * @param userId
+     * @param page
+     * @param size
+     * @return
+     * @throws BizException
+     */
+    public Object courseWorkList(long userId, int page, int size) throws BizException{
+
+        List<CourseWorkCourseVo> courseWorkCourseVos = Lists.newArrayList();
+        List<HashMap<String, Object>> dataList = courseExercisesProcessLogMapper.getCoursePageInfo(userId, page, size);
+
+        Set<Long> allSyllabusIds = Sets.newHashSet();
+        dataList.forEach(item -> {
+            String ids = String.valueOf(item.get("syllabusIds"));
+            Set<Long> temp = Arrays.stream(ids.split(",")).map(Long::valueOf).collect(Collectors.toSet());
+            allSyllabusIds.addAll(temp);
+        });
+        Table<String, Long, SyllabusWareInfo> syllabusWareInfoTable = this.dealSyllabusInfo(allSyllabusIds);
+        if(syllabusWareInfoTable.isEmpty()){
+            return courseWorkCourseVos;
+        }
+
+        Example example = new Example(CourseExercisesProcessLog.class);
+        example.and()
+                .andEqualTo("userId", userId)
+                .andEqualTo("dataType", StudyTypeEnum.COURSE_WORK.getOrder())
+                .andEqualTo("status", YesOrNoStatus.YES.getCode())
+                .andIn("syllabusId", allSyllabusIds);
+
+        Map<Long, CourseExercisesProcessLog> courseExercisesProcessLogMap = courseExercisesProcessLogMapper
+                .selectByExample(example).stream().collect(Collectors.toMap(wareLog -> wareLog.getSyllabusId(), wareLog -> wareLog));
+
+        dataList.forEach(item->{
+            CourseWorkCourseVo courseWorkCourseVo = new CourseWorkCourseVo();
+            courseWorkCourseVo.setCourseId(Long.valueOf(String.valueOf(item.get("courseId"))));
+            courseWorkCourseVo.setCourseTitle(syllabusWareInfoTable.get(COURSE_LABEL, courseWorkCourseVo.getCourseId()).getClassName());
+            String ids = String.valueOf(item.get("syllabusIds"));
+            Set<Long> temp = Arrays.stream(ids.split(",")).map(Long::valueOf).collect(Collectors.toSet());
+            if(CollectionUtils.isEmpty(temp)){
+                courseWorkCourseVo.setUndoCount(0);
+                courseWorkCourseVo.setWareInfoList(Lists.newArrayList());
+                courseWorkCourseVo.setCourseTitle(StringUtils.EMPTY);
+            }
+
+            List<CourseWorkWareVo> wareVos = Arrays.stream(ids.split(","))
+                    .filter(ware ->
+                            null !=  syllabusWareInfoTable.get(LESSON_LABEL, Long.valueOf(ware)) &&
+                            null !=  courseExercisesProcessLogMap.get(Long.valueOf(ware)) &&
+                            null != courseExercisesProcessLogMap.get(Long.valueOf(ware)).getDataInfo())
+                    .map(ware -> {
+                    SyllabusWareInfo syllabusWareInfo = syllabusWareInfoTable.get(LESSON_LABEL, Long.valueOf(ware));
+                    CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogMap.get(Long.valueOf(ware));
+                    JSONObject jsonObject = JSONObject.parseObject(courseExercisesProcessLog.getDataInfo());
+                    CourseWorkWareVo courseWorkWareVo = CourseWorkWareVo
+                        .builder()
+                        .courseWareId(syllabusWareInfo.getCoursewareId())
+                        .courseWareTitle(syllabusWareInfo.getCoursewareName())
+                        .videoLength(syllabusWareInfo.getLength())
+                        .serialNumber(syllabusWareInfo.getSerialNumber())
+                        .answerCardId(jsonObject.getLongValue("id"))
+                        .answerCardInfo(jsonObject.getString("info"))
+                        .questionIds("")
+                        .isAlert(courseExercisesProcessLog.getIsAlert())
+                        .build();
+                return courseWorkWareVo;
+            }).collect(Collectors.toList());
+
+
+            courseWorkCourseVo.setUndoCount(temp.size());
+            courseWorkCourseVo.setWareInfoList(wareVos);
+            courseWorkCourseVos.add(courseWorkCourseVo);
+        });
+        return courseWorkCourseVos;
+    }
+
+    /**
+     * 根据大纲id获取课件信息，
+     * @param syllabusIds
+     * @return
+     * @throws BizException
+     */
+    public Table<String, Long, SyllabusWareInfo> dealSyllabusInfo(Set<Long> syllabusIds) throws BizException{
+        log.debug("deal syllabusId info:{}", syllabusIds);
+        Table<String, Long, SyllabusWareInfo> table = TreeBasedTable.create();
+        if(CollectionUtils.isEmpty(syllabusIds)){
+            return table;
+        }
+        ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
+        syllabusIds.forEach(item -> {
+            String key = CourseCacheKey.getProcessLogSyllabusInfo(item);
+            if(redisTemplate.hasKey(key)){
+                String value = valueOperations.get(key);
+                SyllabusWareInfo syllabusWareInfo = JSONObject.parseObject(value, SyllabusWareInfo.class);
+                table.put(LESSON_LABEL, item, syllabusWareInfo);
+                table.put(COURSE_LABEL, syllabusWareInfo.getClassId(), syllabusWareInfo);
+                syllabusIds.remove(item);
+            }
+        });
+        if(CollectionUtils.isNotEmpty(syllabusIds)){
+            table.putAll(requestSyllabusWareInfoPut2Cache(syllabusIds));
+        }
+        return table;
+    }
+
+    /**
+     * 请求大纲信息并缓存到 redis
+     * @param syllabusIds
+     * @return
+     * @throws BizException
+     */
+    private Table<String, Long, SyllabusWareInfo> requestSyllabusWareInfoPut2Cache(Set<Long> syllabusIds)throws BizException{
+        Table<String, Long, SyllabusWareInfo> table = TreeBasedTable.create();
+        try{
+            String ids = Joiner.on(",").join(syllabusIds);
+            NetSchoolResponse<LinkedHashMap<String, Object>> netSchoolResponse = syllabusService.courseWareInfo(ids);
+            if(ResponseUtil.isFailure(netSchoolResponse) || netSchoolResponse == NetSchoolResponse.DEFAULT){
+                return table;
+            }
+            ObjectMapper objectMapper = new ObjectMapper();
+            List<LinkedHashMap<String, Object>> data = (List<LinkedHashMap<String, Object>>)netSchoolResponse.getData();
+
+            List<SyllabusWareInfo> list = data.stream().map(item -> {
+                LinkedHashMap<String, Object> map = item;
+                try{
+                    SyllabusWareInfo syllabusWareInfo = objectMapper.convertValue(map, SyllabusWareInfo.class);
+                    return syllabusWareInfo;
+                }catch (Exception e){
+                    log.error("convert map 2 SyllabusWareInfo error! {}", e);
+                    return null;
+                }
+            }).collect(Collectors.toList());
+
+            if(CollectionUtils.isNotEmpty(list)){
+                ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
+                list.forEach(item -> {
+                    table.put(LESSON_LABEL, item.getSyllabusId(), item);
+                    table.put(COURSE_LABEL, item.getClassId(), item);
+                    String key = CourseCacheKey.getProcessLogSyllabusInfo(item.getSyllabusId());
+                    valueOperations.set(key, JSONObject.toJSONString(item));
+                    redisTemplate.expire(key, 20, TimeUnit.SECONDS);
+                });
+            }
+            return table;
+        }catch (Exception e) {
+            log.error("request syllabusInfo error!:{}", e);
+            return table;
+        }
+    }
 
 }
