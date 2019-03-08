@@ -90,6 +90,8 @@ public class PracticeMetaComponent {
         final HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
                 .put("id", practiceRoomRankUserBo.getId())
                 .put("name", practiceRoomRankUserBo.getName())
+                //此处加上 课程ID，在后续持久化使用
+                .put("courseId", courseId)
                 .build();
         zSetOperations.add(key, JSONObject.toJSONString(map), practiceRoomRankUserBo.buildRankInfo());
         redisTemplate.expire(key, CoursePracticeCacheKey.getDefaultKeyTTL(), CoursePracticeCacheKey.getDefaultTimeUnit());
