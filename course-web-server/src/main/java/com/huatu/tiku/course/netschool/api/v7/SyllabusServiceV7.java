@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.netschool.api.v7;
 
 import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.netschool.api.fall.SyllabusServiceFallback;
 import javafx.scene.chart.ValueAxis;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +16,7 @@ import java.util.Map;
  * Create time 2019-03-05 10:59 AM
  **/
 
-@FeignClient(value = "o-course-service", path = "/lumenapi/v5/c/")
+@FeignClient(value = "o-course-service", path = "/lumenapi", fallback = SyllabusServiceFallback.class)
 public interface SyllabusServiceV7 {
 
     /**
@@ -23,6 +24,6 @@ public interface SyllabusServiceV7 {
      * @param syllabusIds
      * @return
      */
-    @GetMapping(value = "syllabus/courseware_info")
+    @GetMapping(value = "/v5/c/syllabus/courseware_info")
     NetSchoolResponse courseWareInfo(@RequestParam(value = "syllabusIds") String syllabusIds);
 }
