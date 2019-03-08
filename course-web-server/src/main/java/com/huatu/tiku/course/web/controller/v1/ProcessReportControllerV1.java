@@ -26,16 +26,6 @@ public class ProcessReportControllerV1 {
 
 
     /**
-     * 直播数据回放
-     * @param params
-     * @return
-     */
-    @PostMapping(value = "live")
-    public Object report(@RequestBody Map<String,Object> params){
-        return processReportService.liveReport(params);
-    }
-
-    /**
      * 录播、回放 数据上报
      * @param params
      * @return

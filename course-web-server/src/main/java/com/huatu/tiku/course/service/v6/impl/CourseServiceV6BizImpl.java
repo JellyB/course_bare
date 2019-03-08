@@ -32,6 +32,7 @@ import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.service.v6.CourseServiceV6Biz;
 import com.huatu.tiku.course.util.CourseCacheKey;
+import com.huatu.tiku.course.util.DateUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.course.ztk.api.v4.paper.PeriodTestServiceV4;
 import com.huatu.tiku.entity.CourseExercisesProcessLog;
@@ -242,62 +243,65 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
 
     @Override
-    public Object periodTestList(Map<String, Object> params) {
-        Stopwatch stopwatch = Stopwatch.createStarted();
-        int uid = (int) params.get("userId");
-        NetSchoolResponse<PeriodTestListVO> response = userCourseServiceV6.unfinishStageExamList(params);
-        log.info("接口unfinish_stage_exam_list调用php响应用时:{}", String.valueOf(stopwatch.stop()));
-        if (ResponseUtil.isSuccess(response)) {
-            Stopwatch stopwatchExplain = Stopwatch.createStarted();
-            PeriodTestListVO periodTestListVO = response.getData();
-            //key为paperid_syllabusId value 为试卷信息
-            Map<String, PeriodTestListVO.PeriodTestInfo> paperMap = Maps.newHashMap();
-            periodTestListVO.getList().forEach(courseInfo -> {
-                courseInfo.setUndoCount(courseInfo.getChild().size());
-                courseInfo.getChild().forEach(periodTestInfo -> {
-                    // TODO 后续变为从redis获取
-                    int count = courseExercisesProcessLogMapper
-                            .selectCountByExample(new Example.Builder(CourseExercisesProcessLog.class)
-                                    .where(WeekendSqls.<CourseExercisesProcessLog>custom()
-                                            .andEqualTo(CourseExercisesProcessLog::getSyllabusId,
-                                                    periodTestInfo.getSyllabusId())
-                                            .andEqualTo(CourseExercisesProcessLog::getUserId, uid)
-                                            .andEqualTo(CourseExercisesProcessLog::getIsAlert,
-                                                    YesOrNoStatus.YES.getCode())
-                                            .andEqualTo(CourseExercisesProcessLog::getStatus,
-                                                    YesOrNoStatus.YES.getCode())
-                                            .andEqualTo(CourseExercisesProcessLog::getDataType,
-                                                    StudyTypeEnum.PERIOD_TEST.getKey()))
+	public Object periodTestList(Map<String, Object> params) {
+		Stopwatch stopwatch = Stopwatch.createStarted();
+		int uid = (int) params.get("userId");
+		NetSchoolResponse<PeriodTestListVO> response = userCourseServiceV6.unfinishStageExamList(params);
+		log.info("接口unfinish_stage_exam_list调用php响应用时:{}", String.valueOf(stopwatch.stop()));
+		if (ResponseUtil.isSuccess(response)) {
+			Stopwatch stopwatchExplain = Stopwatch.createStarted();
+			PeriodTestListVO periodTestListVO = response.getData();
+			// key为paperid_syllabusId value 为试卷信息
+			Map<String, PeriodTestListVO.PeriodTestInfo> paperMap = Maps.newHashMap();
+			periodTestListVO.getList().forEach(courseInfo -> {
+				courseInfo.setUndoCount(courseInfo.getChild().size());
+				courseInfo.getChild().forEach(periodTestInfo -> {
+					// TODO 后续变为从redis获取
+					int count = courseExercisesProcessLogMapper
+							.selectCountByExample(new Example.Builder(CourseExercisesProcessLog.class)
+									.where(WeekendSqls.<CourseExercisesProcessLog>custom()
+											.andEqualTo(CourseExercisesProcessLog::getSyllabusId,
+													periodTestInfo.getSyllabusId())
+											.andEqualTo(CourseExercisesProcessLog::getUserId, uid)
+											.andEqualTo(CourseExercisesProcessLog::getIsAlert,
+													YesOrNoStatus.YES.getCode())
+											.andEqualTo(CourseExercisesProcessLog::getStatus,
+													YesOrNoStatus.YES.getCode())
+											.andEqualTo(CourseExercisesProcessLog::getDataType,
+													StudyTypeEnum.PERIOD_TEST.getKey()))
 
-                                    .build());
-                    if (count > 0) {
-                        periodTestInfo.setIsAlert(1);
-                    }
-
-                    paperMap.put(periodTestInfo.getExamId() + "_" + periodTestInfo.getSyllabusId(), periodTestInfo);
-                    // 填充考试状态
+									.build());
+					if (count > 0) {
+						periodTestInfo.setIsAlert(1);
+					}
+					// 填充app端展示所需时间
+					periodTestInfo.setShowTime(
+							DateUtil.getSimpleDate(periodTestInfo.getStartTime(), periodTestInfo.getEndTime()));
+					paperMap.put(periodTestInfo.getExamId() + "_" + periodTestInfo.getSyllabusId(), periodTestInfo);
+					// 填充考试状态
 //					NetSchoolResponse netSchoolResponse = periodTestServiceV4.getPaperStatus(uid,
 //							periodTestInfo.getSyllabusId(), periodTestInfo.getExamId());
 //					if (ResponseUtil.isSuccess(netSchoolResponse)) {
 //						periodTestInfo.setStatus((int) netSchoolResponse.getData());
 //					}
-                });
-            });
-            Set<String> paperSyllabusSet = paperMap.keySet();
-            NetSchoolResponse<Map<String, Integer>> bathResponse = periodTestServiceV4.getPaperStatusBath(uid,
-                    paperSyllabusSet);
-            if (ResponseUtil.isSuccess(bathResponse)) {
-                // key为paperid_syllabusId value 为试卷状态
-                Map<String, Integer> retMap = bathResponse.getData();
-                // 修改试卷状态
-                for (Entry<String, Integer> paperRet : retMap.entrySet()) {
-                    paperMap.get(paperRet.getKey()).setStatus(paperRet.getValue());
-                }
-            }
-            log.info("getpaper param is:{}", paperSyllabusSet.toString());
-            log.info("接口unfinish_stage_exam_list解析用时:{}", String.valueOf(stopwatchExplain.stop()));
-            return periodTestListVO;
-        }
-        return null;
-    }
+				});
+			});
+			Set<String> paperSyllabusSet = paperMap.keySet();
+			NetSchoolResponse<Map<String, Integer>> bathResponse = periodTestServiceV4.getPaperStatusBath(uid,
+					paperSyllabusSet);
+			if (ResponseUtil.isSuccess(bathResponse)) {
+				// key为paperid_syllabusId value 为试卷状态
+				Map<String, Integer> retMap = bathResponse.getData();
+				log.info("getPaperStatusBath ret is:{}", retMap.toString());
+				// 修改试卷状态
+				for (Entry<String, Integer> paperRet : retMap.entrySet()) {
+					paperMap.get(paperRet.getKey()).setStatus(paperRet.getValue());
+				}
+			}
+			log.info("getpaper param is:{}", paperSyllabusSet.toString());
+			log.info("接口unfinish_stage_exam_list解析用时:{}", String.valueOf(stopwatchExplain.stop()));
+			return periodTestListVO;
+		}
+		return null;
+	}
 }

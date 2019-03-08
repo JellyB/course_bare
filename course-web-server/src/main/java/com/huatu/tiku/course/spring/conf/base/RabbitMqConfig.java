@@ -3,6 +3,7 @@ package com.huatu.tiku.course.spring.conf.base;
 import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
+import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.mq.listeners.RewardMessageListener;
 import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.core.AmqpAdmin;
@@ -79,6 +80,16 @@ public class RabbitMqConfig {
         manualRabbitContainer.setMaxConcurrentConsumers(threadPoolTaskExecutor.getCorePoolSize() / 4);
         manualRabbitContainer.setMessageListener(rewardMessageListener);
         return manualRabbitContainer;
+    }
+
+    @Bean
+    public Queue courseWorkCreateCardInfo(){
+        return new Queue(RabbitMqConstants.COURSE_WORK_CREATE_CARD_INFO);
+    }
+
+    @Bean
+    public Queue courseWorkSubmitCardInfo(){
+        return new Queue(RabbitMqConstants.COURSE_WORK_SUBMIT_CARD_INFO);
     }
 
 

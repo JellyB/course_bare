@@ -18,11 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.huatu.common.SuccessMessage;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
-import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.service.v6.CourseBizV6Service;
 import com.huatu.tiku.course.service.v6.CourseServiceV6Biz;
@@ -122,7 +120,7 @@ public class UserCourseControllerV6 {
     public Object readOneCourseWork(@Token UserSession userSession,
                                     @PathVariable(value = "type") String type,
                                     @PathVariable(value = "id")int id){
-        return courseExercisesProcessLogManager.readyOnece(id, type);
+        return courseExercisesProcessLogManager.readyOne(id, type);
     }
 
     /**
@@ -135,95 +133,7 @@ public class UserCourseControllerV6 {
                             @RequestParam(value = "page", defaultValue = "1")int page,
                             @RequestParam(value = "size", defaultValue = "20") int size){
 
-        List<CourseInfo> list = Lists.newArrayList();
-        List<CourseWareInfo> courseWareInfoList1 = Lists.newArrayList();
-        List<CourseWareInfo> courseWareInfoList2 = Lists.newArrayList();
-        courseWareInfoList1.add(CourseWareInfo.builder()
-                .courseWareTitle("2014年资料分析真题-1")
-                .courseWareId(942913)
-                .videoLength("高清 - 28分钟37秒")
-                .serialNumber(1)
-                .answerCardId(12345678L)
-                .questionIds("26603,26604,26605,26606,26607,26608")
-                .answerCardInfo("剩余4/6题")
-                .isAlert(1)
-                .build());
-        courseWareInfoList1.add(CourseWareInfo.builder()
-                .courseWareTitle("2014年资料分析真题-2")
-                .courseWareId(942914)
-                .videoLength("高清 - 28分钟51秒")
-                .serialNumber(2)
-                .answerCardId(12345679L)
-                .questionIds("26613,26614,26615,26616,26617,26618")
-                .answerCardInfo("剩余4/6题")
-                .isAlert(0)
-                .build());
-
-        courseWareInfoList2.add(CourseWareInfo.builder()
-                .courseWareTitle("管理常识-1")
-                .courseWareId(942951)
-                .videoLength("高清 - 28分钟37秒")
-                .serialNumber(1)
-                .answerCardId(12345681L)
-                .questionIds("26613,26614,26615,26616,26617,26618")
-                .answerCardInfo("剩余4/6题")
-                .isAlert(1)
-                .build());
-        courseWareInfoList2.add(CourseWareInfo.builder()
-                .courseWareTitle("管理常识-3")
-                .courseWareId(942952)
-                .videoLength("高清 - 28分钟37秒")
-                .serialNumber(3)
-                .answerCardId(12345683L)
-                .questionIds("26633,26634,26635,26636,26637,26638")
-                .answerCardInfo("剩余4/6题")
-                .isAlert(1)
-                .build());
-        courseWareInfoList2.add(CourseWareInfo.builder()
-                .courseWareTitle("管理常识-5")
-                .courseWareId(942955)
-                .videoLength("高清 - 28分钟37秒")
-                .serialNumber(5)
-                .answerCardId(12345685L)
-                .questionIds("26653,26654,26655,26656,26657,26658")
-                .answerCardInfo("剩余4/6题")
-                .isAlert(1)
-                .build());
-        courseWareInfoList2.add(CourseWareInfo.builder()
-                .courseWareTitle("管理常识-7")
-                .courseWareId(942957)
-                .videoLength("高清 - 28分钟37秒")
-                .serialNumber(7)
-                .answerCardId(12345687L)
-                .questionIds("26673,26674,26675,26676,26677,26678")
-                .answerCardInfo("剩余4/6题")
-                .isAlert(1)
-                .build());
-        courseWareInfoList2.add(CourseWareInfo.builder()
-                .courseWareTitle("管理常识-9")
-                .courseWareId(942959)
-                .videoLength("高清 - 28分钟37秒")
-                .serialNumber(9)
-                .answerCardId(12345689L)
-                .questionIds("26693,26694,26695,26696,26697,26698")
-                .answerCardInfo("剩余4/6题")
-                .isAlert(1)
-                .build());
-
-
-        list.add(CourseInfo.builder()
-                .courseId(98017)
-                .courseTitle("模考专用】14年国考资料分析真题")
-                .undoCount(2)
-                .wareInfoList(courseWareInfoList1)
-                .build());
-        list.add(CourseInfo.builder()
-                .courseId(98018)
-                .courseTitle("《管理常识》模块真题精讲")
-                .undoCount(5)
-                .wareInfoList(courseWareInfoList2)
-                .build());
-        return list;
+        return courseExercisesProcessLogManager.courseWorkList(userSession.getId(), page, size);
     }
 
    
@@ -249,7 +159,8 @@ public class UserCourseControllerV6 {
     public Object testReport(@Token UserSession userSession,
                              @RequestHeader(value = "cv") String cv,
                              @RequestHeader(value = "terminal") int terminal,
-                             @PathVariable(value = "id") int id){
+                             @PathVariable(value = "id") int id,
+                             @RequestParam(value = "type", defaultValue = "0") int videoType){
         HashMap<String,Object> result = Maps.newHashMap();
         List<RankInfo> rankInfos = Lists.newArrayList();
         List<Points> points = Lists.newArrayList();
@@ -277,6 +188,7 @@ public class UserCourseControllerV6 {
         result.put("maxCorrect", 15);//最高答对题数
         result.put("avgCorrect", 14);//平均答对题数
         result.put("points", points);//知识点掌握情况
+        result.put("myRank", 25);
         result.put("ranks", rankInfos);
         result.put("corrects", new int[]{1,2,2,2,2,1,1,1,1,1});
         result.put("answers", new String[]{"1", "2", "3", "4", "4", "3", "2", "1", "2", "2"});

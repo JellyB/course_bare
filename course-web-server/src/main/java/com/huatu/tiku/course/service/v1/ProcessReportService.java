@@ -9,13 +9,9 @@ import java.util.Map;
  * @author biguodong
  * Create time 2019-02-22 上午11:16
  **/
-public interface ProcessReportService<T> {
-    /**
-     * 数据上报接口
-     * @param params
-     * @return
-     */
-    Object liveReport(Map<String,Object> params);
+public interface
+ProcessReportService<T> {
+
 
 
     /**
@@ -30,6 +26,4 @@ public interface ProcessReportService<T> {
      * @param t
      * @return
      */
-    void ack(T t);
-
 }

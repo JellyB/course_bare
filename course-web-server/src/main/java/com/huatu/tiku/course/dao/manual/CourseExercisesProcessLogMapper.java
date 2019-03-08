@@ -1,8 +1,13 @@
 package com.huatu.tiku.course.dao.manual;
 
+import com.huatu.tiku.course.dao.provider.CourseExercisesProcessLogProvider;
 import com.huatu.tiku.entity.CourseExercisesProcessLog;
+import org.apache.ibatis.annotations.SelectProvider;
 import org.springframework.stereotype.Repository;
 import tk.mybatis.mapper.common.Mapper;
+
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * 描述：
@@ -12,4 +17,14 @@ import tk.mybatis.mapper.common.Mapper;
  **/
 @Repository
 public interface CourseExercisesProcessLogMapper extends Mapper<CourseExercisesProcessLog> {
+
+    /**
+     * 获取课后作业分页详情
+     * @param userId
+     * @param page
+     * @param size
+     * @return
+     */
+    @SelectProvider(type = CourseExercisesProcessLogProvider.class, method = "getCoursePageInfo")
+    List<HashMap<String, Object>> getCoursePageInfo(long userId, int page, int size);
 }

@@ -67,4 +67,16 @@ public class TeacherController {
         }
         return teacherService.getQuestionRankInfo(roomId, page, pageSize);
     }
+    
+    /**
+     * 老师结束作答默认将开始答题时间置为-1
+     * @param roomId
+     * @param questionId
+     * @return
+     */
+	@PostMapping("{roomId}/{questionId}/stopAnswer")
+	public Object stopAnswer(@PathVariable Long roomId, @PathVariable Long questionId) {
+		teacherService.stopAnswer(roomId, questionId);
+		return SuccessMessage.create();
+	}
 }

@@ -213,6 +213,12 @@
             <artifactId>pandora-backend-common</artifactId>
             <version>${default.env.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.huatu.ztk</groupId>
+            <artifactId>paper-common</artifactId>
+            <version>1.0-${project.environment}-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 
