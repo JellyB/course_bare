@@ -24,9 +24,9 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.*;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import tk.mybatis.mapper.entity.Example;
 
@@ -53,16 +53,14 @@ public class CourseExercisesProcessLogManager {
     private SyllabusServiceV7 syllabusService;
 
     @Autowired
-    private UserAccountService userAccountService;
-
-    @Autowired
     private RedisTemplate redisTemplate;
 
     private static final String LESSON_LABEL = "lesson";
 
     private static final String COURSE_LABEL = "course";
 
-    private static final String DEFAULT_WORK_INFO = "课后作业";
+    private static final long PERIOD_TIME = 30 * 1000;
+
     /**
      * 获取类型未读量
      * @param userId
@@ -154,11 +152,11 @@ public class CourseExercisesProcessLogManager {
             newLog.setCardId(courseWorkAnswerCardBo.getPracticeCard().getId());
             newLog.setBizStatus(courseWorkAnswerCardBo.getPracticeCard().getStatus());
             courseExercisesProcessLogMapper.insertSelective(newLog);
+            putIntoDealList(courseWorkAnswerCardBo.getSyllabusId());
         }else{
             /**
              * 更新答题卡字段
              */
-            int status = courseWorkAnswerCardBo.getPracticeCard().getStatus();
             CourseExercisesProcessLog update = new CourseExercisesProcessLog();
             BeanUtils.copyProperties(courseExercisesProcessLog, update);
             update.setGmtModify(new Timestamp(System.currentTimeMillis()));
@@ -168,8 +166,47 @@ public class CourseExercisesProcessLogManager {
     }
 
 
+    /**
+     * 待处理的大纲id
+     * @param syllabusId
+     */
+    public void putIntoDealList(Long syllabusId){
+        String key = CourseCacheKey.getProcessLogSyllabusDealList();
+        ZSetOperations<String, String> dealList = redisTemplate.opsForZSet();
+        dealList.add(key, String.valueOf(syllabusId), System.currentTimeMillis());
+    }
+
+    /**
+     * 每20秒处理一次
+     * @throws BizException
+     */
+    @Scheduled(fixedRate = PERIOD_TIME)
+    public synchronized void dealList() throws BizException{
+        String key = CourseCacheKey.getProcessLogSyllabusDealList();
+        ZSetOperations<String, String> dealList = redisTemplate.opsForZSet();
+        long max = System.currentTimeMillis();
+        Set<Long> syllabusIds = dealList.rangeByScore(key, 0, max).stream().map(Long::valueOf).collect(Collectors.toSet());
+        if(CollectionUtils.isEmpty(syllabusIds)){
+            return;
+        }
+        log.debug("deal syllabusInfo list:{}", syllabusIds);
+        Table<String, Long, SyllabusWareInfo> table = dealSyllabusInfo(syllabusIds);
+        syllabusIds.forEach(item -> {
+            Map<Long, SyllabusWareInfo> maps = table.row(LESSON_LABEL);
+            if(maps.containsKey(item)){
+                dealList.remove(key, String.valueOf(item));
+            }else{
+                putIntoDealList(item);
+            }
+        });
+    }
+
+    /**
+     * 保存课后练习答题卡，更新状态
+     * @param answerCard
+     * @throws BizException
+     */
     public void submitCourseWorkAnswerCard(PracticeCard answerCard)throws BizException{
-        //todo 更新答题卡状态标记为已完成
         Example example = new Example(CourseExercisesProcessLog.class);
         example.and()
                 .andEqualTo("status", YesOrNoStatus.YES.getCode())
@@ -340,7 +377,7 @@ public class CourseExercisesProcessLogManager {
                     table.put(COURSE_LABEL, item.getClassId(), item);
                     String key = CourseCacheKey.getProcessLogSyllabusInfo(item.getSyllabusId());
                     valueOperations.set(key, JSONObject.toJSONString(item));
-                    redisTemplate.expire(key, 20, TimeUnit.SECONDS);
+                    redisTemplate.expire(key, 20, TimeUnit.MINUTES);
                 });
             }
             return table;
