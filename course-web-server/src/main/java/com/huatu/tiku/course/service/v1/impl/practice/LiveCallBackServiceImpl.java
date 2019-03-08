@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.huatu.tiku.course.bean.practice.LiveCallbackBo;
 import com.huatu.tiku.course.bean.practice.PracticeRoomRankUserBo;
 import com.huatu.tiku.course.bean.practice.QuestionMetaBo;
-import com.huatu.tiku.course.bean.practice.TeacherQuestionBo;
 import com.huatu.tiku.course.service.v1.practice.LiveCallBackService;
 import com.huatu.tiku.course.service.v1.practice.PracticeQuestionInfoService;
 import com.huatu.tiku.course.service.v1.practice.TeacherService;
@@ -33,10 +32,7 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
     @Override
     public void liveCallBackAllInfo(Long roomId, List<LiveCallbackBo> liveCallbackBoList) throws ExecutionException, InterruptedException {
         //获取所有试题信息
-        List<TeacherQuestionBo> questionInfoByRoomId = teacherService.getQuestionInfoByRoomId(roomId);
-        if (CollectionUtils.isEmpty(questionInfoByRoomId)) {
-            return;
-        }
+       
     }
 
     /**
