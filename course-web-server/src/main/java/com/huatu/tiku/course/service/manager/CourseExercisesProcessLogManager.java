@@ -3,6 +3,7 @@ package com.huatu.tiku.course.service.manager;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.*;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
@@ -13,20 +14,18 @@ import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
 import com.huatu.tiku.course.netschool.api.v7.SyllabusServiceV7;
-import com.huatu.tiku.course.service.v1.UserAccountService;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.entity.CourseExercisesProcessLog;
 import com.huatu.ztk.paper.bean.PracticeCard;
-import com.huatu.ztk.paper.bo.CourseWorkAnswerCardBo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.*;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import tk.mybatis.mapper.entity.Example;
 
@@ -53,16 +52,17 @@ public class CourseExercisesProcessLogManager {
     private SyllabusServiceV7 syllabusService;
 
     @Autowired
-    private UserAccountService userAccountService;
+    private RedisTemplate redisTemplate;
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private ObjectMapper objectMapper;
 
     private static final String LESSON_LABEL = "lesson";
 
     private static final String COURSE_LABEL = "course";
 
-    private static final String DEFAULT_WORK_INFO = "课后作业";
+    private static final long PERIOD_TIME = 30 * 1000;
+
     /**
      * 获取类型未读量
      * @param userId
@@ -130,14 +130,21 @@ public class CourseExercisesProcessLogManager {
 
     /**
      * 课后作业创建答题卡异步处理方法
-     * @param courseWorkAnswerCardBo
+     * @param courseType
+     * @param coursewareId
+     * @param courseId
+     * @param syllabusId
+     * @param result
      */
     @Async
-    public void createCourseWorkAnswerCard(CourseWorkAnswerCardBo courseWorkAnswerCardBo){
+    public void createCourseWorkAnswerCard(int userId, Integer courseType, Long coursewareId, Long courseId, Long syllabusId, HashMap<String,Object> result){
+        Long cardId = Long.valueOf(String.valueOf(result.get("id")));
+        int status = Integer.valueOf(String.valueOf(result.get("status")));
+
         Example example = new Example(CourseExercisesProcessLog.class);
-        example.and().andEqualTo("lessonId", courseWorkAnswerCardBo.getCourseId())
-                .andEqualTo("courseType", courseWorkAnswerCardBo.getCourseType())
-                .andEqualTo("userId", courseWorkAnswerCardBo.getPracticeCard().getUserId())
+        example.and().andEqualTo("lessonId", coursewareId)
+                .andEqualTo("courseType", courseType)
+                .andEqualTo("userId", userId)
                 .andEqualTo("dataType", StudyTypeEnum.COURSE_WORK.getOrder())
                 .andEqualTo("status", YesOrNoStatus.YES.getCode());
         CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogMapper.selectOneByExample(example);
@@ -146,30 +153,69 @@ public class CourseExercisesProcessLogManager {
              * 新增数据
              */
             CourseExercisesProcessLog newLog = newLog();
-            newLog.setCourseType(courseWorkAnswerCardBo.getCourseType());
-            newLog.setSyllabusId(courseWorkAnswerCardBo.getSyllabusId());
-            newLog.setUserId(courseWorkAnswerCardBo.getPracticeCard().getUserId());
-            newLog.setCourseId(courseWorkAnswerCardBo.getCourseId());
-            newLog.setLessonId(courseWorkAnswerCardBo.getLessonId());
-            newLog.setCardId(courseWorkAnswerCardBo.getPracticeCard().getId());
-            newLog.setBizStatus(courseWorkAnswerCardBo.getPracticeCard().getStatus());
+            newLog.setCourseType(courseType);
+            newLog.setSyllabusId(syllabusId);
+            newLog.setUserId(Long.valueOf(userId));
+            newLog.setCourseId(courseId);
+            newLog.setLessonId(coursewareId);
+            newLog.setCardId(cardId);
+            newLog.setBizStatus(status);
             courseExercisesProcessLogMapper.insertSelective(newLog);
+            putIntoDealList(syllabusId);
         }else{
             /**
              * 更新答题卡字段
              */
-            int status = courseWorkAnswerCardBo.getPracticeCard().getStatus();
             CourseExercisesProcessLog update = new CourseExercisesProcessLog();
             BeanUtils.copyProperties(courseExercisesProcessLog, update);
             update.setGmtModify(new Timestamp(System.currentTimeMillis()));
-            update.setBizStatus(courseWorkAnswerCardBo.getPracticeCard().getStatus());
+            update.setBizStatus(status);
             courseExercisesProcessLogMapper.updateByExampleSelective(update, example);
         }
     }
 
 
+    /**
+     * 待处理的大纲id
+     * @param syllabusId
+     */
+    public void putIntoDealList(Long syllabusId){
+        String key = CourseCacheKey.getProcessLogSyllabusDealList();
+        ZSetOperations<String, String> dealList = redisTemplate.opsForZSet();
+        dealList.add(key, String.valueOf(syllabusId), System.currentTimeMillis());
+    }
+
+    /**
+     * 每20秒处理一次
+     * @throws BizException
+     */
+    @Scheduled(fixedRate = PERIOD_TIME)
+    public synchronized void dealList() throws BizException{
+        String key = CourseCacheKey.getProcessLogSyllabusDealList();
+        ZSetOperations<String, String> dealList = redisTemplate.opsForZSet();
+        long max = System.currentTimeMillis();
+        Set<Long> syllabusIds = dealList.rangeByScore(key, 0, max).stream().map(Long::valueOf).collect(Collectors.toSet());
+        if(CollectionUtils.isEmpty(syllabusIds)){
+            return;
+        }
+        log.debug("deal syllabusInfo list:{}", syllabusIds);
+        Table<String, Long, SyllabusWareInfo> table = dealSyllabusInfo(syllabusIds);
+        syllabusIds.forEach(item -> {
+            Map<Long, SyllabusWareInfo> maps = table.row(LESSON_LABEL);
+            if(maps.containsKey(item)){
+                dealList.remove(key, String.valueOf(item));
+            }else{
+                putIntoDealList(item);
+            }
+        });
+    }
+
+    /**
+     * 保存课后练习答题卡，更新状态
+     * @param answerCard
+     * @throws BizException
+     */
     public void submitCourseWorkAnswerCard(PracticeCard answerCard)throws BizException{
-        //todo 更新答题卡状态标记为已完成
         Example example = new Example(CourseExercisesProcessLog.class);
         example.and()
                 .andEqualTo("status", YesOrNoStatus.YES.getCode())
@@ -312,6 +358,7 @@ public class CourseExercisesProcessLogManager {
      * @throws BizException
      */
     private Table<String, Long, SyllabusWareInfo> requestSyllabusWareInfoPut2Cache(Set<Long> syllabusIds)throws BizException{
+        Stopwatch stopwatch = Stopwatch.createStarted();
         Table<String, Long, SyllabusWareInfo> table = TreeBasedTable.create();
         try{
             String ids = Joiner.on(",").join(syllabusIds);
@@ -340,9 +387,10 @@ public class CourseExercisesProcessLogManager {
                     table.put(COURSE_LABEL, item.getClassId(), item);
                     String key = CourseCacheKey.getProcessLogSyllabusInfo(item.getSyllabusId());
                     valueOperations.set(key, JSONObject.toJSONString(item));
-                    redisTemplate.expire(key, 20, TimeUnit.SECONDS);
+                    redisTemplate.expire(key, 20, TimeUnit.MINUTES);
                 });
             }
+            log.debug(">>>>>>>> 请求大纲ids耗费时间:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
             return table;
         }catch (Exception e) {
             log.error("request syllabusInfo error!:{}", e);

@@ -28,6 +28,11 @@ public class PracticeRoomRankUserBo implements Serializable {
     private String name;
 
     /**
+     * 课程ID
+     */
+    private Long courseId;
+
+    /**
      * 总分
      */
     private Integer totalScore;
@@ -47,9 +52,10 @@ public class PracticeRoomRankUserBo implements Serializable {
     }
 
     @Builder
-    public PracticeRoomRankUserBo(Integer id, String name, Integer totalScore, Integer totalTime) {
+    public PracticeRoomRankUserBo(Integer id, String name, Long courseId, Integer totalScore, Integer totalTime) {
         this.id = id;
         this.name = name;
+        this.courseId = courseId;
         this.totalScore = totalScore;
         this.totalTime = totalTime;
     }
