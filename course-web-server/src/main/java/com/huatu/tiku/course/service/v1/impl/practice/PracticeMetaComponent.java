@@ -103,7 +103,8 @@ public class PracticeMetaComponent {
     public List<PracticeRoomRankUserBo> getRoomRankInfo(Long roomId, Integer start, Integer end) {
         final ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
         final String key = CoursePracticeCacheKey.roomRankKey(roomId);
-        final Set<ZSetOperations.TypedTuple<String>> typedTupleSet = zSetOperations.rangeWithScores(key, start, end);
+        //倒叙排序从高到低返回
+        final Set<ZSetOperations.TypedTuple<String>> typedTupleSet = zSetOperations.reverseRangeWithScores(key, start, end);
 
         List<PracticeRoomRankUserBo> result = typedTupleSet.stream()
                 .map(typedTuple -> {
