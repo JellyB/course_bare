@@ -103,7 +103,8 @@ public class PracticeMetaComponent {
     public List<PracticeRoomRankUserBo> getRoomRankInfo(Long roomId, Integer start, Integer end) {
         final ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
         final String key = CoursePracticeCacheKey.roomRankKey(roomId);
-        final Set<ZSetOperations.TypedTuple<String>> typedTupleSet = zSetOperations.rangeWithScores(key, start, end);
+        //倒叙排序从高到低返回
+        final Set<ZSetOperations.TypedTuple<String>> typedTupleSet = zSetOperations.reverseRangeWithScores(key, start, end);
 
         List<PracticeRoomRankUserBo> result = typedTupleSet.stream()
                 .map(typedTuple -> {
@@ -152,17 +153,22 @@ public class PracticeMetaComponent {
     public QuestionMetaBo getQuestionMetaBo(Long roomId, Long questionId) {
         final HashOperations<String, String, Integer> hashOperations = redisTemplate.opsForHash();
         final String key = CoursePracticeCacheKey.questionMetaKey(roomId, questionId);
-        //当前试题未答
-        final Integer totalTime = hashOperations.get(key, QUESTION_TOTAL_TIME_KEY);
-        if (null == totalTime || totalTime == 0) {
-            return new QuestionMetaBo();
-        }
-        //当前试题信息不存在
-        List<QuestionInfo> baseQuestionInfoList = questionInfoService.getBaseQuestionInfo(Lists.newArrayList(questionId));
-        if (CollectionUtils.isEmpty(baseQuestionInfoList)) {
-            return new QuestionMetaBo();
-        }
-        final QuestionInfo questionInfo = baseQuestionInfoList.get(0);
+		// 当前试题未答
+		final Integer totalTime = hashOperations.get(key, QUESTION_TOTAL_TIME_KEY);
+		// 当前试题信息不存在
+		List<QuestionInfo> baseQuestionInfoList = questionInfoService
+				.getBaseQuestionInfo(Lists.newArrayList(questionId));
+		if (CollectionUtils.isEmpty(baseQuestionInfoList)) {
+			return new QuestionMetaBo();
+		}
+		final QuestionInfo questionInfo = baseQuestionInfoList.get(0);
+
+		if (null == totalTime || totalTime == 0) {
+			return QuestionMetaBo.builder()
+					.id(questionInfo.getId())
+					.answer(questionInfo.getAnswer())
+					.build();
+		}
         final int[] answerCountNum = new int[4];
         final Set<Map.Entry<String, Integer>> entrySet = hashOperations.entries(key).entrySet();
         //获取A/B/C/D 各个选项的数量
