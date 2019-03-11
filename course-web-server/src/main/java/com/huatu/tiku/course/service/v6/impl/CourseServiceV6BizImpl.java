@@ -5,8 +5,21 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.huatu.common.exception.BizException;
+import com.huatu.common.utils.collection.HashMapBuilder;
+import com.huatu.tiku.common.bean.user.UserSession;
+import com.huatu.tiku.course.dao.manual.CourseExercisesStatisticsMapper;
+import com.huatu.tiku.course.service.manager.CourseExercisesStatisticsManager;
+import com.huatu.tiku.course.util.ZTKResponseUtil;
+import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
+import com.huatu.tiku.entity.CourseExercisesStatistics;
+import com.huatu.ztk.knowledge.bean.QuestionPointTree;
+import com.huatu.ztk.paper.bean.PracticeCard;
+import com.huatu.ztk.paper.bean.PracticeForCoursePaper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -82,7 +95,13 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
     private CourseExercisesProcessLogMapper courseExercisesProcessLogMapper;
 
     @Autowired
+    private CourseExercisesStatisticsManager courseExercisesStatisticsManager;
+
+    @Autowired
     private PeriodTestServiceV4 periodTestServiceV4;
+
+    @Autowired
+    private PracticeCardServiceV1 practiceCardService;
 
     /**
      * 模考大赛解析课信息,多个id使用逗号分隔
@@ -304,4 +323,47 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 		}
 		return null;
 	}
+
+    /**
+     * 查询我的课后作业报告
+     *
+     * @param userSession
+     * @param terminal
+     * @param cardId
+     * @param courseType
+     * @param lessonId
+     * @return
+     * @throws BizException
+     */
+    @Override
+    public Object courseWorkReport(UserSession userSession, int terminal , long cardId, int courseType, long lessonId) throws BizException {
+
+        Object response = ResponseUtil.build(practiceCardService.getAnswerCard(userSession.getToken(), terminal, cardId));
+        LinkedHashMap<String, Object> result = (LinkedHashMap<String, Object>) response;
+        LinkedHashMap<String, Object> data = (LinkedHashMap<String, Object>)result.get("data");
+        ObjectMapper objectMapper = new ObjectMapper();
+        PracticeCard practiceCard = objectMapper.convertValue(data, PracticeCard.class);
+        PracticeForCoursePaper practiceForCoursePaper = (PracticeForCoursePaper) practiceCard.getPaper();
+        List<QuestionPointTree> points_ = Lists.newArrayList();
+
+        List<QuestionPointTree> level1Points = practiceCard.getPoints();
+        level1Points.forEach(level1Item -> {
+            if(CollectionUtils.isNotEmpty(level1Item.getChildren())){
+                List<QuestionPointTree> level2Points = level1Item.getChildren();
+                level2Points.forEach(level2Item ->{
+                    List<QuestionPointTree> level3Points = level2Item.getChildren();
+                    if(CollectionUtils.isNotEmpty(level3Points)){
+                        level3Points.forEach(level3Item -> points_.add(level3Item));
+                    }
+                });
+            }
+        });
+
+        data.put("points", points_);
+        data.remove("paper");
+        data.putAll(courseExercisesStatisticsManager.obtainCourseRankInfo(practiceCard));
+        data.put("tcount", practiceForCoursePaper.getQcount());
+        data.put("rcount", practiceCard.getRcount());
+        return response;
+    }
 }

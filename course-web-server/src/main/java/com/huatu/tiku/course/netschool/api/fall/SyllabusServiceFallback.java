@@ -5,6 +5,8 @@ import com.huatu.tiku.course.netschool.api.v7.SyllabusServiceV7;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 /**
  * 描述：
  *
@@ -19,11 +21,11 @@ public class SyllabusServiceFallback implements SyllabusServiceV7{
     /**
      * 根据大纲id获取课件信息，多个大纲，逗号分隔
      *
-     * @param syllabusIds
+     * @param params
      * @return
      */
     @Override
-    public NetSchoolResponse courseWareInfo(String syllabusIds) {
-        return NetSchoolResponse.DEFAULT;
+    public NetSchoolResponse courseWareInfo(Map<String, Object> params) {
+        return null;
     }
 }

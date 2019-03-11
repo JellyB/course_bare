@@ -6,6 +6,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.*;
 import com.huatu.common.exception.BizException;
+import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.vo.CourseWorkCourseVo;
 import com.huatu.tiku.course.bean.vo.CourseWorkWareVo;
@@ -47,6 +48,9 @@ public class CourseExercisesProcessLogManager {
 
     @Autowired
     private CourseExercisesProcessLogMapper courseExercisesProcessLogMapper;
+
+    @Autowired
+    private CourseExercisesStatisticsManager courseExercisesStatisticsManager;
 
     @Autowired
     private SyllabusServiceV7 syllabusService;
@@ -215,6 +219,7 @@ public class CourseExercisesProcessLogManager {
      * @param answerCard
      * @throws BizException
      */
+    @Async
     public void submitCourseWorkAnswerCard(PracticeCard answerCard)throws BizException{
         Example example = new Example(CourseExercisesProcessLog.class);
         example.and()
@@ -226,6 +231,7 @@ public class CourseExercisesProcessLogManager {
         updateLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
         updateLog.setBizStatus(answerCard.getStatus());
         courseExercisesProcessLogMapper.updateByExampleSelective(updateLog, example);
+        courseExercisesStatisticsManager.dealCourseExercisesStatistics(answerCard);
     }
     /**
      * new courseExercisesProcessLog
@@ -362,7 +368,8 @@ public class CourseExercisesProcessLogManager {
         Table<String, Long, SyllabusWareInfo> table = TreeBasedTable.create();
         try{
             String ids = Joiner.on(",").join(syllabusIds);
-            NetSchoolResponse<LinkedHashMap<String, Object>> netSchoolResponse = syllabusService.courseWareInfo(ids);
+            HashMap<String, Object> params = HashMapBuilder.<String,Object>newBuilder().put("syllabusIds", ids).build();
+            NetSchoolResponse<LinkedHashMap<String, Object>> netSchoolResponse = syllabusService.courseWareInfo(params);
             if(ResponseUtil.isFailure(netSchoolResponse) || netSchoolResponse == NetSchoolResponse.DEFAULT){
                 return table;
             }

@@ -1,5 +1,7 @@
 package com.huatu.tiku.course.ztk.api.fail.paper;
 
+import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.course.util.ZTKResponseUtil;
 import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
 import org.springframework.stereotype.Component;
@@ -31,5 +33,18 @@ public class PracticeCardServiceV1Fallback implements PracticeCardServiceV1 {
     @Override
     public Object getCourseBreakPointCardInfo(long userId, List<HashMap<String, Object>> paramsList) {
         return ZTKResponseUtil.defaultResult();
+    }
+
+    /**
+     * 根据id获取答题卡信息
+     *
+     * @param token
+     * @param terminal
+     * @param id
+     * @return
+     */
+    @Override
+    public NetSchoolResponse getAnswerCard(String token, int terminal, long id) {
+        return ResponseUtil.DEFAULT_PAGE_EMPTY;
     }
 }

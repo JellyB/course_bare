@@ -1,5 +1,7 @@
 package com.huatu.tiku.course.service.v6;
 
+import com.huatu.common.exception.BizException;
+import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 
 import java.util.HashMap;
@@ -40,5 +42,17 @@ public interface CourseServiceV6Biz {
      * @return
      */
     Object periodTestList(Map<String, Object> params);
+
+    /**
+     * 查询我的课后作业报告
+     * @param userSession
+     * @param terminal
+     * @param cardId
+     * @param courseType
+     * @param lessonId
+     * @return
+     * @throws BizException
+     */
+    Object courseWorkReport(UserSession userSession, int terminal, long cardId, int courseType, long lessonId) throws BizException;
 
 }

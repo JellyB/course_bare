@@ -1,11 +1,10 @@
 package com.huatu.tiku.course.ztk.api.v1.paper;
 
+import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.ztk.api.fail.paper.PracticeCardServiceV1Fallback;
+import com.huatu.ztk.commons.exception.BizException;
 import org.springframework.cloud.netflix.feign.FeignClient;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -57,9 +56,19 @@ public interface PracticeCardServiceV1 {
     /**
      * 查询课中练习答题卡信息
      */
-    @PostMapping(value = "/v2/practices//{userId}/getCourseBreakPointCardInfo")
+    @PostMapping(value = "/v2/practices/{userId}/getCourseBreakPointCardInfo")
     Object getCourseBreakPointCardInfo(
             @RequestHeader("userId") long userId,
             @RequestBody List<HashMap<String, Object>> paramsList
     );
+
+    /**
+     * 根据id获取答题卡信息
+     * @param token
+     * @param terminal
+     * @param id
+     * @return
+     */
+    @GetMapping(value = "/v1/practices/{id}")
+    NetSchoolResponse getAnswerCard(@RequestHeader(value = "token") String token, @RequestHeader(value = "terminal") int terminal, @PathVariable(value = "id") long id);
 }

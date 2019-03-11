@@ -57,6 +57,12 @@ public class CourseCacheKey {
     private static final String USER_ACCOUNT_INFO_KEY = "user_account_info_key";
 
     /**
+     * 课后作业统计key
+     */
+    private static final String COURSE_WORK_DEAL_DATA = "course_work_deal_v1$%s$%s";
+    private static final String COURSE_WORK_RANK_INFO = "course_work_rank_info_v1$%s$%s";
+
+    /**
      * IOS 内侧版本信息
      */
     public static final String IOS_AUDIT_VERSION = "ios_audit_versions";
@@ -106,4 +112,7 @@ public class CourseCacheKey {
     }
 
     public static String getProcessLogSyllabusDealList(){return PROCESS_LOG_SYLLABUS_DEAL_LIST;}
+
+    public static String getCourseWorkDealData(Integer courseType, Long courserId){return String.format(COURSE_WORK_DEAL_DATA, courseType, courserId);}
+    public static String getCourseWorkRankInfo(Integer courseType, Long courseId){return String.format(COURSE_WORK_RANK_INFO, courseType, courseId);}
 }

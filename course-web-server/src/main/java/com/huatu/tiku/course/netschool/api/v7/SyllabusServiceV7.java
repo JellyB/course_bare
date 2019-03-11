@@ -21,9 +21,9 @@ public interface SyllabusServiceV7 {
 
     /**
      * 根据大纲id获取课件信息，多个大纲，逗号分隔
-     * @param syllabusIds
+     * @param params
      * @return
      */
     @GetMapping(value = "/v5/c/syllabus/courseware_info")
-    NetSchoolResponse courseWareInfo(@RequestParam(value = "syllabusIds") String syllabusIds);
+    NetSchoolResponse courseWareInfo(@RequestParam Map<String, Object> params);
 }
