@@ -30,6 +30,7 @@ import tk.mybatis.mapper.entity.Example;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -48,9 +49,6 @@ public class CourseExercisesStatisticsManager {
 
     @Autowired
     private RedisTemplate redisTemplate;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Autowired
     private UserServiceV4 userService;
@@ -74,7 +72,7 @@ public class CourseExercisesStatisticsManager {
             example.and()
                     .andEqualTo("courseId", practiceForCoursePaper.getCourseId())
                     .andEqualTo("courseType", practiceForCoursePaper.getType())
-                    .andEqualTo("status", YesOrNoStatus.YES);
+                    .andEqualTo("status", YesOrNoStatus.YES.getCode());
             CourseExercisesStatistics courseExercisesStatistics = courseExercisesStatisticsMapper.selectOneByExample(example);
 
             if(null == courseExercisesStatistics){
@@ -105,7 +103,7 @@ public class CourseExercisesStatisticsManager {
                     .uid(answerCard.getUserId())
                     .rcount(answerCard.getRcount())
                     .expendTime(times)
-                    .submitTimeInfo(answerCard.getCardCreateTime())
+                    .submitTimeInfo(System.currentTimeMillis())
                     .build();
 
             rankInfoZset.add(rankInfoKey, String.valueOf(answerCard.getUserId()), score);
@@ -137,11 +135,14 @@ public class CourseExercisesStatisticsManager {
         rankInfo.put("avgCorrect", courseExercisesStatistics.getCorrects() / courseExercisesStatistics.getCounts());
         String rankKey = CourseCacheKey.getCourseWorkRankInfo(practiceForCoursePaper.getCourseType(), practiceForCoursePaper.getCourseId());
         ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
+        HashOperations<String, String, String> existHash = redisTemplate.opsForHash();
+        String existsKey = CourseCacheKey.getCourseWorkDealData(practiceForCoursePaper.getCourseType(), practiceForCoursePaper.getCourseId());
         long myRank = zSetOperations.rank(rankKey, String.valueOf(practiceCard.getUserId())) + 1;
-        Set<String> userRankInfos = zSetOperations.range(rankKey, 0, 9);
+        Set<String> userIdRanks = zSetOperations.range(rankKey, 0, 9);
         List<UserRankInfo> userRankInfoArrayList = Lists.newArrayList();
-        userRankInfoArrayList.addAll(userRankInfos.stream().map(item -> {
-            UserRankInfo userRankInfo = objectMapper.convertValue(item, UserRankInfo.class);
+        userRankInfoArrayList.addAll(userIdRanks.stream().map(item -> {
+            String value = existHash.get(existsKey, item);
+            UserRankInfo userRankInfo = JSONObject.parseObject(value, UserRankInfo.class);
             return userRankInfo;
         }).collect(Collectors.toList()));
 
@@ -186,10 +187,12 @@ public class CourseExercisesStatisticsManager {
         Map<String, Map<String, Object>> userInfoMaps = Maps.newHashMap();
         List<Map<String, Object>> userInfoList = (List<Map<String, Object>>) netSchoolResponse.getData();
         userInfoList.forEach(item -> userInfoMaps.put(String.valueOf(item.get("id")), item));
+        AtomicInteger rank = new AtomicInteger(1);
         userRankInfoArrayList.forEach(userRankInfo ->{
             Map<String,Object> detail = userInfoMaps.get(String.valueOf(userRankInfo.getUid()));
             userRankInfo.setAvatar(String.valueOf(detail.get("avatar")));
             userRankInfo.setUname(String.valueOf(detail.get("nick")));
+            userRankInfo.setRank(rank.getAndIncrement());
         });
         return userRankInfoArrayList;
     }
