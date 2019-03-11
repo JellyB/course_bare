@@ -339,11 +339,13 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
     public Object courseWorkReport(UserSession userSession, int terminal , long cardId, int courseType, long lessonId) throws BizException {
 
         Object response = ResponseUtil.build(practiceCardService.getAnswerCard(userSession.getToken(), terminal, cardId));
-        LinkedHashMap<String, Object> result = (LinkedHashMap<String, Object>) response;
-        LinkedHashMap<String, Object> data = (LinkedHashMap<String, Object>)result.get("data");
-        ObjectMapper objectMapper = new ObjectMapper();
-        PracticeCard practiceCard = objectMapper.convertValue(data, PracticeCard.class);
-        PracticeForCoursePaper practiceForCoursePaper = (PracticeForCoursePaper) practiceCard.getPaper();
+        JSONObject data = new JSONObject((LinkedHashMap<String, Object>) response);
+
+        JSONObject paper = data.getJSONObject("paper");
+        PracticeForCoursePaper practiceForCoursePaper = JSONObject.parseObject(paper.toJSONString(), PracticeForCoursePaper.class);
+
+        PracticeCard practiceCard = JSONObject.parseObject(data.toJSONString(), PracticeCard.class);
+        practiceCard.setPaper(practiceForCoursePaper);
         List<QuestionPointTree> points_ = Lists.newArrayList();
 
         List<QuestionPointTree> level1Points = practiceCard.getPoints();
