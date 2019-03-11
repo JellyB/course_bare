@@ -136,6 +136,8 @@ public class TeacherServiceImpl implements TeacherService {
                 .startPracticeTime(System.currentTimeMillis())
                 .practiceTime(practiceTime)
                 .build();
+		// 添加房间练习题数量到缓存
+		practiceMetaComponent.addRoomPracticedQuestion(roomId, questionId);
         coursePracticeQuestionInfoService.save(info);
     }
 
