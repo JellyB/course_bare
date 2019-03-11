@@ -291,7 +291,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
 									.build());
 					if (count > 0) {
-						periodTestInfo.setIsAlert(1);
+						periodTestInfo.setIsAlert(YesOrNoStatus.YES.getCode());
 					}
 					// 填充app端展示所需时间
 					periodTestInfo.setShowTime(

@@ -155,4 +155,9 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
 	public NetSchoolResponse unfinishStageExamList(Map<String, Object> params) {
 		return NetSchoolResponse.DEFAULT;
 	}
+
+	@Override
+	public NetSchoolResponse<Integer> stageTestStudyRecord(Map<String, Object> params) {
+		 return NetSchoolResponse.DEFAULT;
+	}
 }
