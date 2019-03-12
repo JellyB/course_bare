@@ -122,53 +122,66 @@ public class CourseExercisesStatisticsManager {
      */
     public Map<String, Object> obtainCourseRankInfo(PracticeCard practiceCard)throws BizException{
         Map<String, Object> rankInfo = Maps.newHashMap();
-        PracticeForCoursePaper practiceForCoursePaper = (PracticeForCoursePaper) practiceCard.getPaper();
-        Example example = new Example(CourseExercisesStatistics.class);
-        example.and()
-                .andEqualTo("courseId", practiceForCoursePaper.getCourseId())
-                .andEqualTo("courseType", practiceForCoursePaper.getCourseType())
-                .andEqualTo("status", YesOrNoStatus.YES.getCode());
+        rankInfo.put("avgTimeCost", 0);
+        rankInfo.put("avgCorrect", 0);
+        rankInfo.put("maxCorrect", 0);
+        rankInfo.put("ranks", 0);
+        rankInfo.put("myRank", Lists.newArrayList());
 
-        CourseExercisesStatistics courseExercisesStatistics = courseExercisesStatisticsMapper.selectOneByExample(example);
+        try {
+            PracticeForCoursePaper practiceForCoursePaper = (PracticeForCoursePaper) practiceCard.getPaper();
+            Example example = new Example(CourseExercisesStatistics.class);
+            example.and()
+                    .andEqualTo("courseId", practiceForCoursePaper.getCourseId())
+                    .andEqualTo("courseType", practiceForCoursePaper.getCourseType())
+                    .andEqualTo("status", YesOrNoStatus.YES.getCode());
 
-        rankInfo.put("avgTimeCost", courseExercisesStatistics.getCosts() / courseExercisesStatistics.getCounts());
-        rankInfo.put("avgCorrect", courseExercisesStatistics.getCorrects() / courseExercisesStatistics.getCounts());
-        String rankKey = CourseCacheKey.getCourseWorkRankInfo(practiceForCoursePaper.getCourseType(), practiceForCoursePaper.getCourseId());
-        ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
-        HashOperations<String, String, String> existHash = redisTemplate.opsForHash();
-        String existsKey = CourseCacheKey.getCourseWorkDealData(practiceForCoursePaper.getCourseType(), practiceForCoursePaper.getCourseId());
-        long myRank = zSetOperations.rank(rankKey, String.valueOf(practiceCard.getUserId())) + 1;
-        Set<String> userIdRanks = zSetOperations.range(rankKey, 0, 9);
-        List<UserRankInfo> userRankInfoArrayList = Lists.newArrayList();
-        userRankInfoArrayList.addAll(userIdRanks.stream().map(item -> {
-            String value = existHash.get(existsKey, item);
-            UserRankInfo userRankInfo = JSONObject.parseObject(value, UserRankInfo.class);
-            return userRankInfo;
-        }).collect(Collectors.toList()));
+            CourseExercisesStatistics courseExercisesStatistics = courseExercisesStatisticsMapper.selectOneByExample(example);
+            if(null == courseExercisesStatistics){
+                return rankInfo;
+            }
+            rankInfo.put("avgTimeCost", courseExercisesStatistics.getCosts() / courseExercisesStatistics.getCounts());
+            rankInfo.put("avgCorrect", courseExercisesStatistics.getCorrects() / courseExercisesStatistics.getCounts());
+            String rankKey = CourseCacheKey.getCourseWorkRankInfo(practiceForCoursePaper.getCourseType(), practiceForCoursePaper.getCourseId());
+            ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
+            HashOperations<String, String, String> existHash = redisTemplate.opsForHash();
+            String existsKey = CourseCacheKey.getCourseWorkDealData(practiceForCoursePaper.getCourseType(), practiceForCoursePaper.getCourseId());
+            long myRank = zSetOperations.rank(rankKey, String.valueOf(practiceCard.getUserId())) + 1;
+            Set<String> userIdRanks = zSetOperations.range(rankKey, 0, 9);
+            List<UserRankInfo> userRankInfoArrayList = Lists.newArrayList();
+            userRankInfoArrayList.addAll(userIdRanks.stream().map(item -> {
+                String value = existHash.get(existsKey, item);
+                UserRankInfo userRankInfo = JSONObject.parseObject(value, UserRankInfo.class);
+                return userRankInfo;
+            }).collect(Collectors.toList()));
 
-        List<Long> userIds = userRankInfoArrayList.stream().map(UserRankInfo::getUid).collect(Collectors.toList());
-        if(!userIds.contains(practiceCard.getUserId())){
-            UserRankInfo userRankInfo = UserRankInfo
-                    .builder()
-                    .uid(practiceCard.getUserId())
-                    .submitTimeInfo(practiceCard.getCreateTime())
-                    .rcount(practiceCard.getRcount())
-                    .expendTime(Arrays.stream(practiceCard.getTimes()).sum())
-                    .build();
+            List<Long> userIds = userRankInfoArrayList.stream().map(UserRankInfo::getUid).collect(Collectors.toList());
+            if(!userIds.contains(practiceCard.getUserId())){
+                UserRankInfo userRankInfo = UserRankInfo
+                        .builder()
+                        .uid(practiceCard.getUserId())
+                        .submitTimeInfo(practiceCard.getCreateTime())
+                        .rcount(practiceCard.getRcount())
+                        .expendTime(Arrays.stream(practiceCard.getTimes()).sum())
+                        .build();
 
-            userRankInfoArrayList.add(userRankInfoArrayList.size() -1, userRankInfo);
+                userRankInfoArrayList.add(userRankInfoArrayList.size() -1, userRankInfo);
+            }
+
+            if(CollectionUtils.isNotEmpty(userRankInfoArrayList)){
+                UserRankInfo top = userRankInfoArrayList.get(0);
+                rankInfo.put("maxCorrect", top.getRcount());
+                rankInfo.put("ranks", dealRanks(userRankInfoArrayList));
+            }else{
+                rankInfo.put("maxCorrect", 0);
+                rankInfo.put("ranks", Lists.newArrayList());
+            }
+            rankInfo.put("myRank", myRank);
+            return rankInfo;
+        }catch (Exception e){
+            log.error("obtainCourseRankInfo caught an error!{}", e);
+            return rankInfo;
         }
-
-        if(CollectionUtils.isNotEmpty(userRankInfoArrayList)){
-            UserRankInfo top = userRankInfoArrayList.get(0);
-            rankInfo.put("maxCorrect", top.getRcount());
-            rankInfo.put("ranks", dealRanks(userRankInfoArrayList));
-        }else{
-            rankInfo.put("maxCorrect", 0);
-            rankInfo.put("ranks", Lists.newArrayList());
-        }
-        rankInfo.put("myRank", myRank);
-        return rankInfo;
     }
 
 
