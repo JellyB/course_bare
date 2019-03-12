@@ -200,7 +200,6 @@ public class UserCourseControllerV6 {
                               @RequestParam(value = "cardId") long cardId){
 
         courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, cardId, terminal);
-
         Map<String,Object> result = Maps.newHashMap();
         Map<String,Object> report = Maps.newHashMap();
         Map<String,Object> classPractice = Maps.newHashMap();
