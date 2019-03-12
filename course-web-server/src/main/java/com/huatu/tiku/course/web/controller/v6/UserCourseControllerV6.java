@@ -190,7 +190,7 @@ public class UserCourseControllerV6 {
     @LocalMapParam(checkToken = true)
     public Object learnReport(@Token UserSession userSession,
                               @RequestHeader(value = "terminal") int terminal,
-                              @RequestHeader(value = "cv") String cv,
+                              @RequestHeader(value = "cv", defaultValue = "1.0") String cv,
                               @PathVariable(value = "syllabusId") int syllabusId){
 
         Map<String,Object> result = Maps.newHashMap();
