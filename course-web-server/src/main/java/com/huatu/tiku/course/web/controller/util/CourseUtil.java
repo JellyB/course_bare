@@ -245,7 +245,7 @@ public class CourseUtil {
                                 })
                                 .collect(Collectors.toSet());
                         //查询用户答题信息
-                        log.info("获取阶段测试完成情况 paperIds = {}", paperIds);
+                        log.info("获取阶段测试完成情况：userId = {}, paperIds = {}", userId, paperIds);
                         NetSchoolResponse netSchoolResponse = PeriodTestService.getPaperStatusBath(userId, paperIds);
                         Map<String, Object> data = (Map<String, Object>) netSchoolResponse.getData();
 
@@ -257,7 +257,7 @@ public class CourseUtil {
                                                 .append(MapUtils.getString(valueData, "coursewareId"))
                                                 .append("_")
                                                 .append(MapUtils.getString(valueData,"id"));
-                                        valueData.put("testStatus", data.get(stringBuilder));
+                                        valueData.put("testStatus", MapUtils.getInteger(data, stringBuilder.toString(), -1));
                                         return valueData;
                                     })
                                     .collect(Collectors.toList());
