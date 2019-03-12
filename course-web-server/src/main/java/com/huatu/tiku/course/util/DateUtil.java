@@ -2,9 +2,6 @@ package com.huatu.tiku.course.util;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * 
@@ -12,6 +9,7 @@ import java.util.Map.Entry;
  *
  */
 public class DateUtil {
+	
 	public static String ERRORSTR = "0000-00-00 00:00:00";
 
 	public static String getSimpleDate(String startTime, String endTime) {
