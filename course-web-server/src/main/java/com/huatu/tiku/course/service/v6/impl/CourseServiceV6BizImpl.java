@@ -394,7 +394,8 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         Map<String,Object> liveReport = Maps.newHashMap();//直播听课记录
         Map<String,Object> classPractice = Maps.newHashMap();//随堂练习
         Map<String,Object> courseWorkPractice = Maps.newHashMap();//课后作业报告
-        Map<String,Object> points = Maps.newHashMap();//知识点id
+        //知识点id展示后台配置的知识点信息
+        Map<String,Object> points = Maps.newHashMap();
 
         //听课记录请求参数
         Map<String,Object> studyReport = Maps.newHashMap();

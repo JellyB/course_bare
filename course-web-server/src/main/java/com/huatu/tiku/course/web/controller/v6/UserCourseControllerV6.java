@@ -189,7 +189,7 @@ public class UserCourseControllerV6 {
     public Object learnReport(@Token UserSession userSession,
                               @RequestHeader(value = "terminal") int terminal,
                               @RequestHeader(value = "cv", defaultValue = "1.0") String cv,
-                              @RequestParam(value = "bjyRoomId") int bjyRoomId,
+                              @RequestParam(value = "bjyRoomId") String bjyRoomId,
                               @RequestParam(value = "classId") int classId,
                               @RequestParam(value = "netClassId") int netClassId,
                               @RequestParam(value = "lessonId") int courseWareId,
