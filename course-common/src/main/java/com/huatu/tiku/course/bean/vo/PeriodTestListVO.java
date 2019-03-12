@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * 阶段测试列表vo
@@ -44,6 +45,7 @@ public class PeriodTestListVO {
 	@Getter
 	@Builder
 	@NoArgsConstructor
+	@ToString
 	public static class PeriodTestInfo {
 		private String examName;
 		private long examId;

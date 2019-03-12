@@ -159,19 +159,19 @@ public class UserCourseControllerV6 {
      * @param userSession
      * @param cv
      * @param terminal
-     * @param lessonId 课件id
-     * @param courseType
+     * @param coursewareId 课件id
+     * @param videoType
      * @return
      */
-    @GetMapping(value = "/courseWork/{lessonId}")
+    @GetMapping(value = "/courseWork/{coursewareId}")
     @LocalMapParam(checkToken = true)
     public Object testReport(@Token UserSession userSession,
-                             @RequestHeader(value = "cv") String cv,
+                             @RequestHeader(value = "cv", defaultValue = "1.0") String cv,
                              @RequestHeader(value = "terminal") int terminal,
-                             @PathVariable(value = "lessonId") int lessonId,
-                             @RequestParam(value = "type") int courseType,
-                             @RequestParam(value = "cardId") long cardId){
-        return courseServiceV6Biz.courseWorkReport(userSession, terminal, cardId, courseType, lessonId);
+                             @PathVariable(value = "coursewareId") int coursewareId,
+                             @RequestParam(value = "videoType") int videoType,
+                             @RequestParam(value = "id") long id){
+        return courseServiceV6Biz.courseWorkReport(userSession, terminal, id, videoType, coursewareId);
     }
 
 

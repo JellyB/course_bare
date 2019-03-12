@@ -280,6 +280,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 			periodTestListVO.getList().forEach(courseInfo -> {
 				courseInfo.setUndoCount(courseInfo.getChild().size());
 				courseInfo.getChild().forEach(periodTestInfo -> {
+					log.info("接口unfinish_stage_exam_list调用php响应返回periodTestInfo:{}", periodTestInfo.toString());
 					// TODO 后续变为从redis获取
 					int count = courseExercisesProcessLogMapper
 							.selectCountByExample(new Example.Builder(CourseExercisesProcessLog.class)
