@@ -271,7 +271,6 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 		int uid = (int) params.get("userId");
 		NetSchoolResponse<PeriodTestListVO> response = userCourseServiceV6.unfinishStageExamList(params);
 		log.info("接口unfinish_stage_exam_list调用php响应用时:{}", String.valueOf(stopwatch.stop()));
-		log.info("接口unfinish_stage_exam_list调用php响应返回:{}", response);
 		if (ResponseUtil.isSuccess(response)) {
 			Stopwatch stopwatchExplain = Stopwatch.createStarted();
 			PeriodTestListVO periodTestListVO = response.getData();
@@ -280,6 +279,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 			periodTestListVO.getList().forEach(courseInfo -> {
 				courseInfo.setUndoCount(courseInfo.getChild().size());
 				courseInfo.getChild().forEach(periodTestInfo -> {
+					log.info("接口unfinish_stage_exam_list调用php响应返回periodTestInfo:{}", periodTestInfo);
 					// TODO 后续变为从redis获取
 					int count = courseExercisesProcessLogMapper
 							.selectCountByExample(new Example.Builder(CourseExercisesProcessLog.class)
