@@ -1,8 +1,7 @@
 package com.huatu.tiku.course.service.v1.practice;
 
-import java.util.List;
-
 import com.huatu.tiku.entity.CoursePracticeUserMeta;
+
 import service.BaseServiceHelper;
 
 /**
