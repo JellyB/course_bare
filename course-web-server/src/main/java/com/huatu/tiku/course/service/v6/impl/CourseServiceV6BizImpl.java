@@ -17,6 +17,7 @@ import com.huatu.tiku.course.dao.manual.CourseKnowledgeMapper;
 import com.huatu.tiku.course.netschool.api.v6.LessonServiceV6;
 import com.huatu.tiku.course.service.manager.CourseExercisesStatisticsManager;
 import com.huatu.tiku.course.service.manager.KnowledgeManager;
+import com.huatu.tiku.course.service.v1.practice.PracticeUserMetaService;
 import com.huatu.tiku.course.util.ZTKResponseUtil;
 import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
 import com.huatu.tiku.entity.CourseExercisesStatistics;
@@ -118,6 +119,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
     @Autowired
     private KnowledgeManager knowledgeManager;
+
 
     /**
      * 模考大赛解析课信息,多个id使用逗号分隔
