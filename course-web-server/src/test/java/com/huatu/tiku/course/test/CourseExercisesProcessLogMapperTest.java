@@ -56,8 +56,7 @@ public class CourseExercisesProcessLogMapperTest extends BaseWebTest {
 
     @Test
     public void dealList(){
-        Set<Long> syllabusId = Sets.newHashSet(8351423L,8361641L,8361871L,8361872L,8361874L, 8361907L, 8361908L,
-                8361909L,8361911L,4227738L,8353913L,8353914L,8353915L,8353916L,4227745L,4227746L);
+        Set<Long> syllabusId = Sets.newHashSet(8361563L,8361564L,8361562L,8361565L,4227750L);
 
         syllabusId.forEach(item ->{
             try{

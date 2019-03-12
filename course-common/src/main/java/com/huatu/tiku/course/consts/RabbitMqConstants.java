@@ -12,6 +12,11 @@ public class RabbitMqConstants {
      * 课后保存答题卡队列
      */
     public static final String COURSE_WORK_SUBMIT_CARD_INFO = "course_work_submit_card_info";
+
+    /**
+     * 直播回放待处理队列
+     */
+    public static final String PLAY_BACK_DEAL_INFO = "play_back_deal_info";
     
     /**
      * 阶段测试提交答题卡队列

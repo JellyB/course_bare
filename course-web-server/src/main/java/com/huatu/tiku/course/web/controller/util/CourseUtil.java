@@ -10,6 +10,7 @@ import com.huatu.tiku.course.hbase.api.v1.VideoServiceV1;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.course.util.ZTKResponseUtil;
 import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
+import com.huatu.tiku.course.ztk.api.v4.paper.PeriodTestServiceV4;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
 import com.huatu.tiku.springboot.basic.reward.event.RewardActionEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,9 @@ public class CourseUtil {
 
     @Autowired
     private PracticeCardServiceV1 practiceCardServiceV1;
+
+    @Autowired
+    private PeriodTestServiceV4 PeriodTestService;
 
     /**
      * 添加课程播放的时间-用以每日任务处理
@@ -226,29 +230,34 @@ public class CourseUtil {
      * @param response
      * @param userId
      */
-    public void addPeriodTestInfo(LinkedHashMap response, long userId){
+    public void addPeriodTestInfo(LinkedHashMap response, int userId){
                 response.computeIfPresent("list", (key, value) -> {
-                        List<Integer> courseWareIds = ((List<Map>) value).stream()
+                        Set<String> paperIds = ((List<Map>) value).stream()
                                 .filter(map -> MapUtils.getString(map, "videoType").equals("4"))
-                                .filter(map -> null != map.get("videoType") && null != map.get("coursewareId"))
-                                .map(map -> MapUtils.getIntValue(map, "coursewareId", 0))
-                                .collect(Collectors.toList());
-
+                                .filter(map -> null != map.get("coursewareId") && null != map.get("id"))
+                                .map(map -> {
+                                    StringBuilder stringBuilder = new StringBuilder();
+                                    stringBuilder
+                                            .append(MapUtils.getString(map, "coursewareId"))
+                                            .append("_")
+                                            .append(MapUtils.getString(map,"id"));
+                                    return stringBuilder.toString();
+                                })
+                                .collect(Collectors.toSet());
                         //查询用户答题信息
-                        log.info("获取阶段测试完成情况，userId = {},courseWareIds = {}", userId, courseWareIds);
+                        log.info("获取阶段测试完成情况 paperIds = {}", paperIds);
+                        NetSchoolResponse netSchoolResponse = PeriodTestService.getPaperStatusBath(userId, paperIds);
+                        Map<String, Object> data = (Map<String, Object>) netSchoolResponse.getData();
 
-                        //todo 阶段测试完成情况，查询数据库获取数据
-                        int defaultStatus = 2;
-                        Map<Integer, Integer> periodMaps = Maps.newHashMap();
-                        periodMaps.put(3528232, 1);
-
-
-
-                        if (null != periodMaps && periodMaps.size() > 0) {
+                        if (null != data && data.size() > 0) {
                             List<Map> mapList = ((List<Map>) value).stream()
                                     .map(valueData -> {
-                                        Integer status = periodMaps.getOrDefault(MapUtils.getIntValue(valueData, "coursewareId", 0), defaultStatus);
-                                        valueData.put("testStatus", status);
+                                        StringBuilder stringBuilder = new StringBuilder();
+                                        stringBuilder
+                                                .append(MapUtils.getString(valueData, "coursewareId"))
+                                                .append("_")
+                                                .append(MapUtils.getString(valueData,"id"));
+                                        valueData.put("testStatus", data.get(stringBuilder));
                                         return valueData;
                                     })
                                     .collect(Collectors.toList());
@@ -256,7 +265,7 @@ public class CourseUtil {
                         } else {
                             List<Map> mapList = ((List<Map>) value).stream()
                                     .map(valueData -> {
-                                        valueData.put("testStatus", defaultStatus);
+                                        valueData.put("testStatus", -1);
                                         return valueData;
                                     })
                                     .collect(Collectors.toList());
