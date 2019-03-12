@@ -190,13 +190,14 @@ public class UserCourseControllerV6 {
                               @RequestHeader(value = "terminal") int terminal,
                               @RequestHeader(value = "cv", defaultValue = "1.0") String cv,
                               @RequestParam(value = "bjyRoomId") String bjyRoomId,
-                              @RequestParam(value = "classId") int classId,
-                              @RequestParam(value = "netClassId") int netClassId,
-                              @RequestParam(value = "lessonId") int courseWareId,
+                              @RequestParam(value = "classId") long classId,
+                              @RequestParam(value = "netClassId") long netClassId,
+                              @RequestParam(value = "lessonId") long courseWareId,
                               @RequestParam(value = "videoType") int videoType,
-                              @RequestParam(value = "cardId") long cardId){
+                              @RequestParam(value = "exerciseCardId") long exerciseCardId,
+                              @RequestParam(value = "classAnswerCardId") long classCardId){
 
-        courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, cardId, terminal);
+        courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, exerciseCardId, classCardId, terminal);
         Map<String,Object> result = Maps.newHashMap();
         Map<String,Object> report = Maps.newHashMap();
         Map<String,Object> classPractice = Maps.newHashMap();

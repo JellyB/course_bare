@@ -13,11 +13,16 @@ import com.huatu.common.exception.BizException;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.dao.manual.CourseExercisesStatisticsMapper;
+import com.huatu.tiku.course.dao.manual.CourseKnowledgeMapper;
 import com.huatu.tiku.course.netschool.api.v6.LessonServiceV6;
 import com.huatu.tiku.course.service.manager.CourseExercisesStatisticsManager;
+import com.huatu.tiku.course.service.manager.KnowledgeManager;
 import com.huatu.tiku.course.util.ZTKResponseUtil;
 import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
 import com.huatu.tiku.entity.CourseExercisesStatistics;
+import com.huatu.tiku.entity.CourseKnowledge;
+import com.huatu.tiku.entity.knowledge.Knowledge;
+import com.huatu.ztk.knowledge.bean.QuestionPoint;
 import com.huatu.ztk.knowledge.bean.QuestionPointTree;
 import com.huatu.ztk.paper.bean.PracticeCard;
 import com.huatu.ztk.paper.bean.PracticeForCoursePaper;
@@ -100,6 +105,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
     private CourseExercisesStatisticsManager courseExercisesStatisticsManager;
 
     @Autowired
+    private CourseKnowledgeMapper courseKnowledgeMapper;
+
+    @Autowired
     private PeriodTestServiceV4 periodTestServiceV4;
 
     @Autowired
@@ -107,6 +115,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
     @Autowired
     private LessonServiceV6 lessonService;
+
+    @Autowired
+    private KnowledgeManager knowledgeManager;
 
     /**
      * 模考大赛解析课信息,多个id使用逗号分隔
@@ -382,13 +393,14 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
      * @param netClassId
      * @param courseWareId
      * @param videoType
-     * @param cardId
+     * @param exerciseCardId 课后作业答题卡id
+     * @param classCardId 随堂练习答题卡id
      * @param terminal
      * @return
      * @throws BizException
      */
     @Override
-    public Object learnReport(UserSession userSession, String bjyRoomId, int classId, int netClassId, int courseWareId, int videoType, long cardId, int terminal) throws BizException {
+    public Object learnReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, long courseWareId, int videoType, long exerciseCardId, long classCardId, int terminal) throws BizException {
         Map<String,Object> result = Maps.newHashMap();
 
         Map<String,Object> liveReport = Maps.newHashMap();//直播听课记录
@@ -423,15 +435,47 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         /**
          * 处理课后作业报告
          */
-        courseWorkPractice.putAll((Map<String, Object>)courseWorkReport(userSession, terminal, cardId));
+        courseWorkPractice.putAll((Map<String, Object>)courseWorkReport(userSession, terminal, exerciseCardId));
         /**
          * 处理随堂随堂练习报告
          */
+
+
         //TODO
         result.put("classPractice", classPractice);
         result.put("courseWorkPractice", courseWorkPractice);
         result.put("liveReport", liveReport);
-
+        result.put("points", dealLearnReportPoints(courseWareId, videoType));
         return null;
+    }
+
+    /**
+     * 处理课件知识点id
+     * @param courseWareId
+     * @param videoType
+     * @return
+     * @throws BizException
+     */
+    private Map<Long, String> dealLearnReportPoints(long courseWareId, int videoType)throws BizException{
+        try{
+            WeekendSqls<CourseKnowledge> weekendSqls = WeekendSqls.custom();
+            weekendSqls.andEqualTo(CourseKnowledge::getCourseId, courseWareId);
+            weekendSqls.andEqualTo(CourseKnowledge::getCourseType, videoType);
+
+            Example example = Example.builder(CourseKnowledge.class).where(weekendSqls).build();
+            List<CourseKnowledge> courseKnowledges = courseKnowledgeMapper.selectByExample(example);
+            List<Long> ids = courseKnowledges.stream().map(CourseKnowledge::getKnowledgeId).collect(Collectors.toList());
+            if(CollectionUtils.isEmpty(ids)){
+                return Maps.newHashMap();
+            }
+            List<Knowledge> knowledges = knowledgeManager.findBatch(ids);
+            if(CollectionUtils.isEmpty(knowledges)){
+                return Maps.newHashMap();
+            }
+            return knowledges.stream().collect(Collectors.toMap( i -> i.getId(), i -> i.getName()));
+        }catch (Exception e){
+            log.error("dealLearnReportPoints deal questionPoints caught an error!:{}", e);
+            return Maps.newHashMap();
+        }
     }
 }
