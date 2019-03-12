@@ -191,7 +191,7 @@ public class UserCourseControllerV6 {
     @LocalMapParam(checkToken = true)
     public Object learnReport(@Token UserSession userSession,
                               @RequestHeader(value = "terminal") int terminal,
-                              @RequestHeader(value = "cv") String cv,
+                              @RequestHeader(value = "cv", defaultValue = "1.0") String cv,
                               @RequestParam(value = "bjyRoomId") int bjyRoomId,
                               @RequestParam(value = "classId") int classId,
                               @RequestParam(value = "netClassId") int netClassId,

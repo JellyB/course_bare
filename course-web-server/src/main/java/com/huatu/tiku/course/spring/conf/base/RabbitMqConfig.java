@@ -93,7 +93,13 @@ public class RabbitMqConfig {
     public Queue courseWorkSubmitCardInfo(){
         return new Queue(RabbitMqConstants.COURSE_WORK_SUBMIT_CARD_INFO);
     }
-    
+
+    /**
+     * 直播回放处理queue
+     * @return
+     */
+    @Bean
+    public Queue playBackDealInfo(){ return new Queue(RabbitMqConstants.PLAY_BACK_DEAL_INFO); }
     /**
      * 阶段测试提交答题卡队列
      * @return
