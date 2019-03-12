@@ -1,10 +1,10 @@
 package com.huatu.tiku.course.service.manager;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.huatu.common.exception.BizException;
-import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.dao.manual.CourseExercisesStatisticsMapper;
@@ -19,10 +19,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -31,6 +30,7 @@ import tk.mybatis.mapper.entity.Example;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -51,27 +51,28 @@ public class CourseExercisesStatisticsManager {
     private RedisTemplate redisTemplate;
 
     @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
     private UserServiceV4 userService;
 
     @Async
     public synchronized void dealCourseExercisesStatistics(PracticeCard answerCard) throws BizException{
         try{
             PracticeForCoursePaper practiceForCoursePaper = (PracticeForCoursePaper)answerCard.getPaper();
-            String key = CourseCacheKey.getCourseWorkDealData(practiceForCoursePaper.getCourseType(), practiceForCoursePaper.getCourseId());
-            String rankKey = CourseCacheKey.getCourseWorkRankInfo(practiceForCoursePaper.getCourseType(), practiceForCoursePaper.getCourseId());
-            SetOperations<String, String> setOperations = redisTemplate.opsForSet();
-            ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
-            if(setOperations.isMember(key, String.valueOf(answerCard.getUserId()))){
+            String existsKey = CourseCacheKey.getCourseWorkDealData(practiceForCoursePaper.getCourseType(), practiceForCoursePaper.getCourseId());
+            String rankInfoKey = CourseCacheKey.getCourseWorkRankInfo(practiceForCoursePaper.getCourseType(), practiceForCoursePaper.getCourseId());
+            HashOperations<String, String, String> existsHash = redisTemplate.opsForHash();
+            ZSetOperations<String, String> rankInfoZset = redisTemplate.opsForZSet();
+
+            /**
+             * 如果用户已经提交过不处理
+             */
+            if(existsHash.hasKey(existsKey, String.valueOf(answerCard.getUserId()))){
                 return;
             }
             Example example = new Example(CourseExercisesStatistics.class);
             example.and()
                     .andEqualTo("courseId", practiceForCoursePaper.getCourseId())
                     .andEqualTo("courseType", practiceForCoursePaper.getType())
-                    .andEqualTo("status", YesOrNoStatus.YES);
+                    .andEqualTo("status", YesOrNoStatus.YES.getCode());
             CourseExercisesStatistics courseExercisesStatistics = courseExercisesStatisticsMapper.selectOneByExample(example);
 
             if(null == courseExercisesStatistics){
@@ -94,7 +95,7 @@ public class CourseExercisesStatisticsManager {
                 update.setGmtModify(new Timestamp(System.currentTimeMillis()));
                 courseExercisesStatisticsMapper.updateByPrimaryKeySelective(update);
             }
-            setOperations.add(key, String.valueOf(answerCard.getUserId()));
+
             int times = Arrays.stream(answerCard.getTimes()).sum();
             long score = (practiceForCoursePaper.getQcount() - answerCard.getRcount()) * 100000 + times;
 
@@ -102,10 +103,11 @@ public class CourseExercisesStatisticsManager {
                     .uid(answerCard.getUserId())
                     .rcount(answerCard.getRcount())
                     .expendTime(times)
-                    .submitTimeInfo(answerCard.getCardCreateTime())
+                    .submitTimeInfo(System.currentTimeMillis())
                     .build();
 
-            zSetOperations.add(rankKey, objectMapper.writeValueAsString(userRankInfo), score);
+            rankInfoZset.add(rankInfoKey, String.valueOf(answerCard.getUserId()), score);
+            existsHash.put(existsKey, String.valueOf(answerCard.getUserId()), JSONObject.toJSONString(userRankInfo));
         }catch (Exception e){
             log.error("dealCourseExercisesStatistics caught an error!:{}", e);
         }
@@ -125,7 +127,7 @@ public class CourseExercisesStatisticsManager {
         example.and()
                 .andEqualTo("courseId", practiceForCoursePaper.getCourseId())
                 .andEqualTo("courseType", practiceForCoursePaper.getCourseType())
-                .andEqualTo("status", YesOrNoStatus.YES);
+                .andEqualTo("status", YesOrNoStatus.YES.getCode());
 
         CourseExercisesStatistics courseExercisesStatistics = courseExercisesStatisticsMapper.selectOneByExample(example);
 
@@ -133,11 +135,14 @@ public class CourseExercisesStatisticsManager {
         rankInfo.put("avgCorrect", courseExercisesStatistics.getCorrects() / courseExercisesStatistics.getCounts());
         String rankKey = CourseCacheKey.getCourseWorkRankInfo(practiceForCoursePaper.getCourseType(), practiceForCoursePaper.getCourseId());
         ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
+        HashOperations<String, String, String> existHash = redisTemplate.opsForHash();
+        String existsKey = CourseCacheKey.getCourseWorkDealData(practiceForCoursePaper.getCourseType(), practiceForCoursePaper.getCourseId());
         long myRank = zSetOperations.rank(rankKey, String.valueOf(practiceCard.getUserId())) + 1;
-        Set<String> userRankInfos = zSetOperations.range(rankKey, 0, 9);
+        Set<String> userIdRanks = zSetOperations.range(rankKey, 0, 9);
         List<UserRankInfo> userRankInfoArrayList = Lists.newArrayList();
-        userRankInfoArrayList.addAll(userRankInfos.stream().map(item -> {
-            UserRankInfo userRankInfo = objectMapper.convertValue(item, UserRankInfo.class);
+        userRankInfoArrayList.addAll(userIdRanks.stream().map(item -> {
+            String value = existHash.get(existsKey, item);
+            UserRankInfo userRankInfo = JSONObject.parseObject(value, UserRankInfo.class);
             return userRankInfo;
         }).collect(Collectors.toList()));
 
@@ -182,10 +187,12 @@ public class CourseExercisesStatisticsManager {
         Map<String, Map<String, Object>> userInfoMaps = Maps.newHashMap();
         List<Map<String, Object>> userInfoList = (List<Map<String, Object>>) netSchoolResponse.getData();
         userInfoList.forEach(item -> userInfoMaps.put(String.valueOf(item.get("id")), item));
+        AtomicInteger rank = new AtomicInteger(1);
         userRankInfoArrayList.forEach(userRankInfo ->{
             Map<String,Object> detail = userInfoMaps.get(String.valueOf(userRankInfo.getUid()));
             userRankInfo.setAvatar(String.valueOf(detail.get("avatar")));
             userRankInfo.setUname(String.valueOf(detail.get("nick")));
+            userRankInfo.setRank(rank.getAndIncrement());
         });
         return userRankInfoArrayList;
     }
