@@ -271,6 +271,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 		int uid = (int) params.get("userId");
 		NetSchoolResponse<PeriodTestListVO> response = userCourseServiceV6.unfinishStageExamList(params);
 		log.info("接口unfinish_stage_exam_list调用php响应用时:{}", String.valueOf(stopwatch.stop()));
+		log.info("接口unfinish_stage_exam_list调用php响应返回:{}", response);
 		if (ResponseUtil.isSuccess(response)) {
 			Stopwatch stopwatchExplain = Stopwatch.createStarted();
 			PeriodTestListVO periodTestListVO = response.getData();
