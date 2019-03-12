@@ -12,8 +12,12 @@ import java.util.Map.Entry;
  *
  */
 public class DateUtil {
+	public static String ERRORSTR = "0000-00-00 00:00:00";
 
 	public static String getSimpleDate(String startTime, String endTime) {
+		if (ERRORSTR.equals(startTime.trim()) || ERRORSTR.equals(endTime.trim())) {
+			return "";
+		}
 		DateTimeFormatter dtfOld = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH:mm");
 		DateTimeFormatter dtfShort = DateTimeFormatter.ofPattern("MM月dd日 HH:mm");
