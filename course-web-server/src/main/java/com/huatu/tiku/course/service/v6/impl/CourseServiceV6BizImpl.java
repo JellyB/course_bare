@@ -335,13 +335,11 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
      * @param userSession
      * @param terminal
      * @param cardId
-     * @param courseType
-     * @param lessonId
      * @return
      * @throws BizException
      */
     @Override
-    public Object courseWorkReport(UserSession userSession, int terminal , long cardId, int courseType, long lessonId) throws BizException {
+    public Object courseWorkReport(UserSession userSession, int terminal , long cardId) throws BizException {
 
         Object response = ResponseUtil.build(practiceCardService.getAnswerCard(userSession.getToken(), terminal, cardId));
         JSONObject data = new JSONObject((LinkedHashMap<String, Object>) response);
@@ -413,7 +411,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         /**
          * 处理课后作业报告
          */
-        courseWorkPractice.putAll((Map<String, Object>)courseWorkReport(userSession, terminal, cardId, videoType, courseWareId));
+        courseWorkPractice.putAll((Map<String, Object>)courseWorkReport(userSession, terminal, cardId));
         /**
          * 处理随堂随堂练习报告
          */

@@ -51,12 +51,10 @@ public interface CourseServiceV6Biz {
      * @param userSession
      * @param terminal
      * @param cardId
-     * @param courseType
-     * @param lessonId
      * @return
      * @throws BizException
      */
-    Object courseWorkReport(UserSession userSession, int terminal, long cardId, int courseType, long lessonId) throws BizException;
+    Object courseWorkReport(UserSession userSession, int terminal, long cardId) throws BizException;
 
     /**
      * 我的学习报告
