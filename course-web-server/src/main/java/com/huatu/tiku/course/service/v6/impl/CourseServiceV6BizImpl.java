@@ -52,6 +52,7 @@ import com.huatu.tiku.course.ztk.api.v4.paper.PeriodTestServiceV4;
 import com.huatu.tiku.entity.CourseExercisesProcessLog;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.RequestParam;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.weekend.WeekendSqls;
 
@@ -388,13 +389,22 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
      * @throws BizException
      */
     @Override
-    public Object learnReport(UserSession userSession, int bjyRoomId, int classId, int netClassId, int courseWareId, int videoType, long cardId, int terminal) throws BizException {
+    public Object learnReport(UserSession userSession, String bjyRoomId, int classId, int netClassId, int courseWareId, int videoType, long cardId, int terminal) throws BizException {
         Map<String,Object> result = Maps.newHashMap();
 
         Map<String,Object> liveReport = Maps.newHashMap();//直播听课记录
         Map<String,Object> classPractice = Maps.newHashMap();//随堂练习
         Map<String,Object> courseWorkPractice = Maps.newHashMap();//课后作业报告
         Map<String,Object> points = Maps.newHashMap();//知识点id
+
+        //听课记录请求参数
+        Map<String,Object> studyReport = Maps.newHashMap();
+        studyReport.put("bjyRoomId", bjyRoomId);
+        studyReport.put("userName", userSession.getUname());
+        studyReport.put("classId", classId);
+        studyReport.put("netClassId", netClassId);
+        studyReport.put("lessonId", courseWareId);
+        studyReport.put("videoType", videoType);
 
         /**
          * 处理听课记录
@@ -403,12 +413,12 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         liveReport.put("gold", 0);
         liveReport.put("learnPercent", 0);
         liveReport.put("abovePercent", 0);
-        NetSchoolResponse netSchoolResponse = lessonService.studyReport(bjyRoomId, userSession.getUname(), classId, netClassId, courseWareId, videoType);
+        NetSchoolResponse netSchoolResponse = lessonService.studyReport(studyReport);
         if(ResponseUtil.isSuccess(netSchoolResponse)){
             LinkedHashMap<String,Object> data = (LinkedHashMap<String,Object>)netSchoolResponse.getData();
-            liveReport.put("learnTime", data.get("listenLength"));
-            liveReport.put("learnPercent", 0);
-            liveReport.put("abovePercent", 0);
+            liveReport.put("learnTime", MapUtils.getInteger(data, "listenLength"));
+            liveReport.put("learnPercent", MapUtils.getInteger(data, "listenLength"));
+            liveReport.put("abovePercent", MapUtils.getInteger(data, "concentrationPercent"));
         }
         /**
          * 处理课后作业报告
