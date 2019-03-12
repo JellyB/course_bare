@@ -13,6 +13,7 @@ import com.huatu.common.exception.BizException;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.dao.manual.CourseExercisesStatisticsMapper;
+import com.huatu.tiku.course.netschool.api.v6.LessonServiceV6;
 import com.huatu.tiku.course.service.manager.CourseExercisesStatisticsManager;
 import com.huatu.tiku.course.util.ZTKResponseUtil;
 import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
@@ -102,6 +103,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
     @Autowired
     private PracticeCardServiceV1 practiceCardService;
+
+    @Autowired
+    private LessonServiceV6 lessonService;
 
     /**
      * 模考大赛解析课信息,多个id使用逗号分隔
@@ -366,6 +370,57 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         data.putAll(courseExercisesStatisticsManager.obtainCourseRankInfo(practiceCard));
         data.put("tcount", practiceForCoursePaper.getQcount());
         data.put("rcount", practiceCard.getRcount());
-        return response;
+        return data;
+    }
+
+    /**
+     * 我的学习报告
+     *
+     * @param userSession
+     * @param bjyRoomId
+     * @param classId
+     * @param netClassId
+     * @param courseWareId
+     * @param videoType
+     * @param cardId
+     * @param terminal
+     * @return
+     * @throws BizException
+     */
+    @Override
+    public Object learnReport(UserSession userSession, int bjyRoomId, int classId, int netClassId, int courseWareId, int videoType, long cardId, int terminal) throws BizException {
+        Map<String,Object> result = Maps.newHashMap();
+
+        Map<String,Object> liveReport = Maps.newHashMap();//直播听课记录
+        Map<String,Object> classPractice = Maps.newHashMap();//随堂练习
+        Map<String,Object> courseWorkPractice = Maps.newHashMap();//课后作业报告
+
+        /**
+         * 处理听课记录
+         */
+        liveReport.put("learnTime", 0);
+        liveReport.put("gold", 0);
+        liveReport.put("learnPercent", 0);
+        liveReport.put("abovePercent", 0);
+        NetSchoolResponse netSchoolResponse = lessonService.studyReport(bjyRoomId, userSession.getUname(), classId, netClassId, courseWareId, videoType);
+        if(ResponseUtil.isSuccess(netSchoolResponse)){
+            LinkedHashMap<String,Object> data = (LinkedHashMap<String,Object>)netSchoolResponse.getData();
+            liveReport.put("learnTime", data.get("listenLength"));
+            liveReport.put("learnPercent", 0);
+            liveReport.put("abovePercent", 0);
+        }
+        /**
+         * 处理课后作业报告
+         */
+        courseWorkPractice.putAll((Map<String, Object>)courseWorkReport(userSession, terminal, cardId, videoType, courseWareId));
+        /**
+         * 处理随堂随堂练习报告
+         */
+        //TODO
+        result.put("classPractice", classPractice);
+        result.put("courseWorkPractice", courseWorkPractice);
+        result.put("liveReport", liveReport);
+
+        return null;
     }
 }

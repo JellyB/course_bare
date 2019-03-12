@@ -172,8 +172,6 @@ public class UserCourseControllerV6 {
                              @PathVariable(value = "lessonId") int lessonId,
                              @RequestParam(value = "type") int courseType,
                              @RequestParam(value = "cardId") long cardId){
-        // todo 1. 根据 lessonId & courseType 查询我的答题卡
-        //return result;
         return courseServiceV6Biz.courseWorkReport(userSession, terminal, cardId, courseType, lessonId);
     }
 
@@ -183,7 +181,11 @@ public class UserCourseControllerV6 {
      * @param userSession
      * @param terminal
      * @param cv
-     * @param syllabusId
+     * @param bjyRoomId
+     * @param classId
+     * @param netClassId
+     * @param courseWareId
+     * @param videoType
      * @return
      */
     @GetMapping(value = "/learnReport/{syllabusId}")
@@ -191,8 +193,14 @@ public class UserCourseControllerV6 {
     public Object learnReport(@Token UserSession userSession,
                               @RequestHeader(value = "terminal") int terminal,
                               @RequestHeader(value = "cv") String cv,
-                              @PathVariable(value = "syllabusId") int syllabusId){
+                              @RequestParam(value = "bjyRoomId") int bjyRoomId,
+                              @RequestParam(value = "classId") int classId,
+                              @RequestParam(value = "netClassId") int netClassId,
+                              @RequestParam(value = "lessonId") int courseWareId,
+                              @RequestParam(value = "videoType") int videoType,
+                              @RequestParam(value = "cardId") long cardId){
 
+        courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, cardId, terminal);
         Map<String,Object> result = Maps.newHashMap();
         Map<String,Object> report = Maps.newHashMap();
         Map<String,Object> classPractice = Maps.newHashMap();
@@ -237,7 +245,10 @@ public class UserCourseControllerV6 {
         result.put("classPractice", classPractice);
         result.put("courseWorkPractice", workPractice);
         result.put("liveReport", report);
+
         return result;
+
+
     }
 
 
