@@ -71,7 +71,7 @@ public class CourseExercisesStatisticsManager {
             Example example = new Example(CourseExercisesStatistics.class);
             example.and()
                     .andEqualTo("courseId", practiceForCoursePaper.getCourseId())
-                    .andEqualTo("courseType", practiceForCoursePaper.getType())
+                    .andEqualTo("courseType", practiceForCoursePaper.getCourseType())
                     .andEqualTo("status", YesOrNoStatus.YES.getCode());
             CourseExercisesStatistics courseExercisesStatistics = courseExercisesStatisticsMapper.selectOneByExample(example);
 
@@ -81,7 +81,7 @@ public class CourseExercisesStatisticsManager {
                 courseExercisesStatistics.setCorrects(answerCard.getRcount());
                 courseExercisesStatistics.setCosts(answerCard.getExpendTime());
                 courseExercisesStatistics.setCounts(1);
-                courseExercisesStatistics.setCourseType(practiceForCoursePaper.getType());
+                courseExercisesStatistics.setCourseType(practiceForCoursePaper.getCourseType());
                 courseExercisesStatistics.setCourseId(practiceForCoursePaper.getCourseId());
                 courseExercisesStatistics.setGmtModify(new Timestamp(System.currentTimeMillis()));
                 courseExercisesStatistics.setGmtCreate(new Timestamp(System.currentTimeMillis()));
