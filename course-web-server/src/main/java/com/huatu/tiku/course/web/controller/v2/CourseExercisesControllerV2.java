@@ -69,7 +69,7 @@ public class CourseExercisesControllerV2 {
                 .collect(Collectors.joining(","));
         Object practiceCard = practiceCardService.createCourseExercisesPracticeCard(
                 terminal, subjectId, userSession.getId(), "课后作业练习",
-                courseType, courseId, questionId
+                courseType, coursewareId, questionId
         );
         HashMap<String, Object> result = (HashMap<String, Object>) ZTKResponseUtil.build(practiceCard);
         if (null == result) {
