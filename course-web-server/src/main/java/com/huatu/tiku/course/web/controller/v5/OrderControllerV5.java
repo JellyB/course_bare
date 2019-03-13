@@ -138,7 +138,7 @@ public class OrderControllerV5 {
      * 用户注册送课
      */
     @PostMapping("userRegisterOrder")
-    public Object userRegisterOrder(@RequestParam String userName, @RequestParam int classId, @RequestParam String secret) {
+    public Object userRegisterOrder(@RequestParam String userName, @RequestParam String classId, @RequestParam String secret) {
         if (secret.equals(SecrectUtil.MD5(userName))) {
             HashMap<String, Object> param = HashMapBuilder.<String, Object>newBuilder()
                     .put("userName", userName)
