@@ -446,6 +446,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
          */
         if(exerciseCardId > 0){
             courseWorkPractice.putAll((Map<String, Object>)courseWorkReport(userSession, terminal, exerciseCardId));
+            courseWorkPractice.remove("ranks");
         }
         /**
          * 处理随堂随堂练习报告
