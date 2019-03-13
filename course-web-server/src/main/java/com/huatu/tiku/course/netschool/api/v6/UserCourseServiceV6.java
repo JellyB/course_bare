@@ -105,7 +105,7 @@ public interface UserCourseServiceV6 {
 	 * @param params
 	 * @return
 	 */
-	@GetMapping(value = "/v5/c/class/stage_test_study_record")
+	@PostMapping(value = "/v5/c/class/stage_test_study_record")
 	NetSchoolResponse<Integer> stageTestStudyRecord(@RequestParam Map<String, Object> params);
 	
 	
