@@ -29,7 +29,7 @@ public class PeriodTestServiceV6Impl implements PeriodTestServiceV6 {
 	@Override
 	public void uploadPeriodStatus2PHP(PeriodTestSubmitlPayload payload) {
 		HashMap<String, Object> params = Maps.newHashMap();
-		params.put("isFinish", payload.getIsFinish());
+		params.put("isFinish", 1);
 		params.put("syllabusId", payload.getSyllabusId());
 		params.put("userName", payload.getUserName());
 		NetSchoolResponse res = userCourseServiceV6.stageTestStudyRecord(params);
