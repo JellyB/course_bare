@@ -354,7 +354,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
      */
     @Override
     public Object courseWorkReport(UserSession userSession, int terminal , long cardId) throws BizException {
-
+        SimpleDateFormat courseDateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm");
         Object response = ResponseUtil.build(practiceCardService.getAnswerCard(userSession.getToken(), terminal, cardId));
         JSONObject data = new JSONObject((LinkedHashMap<String, Object>) response);
 
@@ -383,6 +383,8 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         data.putAll(courseExercisesStatisticsManager.obtainCourseRankInfo(practiceCard));
         data.put("tcount", practiceForCoursePaper.getQcount());
         data.put("rcount", practiceCard.getRcount());
+        Date date = new Date(practiceCard.getCreateTime() == 0 ? System.currentTimeMillis():practiceCard.getCreateTime());
+        data.put("submitTimeInfo", courseDateFormat.format(date));
         return data;
     }
 

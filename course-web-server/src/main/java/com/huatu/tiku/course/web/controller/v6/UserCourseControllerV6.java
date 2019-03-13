@@ -195,7 +195,7 @@ public class UserCourseControllerV6 {
                               @RequestParam(value = "lessonId") long courseWareId,
                               @RequestParam(value = "videoType") int videoType,
                               @RequestParam(value = "exerciseCardId") long exerciseCardId,
-                              @RequestParam(value = "classAnswerCardId") long classCardId){
+                              @RequestParam(value = "classCardId") long classCardId){
 
         courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, exerciseCardId, classCardId, terminal);
         Map<String,Object> result = Maps.newHashMap();

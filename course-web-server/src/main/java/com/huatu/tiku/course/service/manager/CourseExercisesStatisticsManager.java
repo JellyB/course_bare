@@ -125,8 +125,8 @@ public class CourseExercisesStatisticsManager {
         rankInfo.put("avgTimeCost", 0);
         rankInfo.put("avgCorrect", 0);
         rankInfo.put("maxCorrect", 0);
-        rankInfo.put("ranks", 0);
-        rankInfo.put("myRank", Lists.newArrayList());
+        rankInfo.put("myRank", 0);
+        rankInfo.put("ranKs", Lists.newArrayList());
 
         try {
             PracticeForCoursePaper practiceForCoursePaper = (PracticeForCoursePaper) practiceCard.getPaper();
