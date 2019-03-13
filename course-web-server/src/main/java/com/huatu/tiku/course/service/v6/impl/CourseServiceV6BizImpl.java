@@ -58,6 +58,7 @@ import com.huatu.tiku.course.ztk.api.v4.paper.PeriodTestServiceV4;
 import com.huatu.tiku.entity.CourseExercisesProcessLog;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.NumberUtils;
 import org.springframework.web.bind.annotation.RequestParam;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.weekend.WeekendSqls;
@@ -439,18 +440,20 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         /**
          * 处理课后作业报告
          */
-        courseWorkPractice.putAll((Map<String, Object>)courseWorkReport(userSession, terminal, exerciseCardId));
+        if(exerciseCardId > 0){
+            courseWorkPractice.putAll((Map<String, Object>)courseWorkReport(userSession, terminal, exerciseCardId));
+        }
         /**
          * 处理随堂随堂练习报告
          */
-
-
-        //TODO
+        if(classCardId > 0){
+            classPractice.putAll(Maps.newHashMap());
+        }
         result.put("classPractice", classPractice);
         result.put("courseWorkPractice", courseWorkPractice);
         result.put("liveReport", liveReport);
         result.put("points", dealLearnReportPoints(courseWareId, videoType));
-        return null;
+        return result;
     }
 
     /**

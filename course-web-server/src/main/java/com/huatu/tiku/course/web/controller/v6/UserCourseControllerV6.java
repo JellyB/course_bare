@@ -197,7 +197,7 @@ public class UserCourseControllerV6 {
                               @RequestParam(value = "exerciseCardId") long exerciseCardId,
                               @RequestParam(value = "classCardId") long classCardId){
 
-        courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, exerciseCardId, classCardId, terminal);
+
         Map<String,Object> result = Maps.newHashMap();
         Map<String,Object> report = Maps.newHashMap();
         Map<String,Object> classPractice = Maps.newHashMap();
@@ -243,8 +243,8 @@ public class UserCourseControllerV6 {
         result.put("courseWorkPractice", workPractice);
         result.put("liveReport", report);
 
-        return result;
-
+        //return result;
+        return courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, exerciseCardId, classCardId, terminal);
 
     }
 
