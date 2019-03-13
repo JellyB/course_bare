@@ -7,6 +7,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.*;
 import com.huatu.common.exception.BizException;
 import com.huatu.common.utils.collection.HashMapBuilder;
+import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.vo.CourseWorkCourseVo;
 import com.huatu.tiku.course.bean.vo.CourseWorkWareVo;
@@ -15,10 +16,14 @@ import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
 import com.huatu.tiku.course.netschool.api.v7.SyllabusServiceV7;
+import com.huatu.tiku.course.service.v1.CourseExercisesService;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.ResponseUtil;
+import com.huatu.tiku.course.util.ZTKResponseUtil;
+import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
 import com.huatu.tiku.entity.CourseExercisesProcessLog;
 import com.huatu.ztk.paper.bean.PracticeCard;
+import com.huatu.ztk.paper.common.AnswerCardStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -51,6 +56,12 @@ public class CourseExercisesProcessLogManager {
 
     @Autowired
     private CourseExercisesStatisticsManager courseExercisesStatisticsManager;
+
+    @Autowired
+    private CourseExercisesService courseExercisesService;
+
+    @Autowired
+    private PracticeCardServiceV1 practiceCardService;
 
     @Autowired
     private SyllabusServiceV7 syllabusService;
@@ -131,6 +142,31 @@ public class CourseExercisesProcessLogManager {
         return courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
     }
 
+    /**
+     * 创建课后作业答题卡前置逻辑入口
+     * @throws BizException
+     */
+    public Object createCourseWorkAnswerCardEntrance(long courseId, long syllabusId, int courseType, long coursewareId, int subjectId, int terminal, int userId) throws BizException{
+        List<Map<String, Object>> list = courseExercisesService.listQuestionByCourseId(courseType, coursewareId);
+        if (CollectionUtils.isEmpty(list)) {
+            return null;
+        }
+        String questionId = list.stream()
+                .filter(map -> null != map && null != map.get("id"))
+                .map(map -> String.valueOf(map.get("id")))
+                .collect(Collectors.joining(","));
+        Object practiceCard = practiceCardService.createCourseExercisesPracticeCard(
+                terminal, subjectId, userId, "课后作业练习",
+                courseType, coursewareId, questionId
+        );
+        HashMap<String, Object> result = (HashMap<String, Object>) ZTKResponseUtil.build(practiceCard);
+        if (null == result) {
+            return null;
+        }
+        result.computeIfPresent("id", (key, value) -> String.valueOf(value));
+        createCourseWorkAnswerCard(userId, courseType, coursewareId, courseId, syllabusId, result);
+        return result;
+    }
 
     /**
      * 课后作业创建答题卡异步处理方法
@@ -405,4 +441,26 @@ public class CourseExercisesProcessLogManager {
         }
     }
 
+
+    /**
+     * 直播数据上报
+     * @param subject
+     * @param terminal
+     * @param userId
+     * @param syllabusId
+     */
+    @Async
+    public void saveLiveRecord(int userId, int subject, int terminal, long syllabusId) {
+        Set<Long> syllabusIds = Sets.newHashSet();
+        syllabusIds.add(syllabusId);
+        Table<String, Long, SyllabusWareInfo> table = requestSyllabusWareInfoPut2Cache(syllabusIds);
+        if (null == table.get(LESSON_LABEL, syllabusId)) {
+            return;
+        }
+        /**
+         * 创建答题卡
+         */
+        SyllabusWareInfo syllabusWareInfo = table.get(LESSON_LABEL, syllabusId);
+        createCourseWorkAnswerCardEntrance(syllabusWareInfo.getClassId(), syllabusWareInfo.getSyllabusId(), syllabusWareInfo.getVideoType(), syllabusWareInfo.getCoursewareId(), subject, terminal, userId);
+    }
 }

@@ -197,54 +197,7 @@ public class UserCourseControllerV6 {
                               @RequestParam(value = "exerciseCardId") long exerciseCardId,
                               @RequestParam(value = "classCardId") long classCardId){
 
-        courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, exerciseCardId, classCardId, terminal);
-        Map<String,Object> result = Maps.newHashMap();
-        Map<String,Object> report = Maps.newHashMap();
-        Map<String,Object> classPractice = Maps.newHashMap();
-        Map<String,Object> workPractice = Maps.newHashMap();
-        List<HashMap> points = Lists.newArrayList();
-
-
-        classPractice.put("corrects", new int[]{1,2,2,2,2,1,1,1,1,1});
-        classPractice.put("answers", new String[]{"1", "2", "3", "4", "4", "3", "2", "1", "2", "2"});
-        classPractice.put("doubts", new int[] {1,1,1,1,1,0,0,0,0,0});
-        classPractice.put("id", "8205958822857731640");
-        classPractice.put("correctCount", 5);//答对
-        classPractice.put("classAvgTimeOut", 150);//班级平均用时；
-        classPractice.put("classAvgCorrect", 6);//班级平均答对;
-        workPractice.put("classAvgTimeOut", 150);
-        classPractice.put("avgTimeOut", 150);
-        classPractice.put("timeInfo", "09/30 13:30");
-
-        workPractice.put("corrects", new int[]{1,2,2,2,2,1,1,1,1,1});
-        workPractice.put("answers", new String[]{"1", "2", "3", "4", "4", "3", "2", "1", "2", "2"});
-        workPractice.put("doubts", new int[] {1,1,1,1,1,0,0,0,0,0});
-        workPractice.put("id","8205958822857731640");
-        workPractice.put("correctCount", 5);//答对
-        workPractice.put("avgTimeOut", 150);//平均用时；
-        workPractice.put("classAvgCorrect", 6);//平均答对;
-        workPractice.put("classAvgTimeOut", 150);
-        workPractice.put("classAvgTimeOut", 150);
-        workPractice.put("timeInfo", "09/30 13:30");
-
-        points.add(HashMapBuilder.newBuilder().put("name", "公文").put("id", 12345).build());
-        points.add(HashMapBuilder.newBuilder().put("name", "管理").put("id", 2345).build());
-        points.add(HashMapBuilder.newBuilder().put("name", "科技").put("id", 3456).build());
-        points.add(HashMapBuilder.newBuilder().put("name", "人文").put("id", 4567).build());
-        workPractice.put("points", points);
-        workPractice.put("finishInfo", "完成了课程89%的内容，课后作业正确率低于45%，勤加练习才能将学到的内容转化为自己的技能。");
-
-        report.put("learnTime", 123);//学习时长
-        report.put("gold", 15);//获取 15 图币
-        report.put("learnPercent", 86);//学习课程内容
-        report.put("abovePercent", 34);
-
-        result.put("classPractice", classPractice);
-        result.put("courseWorkPractice", workPractice);
-        result.put("liveReport", report);
-
-        return result;
-
+        return courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, exerciseCardId, classCardId, terminal);
 
     }
 
@@ -367,56 +320,14 @@ public class UserCourseControllerV6 {
     @LocalMapParam
     @PostMapping(value = "liveRecord")
     public Object saveLiveRecord(@Token UserSession userSession,
+                                 @RequestHeader(value = "terminal") int terminal,
+                                 @RequestHeader(value = "cv") String cv,
                                  @RequestParam(defaultValue = "0") int syllabusId){
 
         Map<String,Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = userCourseService.saveLiveRecord(params);
+        courseExercisesProcessLogManager.saveLiveRecord(userSession.getId(), userSession.getSubject(), terminal, syllabusId);
         return ResponseUtil.build(netSchoolResponse);
 
-    }
-
-    @AllArgsConstructor
-    @Setter
-    @Getter
-    @Builder
-    public static class CourseInfo{
-        private String courseTitle;
-        private int courseId;
-        private int undoCount;
-        private List<CourseWareInfo> wareInfoList;
-    }
-
-    @AllArgsConstructor
-    @Setter
-    @Getter
-    @Builder
-    public static class CourseWareInfo{
-        private String courseWareTitle;
-        private int courseWareId;
-        private String videoLength;
-        private int serialNumber;
-        private long answerCardId;
-        private String questionIds;
-        private String answerCardInfo;
-        private int isAlert;
-    }
-
-
-
-    @AllArgsConstructor
-    @Setter
-    @Getter
-    @Builder
-    public static class Points{
-        private int id;
-        private String name;
-        private int qnum;
-        private int rnum;
-        private int wnum;
-        private int unum;
-        private int times;
-        private int speed;
-        private int level;
-        private float accuracy;
     }
 }
