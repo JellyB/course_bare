@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.service.v6.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PeriodTestServiceV6Impl implements PeriodTestServiceV6 {
 	
+	@Autowired
 	private UserCourseServiceV6 userCourseServiceV6;
 	
 	@Override

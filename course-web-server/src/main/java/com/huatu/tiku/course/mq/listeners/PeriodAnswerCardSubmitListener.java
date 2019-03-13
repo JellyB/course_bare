@@ -27,8 +27,9 @@ public class PeriodAnswerCardSubmitListener {
 	@RabbitListener(queues = RabbitMqConstants.PERIOD_TEST_SUBMIT_CARD_INFO)
 	public void onMessage(String message) {
 
+		log.info("periodAnswerCardSubmit recive msg:{}", message);
 		PeriodTestSubmitlPayload payload = JSONObject.parseObject(message, PeriodTestSubmitlPayload.class);
-		log.info("periodAnswerCardSubmit recive :{}", payload);
 		periodTestServiceV6.uploadPeriodStatus2PHP(payload);
 	}
+	
 }

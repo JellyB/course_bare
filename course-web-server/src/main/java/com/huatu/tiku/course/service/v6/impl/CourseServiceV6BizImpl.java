@@ -356,7 +356,11 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
     @Override
     public Object courseWorkReport(UserSession userSession, int terminal , long cardId) throws BizException {
         SimpleDateFormat courseDateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm");
-        Object response = ResponseUtil.build(practiceCardService.getAnswerCard(userSession.getToken(), terminal, cardId));
+        NetSchoolResponse netSchoolResponse = practiceCardService.getAnswerCard(userSession.getToken(), terminal, cardId);
+        if(null == netSchoolResponse.getData()){
+            return new JSONObject();
+        }
+        Object response = ResponseUtil.build(netSchoolResponse);
         JSONObject data = new JSONObject((LinkedHashMap<String, Object>) response);
 
         JSONObject paper = data.getJSONObject("paper");
