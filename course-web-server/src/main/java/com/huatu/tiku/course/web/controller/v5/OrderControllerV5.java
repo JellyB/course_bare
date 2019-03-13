@@ -144,7 +144,7 @@ public class OrderControllerV5 {
                     .put("userName", userName)
                     .put("classId", classId)
                     .build();
-            orderService.zeroOrder(param);
+            orderService.batchZeroOrder(param);
         }
         return SuccessMessage.create("操作成功");
     }
