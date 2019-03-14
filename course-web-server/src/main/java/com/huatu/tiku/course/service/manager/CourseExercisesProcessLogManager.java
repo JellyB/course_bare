@@ -332,22 +332,22 @@ public class CourseExercisesProcessLogManager {
             }
 
             List<CourseWorkWareVo> wareVos = Arrays.stream(ids.split(","))
-                    .filter(ware ->
-                            null !=  syllabusWareInfoTable.get(LESSON_LABEL, Long.valueOf(ware)) &&
-                            null !=  courseExercisesProcessLogMap.get(Long.valueOf(ware)) &&
-                            null != courseExercisesProcessLogMap.get(Long.valueOf(ware)).getDataInfo())
-                    .map(ware -> {
+                    .filter(ware -> {
+                        boolean result = true;
+                        result = result && (null != syllabusWareInfoTable.get(LESSON_LABEL, Long.valueOf(ware)));
+                        result = result && (null !=  courseExercisesProcessLogMap.get(Long.valueOf(ware)));
+                        return result;
+                    }).map(ware -> {
                     SyllabusWareInfo syllabusWareInfo = syllabusWareInfoTable.get(LESSON_LABEL, Long.valueOf(ware));
                     CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogMap.get(Long.valueOf(ware));
-                    JSONObject jsonObject = JSONObject.parseObject(courseExercisesProcessLog.getDataInfo());
                     CourseWorkWareVo courseWorkWareVo = CourseWorkWareVo
                         .builder()
                         .courseWareId(syllabusWareInfo.getCoursewareId())
                         .courseWareTitle(syllabusWareInfo.getCoursewareName())
                         .videoLength(syllabusWareInfo.getLength())
                         .serialNumber(syllabusWareInfo.getSerialNumber())
-                        .answerCardId(jsonObject.getLongValue("id"))
-                        .answerCardInfo(jsonObject.getString("info"))
+                        .answerCardId(courseExercisesProcessLog.getCardId())
+                        .answerCardInfo(courseExercisesProcessLog.getDataInfo())
                         .questionIds("")
                         .isAlert(courseExercisesProcessLog.getIsAlert())
                         .build();
