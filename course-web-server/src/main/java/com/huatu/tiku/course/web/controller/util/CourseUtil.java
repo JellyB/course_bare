@@ -14,13 +14,9 @@ import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
 import com.huatu.tiku.course.ztk.api.v4.paper.PeriodTestServiceV4;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
 import com.huatu.tiku.springboot.basic.reward.event.RewardActionEvent;
-import javafx.beans.binding.ObjectExpression;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -287,31 +283,46 @@ public class CourseUtil {
      * @param response
      * @param userId
      */
+    /**
+     * 处理阶段考试状态信息
+     * @param response
+     * @param userId
+     */
     public void addStudyReportInfo(LinkedHashMap response, long userId){
         response.computeIfPresent("list", (key, value) -> {
-            List<Map> mapList = ((List<Map>) value).stream()
-                    .filter(map -> (null != map.get("classExercisesNum")))
-                    .filter(map -> MapUtils.getLong(map,"coursewareId") > 0)
-                    .map(valueData -> {
-                        try{
-                            int classExercisesNum = MapUtils.getIntValue(valueData, "classExercisesNum");
-                            int coursewareId = MapUtils.getIntValue(valueData, "coursewareId");
-                            Long bjyRoomId = MapUtils.getLong(valueData, "bjyRoomId");
-                            if(null == bjyRoomId || bjyRoomId.longValue() == 0 || classExercisesNum == 0){
-                                valueData.put("classCardId", 0);
-                                return valueData;
-                            }
-                            Long answerCardId = practiceUserMetaService.getLiveCourseIdListByRoomId(bjyRoomId, userId, coursewareId);
-                            valueData.put("classCardId", answerCardId);
-                            return valueData;
-                        }catch (Exception e){
-                            valueData.put("classCardId", 0);
-                            return valueData;
-                        }
-                    })
-                    .collect(Collectors.toList());
-                return mapList;
-            }
+                    List<Integer> courseWareIds = ((List<Map>) value).stream()
+                            .filter(map -> (null != map.get("classExercisesNum")) && (MapUtils.getInteger(map,"classExercisesNum") > 0))
+                            .map(map -> MapUtils.getIntValue(map, "coursewareId", 0))
+                            .collect(Collectors.toList());
+
+                    //查询用户答题信息
+                    log.info("处理学习报告状态，userId = {},courseWareIds = {}", userId, courseWareIds);
+
+                    //todo 获取阶段测试报告状态
+
+                    //todo 查询redis数据查询状态
+                    int defaultStatus = -1;
+                    Map<Integer, Integer> periodMaps = Maps.newHashMap();
+
+                    if (null != periodMaps && periodMaps.size() > 0) {
+                        List<Map> mapList = ((List<Map>) value).stream()
+                                .map(valueData -> {
+                                    Integer status = periodMaps.getOrDefault(MapUtils.getIntValue(valueData, "coursewareId", 0), defaultStatus);
+                                    valueData.put("reportStatus", status);
+                                    return valueData;
+                                })
+                                .collect(Collectors.toList());
+                        return mapList;
+                    } else {
+                        List<Map> mapList = ((List<Map>) value).stream()
+                                .map(valueData -> {
+                                    valueData.put("reportStatus", defaultStatus);
+                                    return valueData;
+                                })
+                                .collect(Collectors.toList());
+                        return mapList;
+                    }
+                }
         );
     }
 }
