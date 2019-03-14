@@ -189,10 +189,13 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Override
     public PageInfo<PracticeRoomRankUserBo> getQuestionRankInfo(Long roomId, Integer page, Integer pageSize) {
-        List<PracticeRoomRankUserBo> roomRankInfoList = practiceMetaComponent.getRoomRankInfo(roomId, (page - 1) * pageSize, page * pageSize);
+        List<PracticeRoomRankUserBo> roomRankInfoList = practiceMetaComponent.getRoomRankInfo(roomId, (page - 1) * pageSize, page * pageSize - 1);
         Long totalInfo = practiceMetaComponent.getRoomRankTotalInfo(roomId);
         PageInfo<PracticeRoomRankUserBo> pageInfo = PageInfo.of(roomRankInfoList);
         pageInfo.setTotal(totalInfo);
+        int totalPageNum = (int) ((totalInfo  +  pageSize  - 1) / pageSize);
+		pageInfo.setPages(totalPageNum);
+		pageInfo.setPageNum(page);
         return pageInfo;
     }
 
