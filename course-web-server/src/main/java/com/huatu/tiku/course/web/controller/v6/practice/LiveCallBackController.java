@@ -3,6 +3,7 @@ package com.huatu.tiku.course.web.controller.v6.practice;
 import com.google.common.collect.ImmutableMap;
 import com.huatu.common.Result;
 import com.huatu.common.SuccessMessage;
+import com.huatu.common.SuccessResponse;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.course.bean.practice.LiveCallbackBo;
 import com.huatu.tiku.course.service.v1.practice.LiveCallBackService;
@@ -11,8 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Created by lijun on 2019/3/5 直播生成回放时回调 使用 - 直播 roomId 会对应多个
@@ -46,9 +50,15 @@ public class LiveCallBackController {
 	 * @return
 	 */
 	@PostMapping(value = "/liveCallBack")
-	public Object liveOver(@RequestParam Long roomId) {
-		//TODO 生成答题卡
-		log.info("直播下课回调接口调用------>roomId:{}",roomId);
-		return ImmutableMap.of("code", 0, "msg","success");
+	public void liveOver(@RequestParam Long roomId, HttpServletResponse response) {
+		// TODO 生成答题卡
+		log.info("直播下课回调接口调用------>roomId:{}", roomId);
+		try {
+			response.setContentType("application/json; charset=utf-8");
+			response.getWriter().write("{\"code\": 0, \"msg\":\"success\"}");
+		} catch (IOException e) {
+
+			log.info("直播下课回调接口调用------>roomId:{}失败:{}", roomId, e);
+		}
 	}
 }
