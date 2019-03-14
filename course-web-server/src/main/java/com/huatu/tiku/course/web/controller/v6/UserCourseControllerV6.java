@@ -184,12 +184,12 @@ public class UserCourseControllerV6 {
      * @param videoType
      * @return
      */
-    @GetMapping(value = "/learnReport/{syllabusId}")
+    @GetMapping(value = "/learnReport")
     @LocalMapParam(checkToken = true)
     public Object learnReport(@Token UserSession userSession,
                               @RequestHeader(value = "terminal") int terminal,
                               @RequestHeader(value = "cv", defaultValue = "1.0") String cv,
-                              @RequestParam(value = "bjyRoomId") String bjyRoomId,
+                              @RequestParam(value = "bjyRoomId", defaultValue = "") String bjyRoomId,
                               @RequestParam(value = "classId") long classId,
                               @RequestParam(value = "netClassId") long netClassId,
                               @RequestParam(value = "lessonId") long courseWareId,
