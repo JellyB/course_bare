@@ -1,22 +1,26 @@
 package com.huatu.tiku.course.web.controller.v6.practice;
 
-import com.google.common.collect.ImmutableMap;
-import com.huatu.common.Result;
-import com.huatu.common.SuccessMessage;
-import com.huatu.common.SuccessResponse;
-import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
-import com.huatu.tiku.course.bean.practice.LiveCallbackBo;
-import com.huatu.tiku.course.service.v1.practice.LiveCallBackService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
-import org.springframework.web.bind.annotation.*;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.huatu.common.SuccessMessage;
+import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
+import com.huatu.tiku.course.bean.practice.LiveCallbackBo;
+import com.huatu.tiku.course.service.v1.practice.LiveCallBackService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Created by lijun on 2019/3/5 直播生成回放时回调 使用 - 直播 roomId 会对应多个
