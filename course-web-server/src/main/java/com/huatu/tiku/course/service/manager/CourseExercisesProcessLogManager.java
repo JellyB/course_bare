@@ -84,12 +84,14 @@ public class CourseExercisesProcessLogManager {
      * @return
      */
     public Map<String, Integer> getCountByType(long userId) throws BizException{
+        List<Integer> list = Lists.newArrayList(AnswerCardStatus.CREATE, AnswerCardStatus.UNDONE);
         Map<String, Integer> result = Maps.newHashMap();
         Example example = new Example(CourseExercisesProcessLog.class);
         Example.Criteria criteria = example.and();
         criteria.andEqualTo("userId", userId);
-        criteria.andEqualTo("isAlert", YesOrNoStatus.YES.getCode());
         criteria.andEqualTo("status", YesOrNoStatus.YES.getCode());
+        criteria.andEqualTo("isAlert", YesOrNoStatus.YES.getCode());
+        criteria.andIn("bizStatus", list);
         criteria.andEqualTo("dataType", StudyTypeEnum.COURSE_WORK.getOrder());
         int countWork = courseExercisesProcessLogMapper.selectCountByExample(example);
         result.put(StudyTypeEnum.COURSE_WORK.getKey(), countWork);
@@ -116,8 +118,9 @@ public class CourseExercisesProcessLogManager {
 
             Example example = new Example(CourseExercisesProcessLog.class);
             example.and().andEqualTo("status", YesOrNoStatus.YES.getCode())
-                    .andEqualTo("dataType", studyTypeEnum.getKey())
-                    .andEqualTo("userId", userId);
+                    .andEqualTo("dataType", studyTypeEnum.getOrder())
+                    .andEqualTo("userId", userId)
+                    .andEqualTo("isAlert", YesOrNoStatus.YES.getCode());
             int count = courseExercisesProcessLogMapper.updateByExampleSelective(courseExercisesProcessLog, example);
             return count;
         }catch (Exception e){
@@ -177,7 +180,7 @@ public class CourseExercisesProcessLogManager {
      * @param result
      */
     @Async
-    public void createCourseWorkAnswerCard(int userId, Integer courseType, Long coursewareId, Long courseId, Long syllabusId, HashMap<String,Object> result){
+    public synchronized void createCourseWorkAnswerCard(int userId, Integer courseType, Long coursewareId, Long courseId, Long syllabusId, HashMap<String,Object> result){
         Long cardId = Long.valueOf(String.valueOf(result.get("id")));
         int status = Integer.valueOf(String.valueOf(result.get("status")));
 
@@ -316,8 +319,8 @@ public class CourseExercisesProcessLogManager {
                 .andEqualTo("status", YesOrNoStatus.YES.getCode())
                 .andIn("syllabusId", allSyllabusIds);
 
-        Map<Long, CourseExercisesProcessLog> courseExercisesProcessLogMap = courseExercisesProcessLogMapper
-                .selectByExample(example).stream().collect(Collectors.toMap(wareLog -> wareLog.getSyllabusId(), wareLog -> wareLog));
+        List<CourseExercisesProcessLog> logList = courseExercisesProcessLogMapper.selectByExample(example);
+        Map<Long, CourseExercisesProcessLog> courseExercisesProcessLogMap = logList.stream().collect(Collectors.toMap(wareLog -> wareLog.getSyllabusId(), wareLog -> wareLog));
 
         dataList.forEach(item->{
             CourseWorkCourseVo courseWorkCourseVo = new CourseWorkCourseVo();
