@@ -24,7 +24,7 @@ public class PeriodTest extends BaseWebTest {
     @Test
     public void testUpload() throws InterruptedException, ExecutionException, BizException {
         TimeMark timeMark = TimeMark.newInstance();
-        PeriodTestSubmitlPayload payload =  PeriodTestSubmitlPayload.builder().syllabusId(8362050L).userName("app_ztk620567022").isFinish(1).build();
+        PeriodTestSubmitlPayload payload =  PeriodTestSubmitlPayload.builder().syllabusId(8362050L).userName("app_ztk620567022").isFinish(false).build();
 		periodTestServiceV6.uploadPeriodStatus2PHP(payload);
         log.info(">>>>>>>>> payload request complete,used {} mills,total cost {} mills...",timeMark.mills(),timeMark.totalMills());
 
