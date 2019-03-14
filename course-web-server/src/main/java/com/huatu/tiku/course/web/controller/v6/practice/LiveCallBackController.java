@@ -1,5 +1,7 @@
 package com.huatu.tiku.course.web.controller.v6.practice;
 
+import com.google.common.collect.ImmutableMap;
+import com.huatu.common.Result;
 import com.huatu.common.SuccessMessage;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.course.bean.practice.LiveCallbackBo;
@@ -43,9 +45,10 @@ public class LiveCallBackController {
 	 * @param courseIdList
 	 * @return
 	 */
-	@PostMapping(value = "/{roomId}")
-	public Object liveOver(@PathVariable Long roomId, @RequestBody List<Integer> courseIdList) {
+	@PostMapping(value = "/liveCallBack")
+	public Object liveOver(@RequestParam Long roomId) {
 		//TODO 生成答题卡
-		return SuccessMessage.create();
+		log.info("直播下课回调接口调用------>roomId:{}",roomId);
+		return ImmutableMap.of("code", 0, "msg","success");
 	}
 }
