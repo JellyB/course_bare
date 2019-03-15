@@ -13,7 +13,6 @@ import com.huatu.tiku.course.bean.practice.PracticeRoomRankUserBo;
 import com.huatu.tiku.course.bean.practice.QuestionMetaBo;
 import com.huatu.tiku.course.common.LiveCallBackTypeEnum;
 import com.huatu.tiku.course.service.v1.practice.LiveCallBackService;
-import com.huatu.tiku.course.service.v1.practice.PracticeQuestionInfoService;
 import com.huatu.tiku.course.service.v1.practice.TeacherService;
 import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
 
@@ -33,7 +32,8 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
 	private final PracticeMetaComponent practiceMetaComponent;
 
 	private final TeacherService teacherService;
-	private final PracticeQuestionInfoService practiceQuestionInfoService;
+	
+	private final CoursePracticeQuestionInfoServiceImpl coursePracticeQuestionInfoServiceImpl;
 
 	@Override
 	@Async
@@ -76,7 +76,7 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
 			Example example = Example.builder(CoursePracticeQuestionInfo.class).where(sql).build();
 			CoursePracticeQuestionInfo coursePracticeQuestionInfo = CoursePracticeQuestionInfo.builder()
 					.meta(JSON.toJSONString(questionMetaBo)).build();
-			practiceQuestionInfoService.updateByExampleSelective(coursePracticeQuestionInfo, example);
+			coursePracticeQuestionInfoServiceImpl.updateByExampleSelective(coursePracticeQuestionInfo, example);
 		});
 	}
 

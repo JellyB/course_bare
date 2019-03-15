@@ -14,4 +14,11 @@ public interface CoursePracticeQuestionInfoService extends BaseServiceHelper<Cou
      * 根据 roomId questionId 列表查询
      */
     List<CoursePracticeQuestionInfo> listByRoomIdAndQuestionId(Long roomId, List<Long> questionIdList);
+    
+    /**
+	 * 获取房间已作答试题集合
+	 * @param roomId
+	 * @return
+	 */
+	List<Long> getQuestionsInfoByRoomId(Long roomId);
 }

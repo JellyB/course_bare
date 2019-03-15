@@ -29,4 +29,10 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
                 .build();
         return selectByExample(example);
     }
+
+	@Override
+	public List<Long> getQuestionsInfoByRoomId(Long roomId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
