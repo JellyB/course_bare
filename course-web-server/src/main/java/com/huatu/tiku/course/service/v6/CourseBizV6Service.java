@@ -133,8 +133,17 @@ public class CourseBizV6Service {
      * @return
      */
     public Object obtainMineCoursesDegrade(Map<String,Object> params){
+        /**
+         * 方案 1. 返回空数组，app 列表页面提示去选课
+         */
         log.info("获取我的课程信息 -- 降级:{}", params);
-        return new NetSchoolResponse<>(Result.SUCCESS_CODE, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
+        //return new NetSchoolResponse<>(Result.SUCCESS_CODE, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
+
+        /**
+         * 方案 2. 返回自定义异常
+         */
+        ErrorResult errorResult = ErrorResult.create(10000010, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
+        throw new BizException(errorResult);
     }
 
 
