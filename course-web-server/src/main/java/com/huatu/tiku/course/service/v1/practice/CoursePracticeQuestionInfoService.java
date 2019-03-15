@@ -20,5 +20,5 @@ public interface CoursePracticeQuestionInfoService extends BaseServiceHelper<Cou
 	 * @param roomId
 	 * @return
 	 */
-	List<Long> getQuestionsInfoByRoomId(Long roomId);
+	List<Integer> getQuestionsInfoByRoomId(Long roomId);
 }
