@@ -2,6 +2,7 @@ package com.huatu.tiku.course.service.v6;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.huatu.common.ErrorResult;
 import com.huatu.common.Result;
 import com.huatu.common.exception.BizException;
@@ -143,7 +144,16 @@ public class CourseBizV6Service {
          * 方案 2. 返回自定义异常
          */
         ErrorResult errorResult = ErrorResult.create(10000010, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
-        throw new BizException(errorResult);
+        //throw new BizException(errorResult);
+
+        /**
+         * 方案 3. 自定义message
+         */
+        Map<String,Object> result = Maps.newHashMap();
+        result.put("code", Result.SUCCESS_CODE);
+        result.put("data", null);
+        result.put("message", "当前请求的人数过多，请在5分钟后重试");
+        return result;
     }
 
 
