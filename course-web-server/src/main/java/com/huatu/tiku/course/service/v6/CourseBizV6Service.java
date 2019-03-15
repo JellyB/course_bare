@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.service.v6;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
 import com.huatu.common.ErrorResult;
 import com.huatu.common.Result;
 import com.huatu.common.exception.BizException;
@@ -133,8 +134,7 @@ public class CourseBizV6Service {
      */
     public Object obtainMineCoursesDegrade(Map<String,Object> params){
         log.info("获取我的课程信息 -- 降级:{}", params);
-        ErrorResult errorResult = ErrorResult.create(10000010, "当前请求的人数过多，请在5分钟后重试",ResponseUtil.DEFAULT_PAGE_EMPTY);
-        throw new BizException(errorResult);
+        return new NetSchoolResponse<>(Result.SUCCESS_CODE, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
     }
 
 
