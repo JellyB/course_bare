@@ -9,6 +9,7 @@ import java.io.Serializable;
 
 /**
  * Created by lijun on 2019/2/27
+ * 用户答题信息
  */
 @Builder
 @AllArgsConstructor
