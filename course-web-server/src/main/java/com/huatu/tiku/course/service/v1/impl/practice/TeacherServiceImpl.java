@@ -28,6 +28,7 @@ import com.huatu.tiku.course.bean.practice.PracticeRoomRankUserBo;
 import com.huatu.tiku.course.bean.practice.QuestionInfo;
 import com.huatu.tiku.course.bean.practice.QuestionMetaBo;
 import com.huatu.tiku.course.bean.practice.TeacherQuestionBo;
+import com.huatu.tiku.course.common.CoursePracticeQuestionInfoEnum;
 import com.huatu.tiku.course.service.v1.CourseBreakpointService;
 import com.huatu.tiku.course.service.v1.practice.CoursePracticeQuestionInfoService;
 import com.huatu.tiku.course.service.v1.practice.LiveCourseRoomInfoService;
@@ -136,6 +137,7 @@ public class TeacherServiceImpl implements TeacherService {
                 .startPracticeTime(System.currentTimeMillis())
                 .practiceTime(practiceTime)
                 .build();
+        info.setBizStatus(CoursePracticeQuestionInfoEnum.FINISH.getStatus());
 		// 添加房间练习题数量到缓存
 		practiceMetaComponent.addRoomPracticedQuestion(roomId, questionId);
         coursePracticeQuestionInfoService.save(info);
@@ -234,10 +236,6 @@ public class TeacherServiceImpl implements TeacherService {
 						Long startPracticeTime = coursePracticeQuestionInfo.getStartPracticeTime();
 						// 已经开始
 						if (startPracticeTime != null) {
-							if (startPracticeTime == -1) {
-								// 此时该试题考试状态为老师强制关闭
-								teacherQuestionBo.setLastPracticeTime(-1);
-							} else {
 								Long practiceTime = (System.currentTimeMillis()
 										- coursePracticeQuestionInfo.getStartPracticeTime()) / 1000;
 								// 计算剩余时间
@@ -245,8 +243,11 @@ public class TeacherServiceImpl implements TeacherService {
 										practiceTime > coursePracticeQuestionInfo.getPracticeTime() ? -1
 												: coursePracticeQuestionInfo.getPracticeTime()
 														- practiceTime.intValue());
-							}
 						}
+						if (coursePracticeQuestionInfo.getBizStatus() == CoursePracticeQuestionInfoEnum.FORCESTOP.getStatus()) {
+							// 此时该试题考试状态为老师强制关闭
+							teacherQuestionBo.setLastPracticeTime(-1);
+						} 
 						// 设置的练习时间
 						teacherQuestionBo.setPracticeTime(coursePracticeQuestionInfo.getPracticeTime());
 					}
@@ -263,7 +264,7 @@ public class TeacherServiceImpl implements TeacherService {
 		CoursePracticeQuestionInfo coursePracticeQuestionInfo = getCoursePracticeQuestionInfoByRoomIdAndQuestionId(
 				roomId, questionId);
 		if (coursePracticeQuestionInfo != null) {
-			coursePracticeQuestionInfo.setStartPracticeTime(-1L);
+			coursePracticeQuestionInfo.setBizStatus(CoursePracticeQuestionInfoEnum.FORCESTOP.getStatus());
 		}
 		coursePracticeQuestionInfoService.save(coursePracticeQuestionInfo);
 

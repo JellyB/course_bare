@@ -1,28 +1,33 @@
 package com.huatu.tiku.course.service.v1.impl.practice;
 
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+
 import com.alibaba.fastjson.JSON;
 import com.huatu.tiku.course.bean.practice.LiveCallbackBo;
 import com.huatu.tiku.course.bean.practice.PracticeRoomRankUserBo;
 import com.huatu.tiku.course.bean.practice.QuestionMetaBo;
+import com.huatu.tiku.course.common.LiveCallBackTypeEnum;
 import com.huatu.tiku.course.service.v1.practice.LiveCallBackService;
 import com.huatu.tiku.course.service.v1.practice.PracticeQuestionInfoService;
 import com.huatu.tiku.course.service.v1.practice.TeacherService;
 import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
+
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.collections.CollectionUtils;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.weekend.WeekendSqls;
-
-import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Created by lijun on 2019/3/7
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LiveCallBackServiceImpl implements LiveCallBackService {
 
 	private final PracticeMetaComponent practiceMetaComponent;
@@ -73,6 +78,21 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
 					.meta(JSON.toJSONString(questionMetaBo)).build();
 			practiceQuestionInfoService.updateByExampleSelective(coursePracticeQuestionInfo, example);
 		});
+	}
+
+	/**
+	 * 直播上下课回调
+	 */
+	@Override
+	@Async
+	public void saveLiveInfo(Long roomId, String op) {
+
+		if (LiveCallBackTypeEnum.START.getKey().equals(op)) {
+			//根据房间id查询学员答题信息
+			
+		}
+		log.info("房间id:{}上课回调", roomId);
+
 	}
 
 }

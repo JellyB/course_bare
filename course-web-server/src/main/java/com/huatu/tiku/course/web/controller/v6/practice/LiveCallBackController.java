@@ -54,15 +54,18 @@ public class LiveCallBackController {
 	 * @return
 	 */
 	@PostMapping(value = "/liveCallBack")
-	public void liveOver(@RequestParam Long roomId, HttpServletResponse response) {
+	public void liveOver(@RequestParam Long room_id, @RequestParam String op, @RequestParam String op_time,
+			@RequestParam String qid, @RequestParam Integer timestamp, @RequestParam String sign,
+			HttpServletResponse response) {
 		// TODO 生成答题卡
-		log.info("直播下课回调接口调用------>roomId:{}", roomId);
 		try {
+			log.info("直播下课回调接口调用------>roomId:{},回调类型:{},回调唯一标示:{},签名为:{},调用时间:{},时间戳为:{}", room_id, op, qid, sign,op_time,timestamp);
+			liveCallBackService.saveLiveInfo(room_id,op);
 			response.setContentType("application/json; charset=utf-8");
 			response.getWriter().write("{\"code\": 0, \"msg\":\"success\"}");
 		} catch (IOException e) {
 
-			log.info("直播下课回调接口调用------>roomId:{}失败:{}", roomId, e);
+			log.info("直播下课回调接口调用------>roomId:{}失败:{}", room_id, e);
 		}
 	}
 }
