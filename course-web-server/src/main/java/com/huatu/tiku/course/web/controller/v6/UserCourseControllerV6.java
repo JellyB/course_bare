@@ -1,10 +1,10 @@
 package com.huatu.tiku.course.web.controller.v6;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import com.huatu.common.utils.collection.HashMapBuilder;
+import com.google.common.collect.Lists;
+import com.huatu.common.ErrorResult;
+import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
@@ -29,10 +27,6 @@ import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 /**
  * 描述：我的课程接口
@@ -263,6 +257,9 @@ public class UserCourseControllerV6 {
                                     @RequestParam(value = "page", defaultValue = "1", required = false) int page,
                                     @RequestParam(value = "pageSize", defaultValue = "20", required = false) int pageSize){
         Map<String,Object> params = LocalMapParamHandler.get();
+
+        /*ErrorResult errorResult = ErrorResult.create(10000010, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
+        throw new BizException(errorResult);*/
         return courseBizV6Service.obtainMineCourses(params);
     }
 

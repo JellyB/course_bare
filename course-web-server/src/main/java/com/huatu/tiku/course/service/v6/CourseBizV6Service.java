@@ -13,6 +13,7 @@ import com.huatu.tiku.course.netschool.api.fall.CourseServiceV6FallBack;
 import com.huatu.tiku.course.netschool.api.fall.UserCourseServiceV6FallBack;
 import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
+import com.huatu.tiku.course.service.v1.AccessLimitService;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * 描述：
@@ -47,6 +49,9 @@ public class CourseBizV6Service {
 
     @Resource(name = "redisTemplate")
     private ValueOperations valueOperations;
+
+    @Autowired
+    private AccessLimitService accessLimitService;
 
     /**
      * 课程日历详情接口
@@ -123,9 +128,13 @@ public class CourseBizV6Service {
      * @return
      */
     public Object obtainMineCoursesDegradeBack(Map<String,Object> params){
-        NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainMineCourses(params);
-        log.warn("obtainMineCoursesDegrade.data:{}", JSONObject.toJSONString(netSchoolResponse));
-        return ResponseUtil.build(netSchoolResponse);
+        if(accessLimitService.tryAccess()){
+            NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainMineCourses(params);
+            log.warn("obtainMineCoursesDegrade.data:{}", JSONObject.toJSONString(netSchoolResponse));
+            return ResponseUtil.build(netSchoolResponse);
+        }else{
+            return new NetSchoolResponse<>(Result.SUCCESS_CODE, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
+        }
     }
 
     /**
@@ -144,16 +153,16 @@ public class CourseBizV6Service {
          * 方案 2. 返回自定义异常
          */
         ErrorResult errorResult = ErrorResult.create(10000010, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
-        //throw new BizException(errorResult);
+        throw new BizException(errorResult);
 
         /**
          * 方案 3. 自定义message
          */
-        Map<String,Object> result = Maps.newHashMap();
+       /* Map<String,Object> result = Maps.newHashMap();
         result.put("code", Result.SUCCESS_CODE);
         result.put("data", null);
         result.put("message", "当前请求的人数过多，请在5分钟后重试");
-        return result;
+        return result;*/
     }
 
 
