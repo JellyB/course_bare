@@ -9,8 +9,7 @@ import java.util.Map;
  * @author biguodong
  * Create time 2019-02-22 上午11:16
  **/
-public interface
-ProcessReportService<T> {
+public interface ProcessReportService{
 
 
 
@@ -20,10 +19,4 @@ ProcessReportService<T> {
      * @return
      */
     Object playBackReport(Map<String,Object> params);
-
-    /**
-     * 确认并删除消息
-     * @param t
-     * @return
-     */
 }

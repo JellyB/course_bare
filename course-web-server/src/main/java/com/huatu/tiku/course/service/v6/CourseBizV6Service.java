@@ -1,6 +1,9 @@
 package com.huatu.tiku.course.service.v6;
 
 import com.alibaba.fastjson.JSONObject;
+import com.huatu.common.ErrorResult;
+import com.huatu.common.Result;
+import com.huatu.common.exception.BizException;
 import com.huatu.common.utils.web.RequestUtil;
 import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
@@ -117,10 +120,20 @@ public class CourseBizV6Service {
      * @param params
      * @return
      */
-    public Object obtainMineCoursesDegrade(Map<String,Object> params){
+    public Object obtainMineCoursesDegradeBack(Map<String,Object> params){
         NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainMineCourses(params);
         log.warn("obtainMineCoursesDegrade.data:{}", JSONObject.toJSONString(netSchoolResponse));
         return ResponseUtil.build(netSchoolResponse);
+    }
+
+    /**
+     * 我的课程降级方法
+     * @param params
+     * @return
+     */
+    public Object obtainMineCoursesDegrade(Map<String,Object> params){
+        ErrorResult errorResult = ErrorResult.create(10000010, "当前请求的人数过多，请在5分钟后重试",ResponseUtil.DEFAULT_PAGE_EMPTY);
+        throw new BizException(errorResult);
     }
 
 

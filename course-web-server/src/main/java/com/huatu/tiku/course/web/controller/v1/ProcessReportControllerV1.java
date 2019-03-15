@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 /**
- * 描述：直播、录播、回放数据上报接口
+ * 描述移动端观看视频录播、回放数据进度上报接口
  *
  * @author biguodong
  * Create time 2019-02-22 上午11:12
@@ -34,6 +34,4 @@ public class ProcessReportControllerV1 {
     public Object reportPlayBack(@RequestBody Map<String,Object> params){
         return processReportService.playBackReport(params);
     }
-
-
 }

@@ -25,6 +25,11 @@ public class CourseWorkAnswerCardSubmitListener {
     private CourseExercisesProcessLogManager courseExercisesProcessLogManager;
 
 
+
+    /**
+     * 课后作业提交大调控监听处理
+     * @param message
+     */
     @RabbitListener(queues = RabbitMqConstants.COURSE_WORK_SUBMIT_CARD_INFO)
     public void onMessage(String message){
 
