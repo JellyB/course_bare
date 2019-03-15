@@ -18,4 +18,11 @@ public interface LiveCallBackService {
      */
     void liveCallBackAllInfo(Long roomId, List<LiveCallbackBo> liveCallbackBoList) throws ExecutionException, InterruptedException;
 
+    /**
+     * 班级下班回调
+     * @param roomId 房间id
+     * @param op 上课:start 下课:end
+     */
+	void saveLiveInfo(Long roomId, String op);
+
 }
