@@ -46,6 +46,15 @@ public final class CoursePracticeCacheKey {
     public static String questionMetaKey(Long roomId, Long questionId) {
         return "course:practice:questionMeta:" + questionId + ":" + roomId;
     }
+    
+    /**
+     * 房间内所有答题 用户id+课程id set
+     * @param roomId
+     * @return
+     */
+    public static String roomInfoMetaKey(Long roomId) {
+        return "course:practice:roomInfoMeta:"+ roomId;
+    }
 
     /**
      * 获取一次听课答题中默认key 失效时间
