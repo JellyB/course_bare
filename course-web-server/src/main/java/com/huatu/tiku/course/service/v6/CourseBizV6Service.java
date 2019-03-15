@@ -142,7 +142,7 @@ public class CourseBizV6Service {
         /**
          * 方案 2. 返回自定义异常
          */
-        ErrorResult errorResult = ErrorResult.create(10000010, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList();
+        ErrorResult errorResult = ErrorResult.create(10000010, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
         throw new BizException(errorResult);
     }
 
