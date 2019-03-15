@@ -109,11 +109,7 @@ public class CourseBizV6Service {
      */
     @Degrade(key = "obtainMineCourses", name = "我的课程")
     public Object obtainMineCourses(Map<String,Object> params){
-
-        ErrorResult errorResult = ErrorResult.create(10000010, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
-        throw new BizException(errorResult);
-
-        /*try{
+        try{
             NetSchoolResponse netSchoolResponse = userCourseService.obtainMineCourses(params);
             if(null != netSchoolResponse && null != netSchoolResponse.getData()){
                 userCourseServiceV6FallBack.setCourseMineStaticData(params, netSchoolResponse);
@@ -123,7 +119,7 @@ public class CourseBizV6Service {
             log.error("obtainMineCourses caught an exception and return from fallBack:{}", e);
             NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainMineCourses(params);
             return ResponseUtil.build(netSchoolResponse);
-        }*/
+        }
     }
 
     /**
