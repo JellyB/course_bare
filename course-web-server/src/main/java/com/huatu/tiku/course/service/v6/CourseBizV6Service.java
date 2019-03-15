@@ -132,6 +132,7 @@ public class CourseBizV6Service {
      * @return
      */
     public Object obtainMineCoursesDegrade(Map<String,Object> params){
+        log.info("获取我的课程信息 -- 降级:{}", params);
         ErrorResult errorResult = ErrorResult.create(10000010, "当前请求的人数过多，请在5分钟后重试",ResponseUtil.DEFAULT_PAGE_EMPTY);
         throw new BizException(errorResult);
     }
