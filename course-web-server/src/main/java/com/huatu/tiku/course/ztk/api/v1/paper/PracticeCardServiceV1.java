@@ -54,6 +54,16 @@ public interface PracticeCardServiceV1 {
     );
 
     /**
+     * 批量获取随堂练习报告状态
+     * @param userId
+     * @param paramsList
+     * @return
+     */
+    @PostMapping(value = "/v4/practice/status/{userId}")
+    Object getClassExerciseStatus(@PathVariable(value = "userId") int userId, @RequestBody List<HashMap<String,Object>> paramsList);
+
+
+    /**
      * 查询课中练习答题卡信息
      */
     @PostMapping(value = "/v2/practices/{userId}/getCourseBreakPointCardInfo")
