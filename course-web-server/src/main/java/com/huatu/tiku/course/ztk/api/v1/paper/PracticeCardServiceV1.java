@@ -102,6 +102,6 @@ public interface PracticeCardServiceV1 {
     /**
      * 查询课后练习答题卡信息
      */
-    @RequestMapping(value = "/{courseId}/{courseType}/answerCard", method = RequestMethod.GET)
-    Object getPracticeAnswer(@PathVariable long courseId, @PathVariable Integer courseType);
+    @GetMapping(value = "/{courseId}/{courseType}/answerCard")
+    Object getPracticeAnswer(@PathVariable(value = "courseId") long courseId, @PathVariable(value ="courseType") Integer courseType);
 }
