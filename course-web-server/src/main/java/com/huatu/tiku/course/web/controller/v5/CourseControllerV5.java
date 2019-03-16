@@ -139,7 +139,7 @@ public class CourseControllerV5 {
         //添加答题信息
         Object timeTable = ResponseUtil.build(courseService.findTimetable(map));
         //添加答题信息
-        courseUtil.addExercisesCardInfo((LinkedHashMap) timeTable, userSession.getId());
+        courseUtil.addExercisesCardInfo((LinkedHashMap) timeTable, userSession.getId(), false);
         return timeTable;
     }
 
@@ -174,7 +174,7 @@ public class CourseControllerV5 {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         Object purchasesTimetable = courseServiceBiz.findPurchasesTimetable(userSession.getId(), map);
         //添加答题信息
-        courseUtil.addExercisesCardInfo((LinkedHashMap) purchasesTimetable, userSession.getId());
+        courseUtil.addExercisesCardInfo((LinkedHashMap) purchasesTimetable, userSession.getId(), true);
         courseUtil.addPeriodTestInfo((LinkedHashMap) purchasesTimetable, userSession.getId());
         courseUtil.addStudyReportInfo((LinkedHashMap) purchasesTimetable, userSession.getId());
         return purchasesTimetable;
