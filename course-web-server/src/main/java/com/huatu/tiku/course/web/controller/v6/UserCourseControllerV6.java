@@ -2,7 +2,9 @@ package com.huatu.tiku.course.web.controller.v6;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.huatu.common.ErrorResult;
 import com.huatu.common.SuccessMessage;
+import com.huatu.common.exception.BizException;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
@@ -274,7 +276,12 @@ public class UserCourseControllerV6 {
                                     @RequestParam(value = "page", defaultValue = "1", required = false) int page,
                                     @RequestParam(value = "pageSize", defaultValue = "20", required = false) int pageSize){
         Map<String,Object> params = LocalMapParamHandler.get();
-        return courseBizV6Service.obtainMineCourses(params);
+        try{
+            return courseBizV6Service.obtainMineCourses(params);
+        }catch (BizException e){
+            ErrorResult errorResult = ErrorResult.create(10000010, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
+            throw new BizException(errorResult);
+        }
     }
 
 
