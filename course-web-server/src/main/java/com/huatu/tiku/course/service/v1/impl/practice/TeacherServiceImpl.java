@@ -152,6 +152,7 @@ public class TeacherServiceImpl implements TeacherService {
                     .questionId(questionId.intValue())
                     .practiceTime(practiceTime)
                     .build();
+            //bizstatus 默认为1
             coursePracticeQuestionInfoService.save(info);
         } else {
             coursePracticeQuestionInfo.setPracticeTime(practiceTime);

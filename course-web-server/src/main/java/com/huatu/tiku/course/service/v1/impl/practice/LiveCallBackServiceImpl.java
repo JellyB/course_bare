@@ -13,7 +13,6 @@ import com.huatu.tiku.course.bean.practice.PracticeRoomRankUserBo;
 import com.huatu.tiku.course.bean.practice.QuestionMetaBo;
 import com.huatu.tiku.course.common.LiveCallBackTypeEnum;
 import com.huatu.tiku.course.service.v1.practice.LiveCallBackService;
-import com.huatu.tiku.course.service.v1.practice.PracticeQuestionInfoService;
 import com.huatu.tiku.course.service.v1.practice.TeacherService;
 import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
 
@@ -33,7 +32,8 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
 	private final PracticeMetaComponent practiceMetaComponent;
 
 	private final TeacherService teacherService;
-	private final PracticeQuestionInfoService practiceQuestionInfoService;
+
+	private final CoursePracticeQuestionInfoServiceImpl coursePracticeQuestionInfoServiceImpl;
 
 	@Override
 	@Async
@@ -76,7 +76,7 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
 			Example example = Example.builder(CoursePracticeQuestionInfo.class).where(sql).build();
 			CoursePracticeQuestionInfo coursePracticeQuestionInfo = CoursePracticeQuestionInfo.builder()
 					.meta(JSON.toJSONString(questionMetaBo)).build();
-			practiceQuestionInfoService.updateByExampleSelective(coursePracticeQuestionInfo, example);
+			coursePracticeQuestionInfoServiceImpl.updateByExampleSelective(coursePracticeQuestionInfo, example);
 		});
 	}
 
@@ -87,9 +87,12 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
 	@Async
 	public void saveLiveInfo(Long roomId, String op) {
 
-		if (LiveCallBackTypeEnum.START.getKey().equals(op)) {
-			//根据房间id查询学员答题信息
-			
+		if (LiveCallBackTypeEnum.END.getKey().equals(op)) {
+			// 根据房间id查询学员答题信息
+			List<Integer> questionIds = coursePracticeQuestionInfoServiceImpl.getQuestionsInfoByRoomId(roomId);
+			// 获取房间内答题学员key 集合
+			List<String> userCoursekeyList = practiceMetaComponent.getRoomInfoMeta(roomId);
+			//TODO 调用构建用户答题卡信息方法
 		}
 		log.info("房间id:{}上课回调", roomId);
 

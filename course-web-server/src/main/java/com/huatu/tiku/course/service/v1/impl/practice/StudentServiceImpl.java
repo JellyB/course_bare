@@ -41,6 +41,8 @@ public class StudentServiceImpl implements StudentService {
         final QuestionInfo questionInfo = baseQuestionInfoList.get(0);
         boolean isCorrect = formatAnswer(answer).equals(questionInfo.getAnswer());
         practiceMetaComponent.buildMetaInfo(userId, userName, roomId, courseId, questionId, answer, time, isCorrect ? 1 : 2);
+        //存储答题用户信息到set中
+        practiceMetaComponent.setRoomInfoMeta(userId, roomId, courseId);
         //返回做题结果 TODO 送金币
         return ImmutableMap.of("isCorrect",isCorrect, "coin",3);
     }
