@@ -291,6 +291,8 @@ public class PracticeMetaComponent {
 		buildUserQuestionMeta(userId, courseId, questionId, answer, time, correct);
 		buildQuestionMeta(roomId, questionId, answer, time);
 		buildRoomRank(roomId, courseId, userId, userName, questionId, answer, time, correct);
+		//构建总答题题数和作答人数
+		buildRoomRightQuestionSum(courseId, courseId,correct);
 	}
 
 	/**
@@ -319,5 +321,22 @@ public class PracticeMetaComponent {
 		final String key = CoursePracticeCacheKey.roomInfoMetaKey(roomId);
 		Set<String> hashkeys = opsForSet.members(key);
 		return hashkeys.stream().collect(Collectors.toList());
+	}
+	
+	/**
+	 * 存储随堂课某个课下答对题的题数和作答总人数用来统计正确率
+	 * @param courseId
+	 */
+	public void buildRoomRightQuestionSum(Long courseId, Long userId, Integer correct) {
+		final String key = CoursePracticeCacheKey.roomRightQuestionSum(courseId);
+		if (2 == correct) {
+			redisTemplate.opsForValue().increment(key, 1);// 设置答对题数
+		}
+		final SetOperations<String, Long> opsForSet = redisTemplate.opsForSet();
+		
+		final String allUserSumKey = CoursePracticeCacheKey.roomAllUserSum(courseId);
+		// 设置作答总人数
+		opsForSet.add(allUserSumKey, userId);
+
 	}
 }

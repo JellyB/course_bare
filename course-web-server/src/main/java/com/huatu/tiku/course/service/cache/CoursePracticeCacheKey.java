@@ -81,4 +81,22 @@ public final class CoursePracticeCacheKey {
 		return UserCourseBo.builder().userId(Integer.valueOf(ret.get(3))).courseId(Long.parseLong(ret.get(4))).build();
 
 	}
+
+	/**
+	 * 指定课中答对题的总题数
+	 * @param courseId
+	 * @return
+	 */
+	public static String roomRightQuestionSum(Long courseId) {
+		return "course:practice:roomRightQuestionSum:"+ courseId;
+	}
+	
+	/**
+	 * 指定课中总答题人数
+	 * @param courseId
+	 * @return
+	 */
+	public static String roomAllUserSum(Long courseId) {
+		return "course:practice:roomAllUserSum:"+ courseId;
+	}
 }
