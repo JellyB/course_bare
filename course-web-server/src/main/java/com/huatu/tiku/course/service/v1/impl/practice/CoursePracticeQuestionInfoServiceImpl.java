@@ -1,16 +1,10 @@
 package com.huatu.tiku.course.service.v1.impl.practice;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-
-import com.huatu.tiku.course.common.CoursePracticeQuestionInfoEnum;
 import com.google.common.collect.Lists;
 import com.huatu.tiku.course.bean.practice.PracticeUserQuestionMetaInfoBo;
+import com.huatu.tiku.course.common.CoursePracticeQuestionInfoEnum;
 import com.huatu.tiku.course.service.v1.practice.CoursePracticeQuestionInfoService;
 import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
-
 import io.jsonwebtoken.lang.Collections;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
@@ -23,6 +17,7 @@ import tk.mybatis.mapper.weekend.WeekendSqls;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by lijun on 2019/2/21
@@ -31,16 +26,11 @@ import java.util.Set;
 public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl<CoursePracticeQuestionInfo>
 		implements CoursePracticeQuestionInfoService {
 
-	public CoursePracticeQuestionInfoServiceImpl() {
-		super(CoursePracticeQuestionInfo.class);
-	}
-    @Autowired
-    private RedisTemplate redisTemplate;
-
     public CoursePracticeQuestionInfoServiceImpl() {
         super(CoursePracticeQuestionInfo.class);
     }
-
+    @Autowired
+    private RedisTemplate redisTemplate;
 	@Override
 	public List<CoursePracticeQuestionInfo> listByRoomIdAndQuestionId(Long roomId, List<Long> questionIdList) {
 		final WeekendSqls<CoursePracticeQuestionInfo> weekendSqls = WeekendSqls.<CoursePracticeQuestionInfo>custom()
