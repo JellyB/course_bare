@@ -172,9 +172,10 @@ public class CourseBizV6Service {
      * @return
      */
     public Object obtainLearnCalenderDegrade(Map<String,Object> params){
-        NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainLearnCalender(params);
+        /*NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainLearnCalender(params);
         log.warn("obtainLearnCalenderDegrade.data:{}", JSONObject.toJSONString(netSchoolResponse));
-        return ResponseUtil.build(netSchoolResponse);
+        return ResponseUtil.build(netSchoolResponse);*/
+        return Lists.newArrayList();
     }
 
     /**
@@ -183,8 +184,23 @@ public class CourseBizV6Service {
      * @return
      */
     public Object calendarDetailDegrade(Map<String,Object> params){
-        NetSchoolResponse netSchoolResponse = courseServiceV6FallBack.calendarDetail(params);
+        /*NetSchoolResponse netSchoolResponse = courseServiceV6FallBack.calendarDetail(params);
         log.warn("calendarDetailDegrade.data:{}", JSONObject.toJSONString(netSchoolResponse));
-        return ResponseUtil.build(netSchoolResponse);
+        return ResponseUtil.build(netSchoolResponse);*/
+
+        Map<String,Object> result = Maps.newHashMap();
+        result.put("msg", "未来七天内，没有直播课哦~");
+        result.put("type", 1);
+        result.put("current_page", 1);
+        result.put("data", Lists.newArrayList());
+        result.put("date", "2019-03-18");
+        result.put("month", "03");
+        result.put("day", "18");
+        result.put("perPage", params.get("pageSize"));
+        result.put("last_page", 0);
+        result.put("total", 0);
+        result.put("from", 0);
+        result.put("to", 0);
+        return result;
     }
 }

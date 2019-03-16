@@ -257,9 +257,6 @@ public class UserCourseControllerV6 {
                                     @RequestParam(value = "page", defaultValue = "1", required = false) int page,
                                     @RequestParam(value = "pageSize", defaultValue = "20", required = false) int pageSize){
         Map<String,Object> params = LocalMapParamHandler.get();
-
-        /*ErrorResult errorResult = ErrorResult.create(10000010, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
-        throw new BizException(errorResult);*/
         return courseBizV6Service.obtainMineCourses(params);
     }
 
