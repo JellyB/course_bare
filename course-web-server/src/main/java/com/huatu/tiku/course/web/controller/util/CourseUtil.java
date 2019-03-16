@@ -159,7 +159,7 @@ public class CourseUtil {
      * @param response 响应结果集
      * @param userId   用户ID
      */
-    public void addExercisesCardInfo(LinkedHashMap response, long userId) {
+    public void addExercisesCardInfo(LinkedHashMap response, long userId, boolean need2Str) {
 
         response.computeIfPresent("list", (key, value) -> {
                     List<HashMap<String, Object>> paramsList = ((List<Map>) value).stream()
@@ -185,7 +185,7 @@ public class CourseUtil {
                             .put("rcount", 0)
                             .put("wcount", 0)
                             .put("ucount", 0)
-                            .put("id", 0)
+                            .put("id", need2Str ? "0" : 0)
                             .build();
                     if (null != build && 0 != ((List<Map>) build).size()) {
                         //获取答题卡信息状态
@@ -201,6 +201,9 @@ public class CourseUtil {
                                 Map map = first.get();
                                 map.remove("courseId");
                                 map.remove("courseType");
+                                if(need2Str){
+                                    map.computeIfPresent("id", (mapK, mapV) -> String.valueOf(mapV));
+                                }
                                 return map;
                             } else {
                                 return defaultMap;

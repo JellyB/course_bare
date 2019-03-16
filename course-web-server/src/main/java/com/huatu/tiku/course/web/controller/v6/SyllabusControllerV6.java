@@ -99,7 +99,7 @@ public class SyllabusControllerV6 {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         Object response = ResponseUtil.build(syllabusService.buyAfterSyllabus(map));
         //添加答题信息
-        courseUtil.addExercisesCardInfo((LinkedHashMap) response, userSession.getId());
+        courseUtil.addExercisesCardInfo((LinkedHashMap) response, userSession.getId(), false);
         courseUtil.addPeriodTestInfo((LinkedHashMap) response, userSession.getId());
         courseUtil.addStudyReportInfo((LinkedHashMap) response, userSession.getId());
         return response;
@@ -123,7 +123,7 @@ public class SyllabusControllerV6 {
         //添加答题信息
         Object timeTable = ResponseUtil.build(syllabusService.classSyllabus(map));
         //添加答题信息
-        courseUtil.addExercisesCardInfo((LinkedHashMap) timeTable, userSession.getId());
+        courseUtil.addExercisesCardInfo((LinkedHashMap) timeTable, userSession.getId(), false);
         return timeTable;
     }
 
