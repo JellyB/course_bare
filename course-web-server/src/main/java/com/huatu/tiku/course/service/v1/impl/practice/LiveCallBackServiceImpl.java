@@ -32,7 +32,7 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
 	private final PracticeMetaComponent practiceMetaComponent;
 
 	private final TeacherService teacherService;
-	
+
 	private final CoursePracticeQuestionInfoServiceImpl coursePracticeQuestionInfoServiceImpl;
 
 	@Override
@@ -87,9 +87,12 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
 	@Async
 	public void saveLiveInfo(Long roomId, String op) {
 
-		if (LiveCallBackTypeEnum.START.getKey().equals(op)) {
-			//根据房间id查询学员答题信息
-			
+		if (LiveCallBackTypeEnum.END.getKey().equals(op)) {
+			// 根据房间id查询学员答题信息
+			List<Integer> questionIds = coursePracticeQuestionInfoServiceImpl.getQuestionsInfoByRoomId(roomId);
+			// 获取房间内答题学员key 集合
+			List<String> userCoursekeyList = practiceMetaComponent.getRoomInfoMeta(roomId);
+			//TODO 调用构建用户答题卡信息方法
 		}
 		log.info("房间id:{}上课回调", roomId);
 
