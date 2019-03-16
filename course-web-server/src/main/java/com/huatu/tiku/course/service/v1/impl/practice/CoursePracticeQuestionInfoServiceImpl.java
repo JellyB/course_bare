@@ -60,11 +60,8 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 		return null;
 	}
     @Override
-    public void generateAnswerCardInfo(Set<Long> questionIds, Set <String> courseUserStrs){
-        //course_userId_key,questionId,questionAnswer
-        //qustionIds
+    public void generateAnswerCardInfo(List<Integer> questionIds, List <String> courseUserStrs){
         HashOperations<String, String, PracticeUserQuestionMetaInfoBo> opsForHash = redisTemplate.opsForHash();
-
         //遍历所有的key
         for (String courseUserKey:courseUserStrs){
             //根据key查出对应的答题信息
@@ -77,7 +74,7 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
                 for(Map.Entry<String,PracticeUserQuestionMetaInfoBo> entry:map.entrySet()){
 
                     PracticeUserQuestionMetaInfoBo question= entry.getValue();
-                    for (Long quesiontId:questionIds){
+                    for (Integer quesiontId:questionIds){
                         if (Long.parseLong(entry.getKey())==quesiontId){
                             answersList.add(question.getAnswer());
                             timesList.add(question.getTime());
