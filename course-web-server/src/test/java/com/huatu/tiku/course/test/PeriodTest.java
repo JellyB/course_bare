@@ -44,4 +44,13 @@ public class PeriodTest extends BaseWebTest {
     	JSONObject json = encryptUtil.getClassCallBackUrl();
     	log.info("获取直播回调地址:{}",json.toJSONString());
     }
+    
+    /**
+     * 设置直播回调地址
+     */
+    @Test
+    public void testSetCallBackUrlBJY() {
+    	JSONObject json = encryptUtil.setClassCallBackUrl();
+    	log.info("获取直播回调地址:{}",json.toJSONString());
+    }
 }

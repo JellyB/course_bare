@@ -94,8 +94,8 @@ public interface PracticeCardServiceV1 {
             @RequestParam("courseId") Long courseId,
             @RequestParam("questionIds") String questionIds,
             @RequestParam("answers") String[] answers, 
-            @RequestParam("corrects") Integer[] corrects,
-			@RequestParam("times") Integer[] times, 
+            @RequestParam("corrects") int[] corrects,
+			@RequestParam("times") int[] times, 
             @RequestBody List<Object> questionInfoList
     );
 }

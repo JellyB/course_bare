@@ -84,7 +84,7 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
 	 * 直播上下课回调
 	 */
 	@Override
-	@Async
+	//@Async
 	public void saveLiveInfo(Long roomId, String op) {
 
 		if (LiveCallBackTypeEnum.END.getKey().equals(op)) {
@@ -92,10 +92,11 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
 			List<Integer> questionIds = coursePracticeQuestionInfoServiceImpl.getQuestionsInfoByRoomId(roomId);
 			// 获取房间内答题学员key 集合
 			List<String> userCoursekeyList = practiceMetaComponent.getRoomInfoMeta(roomId);
-			//TODO 调用构建用户答题卡信息方法
-			coursePracticeQuestionInfoServiceImpl.generateAnswerCardInfo(questionIds,userCoursekeyList);
+			// 调用构建用户答题卡信息方法
+			coursePracticeQuestionInfoServiceImpl.generateAnswerCardInfo(questionIds, userCoursekeyList);
+		}else {
+			log.info("房间id:{}上课回调", roomId);
 		}
-		log.info("房间id:{}上课回调", roomId);
 
 	}
 

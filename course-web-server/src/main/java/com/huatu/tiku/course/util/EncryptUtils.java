@@ -29,6 +29,11 @@ public class EncryptUtils {
 
 	// 获取回调地址
 	String getClassCallBackUrl = "https://api.baijiayun.com/openapi/live_account/getClassCallbackUrl";
+	
+	String setClassCallbackUrl = "https://api.baijiayun.com/openapi/live_account/setClassCallbackUrl";
+	
+	String callBackUrl = "https://ns-test.htexam.com/c/v6/practice/liveCallBack/liveCallBack";
+
 
 
 	String key = "xaATdhypJz12VZr9ETVHCxCkp/5uHGm2XhoFpPL89U8Ij/2bxpQPG/+1XtEOiaZ9LTehmQ0bYNqJJZ9I9PFhyA==";
@@ -45,7 +50,16 @@ public class EncryptUtils {
 
 		return jsonObject;
 	}
+	
+	public JSONObject setClassCallBackUrl() {
+		TreeMap<String, Object> treeMap = getParamTree();
+		treeMap.put("url", callBackUrl);
+		JSONObject jsonObject = this.postForJson(setClassCallbackUrl, treeMap);
 
+		return jsonObject;
+	}
+	
+	
 
 	/**
 	 * 

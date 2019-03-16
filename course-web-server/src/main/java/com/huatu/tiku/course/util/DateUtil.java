@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter;
  *
  */
 public class DateUtil {
-	
+
 	public static String ERRORSTR = "0000-00-00 00:00:00";
 
 	public static String getSimpleDate(String startTime, String endTime) {
@@ -54,11 +54,10 @@ public class DateUtil {
 //	}
 
 //	public static void main(String[] args) {
-//		Map<String, Integer> result = new HashMap<>();
-//		result.put("20", 2);
-//		result.put("30", 1);
-//		result.put("40", 5);
-//		Entry<String, Integer>  ret= result.entrySet().stream().sorted(Map.Entry.<String, Integer>comparingByValue().reversed()).findFirst().get();
-//		System.out.println(ret);
+//		List<Integer> questionIds = new ArrayList<>();
+//		questionIds.add(1);
+//		questionIds.add(2);
+//		String qids = StringUtils.join(questionIds, ",");
+//		System.out.println(qids);
 //	}
 }
