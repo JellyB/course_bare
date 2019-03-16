@@ -17,13 +17,13 @@ import com.huatu.tiku.course.service.v1.AccessLimitService;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * 描述：
@@ -143,26 +143,20 @@ public class CourseBizV6Service {
      * @return
      */
     public Object obtainMineCoursesDegrade(Map<String,Object> params){
-        /**
-         * 方案 1. 返回空数组，app 列表页面提示去选课
-         */
-        log.info("获取我的课程信息 -- 降级:{}", params);
-        return new NetSchoolResponse<>(Result.SUCCESS_CODE, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
-
-        /**
-         * 方案 2. 返回自定义异常
-         */
-        /*ErrorResult errorResult = ErrorResult.create(10000010, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
-        throw new BizException(errorResult);*/
-
-        /**
-         * 方案 3. 自定义message
-         */
-       /* Map<String,Object> result = Maps.newHashMap();
-        result.put("code", Result.SUCCESS_CODE);
-        result.put("data", null);
-        result.put("message", "当前请求的人数过多，请在5分钟后重试");
-        return result;*/
+        if(accessLimitService.tryAccess()){
+            NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainMineCourses(params);
+            log.warn("obtainMineCoursesDegrade.data:{}", JSONObject.toJSONString(netSchoolResponse));
+            return ResponseUtil.build(netSchoolResponse);
+        }else{
+            if(MapUtils.getInteger(params, "terminal") == 1){
+                log.info("获取我的课程信息 -- 降级:{}, 安卓", params);
+                return new NetSchoolResponse<>(Result.SUCCESS_CODE, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
+            }else{
+                log.info("获取我的课程信息 -- 降级:{}, ios", params);
+                ErrorResult errorResult = ErrorResult.create(10000010, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
+                throw new BizException(errorResult);
+            }
+        }
     }
 
 
