@@ -1,23 +1,28 @@
 package com.huatu.tiku.course.service.v1.impl.practice;
 
-import com.google.common.collect.Lists;
-import com.huatu.tiku.course.bean.practice.PracticeUserQuestionMetaInfoBo;
-import com.huatu.tiku.course.common.CoursePracticeQuestionInfoEnum;
-import com.huatu.tiku.course.service.v1.practice.CoursePracticeQuestionInfoService;
-import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
-import io.jsonwebtoken.lang.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+
+import com.google.common.collect.Lists;
+import com.huatu.tiku.common.CourseQuestionTypeEnum.CourseType;
+import com.huatu.tiku.course.bean.practice.PracticeUserQuestionMetaInfoBo;
+import com.huatu.tiku.course.bean.practice.UserCourseBo;
+import com.huatu.tiku.course.common.CoursePracticeQuestionInfoEnum;
+import com.huatu.tiku.course.service.cache.CoursePracticeCacheKey;
+import com.huatu.tiku.course.service.v1.practice.CoursePracticeQuestionInfoService;
+import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
+import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
+
+import io.jsonwebtoken.lang.Collections;
 import service.impl.BaseServiceHelperImpl;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.weekend.WeekendSqls;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Created by lijun on 2019/2/21
@@ -31,6 +36,11 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
     }
     @Autowired
     private RedisTemplate redisTemplate;
+    
+    @Autowired
+    private PracticeCardServiceV1 practiceCardServiceV1;
+    
+    
 	@Override
 	public List<CoursePracticeQuestionInfo> listByRoomIdAndQuestionId(Long roomId, List<Long> questionIdList) {
 		final WeekendSqls<CoursePracticeQuestionInfo> weekendSqls = WeekendSqls.<CoursePracticeQuestionInfo>custom()
@@ -83,7 +93,10 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
                         String [] answers= (String[]) answersList.toArray();
                         Integer [] corrects=(Integer[]) timesList.toArray();
                         Integer [] times=(Integer[]) correctsList.toArray();
-
+                        UserCourseBo userCourse = CoursePracticeCacheKey.getUserAndCourseByUserMetaKey(courseUserKey);
+                        String qids = String.join(",", (CharSequence[]) questionIds.toArray());
+                        //直播课type为2
+                        practiceCardServiceV1.createAndSaveAnswerCoursePracticeCard(1, 1, userCourse.getUserId(), "随堂练习-直播课", CourseType.LIVE.getCode(), userCourse.getCourseId(), qids, answers, corrects, times, null);
                     }
                 }
         }

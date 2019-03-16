@@ -47,4 +47,11 @@ public class PracticeCardServiceV1Fallback implements PracticeCardServiceV1 {
     public NetSchoolResponse getAnswerCard(String token, int terminal, long id) {
         return ResponseUtil.DEFAULT_PAGE_EMPTY;
     }
+
+	@Override
+	public Object createAndSaveAnswerCoursePracticeCard(Integer terminal, Integer subject, Integer uid, String name,
+			Integer courseType, Long courseId, String questionIds, String[] answers, Integer[] corrects, Integer[] times,
+			List<Object> questionInfoList) {
+		 return ZTKResponseUtil.defaultResult();
+	}
 }
