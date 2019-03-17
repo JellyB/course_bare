@@ -3,9 +3,7 @@ package com.huatu.tiku.course.service.v6;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.huatu.common.ErrorResult;
 import com.huatu.common.Result;
-import com.huatu.common.exception.BizException;
 import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.fall.CourseServiceV6FallBack;
@@ -116,17 +114,16 @@ public class CourseBizV6Service {
      */
     public Object obtainMineCoursesDegrade(Map<String,Object> params){
         if(accessLimitService.tryAccess()){
-            NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainMineCourses(params);
-            log.warn("obtainMineCoursesDegrade.data:{}", JSONObject.toJSONString(netSchoolResponse));
+            NetSchoolResponse netSchoolResponse = userCourseService.obtainMineCourses(params);
+            log.info("obtainMineCoursesDegrade.data:{}", JSONObject.toJSONString(netSchoolResponse));
             return ResponseUtil.build(netSchoolResponse);
         }else{
             if(MapUtils.getInteger(params, "terminal") == 1){
-                log.info("获取我的课程信息 -- 降级:{}, 安卓", params);
+                log.info("我的课程降级 -- 安卓:{}", params);
                 return new NetSchoolResponse<>(Result.SUCCESS_CODE, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
             }else{
-                log.info("获取我的课程信息 -- 降级:{}, ios", params);
-                ErrorResult errorResult = ErrorResult.create(10000010, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
-                throw new BizException(errorResult);
+                log.info("我的课程降级 -- IOS:{}", params);
+                return null;
             }
         }
     }
