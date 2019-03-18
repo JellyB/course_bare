@@ -313,7 +313,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 					// 填充app端展示所需时间
 					periodTestInfo.setShowTime(
 							DateUtil.getSimpleDate(periodTestInfo.getStartTime(), periodTestInfo.getEndTime()));
-                    periodTestInfo.setIsExpired((System.currentTimeMillis()>Long.parseLong(periodTestInfo.getEndTime()))?1:0);
+                    periodTestInfo.setIsExpired(DateUtil.isExpired(periodTestInfo.getEndTime()));
 					paperMap.put(periodTestInfo.getExamId() + "_" + periodTestInfo.getSyllabusId(), periodTestInfo);
 					// 填充考试状态
 //					NetSchoolResponse netSchoolResponse = periodTestServiceV4.getPaperStatus(uid,
