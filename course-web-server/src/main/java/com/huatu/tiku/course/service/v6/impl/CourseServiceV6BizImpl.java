@@ -298,6 +298,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 					periodTestInfo.setShowTime(
 							DateUtil.getSimpleDate(periodTestInfo.getStartTime(), periodTestInfo.getEndTime()));
 					periodTestInfo.setIsExpired(DateUtil.isExpired(periodTestInfo.getEndTime()));
+					periodTestInfo.setIsAlert(YesOrNoStatus.YES.getCode());
 					paperMap.put(periodTestInfo.getExamId() + "_" + periodTestInfo.getSyllabusId(), periodTestInfo);
 					syllabusMap.put(periodTestInfo.getSyllabusId(), periodTestInfo);
 					syllabusIdList.add(periodTestInfo.getSyllabusId());
@@ -318,12 +319,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 													StudyTypeEnum.PERIOD_TEST.getKey()))
 
 									.build());
+			log.info("用户{}不需要提醒的阶段测试大小为:{}", uid, processList.size());
 			processList.forEach(process -> {
-				if (syllabusMap.get(process.getSyllabusId()) != null) {
-					process.setIsAlert(YesOrNoStatus.NO.getCode());
-				} else {
-					process.setIsAlert(YesOrNoStatus.YES.getCode());
-				}
+				syllabusMap.get(process.getSyllabusId()).setIsAlert(YesOrNoStatus.NO.getCode());
 			});
 
 			Set<String> paperSyllabusSet = paperMap.keySet();
