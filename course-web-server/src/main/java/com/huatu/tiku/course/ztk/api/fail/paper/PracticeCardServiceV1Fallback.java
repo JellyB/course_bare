@@ -55,8 +55,4 @@ public class PracticeCardServiceV1Fallback implements PracticeCardServiceV1 {
 		 return ZTKResponseUtil.defaultResult();
 	}
 
-    @Override
-    public Object getPracticeAnswer(long courseId,Integer courseType) {
-        return ZTKResponseUtil.defaultResult();
-    }
 }

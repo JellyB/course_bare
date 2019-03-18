@@ -99,9 +99,4 @@ public interface PracticeCardServiceV1 {
             @RequestBody List<Object> questionInfoList
     );
 
-    /**
-     * 查询课后练习答题卡信息
-     */
-    @GetMapping(value = "/{courseId}/{courseType}/answerCard")
-    Object getPracticeAnswer(@PathVariable(value = "courseId") long courseId, @PathVariable(value ="courseType") Integer courseType);
 }
