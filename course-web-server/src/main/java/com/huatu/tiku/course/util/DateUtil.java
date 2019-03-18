@@ -55,7 +55,7 @@ public class DateUtil {
 	 * @return
 	 */
 	public static boolean isExpired(String endTime) {
-		if(!StringUtils.isEmpty(endTime)) {
+		if(StringUtils.isEmpty(endTime) || ERRORSTR.equals(endTime.trim())) {
 			return false;
 		}
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
