@@ -169,7 +169,6 @@ public class CourseExercisesProcessLogManager {
 		CourseExercisesProcessLog courseExercisesProcessLog = new CourseExercisesProcessLog();
 		courseExercisesProcessLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
 		if (studyTypeEnum.equals(StudyTypeEnum.PERIOD_TEST)) {
-			courseExercisesProcessLog.setIsAlert(YesOrNoStatus.YES.getCode());
 			List<CourseExercisesProcessLog> processList = courseExercisesProcessLogMapper
 					.selectByExample(
 							new Example.Builder(CourseExercisesProcessLog.class)
@@ -179,7 +178,7 @@ public class CourseExercisesProcessLogManager {
 											.andEqualTo(CourseExercisesProcessLog::getStatus,
 													YesOrNoStatus.YES.getCode())
 											.andEqualTo(CourseExercisesProcessLog::getDataType,
-													StudyTypeEnum.PERIOD_TEST.getKey()))
+													StudyTypeEnum.PERIOD_TEST.getOrder()))
 
 									.build());
 			if (CollectionUtils.isEmpty(processList)) {
