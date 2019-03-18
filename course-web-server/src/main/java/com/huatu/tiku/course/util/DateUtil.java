@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * 
  * @author zhangchong
@@ -53,6 +55,9 @@ public class DateUtil {
 	 * @return
 	 */
 	public static boolean isExpired(String endTime) {
+		if(!StringUtils.isEmpty(endTime)) {
+			return false;
+		}
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 		LocalDateTime startDate = LocalDateTime.parse(endTime, dtf);
 		Long  endLong = startDate.toInstant(ZoneOffset.of("+8")).toEpochMilli();
