@@ -52,6 +52,7 @@ import com.huatu.ztk.paper.common.AnswerCardStatus;
 
 import lombok.extern.slf4j.Slf4j;
 import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.weekend.WeekendSqls;
 
 /**
  * 描述：
@@ -163,17 +164,42 @@ public class CourseExercisesProcessLogManager {
      * @return
      * @throws BizException
      */
-    public int readyOne(long id, String type) throws BizException{
-        StudyTypeEnum studyTypeEnum = StudyTypeEnum.create(type);
-        CourseExercisesProcessLog courseExercisesProcessLog = new CourseExercisesProcessLog();
-        courseExercisesProcessLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
-        courseExercisesProcessLog.setIsAlert(YesOrNoStatus.NO.getCode());
-        if(studyTypeEnum.equals(StudyTypeEnum.PERIOD_TEST)) {
-        	 courseExercisesProcessLog.setIsAlert(YesOrNoStatus.YES.getCode());
-        }
-        courseExercisesProcessLog.setId(id);
-        return courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
-    }
+	public int readyOne(long id, String type, Long syllabusId, Long uid) throws BizException {
+		StudyTypeEnum studyTypeEnum = StudyTypeEnum.create(type);
+		CourseExercisesProcessLog courseExercisesProcessLog = new CourseExercisesProcessLog();
+		courseExercisesProcessLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
+		if (studyTypeEnum.equals(StudyTypeEnum.PERIOD_TEST)) {
+			courseExercisesProcessLog.setIsAlert(YesOrNoStatus.YES.getCode());
+			List<CourseExercisesProcessLog> processList = courseExercisesProcessLogMapper
+					.selectByExample(
+							new Example.Builder(CourseExercisesProcessLog.class)
+									.where(WeekendSqls.<CourseExercisesProcessLog>custom()
+											.andEqualTo(CourseExercisesProcessLog::getSyllabusId, syllabusId)
+											.andEqualTo(CourseExercisesProcessLog::getUserId, uid)
+											.andEqualTo(CourseExercisesProcessLog::getStatus,
+													YesOrNoStatus.YES.getCode())
+											.andEqualTo(CourseExercisesProcessLog::getDataType,
+													StudyTypeEnum.PERIOD_TEST.getKey()))
+
+									.build());
+			if (CollectionUtils.isEmpty(processList)) {
+				courseExercisesProcessLog.setDataType(StudyTypeEnum.PERIOD_TEST.getOrder());
+				courseExercisesProcessLog.setSyllabusId(syllabusId);
+				courseExercisesProcessLog.setUserId(uid);
+				courseExercisesProcessLog.setStatus(YesOrNoStatus.YES.getCode());
+				courseExercisesProcessLog.setIsAlert(YesOrNoStatus.YES.getCode());
+				courseExercisesProcessLogMapper.insertSelective(courseExercisesProcessLog);
+			}
+
+		} else {
+			courseExercisesProcessLog.setIsAlert(YesOrNoStatus.NO.getCode());
+			courseExercisesProcessLog.setId(id);
+			courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
+
+		}
+
+		return YesOrNoStatus.YES.getCode();
+	}
 
     /**
      * 创建课后作业答题卡前置逻辑入口
