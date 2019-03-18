@@ -114,7 +114,7 @@ public interface UserCourseServiceV6 {
 	 * @return
 	 */
 	@GetMapping(value = "/v5/c/class/unfinish_exam_num")
-	NetSchoolResponse<PeriodTestListVO> unfinishStageExamCount(@RequestParam Map<String, Object> params);
+	NetSchoolResponse unfinishStageExamCount(@RequestParam Map<String, String> params);
 	
 	
 }

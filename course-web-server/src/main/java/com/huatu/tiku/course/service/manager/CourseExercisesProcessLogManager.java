@@ -1,13 +1,37 @@
 package com.huatu.tiku.course.service.manager;
 
+import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.*;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
+import com.google.common.collect.TreeBasedTable;
 import com.huatu.common.exception.BizException;
 import com.huatu.common.utils.collection.HashMapBuilder;
-import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.vo.CourseWorkCourseVo;
 import com.huatu.tiku.course.bean.vo.CourseWorkWareVo;
@@ -15,6 +39,7 @@ import com.huatu.tiku.course.bean.vo.SyllabusWareInfo;
 import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
+import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.netschool.api.v7.SyllabusServiceV7;
 import com.huatu.tiku.course.service.v1.CourseExercisesService;
 import com.huatu.tiku.course.util.CourseCacheKey;
@@ -24,21 +49,9 @@ import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
 import com.huatu.tiku.entity.CourseExercisesProcessLog;
 import com.huatu.ztk.paper.bean.PracticeCard;
 import com.huatu.ztk.paper.common.AnswerCardStatus;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.*;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-import tk.mybatis.mapper.entity.Example;
 
-import java.sql.Timestamp;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import tk.mybatis.mapper.entity.Example;
 
 /**
  * 描述：
@@ -68,6 +81,9 @@ public class CourseExercisesProcessLogManager {
 
     @Autowired
     private RedisTemplate redisTemplate;
+    
+    @Autowired
+    private UserCourseServiceV6 userCourseServiceV6;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -83,9 +99,10 @@ public class CourseExercisesProcessLogManager {
      * @param userId
      * @return
      */
-    public Map<String, Integer> getCountByType(long userId) throws BizException{
+    public Map<String, Integer> getCountByType(long userId,String userName) throws BizException{
         List<Integer> list = Lists.newArrayList(AnswerCardStatus.CREATE, AnswerCardStatus.UNDONE);
         Map<String, Integer> result = Maps.newHashMap();
+        Map<String, String> param = Maps.newHashMap();
         Example example = new Example(CourseExercisesProcessLog.class);
         Example.Criteria criteria = example.and();
         criteria.andEqualTo("userId", userId);
@@ -96,8 +113,18 @@ public class CourseExercisesProcessLogManager {
         int countWork = courseExercisesProcessLogMapper.selectCountByExample(example);
         result.put(StudyTypeEnum.COURSE_WORK.getKey(), countWork);
         criteria.andEqualTo("dataType", StudyTypeEnum.PERIOD_TEST.getOrder());
-        int countTest = courseExercisesProcessLogMapper.selectCountByExample(example);
-        result.put(StudyTypeEnum.PERIOD_TEST.getKey(), countTest);
+        int readCountTest = courseExercisesProcessLogMapper.selectCountByExample(example);
+        //获取总数量
+        param.put("userName",userName );
+        NetSchoolResponse response  = userCourseServiceV6.unfinishStageExamCount(param);
+		if (ResponseUtil.isSuccess(response)) {
+			Map<String, Integer> retMap = (Map<String, Integer>) response.getData();
+			Integer count = retMap.get("num");
+			log.info("用户:{}总未完成的阶段测试数为:{}", userName, count);
+			result.put(StudyTypeEnum.PERIOD_TEST.getKey(), count - readCountTest);
+		} else {
+			result.put(StudyTypeEnum.PERIOD_TEST.getKey(), 0);
+		}
         return result;
     }
 
@@ -141,6 +168,9 @@ public class CourseExercisesProcessLogManager {
         CourseExercisesProcessLog courseExercisesProcessLog = new CourseExercisesProcessLog();
         courseExercisesProcessLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
         courseExercisesProcessLog.setIsAlert(YesOrNoStatus.NO.getCode());
+        if(studyTypeEnum.equals(StudyTypeEnum.PERIOD_TEST)) {
+        	 courseExercisesProcessLog.setIsAlert(YesOrNoStatus.YES.getCode());
+        }
         courseExercisesProcessLog.setId(id);
         return courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
     }
