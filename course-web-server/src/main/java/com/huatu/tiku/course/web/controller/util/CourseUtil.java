@@ -8,6 +8,7 @@ import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.hbase.api.v1.VideoServiceV1;
 import com.huatu.tiku.course.service.v1.practice.PracticeUserMetaService;
+import com.huatu.tiku.course.util.DateUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.course.util.ZTKResponseUtil;
 import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
@@ -255,20 +256,23 @@ public class CourseUtil {
                         NetSchoolResponse netSchoolResponse = PeriodTestService.getPaperStatusBath(userId, paperIds);
                         Map<String, Object> data = (Map<String, Object>) netSchoolResponse.getData();
 
-                        if (null != data && data.size() > 0) {
-                            List<Map> mapList = ((List<Map>) value).stream()
-                                    .map(valueData -> {
-                                        StringBuilder stringBuilder = new StringBuilder();
-                                        stringBuilder
-                                                .append(MapUtils.getString(valueData, "coursewareId"))
-                                                .append("_")
-                                                .append(MapUtils.getString(valueData,"id"));
-                                        valueData.put("testStatus", MapUtils.getInteger(data, stringBuilder.toString(), -1));
-                                        return valueData;
-                                    })
-                                    .collect(Collectors.toList());
-                            return mapList;
-                        } else {
+			if (null != data && data.size() > 0) {
+				List<Map> mapList = ((List<Map>) value).stream().map(valueData -> {
+					StringBuilder stringBuilder = new StringBuilder();
+					stringBuilder.append(MapUtils.getString(valueData, "coursewareId")).append("_")
+							.append(MapUtils.getString(valueData, "id"));
+					valueData.put("testStatus", MapUtils.getInteger(data, stringBuilder.toString(), -1));
+					// 设置是否过期
+					if (1 == MapUtils.getInteger(valueData, "isEffective")
+							&& DateUtil.isExpired(MapUtils.getString(valueData, "endTime"))) {
+						valueData.put("isExpired", 1);
+					} else {
+						valueData.put("isExpired", 0);
+					}
+					return valueData;
+				}).collect(Collectors.toList());
+				return mapList;
+			} else {
                             List<Map> mapList = ((List<Map>) value).stream()
                                     .map(valueData -> {
                                         valueData.put("testStatus", -1);

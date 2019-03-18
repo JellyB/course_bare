@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.util;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 /**
@@ -45,6 +46,21 @@ public class DateUtil {
 		}
 
 	}
+	
+	/**
+	 * 判断时间是否过期 
+	 * @param endTime  yyyy-MM-dd HH:mm:ss格式
+	 * @return
+	 */
+	public static boolean isExpired(String endTime) {
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		LocalDateTime startDate = LocalDateTime.parse(endTime, dtf);
+		Long  endLong = startDate.toInstant(ZoneOffset.of("+8")).toEpochMilli();
+		if(endLong > System.currentTimeMillis()) {
+			return false;
+		}
+		return true;
+	}
 
 //	public static void main(String[] args) {
 //		System.out.println(getSimpleDate("2018-02-10 17:20:20", "2019-02-10 17:20:20"));
@@ -54,10 +70,6 @@ public class DateUtil {
 //	}
 
 //	public static void main(String[] args) {
-//		List<Integer> questionIds = new ArrayList<>();
-//		questionIds.add(1);
-//		questionIds.add(2);
-//		String qids = StringUtils.join(questionIds, ",");
-//		System.out.println(qids);
+//		System.out.println(isExpired("2019-03-18 11:56:00"));
 //	}
 }
