@@ -5,6 +5,7 @@ import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.netschool.api.v5.OrderDegradeService;
 import com.huatu.tiku.course.netschool.api.v5.OrderServiceV5;
 import com.huatu.tiku.course.service.v5.OrderServiceV5Biz;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
@@ -34,6 +35,9 @@ public class OrderControllerV5 {
 
     @Autowired
     private OrderServiceV5Biz orderServiceV5Biz;
+
+    @Autowired
+    private OrderDegradeService orderDegradeService;
 
     /**
      * 获取订单物流信息
@@ -113,7 +117,8 @@ public class OrderControllerV5 {
             @RequestParam(defaultValue = "10") int pageSize
     ) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
-        return ResponseUtil.build(orderService.userOrderListZTK(map));
+        //return ResponseUtil.build(orderService.userOrderListZTK(map));
+        return ResponseUtil.build(orderDegradeService.userOrderListZTK(map));
     }
 
     /**
