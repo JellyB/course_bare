@@ -300,6 +300,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 					periodTestInfo.setIsExpired(DateUtil.isExpired(periodTestInfo.getEndTime()));
 					paperMap.put(periodTestInfo.getExamId() + "_" + periodTestInfo.getSyllabusId(), periodTestInfo);
 					syllabusMap.put(periodTestInfo.getSyllabusId(), periodTestInfo);
+					syllabusIdList.add(periodTestInfo.getSyllabusId());
 				});
 			});
 			// 库里存的是不提醒的数据
