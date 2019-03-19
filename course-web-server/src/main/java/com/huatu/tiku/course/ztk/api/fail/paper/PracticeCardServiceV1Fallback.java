@@ -66,4 +66,17 @@ public class PracticeCardServiceV1Fallback implements PracticeCardServiceV1 {
     public Object getClassExerciseStatus(int userId, List<HashMap<String, Object>> paramsList) {
         return ResponseUtil.DEFAULT_PAGE_EMPTY;
     }
+
+    /**
+     * 获取随堂练习报告
+     *
+     * @param courseId
+     * @param playType
+     * @param token
+     * @return
+     */
+    @Override
+    public NetSchoolResponse getClassExerciseReport(long courseId, int playType, String token) {
+        return ResponseUtil.DEFAULT_PAGE_EMPTY;
+    }
 }

@@ -327,6 +327,11 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 				syllabusMap.get(process.getSyllabusId()).setIsAlert(YesOrNoStatus.NO.getCode());
 			});
 
+			log.info("用户{}不需要提醒的阶段测试大小为:{}", uid, processList.size());
+			processList.forEach(process -> {
+				syllabusMap.get(process.getSyllabusId()).setIsAlert(YesOrNoStatus.NO.getCode());
+				});
+
 			Set<String> paperSyllabusSet = paperMap.keySet();
 			NetSchoolResponse<Map<String, Integer>> bathResponse = periodTestServiceV4.getPaperStatusBath(uid,
 					paperSyllabusSet);
@@ -405,13 +410,12 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
      * @param courseWareId
      * @param videoType
      * @param exerciseCardId 课后作业答题卡id
-     * @param classCardId 随堂练习答题卡id
      * @param terminal
      * @return
      * @throws BizException
      */
     @Override
-    public Object learnReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, long courseWareId, int videoType, long exerciseCardId, long classCardId, int terminal) throws BizException {
+    public Object learnReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, long courseWareId, int videoType, long exerciseCardId, int reportStatus, int terminal) throws BizException {
         Map<String,Object> result = Maps.newHashMap();
 
         Map<String,Object> liveReport = Maps.newHashMap();//直播听课记录
@@ -453,7 +457,13 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         /**
          * 处理随堂随堂练习报告
          */
-        if(classCardId > 0){
+        if(reportStatus > 0){
+            NetSchoolResponse classReport = practiceCardService.getClassExerciseReport(courseWareId, videoType, userSession.getToken());
+            if(classReport != ResponseUtil.DEFAULT_PAGE_EMPTY && null != classReport){
+                LinkedHashMap linkedHashMap = (LinkedHashMap<String, Object>) classReport.getData();
+                classPractice.putAll(linkedHashMap);
+            }
+        }else{
             classPractice.putAll(Maps.newHashMap());
         }
         result.put("classPractice", classPractice);

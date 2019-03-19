@@ -82,7 +82,7 @@ public class CourseExercisesProcessLogManager {
 
     @Autowired
     private RedisTemplate redisTemplate;
-    
+
     @Autowired
     private UserCourseServiceV6 userCourseServiceV6;
 
@@ -165,9 +165,9 @@ public class CourseExercisesProcessLogManager {
      * @throws BizException
      */
 	public int readyOne(long id, String type, Long syllabusId, Long uid) throws BizException {
-		StudyTypeEnum studyTypeEnum = StudyTypeEnum.create(type);
-		CourseExercisesProcessLog courseExercisesProcessLog = new CourseExercisesProcessLog();
-		courseExercisesProcessLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
+        StudyTypeEnum studyTypeEnum = StudyTypeEnum.create(type);
+        CourseExercisesProcessLog courseExercisesProcessLog = new CourseExercisesProcessLog();
+        courseExercisesProcessLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
 		if (studyTypeEnum.equals(StudyTypeEnum.PERIOD_TEST)) {
 			List<CourseExercisesProcessLog> processList = courseExercisesProcessLogMapper
 					.selectByExample(
@@ -191,14 +191,14 @@ public class CourseExercisesProcessLogManager {
 			}
 
 		} else {
-			courseExercisesProcessLog.setIsAlert(YesOrNoStatus.NO.getCode());
-			courseExercisesProcessLog.setId(id);
+        courseExercisesProcessLog.setIsAlert(YesOrNoStatus.NO.getCode());
+        courseExercisesProcessLog.setId(id);
 			courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
 
 		}
 
 		return YesOrNoStatus.YES.getCode();
-	}
+    }
 
     /**
      * 创建课后作业答题卡前置逻辑入口

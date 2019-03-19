@@ -318,7 +318,7 @@ public class CourseUtil {
                     Object build = ZTKResponseUtil.build(classExerciseStatus);
 
                     Map<Object, Object> defaultMap = HashMapBuilder.newBuilder()
-                            .put("reportStatus", false)
+                            .put("reportStatus", 0)
                             .build();
 
                     if (null != build && CollectionUtils.isNotEmpty((List<Map>) build)) {
@@ -335,7 +335,8 @@ public class CourseUtil {
                                 Map map = first.get();
                                 map.remove("courseId");
                                 map.remove("courseType");
-                                return map;
+                                //return map;
+                                return defaultMap;
                             } else {
                                 return defaultMap;
                             }
@@ -352,7 +353,7 @@ public class CourseUtil {
                     } else {
                         List<Map> mapList = ((List<Map>) value).stream()
                                 .map(valueData -> {
-                                    valueData.put("reportStatus", false);
+                                    valueData.put("reportStatus", 0);
                                     return valueData;
                                 })
                                 .collect(Collectors.toList());
