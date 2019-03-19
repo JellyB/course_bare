@@ -16,6 +16,7 @@ import com.huatu.tiku.course.ztk.api.v4.paper.PeriodTestServiceV4;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
 import com.huatu.tiku.springboot.basic.reward.event.RewardActionEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -164,9 +165,12 @@ public class CourseUtil {
 
         response.computeIfPresent("list", (key, value) -> {
                     List<HashMap<String, Object>> paramsList = ((List<Map>) value).stream()
+                            //type 	0阶段测试1课程2课件 （只有type=2时，有answerCard属性）
                             .filter(map -> (null != MapUtils.getString(map, "type")
                                     && MapUtils.getString(map, "type").equals("2"))
                             )
+                            //videoType	1点播2直播3直播回放4阶段测试题
+                            //coursewareId	课件id
                             .filter(map -> null != map.get("videoType") && null != map.get("coursewareId"))
                             .map(map -> {
                                 HashMap<String, Object> build = HashMapBuilder.<String, Object>newBuilder()
@@ -188,10 +192,11 @@ public class CourseUtil {
                             .put("ucount", 0)
                             .put("id", need2Str ? "0" : 0)
                             .build();
-                    if (null != build && 0 != ((List<Map>) build).size()) {
+                    List<Map> courseExercisesCards = (List<Map>) build;         //课后作业相关答题卡
+                    if (CollectionUtils.isNotEmpty(courseExercisesCards)) {
                         //获取答题卡信息状态
                         Function<HashMap<String, Object>, Map> getCourse = (valueData) -> {
-                            Optional<Map> first = ((List<Map>) build).stream()
+                            Optional<Map> first = courseExercisesCards.stream()
                                     .filter(result -> null != result.get("courseId") && null != result.get("courseType"))
                                     .filter(result ->
                                             MapUtils.getString(result, "courseId").equals(MapUtils.getString(valueData, "coursewareId"))
@@ -240,7 +245,9 @@ public class CourseUtil {
     public void addPeriodTestInfo(LinkedHashMap response, int userId){
                 response.computeIfPresent("list", (key, value) -> {
                         Set<String> paperIds = ((List<Map>) value).stream()
+                                //videoType	1点播2直播3直播回放4阶段测试题
                                 .filter(map -> MapUtils.getString(map, "videoType").equals("4"))
+                                //coursewareId	-》课件id  | id -》节点id
                                 .filter(map -> null != map.get("coursewareId") && null != map.get("id"))
                                 .map(map -> {
                                     StringBuilder stringBuilder = new StringBuilder();
@@ -264,7 +271,7 @@ public class CourseUtil {
 					valueData.put("testStatus", MapUtils.getInteger(data, stringBuilder.toString(), -1));
 					// 设置是否过期
 					if (1 == MapUtils.getInteger(valueData, "isEffective")
-							&& DateUtil.isExpired(MapUtils.getString(valueData, "endTime"))) {
+							&& System.currentTimeMillis() > (MapUtils.getLong(valueData, "liveStartTime"))) {
 						valueData.put("isExpired", 1);
 					} else {
 						valueData.put("isExpired", 0);
