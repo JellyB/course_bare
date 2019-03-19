@@ -10,7 +10,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import lombok.*;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -167,20 +169,24 @@ public class CourseExercisesProcessLogManager {
 
     /**
      * 单条已读
-     * @param id
-     * @param type
+     * @param userId
+     * @param courseWareId
+     * @param courseType
      * @return
      * @throws BizException
      */
-	public int readyOne(long id, String type, Long syllabusId, Long uid) throws BizException {
+	public int readyOneCourseWork(int userId, long courseWareId, int courseType) throws BizException {
         CourseExercisesProcessLog courseExercisesProcessLog = new CourseExercisesProcessLog();
         courseExercisesProcessLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
         courseExercisesProcessLog.setIsAlert(YesOrNoStatus.NO.getCode());
-        courseExercisesProcessLog.setDataType(StudyTypeEnum.COURSE_WORK.getOrder());
-        courseExercisesProcessLog.setId(id);
-		return	courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
-		
 
+        Example example = new Example(CourseExercisesProcessLog.class);
+        example.and().andEqualTo("userId", userId)
+                .andEqualTo("courseType", courseType)
+                .andEqualTo("lessonId", courseWareId)
+                .andEqualTo("dataType", StudyTypeEnum.COURSE_WORK.getOrder());
+
+		return	courseExercisesProcessLogMapper.updateByExampleSelective(courseExercisesProcessLog, example);
     }
 
     /**
@@ -219,8 +225,12 @@ public class CourseExercisesProcessLogManager {
      */
     @Async
     public synchronized void createCourseWorkAnswerCard(int userId, Integer courseType, Long coursewareId, Long courseId, Long syllabusId, HashMap<String,Object> result){
-        Long cardId = Long.valueOf(String.valueOf(result.get("id")));
-        int status = Integer.valueOf(String.valueOf(result.get("status")));
+        Long cardId = MapUtils.getLongValue(result, "id");
+        int status = MapUtils.getIntValue(result, "status");
+        int wcount = MapUtils.getIntValue(result, "wcount");
+        int rcount = MapUtils.getIntValue(result, "rcount");
+        int uncount = MapUtils.getIntValue(result, "uncount");
+        DataInfo dataInfo = DataInfo.builder().wcount(wcount).ucount(uncount).rcount(rcount).status(status).build();
 
         Example example = new Example(CourseExercisesProcessLog.class);
         example.and().andEqualTo("lessonId", coursewareId)
@@ -234,6 +244,7 @@ public class CourseExercisesProcessLogManager {
             /**
              * 新增数据
              */
+
             CourseExercisesProcessLog newLog = newLog();
             newLog.setCourseType(courseType);
             newLog.setSyllabusId(syllabusId);
@@ -242,6 +253,7 @@ public class CourseExercisesProcessLogManager {
             newLog.setLessonId(coursewareId);
             newLog.setCardId(cardId);
             newLog.setBizStatus(status);
+            newLog.setDataInfo(JSONObject.toJSONString(dataInfo));
             courseExercisesProcessLogMapper.insertSelective(newLog);
             putIntoDealList(syllabusId);
         }else{
@@ -252,6 +264,7 @@ public class CourseExercisesProcessLogManager {
             BeanUtils.copyProperties(courseExercisesProcessLog, update);
             update.setGmtModify(new Timestamp(System.currentTimeMillis()));
             update.setBizStatus(status);
+            update.setDataInfo(JSONObject.toJSONString(dataInfo));
             courseExercisesProcessLogMapper.updateByExampleSelective(update, example);
         }
     }
@@ -305,9 +318,11 @@ public class CourseExercisesProcessLogManager {
                 .andEqualTo("userId", answerCard.getUserId())
                 .andEqualTo("cardId", answerCard.getId());
 
+        DataInfo dataInfo = DataInfo.builder().wcount(answerCard.getWcount()).ucount(answerCard.getUcount()).rcount(answerCard.getRcount()).status(answerCard.getStatus()).build();
         CourseExercisesProcessLog updateLog = new CourseExercisesProcessLog();
         updateLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
         updateLog.setBizStatus(answerCard.getStatus());
+        updateLog.setDataInfo(JSONObject.toJSONString(dataInfo));
         courseExercisesProcessLogMapper.updateByExampleSelective(updateLog, example);
         courseExercisesStatisticsManager.dealCourseExercisesStatistics(answerCard);
     }
@@ -390,10 +405,14 @@ public class CourseExercisesProcessLogManager {
                         .serialNumber(syllabusWareInfo.getSerialNumber())
                         .answerCardId(courseExercisesProcessLog.getCardId())
                         .videoType(syllabusWareInfo.getVideoType())
-                        .answerCardInfo(courseExercisesProcessLog.getDataInfo())
                         .questionIds("")
                         .isAlert(courseExercisesProcessLog.getIsAlert())
                         .build();
+                    if(StringUtils.isEmpty(courseExercisesProcessLog.getDataInfo())){
+                        courseWorkWareVo.setAnswerCardInfo(new DataInfo());
+                    }else{
+                        courseWorkWareVo.setAnswerCardInfo(JSONObject.parseObject(courseExercisesProcessLog.getDataInfo(), DataInfo.class));
+                    }
                 return courseWorkWareVo;
             }).collect(Collectors.toList());
 
@@ -525,4 +544,22 @@ public class CourseExercisesProcessLogManager {
 		NetSchoolResponse response = userCourseServiceV6.readPeriod(params);
 		log.info("用户{}已读阶段测试大纲id为{} 返回结果:{}", uname, syllabusId, response.getData());
 	}
+
+	@NoArgsConstructor
+    @Getter
+    @Setter
+	public static class DataInfo{
+	    private int status;
+	    private int wcount;
+	    private int ucount;
+	    private int rcount;
+
+	    @Builder
+        public DataInfo(int status, int wcount, int ucount, int rcount) {
+            this.status = status;
+            this.wcount = wcount;
+            this.ucount = ucount;
+            this.rcount = rcount;
+        }
+    }
 }
