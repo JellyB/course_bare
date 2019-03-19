@@ -290,6 +290,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 			// key为paperid_syllabusId value 为试卷信息
 			Map<String, PeriodTestListVO.PeriodTestInfo> paperMap = Maps.newHashMap();
 			Map<Long, PeriodTestListVO.PeriodTestInfo> syllabusMap = Maps.newHashMap();
+			if(CollectionUtils.isEmpty(periodTestListVO.getList())){
+			    return null;
+            }
 			periodTestListVO.getList().forEach(courseInfo -> {
 				courseInfo.setUndoCount(courseInfo.getChild().size());
 				courseInfo.getChild().forEach(periodTestInfo -> {
