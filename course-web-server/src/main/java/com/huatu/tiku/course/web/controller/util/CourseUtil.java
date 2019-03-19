@@ -6,6 +6,8 @@ import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.hbase.api.v1.VideoServiceV1;
+import com.huatu.tiku.course.service.v1.practice.PracticeUserMetaService;
+import com.huatu.tiku.course.util.DateUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.course.util.ZTKResponseUtil;
 import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
@@ -160,9 +162,12 @@ public class CourseUtil {
 
         response.computeIfPresent("list", (key, value) -> {
                     List<HashMap<String, Object>> paramsList = ((List<Map>) value).stream()
+                            //type 	0阶段测试1课程2课件 （只有type=2时，有answerCard属性）
                             .filter(map -> (null != MapUtils.getString(map, "type")
                                     && MapUtils.getString(map, "type").equals("2"))
                             )
+                            //videoType	1点播2直播3直播回放4阶段测试题
+                            //coursewareId	课件id
                             .filter(map -> null != map.get("videoType") && null != map.get("coursewareId"))
                             .map(map -> {
                                 HashMap<String, Object> build = HashMapBuilder.<String, Object>newBuilder()
@@ -184,10 +189,11 @@ public class CourseUtil {
                             .put("ucount", 0)
                             .put("id", need2Str ? "0" : 0)
                             .build();
-                    if (null != build && 0 != ((List<Map>) build).size()) {
+                    List<Map> courseExercisesCards = (List<Map>) build;         //课后作业相关答题卡
+                    if (CollectionUtils.isNotEmpty(courseExercisesCards)) {
                         //获取答题卡信息状态
                         Function<HashMap<String, Object>, Map> getCourse = (valueData) -> {
-                            Optional<Map> first = ((List<Map>) build).stream()
+                            Optional<Map> first = courseExercisesCards.stream()
                                     .filter(result -> null != result.get("courseId") && null != result.get("courseType"))
                                     .filter(result ->
                                             MapUtils.getString(result, "courseId").equals(MapUtils.getString(valueData, "coursewareId"))
@@ -236,7 +242,9 @@ public class CourseUtil {
     public void addPeriodTestInfo(LinkedHashMap response, int userId){
                 response.computeIfPresent("list", (key, value) -> {
                         Set<String> paperIds = ((List<Map>) value).stream()
+                                //videoType	1点播2直播3直播回放4阶段测试题
                                 .filter(map -> MapUtils.getString(map, "videoType").equals("4"))
+                                //coursewareId	-》课件id  | id -》节点id
                                 .filter(map -> null != map.get("coursewareId") && null != map.get("id"))
                                 .map(map -> {
                                     StringBuilder stringBuilder = new StringBuilder();
@@ -252,20 +260,23 @@ public class CourseUtil {
                         NetSchoolResponse netSchoolResponse = PeriodTestService.getPaperStatusBath(userId, paperIds);
                         Map<String, Object> data = (Map<String, Object>) netSchoolResponse.getData();
 
-                        if (null != data && data.size() > 0) {
-                            List<Map> mapList = ((List<Map>) value).stream()
-                                    .map(valueData -> {
-                                        StringBuilder stringBuilder = new StringBuilder();
-                                        stringBuilder
-                                                .append(MapUtils.getString(valueData, "coursewareId"))
-                                                .append("_")
-                                                .append(MapUtils.getString(valueData,"id"));
-                                        valueData.put("testStatus", MapUtils.getInteger(data, stringBuilder.toString(), -1));
-                                        return valueData;
-                                    })
-                                    .collect(Collectors.toList());
-                            return mapList;
-                        } else {
+			if (null != data && data.size() > 0) {
+				List<Map> mapList = ((List<Map>) value).stream().map(valueData -> {
+					StringBuilder stringBuilder = new StringBuilder();
+					stringBuilder.append(MapUtils.getString(valueData, "coursewareId")).append("_")
+							.append(MapUtils.getString(valueData, "id"));
+					valueData.put("testStatus", MapUtils.getInteger(data, stringBuilder.toString(), -1));
+					// 设置是否过期
+					if (1 == MapUtils.getInteger(valueData, "isEffective")
+							&& System.currentTimeMillis() > (MapUtils.getLong(valueData, "liveStartTime"))) {
+						valueData.put("isExpired", 1);
+					} else {
+						valueData.put("isExpired", 0);
+					}
+					return valueData;
+				}).collect(Collectors.toList());
+				return mapList;
+			} else {
                             List<Map> mapList = ((List<Map>) value).stream()
                                     .map(valueData -> {
                                         valueData.put("testStatus", -1);

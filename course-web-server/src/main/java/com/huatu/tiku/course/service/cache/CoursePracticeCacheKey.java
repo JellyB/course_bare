@@ -1,6 +1,10 @@
 package com.huatu.tiku.course.service.cache;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import com.google.common.base.Splitter;
+import com.huatu.tiku.course.bean.practice.UserCourseBo;
 
 /**
  * key 前缀 course-web-server.
@@ -46,6 +50,15 @@ public final class CoursePracticeCacheKey {
     public static String questionMetaKey(Long roomId, Long questionId) {
         return "course:practice:questionMeta:" + questionId + ":" + roomId;
     }
+    
+    /**
+     * 房间内所有答题 用户id+课程id set
+     * @param roomId
+     * @return
+     */
+    public static String roomInfoMetaKey(Long roomId) {
+        return "course:practice:roomInfoMeta:"+ roomId;
+    }
 
     /**
      * 获取一次听课答题中默认key 失效时间
@@ -57,4 +70,33 @@ public final class CoursePracticeCacheKey {
     public static TimeUnit getDefaultTimeUnit() {
         return TimeUnit.DAYS;
     }
+    
+    /**
+     * 根据userMetaKey获取userid和courseid
+     * @param userMetaKey
+     * @return
+     */
+	public static UserCourseBo getUserAndCourseByUserMetaKey(String userMetaKey) {
+		List<String> ret = Splitter.on(":").trimResults().splitToList(userMetaKey);
+		return UserCourseBo.builder().userId(Integer.valueOf(ret.get(3))).courseId(Long.parseLong(ret.get(4))).build();
+
+	}
+
+	/**
+	 * 指定课中答对题的总题数
+	 * @param courseId
+	 * @return
+	 */
+	public static String roomRightQuestionSum(Long courseId) {
+		return "course:practice:roomRightQuestionSum:"+ courseId;
+	}
+	
+	/**
+	 * 指定课中总答题人数
+	 * @param courseId
+	 * @return
+	 */
+	public static String roomAllUserSum(Long courseId) {
+		return "course:practice:roomAllUserSum:"+ courseId;
+	}
 }

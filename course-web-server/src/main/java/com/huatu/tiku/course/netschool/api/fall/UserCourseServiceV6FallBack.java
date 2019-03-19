@@ -1,14 +1,16 @@
 package com.huatu.tiku.course.netschool.api.fall;
 
+import java.util.Map;
+
+import org.springframework.stereotype.Component;
+
 import com.google.common.collect.Lists;
 import com.huatu.common.utils.web.RequestUtil;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.util.ResponseUtil;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
-import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
@@ -158,6 +160,11 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
 
 	@Override
 	public NetSchoolResponse<Integer> stageTestStudyRecord(Map<String, Object> params) {
+		 return NetSchoolResponse.DEFAULT;
+	}
+
+	@Override
+	public NetSchoolResponse unfinishStageExamCount(Map<String, String> params) {
 		 return NetSchoolResponse.DEFAULT;
 	}
 }

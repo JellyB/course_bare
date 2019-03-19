@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by lijun on 2018/6/22
@@ -49,6 +48,13 @@ public class PracticeCardServiceV1Fallback implements PracticeCardServiceV1 {
         return ResponseUtil.DEFAULT_PAGE_EMPTY;
     }
 
+	@Override
+	public Object createAndSaveAnswerCoursePracticeCard(Integer terminal, Integer subject, Integer uid, String name,
+			Integer courseType, Long courseId, String questionIds, String[] answers, int[] corrects, int[] times,
+			List<Object> questionInfoList) {
+		 return ZTKResponseUtil.defaultResult();
+	}
+
     /**
      * 批量获取随堂练习报告状态
      *
@@ -58,18 +64,6 @@ public class PracticeCardServiceV1Fallback implements PracticeCardServiceV1 {
      */
     @Override
     public Object getClassExerciseStatus(int userId, List<HashMap<String, Object>> paramsList) {
-        return ResponseUtil.DEFAULT_PAGE_EMPTY;
-    }
-
-    /**
-     * 获取随堂练习报告
-     *
-     * @param courseId
-     * @param token
-     * @return
-     */
-    @Override
-    public NetSchoolResponse getClassExerciseReport(long courseId, int playType, String token) {
         return ResponseUtil.DEFAULT_PAGE_EMPTY;
     }
 }

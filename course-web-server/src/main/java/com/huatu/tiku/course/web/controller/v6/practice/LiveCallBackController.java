@@ -1,22 +1,26 @@
 package com.huatu.tiku.course.web.controller.v6.practice;
 
-import com.google.common.collect.ImmutableMap;
-import com.huatu.common.Result;
-import com.huatu.common.SuccessMessage;
-import com.huatu.common.SuccessResponse;
-import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
-import com.huatu.tiku.course.bean.practice.LiveCallbackBo;
-import com.huatu.tiku.course.service.v1.practice.LiveCallBackService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
-import org.springframework.web.bind.annotation.*;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.huatu.common.SuccessMessage;
+import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
+import com.huatu.tiku.course.bean.practice.LiveCallbackBo;
+import com.huatu.tiku.course.service.v1.practice.LiveCallBackService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Created by lijun on 2019/3/5 直播生成回放时回调 使用 - 直播 roomId 会对应多个
@@ -50,15 +54,18 @@ public class LiveCallBackController {
 	 * @return
 	 */
 	@PostMapping(value = "/liveCallBack")
-	public void liveOver(@RequestParam Long roomId, HttpServletResponse response) {
+	public void liveOver(@RequestParam Long room_id, @RequestParam String op, @RequestParam String op_time,
+			@RequestParam String qid, @RequestParam Integer timestamp, @RequestParam String sign,
+			HttpServletResponse response) {
 		// TODO 生成答题卡
-		log.info("直播下课回调接口调用------>roomId:{}", roomId);
 		try {
+			log.info("直播上下课回调接口调用------>roomId:{},回调类型:{},回调唯一标示:{},签名为:{},调用时间:{},时间戳为:{}", room_id, op, qid, sign,op_time,timestamp);
+			liveCallBackService.saveLiveInfo(room_id,op);
 			response.setContentType("application/json; charset=utf-8");
 			response.getWriter().write("{\"code\": 0, \"msg\":\"success\"}");
 		} catch (IOException e) {
 
-			log.info("直播下课回调接口调用------>roomId:{}失败:{}", roomId, e);
+			log.info("直播下课回调接口调用------>roomId:{}失败:{}", room_id, e);
 		}
 	}
 }
