@@ -288,37 +288,34 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 			PeriodTestListVO periodTestListVO = response.getData();
 			// key为paperid_syllabusId value 为试卷信息
 			Map<String, PeriodTestListVO.PeriodTestInfo> paperMap = Maps.newHashMap();
-			Map<Long, PeriodTestListVO.PeriodTestInfo> syllabusMap = Maps.newHashMap();
-			if(CollectionUtils.isEmpty(periodTestListVO.getList())){
-			    return null;
-            }
 			periodTestListVO.getList().forEach(courseInfo -> {
 				courseInfo.setUndoCount(courseInfo.getChild().size());
 				courseInfo.getChild().forEach(periodTestInfo -> {
-					log.info("接口unfinish_stage_exam_list调用php响应返回periodTestInfo:{}", periodTestInfo.toString());
+					//log.info("接口unfinish_stage_exam_list调用php响应返回periodTestInfo:{}", periodTestInfo.toString());
 					// 填充app端展示所需时间
 					periodTestInfo.setShowTime(
 							DateUtil.getSimpleDate(periodTestInfo.getStartTime(), periodTestInfo.getEndTime()));
 					periodTestInfo.setIsExpired(DateUtil.isExpired(periodTestInfo.getEndTime()));
-					periodTestInfo.setIsAlert(periodTestInfo.getAlreadyRead());
+					periodTestInfo.setIsAlert(periodTestInfo.getAlreadyRead() == 0 ? 1 : 0);
 					paperMap.put(periodTestInfo.getExamId() + "_" + periodTestInfo.getSyllabusId(), periodTestInfo);
-					syllabusMap.put(periodTestInfo.getSyllabusId(), periodTestInfo);
 				});
 			});
 			
 			Set<String> paperSyllabusSet = paperMap.keySet();
-			NetSchoolResponse<Map<String, Integer>> bathResponse = periodTestServiceV4.getPaperStatusBath(uid,
-					paperSyllabusSet);
-			if (ResponseUtil.isSuccess(bathResponse)) {
-				// key为paperid_syllabusId value 为试卷状态
-				Map<String, Integer> retMap = bathResponse.getData();
-				log.info("getPaperStatusBath ret is:{}", retMap.toString());
-				// 修改试卷状态
-				for (Entry<String, Integer> paperRet : retMap.entrySet()) {
-					paperMap.get(paperRet.getKey()).setStatus(paperRet.getValue());
+			if (!paperSyllabusSet.isEmpty()) {
+				NetSchoolResponse<Map<String, Integer>> bathResponse = periodTestServiceV4.getPaperStatusBath(uid,
+						paperSyllabusSet);
+				if (ResponseUtil.isSuccess(bathResponse)) {
+					// key为paperid_syllabusId value 为试卷状态
+					Map<String, Integer> retMap = bathResponse.getData();
+					log.info("getPaperStatusBath ret is:{}", retMap.toString());
+					// 修改试卷状态
+					for (Entry<String, Integer> paperRet : retMap.entrySet()) {
+						paperMap.get(paperRet.getKey()).setStatus(paperRet.getValue());
+					}
 				}
+				log.info("getpaper param is:{}", paperSyllabusSet.toString());
 			}
-			log.info("getpaper param is:{}", paperSyllabusSet.toString());
 			log.info("接口unfinish_stage_exam_list解析用时:{}", String.valueOf(stopwatchExplain.stop()));
 			return periodTestListVO;
 		}
@@ -389,7 +386,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
      * @throws BizException
      */
     @Override
-    public Object learnReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, long courseWareId, int videoType, long exerciseCardId, int reportStatus, int terminal) throws BizException {
+    public Object learnReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, long courseWareId, int videoType, long exerciseCardId, int reportStatus, int terminal, String cv) throws BizException {
         Map<String,Object> result = Maps.newHashMap();
 
         Map<String,Object> liveReport = Maps.newHashMap();//直播听课记录
@@ -432,8 +429,8 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
          * 处理随堂随堂练习报告
          */
         if(reportStatus > 0){
-            NetSchoolResponse classReport = practiceCardService.getClassExerciseReport(courseWareId, videoType, userSession.getToken());
-            if(classReport != ResponseUtil.DEFAULT_PAGE_EMPTY && null != classReport){
+            NetSchoolResponse classReport = practiceCardService.getClassExerciseReport(courseWareId, videoType, userSession.getToken(), terminal, cv);
+            if(classReport != ResponseUtil.DEFAULT_PAGE_EMPTY && null != classReport && null != classReport.getData()){
                 LinkedHashMap linkedHashMap = (LinkedHashMap<String, Object>) classReport.getData();
                 classPractice.putAll(linkedHashMap);
             }

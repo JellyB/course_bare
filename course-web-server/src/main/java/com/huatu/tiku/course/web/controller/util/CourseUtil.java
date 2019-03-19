@@ -268,7 +268,8 @@ public class CourseUtil {
 					valueData.put("testStatus", MapUtils.getInteger(data, stringBuilder.toString(), -1));
 					// 设置是否过期
 					if (1 == MapUtils.getInteger(valueData, "isEffective")
-							&& System.currentTimeMillis() > (MapUtils.getLong(valueData, "liveStartTime"))) {
+                            //当前时间大于结束时间（liveStartTime）
+							&& System.currentTimeMillis() > (MapUtils.getLong(valueData, "liveStartTime"))*1000) {
 						valueData.put("isExpired", 1);
 					} else {
 						valueData.put("isExpired", 0);
@@ -302,7 +303,7 @@ public class CourseUtil {
     public void addStudyReportInfo(LinkedHashMap response, int userId){
         response.computeIfPresent("list", (key, value) -> {
                     List<HashMap<String, Object>> courseWareIds = ((List<Map>) value).stream()
-                            .filter(map -> (null != map.get("classExercisesNum")) && (MapUtils.getInteger(map,"classExercisesNum") > 0))
+                            //.filter(map -> (null != map.get("classExercisesNum")) && (MapUtils.getInteger(map,"classExercisesNum") > 0))
                             .filter(map -> null != map.get("videoType") && null != map.get("coursewareId"))
                             .map(map -> {
                                 HashMap<String, Object> build = HashMapBuilder.<String, Object>newBuilder()
@@ -335,8 +336,7 @@ public class CourseUtil {
                                 Map map = first.get();
                                 map.remove("courseId");
                                 map.remove("courseType");
-                                //return map;
-                                return defaultMap;
+                                return map;
                             } else {
                                 return defaultMap;
                             }

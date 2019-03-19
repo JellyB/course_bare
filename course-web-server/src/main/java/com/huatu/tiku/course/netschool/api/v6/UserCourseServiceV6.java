@@ -122,7 +122,7 @@ public interface UserCourseServiceV6 {
 	 * @param params
 	 * @return
 	 */
-	@GetMapping(value = "/v5/c/class/unfinish_exam_status_record")
+	@PostMapping(value = "/v5/c/class/unfinish_exam_status_record")
 	NetSchoolResponse readPeriod(@RequestParam Map<String, Object> params);
 	
 	

@@ -112,16 +112,14 @@ public class CourseExercisesProcessLogManager {
         criteria.andEqualTo("dataType", StudyTypeEnum.COURSE_WORK.getOrder());
         int countWork = courseExercisesProcessLogMapper.selectCountByExample(example);
         result.put(StudyTypeEnum.COURSE_WORK.getKey(), countWork);
-        criteria.andEqualTo("dataType", StudyTypeEnum.PERIOD_TEST.getOrder());
-        int readCountTest = courseExercisesProcessLogMapper.selectCountByExample(example);
         //获取总数量
         param.put("userName",userName );
         NetSchoolResponse response  = userCourseServiceV6.unfinishStageExamCount(param);
 		if (ResponseUtil.isSuccess(response)) {
 			Map<String, Integer> retMap = (Map<String, Integer>) response.getData();
 			Integer count = retMap.get("num");
-			log.info("用户:{}总未完成的阶段测试数为:{}", userName, count);
-			result.put(StudyTypeEnum.PERIOD_TEST.getKey(), count - readCountTest);
+			log.info("用户:{}需要提醒的阶段测试数为:{}", userName, count);
+			result.put(StudyTypeEnum.PERIOD_TEST.getKey(), count);
 		} else {
 			result.put(StudyTypeEnum.PERIOD_TEST.getKey(), 0);
 		}
@@ -155,7 +153,7 @@ public class CourseExercisesProcessLogManager {
 				// 阶段测试全部已读
 				Map<String, Object> param = Maps.newHashMap();
 				param.put("userName", uName);
-				param.put("type", YesOrNoStatus.NO.getCode());
+				param.put("type", YesOrNoStatus.YES.getCode());
 				NetSchoolResponse response = userCourseServiceV6.readPeriod(param);
 				log.info("用户{}全部已读阶段测试 返回结果:{}", uName, response.getData());
 				return YesOrNoStatus.YES.getCode();
@@ -231,6 +229,7 @@ public class CourseExercisesProcessLogManager {
                 .andEqualTo("dataType", StudyTypeEnum.COURSE_WORK.getOrder())
                 .andEqualTo("status", YesOrNoStatus.YES.getCode());
         CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogMapper.selectOneByExample(example);
+        log.info("创建课后作业答题卡信息:{}",JSONObject.toJSONString(courseExercisesProcessLog));
         if(null == courseExercisesProcessLog){
             /**
              * 新增数据
@@ -390,6 +389,7 @@ public class CourseExercisesProcessLogManager {
                         .videoLength(syllabusWareInfo.getLength())
                         .serialNumber(syllabusWareInfo.getSerialNumber())
                         .answerCardId(courseExercisesProcessLog.getCardId())
+                        .videoType(syllabusWareInfo.getVideoType())
                         .answerCardInfo(courseExercisesProcessLog.getDataInfo())
                         .questionIds("")
                         .isAlert(courseExercisesProcessLog.getIsAlert())
@@ -504,6 +504,7 @@ public class CourseExercisesProcessLogManager {
          * 创建答题卡
          */
         SyllabusWareInfo syllabusWareInfo = table.get(LESSON_LABEL, syllabusId);
+        log.info("直播创建或更新课后作业答题卡:大纲id{}", syllabusId);
         createCourseWorkAnswerCardEntrance(syllabusWareInfo.getClassId(), syllabusWareInfo.getSyllabusId(), syllabusWareInfo.getVideoType(), syllabusWareInfo.getCoursewareId(), subject, terminal, userId);
     }
 
@@ -518,8 +519,9 @@ public class CourseExercisesProcessLogManager {
 	public void readyOnePeriod(Long syllabusId, Long courseId, String uname) {
 		Map<String, Object> params = Maps.newHashMap();
 		params.put("syllabusId", syllabusId);
-		params.put("courseId", courseId);
-		params.put("uname", uname);
+		params.put("netClassId", courseId);
+		params.put("userName", uname);
+		params.put("type", 0);
 		NetSchoolResponse response = userCourseServiceV6.readPeriod(params);
 		log.info("用户{}已读阶段测试大纲id为{} 返回结果:{}", uname, syllabusId, response.getData());
 	}

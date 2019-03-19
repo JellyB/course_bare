@@ -76,7 +76,7 @@ public class PracticeCardServiceV1Fallback implements PracticeCardServiceV1 {
      * @return
      */
     @Override
-    public NetSchoolResponse getClassExerciseReport(long courseId, int playType, String token) {
+    public NetSchoolResponse getClassExerciseReport(long courseId, int playType, String token, int terminal, String cv) {
         return ResponseUtil.DEFAULT_PAGE_EMPTY;
     }
 }
