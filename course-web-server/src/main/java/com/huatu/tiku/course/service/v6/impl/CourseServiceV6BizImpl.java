@@ -291,7 +291,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 			periodTestListVO.getList().forEach(courseInfo -> {
 				courseInfo.setUndoCount(courseInfo.getChild().size());
 				courseInfo.getChild().forEach(periodTestInfo -> {
-					log.info("接口unfinish_stage_exam_list调用php响应返回periodTestInfo:{}", periodTestInfo.toString());
+					//log.info("接口unfinish_stage_exam_list调用php响应返回periodTestInfo:{}", periodTestInfo.toString());
 					// 填充app端展示所需时间
 					periodTestInfo.setShowTime(
 							DateUtil.getSimpleDate(periodTestInfo.getStartTime(), periodTestInfo.getEndTime()));

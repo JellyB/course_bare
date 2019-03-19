@@ -130,7 +130,7 @@ public class UserCourseControllerV6 {
                                     @PathVariable(value = "courseId")Long courseId,
                                     @PathVariable(value = "syllabusId")Long syllabusId){
          courseExercisesProcessLogManager.readyOnePeriod(syllabusId, courseId,userSession.getUname());
-         return SuccessMessage.create("操作成功");
+         return null;
     }
 
     /**
