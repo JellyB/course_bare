@@ -268,6 +268,7 @@ public class CourseUtil {
 					valueData.put("testStatus", MapUtils.getInteger(data, stringBuilder.toString(), -1));
 					// 设置是否过期
 					if (1 == MapUtils.getInteger(valueData, "isEffective")
+                            //当前时间大于结束时间（liveStartTime）
 							&& System.currentTimeMillis() > (MapUtils.getLong(valueData, "liveStartTime"))*1000) {
 						valueData.put("isExpired", 1);
 					} else {
