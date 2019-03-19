@@ -518,8 +518,9 @@ public class CourseExercisesProcessLogManager {
 	public void readyOnePeriod(Long syllabusId, Long courseId, String uname) {
 		Map<String, Object> params = Maps.newHashMap();
 		params.put("syllabusId", syllabusId);
-		params.put("courseId", courseId);
+		params.put("netClassId", courseId);
 		params.put("uname", uname);
+		params.put("type", 0);
 		NetSchoolResponse response = userCourseServiceV6.readPeriod(params);
 		log.info("用户{}已读阶段测试大纲id为{} 返回结果:{}", uname, syllabusId, response.getData());
 	}
