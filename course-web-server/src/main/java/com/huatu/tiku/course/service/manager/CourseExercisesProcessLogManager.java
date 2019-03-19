@@ -153,7 +153,7 @@ public class CourseExercisesProcessLogManager {
 				// 阶段测试全部已读
 				Map<String, Object> param = Maps.newHashMap();
 				param.put("userName", uName);
-				param.put("type", YesOrNoStatus.NO.getCode());
+				param.put("type", YesOrNoStatus.YES.getCode());
 				NetSchoolResponse response = userCourseServiceV6.readPeriod(param);
 				log.info("用户{}全部已读阶段测试 返回结果:{}", uName, response.getData());
 				return YesOrNoStatus.YES.getCode();
