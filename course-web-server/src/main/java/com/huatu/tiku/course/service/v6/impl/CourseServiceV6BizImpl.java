@@ -296,7 +296,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 					periodTestInfo.setShowTime(
 							DateUtil.getSimpleDate(periodTestInfo.getStartTime(), periodTestInfo.getEndTime()));
 					periodTestInfo.setIsExpired(DateUtil.isExpired(periodTestInfo.getEndTime()));
-					periodTestInfo.setIsAlert(periodTestInfo.getAlreadyRead());
+					periodTestInfo.setIsAlert(periodTestInfo.getAlreadyRead() == 0 ? 1 : 0);
 					paperMap.put(periodTestInfo.getExamId() + "_" + periodTestInfo.getSyllabusId(), periodTestInfo);
 				});
 			});
