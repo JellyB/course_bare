@@ -2,7 +2,6 @@ package com.huatu.tiku.course.ztk.api.v1.paper;
 
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.ztk.api.fail.paper.PracticeCardServiceV1Fallback;
-import com.huatu.ztk.commons.exception.BizException;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,6 +60,17 @@ public interface PracticeCardServiceV1 {
      */
     @PostMapping(value = "/v4/practice/status/{userId}")
     Object getClassExerciseStatus(@PathVariable(value = "userId") int userId, @RequestBody List<HashMap<String,Object>> paramsList);
+
+
+    /**
+     * 获取随堂练习报告
+     * @param courseId
+     * @param playType
+     * @param token
+     * @return
+     */
+    @GetMapping(value = "/v4/practice/{courseId}/{playType}/report")
+    NetSchoolResponse getClassExerciseReport(@PathVariable(value = "courseId") long courseId, @PathVariable(value = "playType") int playType, @RequestHeader String token);
 
 
     /**

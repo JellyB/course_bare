@@ -7,6 +7,7 @@ import java.util.Map;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -195,9 +196,10 @@ public class UserCourseControllerV6 {
                               @RequestParam(value = "lessonId") long courseWareId,
                               @RequestParam(value = "videoType") int videoType,
                               @RequestParam(value = "exerciseCardId") long exerciseCardId,
-                              @RequestParam(value = "classCardId") long classCardId){
+                              @RequestParam(value = "classCardId") long classCardId,
+                              @RequestParam(value = "reportStatus") int reportStatus){
 
-        return courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, exerciseCardId, classCardId, terminal);
+        return courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, exerciseCardId, classCardId, reportStatus, terminal);
 
     }
 
