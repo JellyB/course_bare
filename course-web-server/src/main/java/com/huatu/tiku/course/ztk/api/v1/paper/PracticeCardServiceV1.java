@@ -117,6 +117,10 @@ public interface PracticeCardServiceV1 {
      * @return
      */
     @GetMapping(value = "/v4/practice/{courseId}/{playType}/report")
-    NetSchoolResponse getClassExerciseReport(@PathVariable(value = "courseId") long courseId, @PathVariable(value = "playType") int playType, @RequestHeader(value = "token") String token);
+    NetSchoolResponse getClassExerciseReport(@PathVariable(value = "courseId") long courseId,
+                                             @PathVariable(value = "playType") int playType,
+                                             @RequestHeader(value = "token") String token,
+                                             @RequestHeader(value = "terminal") int terminal,
+                                             @RequestHeader(value = "cv") String cv);
 
 }
