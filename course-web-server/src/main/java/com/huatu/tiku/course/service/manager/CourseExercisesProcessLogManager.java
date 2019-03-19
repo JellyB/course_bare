@@ -229,6 +229,7 @@ public class CourseExercisesProcessLogManager {
                 .andEqualTo("dataType", StudyTypeEnum.COURSE_WORK.getOrder())
                 .andEqualTo("status", YesOrNoStatus.YES.getCode());
         CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogMapper.selectOneByExample(example);
+        log.info("创建课后作业答题卡信息:{}",JSONObject.toJSONString(courseExercisesProcessLog));
         if(null == courseExercisesProcessLog){
             /**
              * 新增数据
@@ -388,6 +389,7 @@ public class CourseExercisesProcessLogManager {
                         .videoLength(syllabusWareInfo.getLength())
                         .serialNumber(syllabusWareInfo.getSerialNumber())
                         .answerCardId(courseExercisesProcessLog.getCardId())
+                        .videoType(syllabusWareInfo.getVideoType())
                         .answerCardInfo(courseExercisesProcessLog.getDataInfo())
                         .questionIds("")
                         .isAlert(courseExercisesProcessLog.getIsAlert())
@@ -502,6 +504,7 @@ public class CourseExercisesProcessLogManager {
          * 创建答题卡
          */
         SyllabusWareInfo syllabusWareInfo = table.get(LESSON_LABEL, syllabusId);
+        log.info("直播创建或更新课后作业答题卡:大纲id{}", syllabusId);
         createCourseWorkAnswerCardEntrance(syllabusWareInfo.getClassId(), syllabusWareInfo.getSyllabusId(), syllabusWareInfo.getVideoType(), syllabusWareInfo.getCoursewareId(), subject, terminal, userId);
     }
 
