@@ -288,10 +288,6 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 			PeriodTestListVO periodTestListVO = response.getData();
 			// key为paperid_syllabusId value 为试卷信息
 			Map<String, PeriodTestListVO.PeriodTestInfo> paperMap = Maps.newHashMap();
-			Map<Long, PeriodTestListVO.PeriodTestInfo> syllabusMap = Maps.newHashMap();
-			if(CollectionUtils.isEmpty(periodTestListVO.getList())){
-			    return null;
-            }
 			periodTestListVO.getList().forEach(courseInfo -> {
 				courseInfo.setUndoCount(courseInfo.getChild().size());
 				courseInfo.getChild().forEach(periodTestInfo -> {
@@ -302,23 +298,24 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 					periodTestInfo.setIsExpired(DateUtil.isExpired(periodTestInfo.getEndTime()));
 					periodTestInfo.setIsAlert(periodTestInfo.getAlreadyRead());
 					paperMap.put(periodTestInfo.getExamId() + "_" + periodTestInfo.getSyllabusId(), periodTestInfo);
-					syllabusMap.put(periodTestInfo.getSyllabusId(), periodTestInfo);
 				});
 			});
 			
 			Set<String> paperSyllabusSet = paperMap.keySet();
-			NetSchoolResponse<Map<String, Integer>> bathResponse = periodTestServiceV4.getPaperStatusBath(uid,
-					paperSyllabusSet);
-			if (ResponseUtil.isSuccess(bathResponse)) {
-				// key为paperid_syllabusId value 为试卷状态
-				Map<String, Integer> retMap = bathResponse.getData();
-				log.info("getPaperStatusBath ret is:{}", retMap.toString());
-				// 修改试卷状态
-				for (Entry<String, Integer> paperRet : retMap.entrySet()) {
-					paperMap.get(paperRet.getKey()).setStatus(paperRet.getValue());
+			if (!paperSyllabusSet.isEmpty()) {
+				NetSchoolResponse<Map<String, Integer>> bathResponse = periodTestServiceV4.getPaperStatusBath(uid,
+						paperSyllabusSet);
+				if (ResponseUtil.isSuccess(bathResponse)) {
+					// key为paperid_syllabusId value 为试卷状态
+					Map<String, Integer> retMap = bathResponse.getData();
+					log.info("getPaperStatusBath ret is:{}", retMap.toString());
+					// 修改试卷状态
+					for (Entry<String, Integer> paperRet : retMap.entrySet()) {
+						paperMap.get(paperRet.getKey()).setStatus(paperRet.getValue());
+					}
 				}
+				log.info("getpaper param is:{}", paperSyllabusSet.toString());
 			}
-			log.info("getpaper param is:{}", paperSyllabusSet.toString());
 			log.info("接口unfinish_stage_exam_list解析用时:{}", String.valueOf(stopwatchExplain.stop()));
 			return periodTestListVO;
 		}
