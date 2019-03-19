@@ -78,7 +78,7 @@ public class PracticeMetaComponent {
 		final Collection<PracticeUserQuestionMetaInfoBo> values = entries.values();
 		Integer totalTime = values.stream().map(PracticeUserQuestionMetaInfoBo::getTime).reduce(0, (a, b) -> a + b);
 		Integer totalScore = values.stream()
-				.map(practiceUserQuestionMetaInfoBo -> practiceUserQuestionMetaInfoBo.getCorrect() == 1 ? 1 : 0)
+				.map(practiceUserQuestionMetaInfoBo -> practiceUserQuestionMetaInfoBo.getCorrect() == 1 ? 2 : 0)
 				.reduce(0, (a, b) -> a + b);
 		return PracticeRoomRankUserBo.builder().id(userId).totalScore(totalScore).totalTime(totalTime).build();
 	}

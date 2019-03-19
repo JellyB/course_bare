@@ -167,4 +167,14 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
 	public NetSchoolResponse unfinishStageExamCount(Map<String, String> params) {
 		 return NetSchoolResponse.DEFAULT;
 	}
+
+	@Override
+	public NetSchoolResponse readOne(Map<String, Object> params) {
+		 return NetSchoolResponse.DEFAULT;
+	}
+
+	@Override
+	public NetSchoolResponse readAll(Map<String, String> params) {
+		 return NetSchoolResponse.DEFAULT;
+	}
 }
