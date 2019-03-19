@@ -112,16 +112,14 @@ public class CourseExercisesProcessLogManager {
         criteria.andEqualTo("dataType", StudyTypeEnum.COURSE_WORK.getOrder());
         int countWork = courseExercisesProcessLogMapper.selectCountByExample(example);
         result.put(StudyTypeEnum.COURSE_WORK.getKey(), countWork);
-        criteria.andEqualTo("dataType", StudyTypeEnum.PERIOD_TEST.getOrder());
-        int readCountTest = courseExercisesProcessLogMapper.selectCountByExample(example);
         //获取总数量
         param.put("userName",userName );
         NetSchoolResponse response  = userCourseServiceV6.unfinishStageExamCount(param);
 		if (ResponseUtil.isSuccess(response)) {
 			Map<String, Integer> retMap = (Map<String, Integer>) response.getData();
 			Integer count = retMap.get("num");
-			log.info("用户:{}总未完成的阶段测试数为:{}", userName, count);
-			result.put(StudyTypeEnum.PERIOD_TEST.getKey(), count - readCountTest);
+			log.info("用户:{}需要提醒的阶段测试数为:{}", userName, count);
+			result.put(StudyTypeEnum.PERIOD_TEST.getKey(), count);
 		} else {
 			result.put(StudyTypeEnum.PERIOD_TEST.getKey(), 0);
 		}
