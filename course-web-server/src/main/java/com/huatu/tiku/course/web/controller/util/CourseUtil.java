@@ -260,15 +260,12 @@ public class CourseUtil {
                         NetSchoolResponse netSchoolResponse = PeriodTestService.getPaperStatusBath(userId, paperIds);
                         Map<String, Object> data = (Map<String, Object>) netSchoolResponse.getData();
 
-                        if (null != data && data.size() > 0) {
-                            List<Map> mapList = ((List<Map>) value).stream()
-                                    .map(valueData -> {
-                                        StringBuilder stringBuilder = new StringBuilder();
-                                        stringBuilder
-                                                .append(MapUtils.getString(valueData, "coursewareId"))
-                                                .append("_")
-                                                .append(MapUtils.getString(valueData,"id"));
-                                        valueData.put("testStatus", MapUtils.getInteger(data, stringBuilder.toString(), -1));
+			if (null != data && data.size() > 0) {
+				List<Map> mapList = ((List<Map>) value).stream().map(valueData -> {
+					StringBuilder stringBuilder = new StringBuilder();
+					stringBuilder.append(MapUtils.getString(valueData, "coursewareId")).append("_")
+							.append(MapUtils.getString(valueData, "id"));
+					valueData.put("testStatus", MapUtils.getInteger(data, stringBuilder.toString(), -1));
 					// 设置是否过期
 					if (1 == MapUtils.getInteger(valueData, "isEffective")
 							&& System.currentTimeMillis() > (MapUtils.getLong(valueData, "liveStartTime"))) {
@@ -276,11 +273,10 @@ public class CourseUtil {
 					} else {
 						valueData.put("isExpired", 0);
 					}
-                                        return valueData;
-                                    })
-                                    .collect(Collectors.toList());
-                            return mapList;
-                        } else {
+					return valueData;
+				}).collect(Collectors.toList());
+				return mapList;
+			} else {
                             List<Map> mapList = ((List<Map>) value).stream()
                                     .map(valueData -> {
                                         valueData.put("testStatus", -1);

@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- *
+ * 
  * @author zhangchong
  *
  */
@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UserCourseBo {
 
-    private Integer userId;
+	private Integer userId;
 
-    private Long courseId;
+	private Long courseId;
 }

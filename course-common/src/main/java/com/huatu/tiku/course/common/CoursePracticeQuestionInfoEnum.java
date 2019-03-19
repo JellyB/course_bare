@@ -12,8 +12,8 @@ import lombok.Getter;
 @Getter
 public enum CoursePracticeQuestionInfoEnum {
 
-    INIT("init", 1), FINISH("finish", 2), FORCESTOP("forceStop", 3);
-    private String name;
-    private int status;
+	INIT("init", 1), FINISH("finish", 2), FORCESTOP("forceStop", 3);
+	private String name;
+	private int status;
 
 }

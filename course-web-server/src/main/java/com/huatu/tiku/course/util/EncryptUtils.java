@@ -25,78 +25,79 @@ import lombok.extern.slf4j.Slf4j;
 public class EncryptUtils {
 
 
-    String enctype = "application/x-www-form-urlencoded";
+	String enctype = "application/x-www-form-urlencoded";
 
-    // 获取回调地址
-    String getClassCallBackUrl = "https://api.baijiayun.com/openapi/live_account/getClassCallbackUrl";
-
-    String setClassCallbackUrl = "https://api.baijiayun.com/openapi/live_account/setClassCallbackUrl";
-
-    String callBackUrl = "https://ns-test.htexam.com/c/v6/practice/liveCallBack/liveCallBack";
-
-
-
-    String key = "xaATdhypJz12VZr9ETVHCxCkp/5uHGm2XhoFpPL89U8Ij/2bxpQPG/+1XtEOiaZ9LTehmQ0bYNqJJZ9I9PFhyA==";
-    String parentId = "33227161";
+	// 获取回调地址
+	String getClassCallBackUrl = "https://api.baijiayun.com/openapi/live_account/getClassCallbackUrl";
+	
+	String setClassCallbackUrl = "https://api.baijiayun.com/openapi/live_account/setClassCallbackUrl";
+	
+	String callBackUrl = "https://ns-test.htexam.com/c/v6/practice/liveCallBack/liveCallBack";
 
 
 
-    @Resource
-    private RestTemplate restTemplate;
+	String key = "xaATdhypJz12VZr9ETVHCxCkp/5uHGm2XhoFpPL89U8Ij/2bxpQPG/+1XtEOiaZ9LTehmQ0bYNqJJZ9I9PFhyA==";
+	String parentId = "33227161";
+	
+	
 
-    public JSONObject getClassCallBackUrl() {
-        TreeMap<String, Object> treeMap = getParamTree();
-        JSONObject jsonObject = this.postForJson(getClassCallBackUrl, treeMap);
+	@Resource
+	private RestTemplate restTemplate;
 
-        return jsonObject;
-    }
+	public JSONObject getClassCallBackUrl() {
+		TreeMap<String, Object> treeMap = getParamTree();
+		JSONObject jsonObject = this.postForJson(getClassCallBackUrl, treeMap);
 
-    public JSONObject setClassCallBackUrl() {
-        TreeMap<String, Object> treeMap = getParamTree();
-        treeMap.put("url", callBackUrl);
-        JSONObject jsonObject = this.postForJson(setClassCallbackUrl, treeMap);
+		return jsonObject;
+	}
+	
+	public JSONObject setClassCallBackUrl() {
+		TreeMap<String, Object> treeMap = getParamTree();
+		treeMap.put("url", callBackUrl);
+		JSONObject jsonObject = this.postForJson(setClassCallbackUrl, treeMap);
 
-        return jsonObject;
-    }
+		return jsonObject;
+	}
+	
+	
 
+	/**
+	 * 
+	 * @param url
+	 * @param treeMap
+	 * @return
+	 */
+	public JSONObject postForJson(String url, TreeMap<String, Object> treeMap) {
+		HttpHeaders httpHeaders = new HttpHeaders();
+		MediaType mediaType = MediaType.parseMediaType(enctype);
+		httpHeaders.setContentType(mediaType);
+		httpHeaders.add("Accept", org.springframework.http.MediaType.APPLICATION_JSON.toString());
+		HttpEntity<String> formEntity = new HttpEntity<String>(parseParams(treeMap), httpHeaders);
+		String result = restTemplate.postForObject(url, formEntity, String.class);
+		log.info("获取回调地址请求参数:{} 返回值为:{}", treeMap, result);
+		JSONObject jsonObject = JSONObject.parseObject(result);
+		return JSONObject.parseObject(jsonObject.get("data").toString());
+	}
 
+	public String parseParams(TreeMap<String, Object> params) {
+		// 拼接已有参数
+		StringBuilder result = new StringBuilder();
+		params.entrySet().forEach(param -> {
+			result.append(param.getKey()).append("=").append(param.getValue()).append("&");
+		});
+		// 获取sign
+		String signParams = result.toString() + "partner_key=";
+		signParams = signParams + key;
+		String sign = Hashing.md5().hashString(signParams, Charset.forName("UTF-8")).toString().toLowerCase();
+		return result.append("&sign").append("=").append(sign).toString();
+	}
 
-    /**
-     *
-     * @param url
-     * @param treeMap
-     * @return
-     */
-    public JSONObject postForJson(String url, TreeMap<String, Object> treeMap) {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        MediaType mediaType = MediaType.parseMediaType(enctype);
-        httpHeaders.setContentType(mediaType);
-        httpHeaders.add("Accept", org.springframework.http.MediaType.APPLICATION_JSON.toString());
-        HttpEntity<String> formEntity = new HttpEntity<String>(parseParams(treeMap), httpHeaders);
-        String result = restTemplate.postForObject(url, formEntity, String.class);
-        log.info("获取回调地址请求参数:{} 返回值为:{}", treeMap, result);
-        JSONObject jsonObject = JSONObject.parseObject(result);
-        return JSONObject.parseObject(jsonObject.get("data").toString());
-    }
-
-    public String parseParams(TreeMap<String, Object> params) {
-        // 拼接已有参数
-        StringBuilder result = new StringBuilder();
-        params.entrySet().forEach(param -> {
-            result.append(param.getKey()).append("=").append(param.getValue()).append("&");
-        });
-        // 获取sign
-        String signParams = result.toString() + "partner_key=";
-        signParams = signParams + key;
-        String sign = Hashing.md5().hashString(signParams, Charset.forName("UTF-8")).toString().toLowerCase();
-        return result.append("&sign").append("=").append(sign).toString();
-    }
-
-    public TreeMap<String, Object> getParamTree() {
-        TreeMap<String, Object> treeMap = new TreeMap<String, Object>();
-        treeMap.put("partner_id",parentId);
-        treeMap.put("timestamp", System.currentTimeMillis());
-        return treeMap;
-    }
+	public TreeMap<String, Object> getParamTree() {
+		TreeMap<String, Object> treeMap = new TreeMap<String, Object>();
+		 treeMap.put("partner_id",parentId);
+		treeMap.put("timestamp", System.currentTimeMillis());
+		return treeMap;
+	}
 
 }
+>>>>>>> origin/test

@@ -23,10 +23,10 @@ import lombok.extern.slf4j.Slf4j;
 public class PeriodTest extends BaseWebTest {
 	@Autowired
 	private PeriodTestServiceV6 periodTestServiceV6;
-
+	
 	@Autowired
 	private EncryptUtils encryptUtil;
-
+	
     @Test
     public void testUpload() throws InterruptedException, ExecutionException, BizException {
         TimeMark timeMark = TimeMark.newInstance();
@@ -35,7 +35,7 @@ public class PeriodTest extends BaseWebTest {
         log.info(">>>>>>>>> payload request complete,used {} mills,total cost {} mills...",timeMark.mills(),timeMark.totalMills());
 
     }
-
+    
     /**
      * 获取直播回调地址
      */
@@ -44,7 +44,7 @@ public class PeriodTest extends BaseWebTest {
     	JSONObject json = encryptUtil.getClassCallBackUrl();
     	log.info("获取直播回调地址:{}",json.toJSONString());
     }
-
+    
     /**
      * 设置直播回调地址
      */

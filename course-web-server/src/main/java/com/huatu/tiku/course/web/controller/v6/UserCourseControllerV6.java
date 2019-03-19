@@ -1,5 +1,7 @@
 package com.huatu.tiku.course.web.controller.v6;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Lists;
@@ -191,9 +193,10 @@ public class UserCourseControllerV6 {
                               @RequestParam(value = "lessonId") long courseWareId,
                               @RequestParam(value = "videoType") int videoType,
                               @RequestParam(value = "exerciseCardId") long exerciseCardId,
-                              @RequestParam(value = "classCardId") long classCardId){
+                              @RequestParam(value = "classCardId") long classCardId,
+                              @RequestParam(value = "reportStatus") int reportStatus){
 
-        return courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, exerciseCardId, classCardId, terminal);
+        return courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, exerciseCardId, classCardId, reportStatus, terminal);
 
     }
 

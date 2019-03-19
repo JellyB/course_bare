@@ -9,6 +9,7 @@ import com.huatu.common.utils.web.RequestUtil;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.util.ResponseUtil;
+
 import lombok.extern.slf4j.Slf4j;
 
 

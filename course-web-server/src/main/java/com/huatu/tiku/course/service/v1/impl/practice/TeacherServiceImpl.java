@@ -244,11 +244,11 @@ public class TeacherServiceImpl implements TeacherService {
 										practiceTime > coursePracticeQuestionInfo.getPracticeTime() ? -1
 												: coursePracticeQuestionInfo.getPracticeTime()
 														- practiceTime.intValue());
-							}
+						}
 						if (coursePracticeQuestionInfo.getBizStatus() == CoursePracticeQuestionInfoEnum.FORCESTOP.getStatus()) {
 							// 此时该试题考试状态为老师强制关闭
 							teacherQuestionBo.setLastPracticeTime(-1);
-						}
+						} 
 						// 设置的练习时间
 						teacherQuestionBo.setPracticeTime(coursePracticeQuestionInfo.getPracticeTime());
 					}
