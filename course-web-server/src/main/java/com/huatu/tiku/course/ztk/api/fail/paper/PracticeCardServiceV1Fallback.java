@@ -55,4 +55,15 @@ public class PracticeCardServiceV1Fallback implements PracticeCardServiceV1 {
 		 return ZTKResponseUtil.defaultResult();
 	}
 
+    /**
+     * 批量获取随堂练习报告状态
+     *
+     * @param userId
+     * @param paramsList
+     * @return
+     */
+    @Override
+    public Object getClassExerciseStatus(int userId, List<HashMap<String, Object>> paramsList) {
+        return ResponseUtil.DEFAULT_PAGE_EMPTY;
+    }
 }
