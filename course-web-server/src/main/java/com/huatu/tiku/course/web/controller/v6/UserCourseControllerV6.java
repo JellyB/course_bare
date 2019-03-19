@@ -127,7 +127,6 @@ public class UserCourseControllerV6 {
      */
     @PutMapping(value = "oneRead/periodTest/{syllabusId}/{courseId}")
     public Object readOneCourseWork(@Token UserSession userSession,
-                                    @PathVariable(value = "id")int id,
                                     @PathVariable(value = "courseId")Long courseId,
                                     @PathVariable(value = "syllabusId")Long syllabusId){
          courseExercisesProcessLogManager.readyOnePeriod(syllabusId, courseId,userSession.getUname());
