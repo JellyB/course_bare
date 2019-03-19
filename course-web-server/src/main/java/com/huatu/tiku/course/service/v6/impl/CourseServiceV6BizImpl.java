@@ -286,7 +286,6 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 		if (ResponseUtil.isSuccess(response)) {
 			Stopwatch stopwatchExplain = Stopwatch.createStarted();
 			PeriodTestListVO periodTestListVO = response.getData();
-			List<Long> syllabusIdList = Lists.newArrayList();
 			// key为paperid_syllabusId value 为试卷信息
 			Map<String, PeriodTestListVO.PeriodTestInfo> paperMap = Maps.newHashMap();
 			Map<Long, PeriodTestListVO.PeriodTestInfo> syllabusMap = Maps.newHashMap();
@@ -301,37 +300,12 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 					periodTestInfo.setShowTime(
 							DateUtil.getSimpleDate(periodTestInfo.getStartTime(), periodTestInfo.getEndTime()));
 					periodTestInfo.setIsExpired(DateUtil.isExpired(periodTestInfo.getEndTime()));
-					periodTestInfo.setIsAlert(YesOrNoStatus.YES.getCode());
+					periodTestInfo.setIsAlert(periodTestInfo.getAlreadyRead());
 					paperMap.put(periodTestInfo.getExamId() + "_" + periodTestInfo.getSyllabusId(), periodTestInfo);
 					syllabusMap.put(periodTestInfo.getSyllabusId(), periodTestInfo);
-					syllabusIdList.add(periodTestInfo.getSyllabusId());
 				});
 			});
-			// 库里存的是不提醒的数据
-			List<CourseExercisesProcessLog> processList = courseExercisesProcessLogMapper
-					.selectByExample(
-							new Example.Builder(CourseExercisesProcessLog.class)
-									.where(WeekendSqls.<CourseExercisesProcessLog>custom()
-											.andIn(CourseExercisesProcessLog::getSyllabusId, syllabusIdList)
-											.andEqualTo(CourseExercisesProcessLog::getUserId, uid)
-											.andEqualTo(CourseExercisesProcessLog::getIsAlert,
-													YesOrNoStatus.YES.getCode())
-											.andEqualTo(CourseExercisesProcessLog::getStatus,
-													YesOrNoStatus.YES.getCode())
-											.andEqualTo(CourseExercisesProcessLog::getDataType,
-													StudyTypeEnum.PERIOD_TEST.getKey()))
-
-									.build());
-			log.info("用户{}不需要提醒的阶段测试大小为:{}", uid, processList.size());
-			processList.forEach(process -> {
-				syllabusMap.get(process.getSyllabusId()).setIsAlert(YesOrNoStatus.NO.getCode());
-			});
-
-			log.info("用户{}不需要提醒的阶段测试大小为:{}", uid, processList.size());
-			processList.forEach(process -> {
-				syllabusMap.get(process.getSyllabusId()).setIsAlert(YesOrNoStatus.NO.getCode());
-				});
-
+			
 			Set<String> paperSyllabusSet = paperMap.keySet();
 			NetSchoolResponse<Map<String, Integer>> bathResponse = periodTestServiceV4.getPaperStatusBath(uid,
 					paperSyllabusSet);

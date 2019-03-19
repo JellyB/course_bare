@@ -124,7 +124,7 @@ public class UserCourseControllerV6 {
      * @param id
      * @return
      */
-    @PutMapping(value = "oneRead/periodTest/{id}/{syllabusId}")
+    @PutMapping(value = "oneRead/periodTest/{syllabusId}")
     public Object readOneCourseWork(@Token UserSession userSession,
                                     @PathVariable(value = "id")int id,
                                     @PathVariable(value = "syllabusId")Long syllabusId){
