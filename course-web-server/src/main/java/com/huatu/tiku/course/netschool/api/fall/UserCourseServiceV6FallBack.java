@@ -169,12 +169,7 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
 	}
 
 	@Override
-	public NetSchoolResponse readOne(Map<String, Object> params) {
-		 return NetSchoolResponse.DEFAULT;
-	}
-
-	@Override
-	public NetSchoolResponse readAll(Map<String, String> params) {
+	public NetSchoolResponse readPeriod(Map<String, Object> params) {
 		 return NetSchoolResponse.DEFAULT;
 	}
 }

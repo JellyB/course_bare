@@ -118,19 +118,12 @@ public interface UserCourseServiceV6 {
 
 
 	/**
-	 * 阶段测试单条已读
+	 * 阶段测试单条获取全部已读
 	 * @param params
 	 * @return
 	 */
-	@GetMapping(value = "/v5/c/class/unfinish_exam_read")
-	NetSchoolResponse readOne(@RequestParam Map<String, Object> params);
+	@GetMapping(value = "/v5/c/class/unfinish_exam_status_record")
+	NetSchoolResponse readPeriod(@RequestParam Map<String, Object> params);
 	
-	/**
-	 * 阶段测试全部已读
-	 * @param params
-	 * @return
-	 */
-	@GetMapping(value = "/v5/c/class/unfinish_exam_read_all")
-	NetSchoolResponse readAll(@RequestParam Map<String, String> params);
 	
 }

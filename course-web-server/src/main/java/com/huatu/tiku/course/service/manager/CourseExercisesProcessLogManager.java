@@ -52,7 +52,6 @@ import com.huatu.ztk.paper.common.AnswerCardStatus;
 
 import lombok.extern.slf4j.Slf4j;
 import tk.mybatis.mapper.entity.Example;
-import tk.mybatis.mapper.weekend.WeekendSqls;
 
 /**
  * 描述：
@@ -137,25 +136,36 @@ public class CourseExercisesProcessLogManager {
      * @param type
      * @return
      */
-    public int allReadByType(long userId, String type) throws BizException{
-        try{
-            StudyTypeEnum studyTypeEnum = StudyTypeEnum.create(type);
-            CourseExercisesProcessLog courseExercisesProcessLog = new CourseExercisesProcessLog();
-            courseExercisesProcessLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
-            courseExercisesProcessLog.setIsAlert(YesOrNoStatus.NO.getCode());
+	public int allReadByType(long userId, String type, String uName) throws BizException {
+		try {
+			StudyTypeEnum studyTypeEnum = StudyTypeEnum.create(type);
+			if (studyTypeEnum.equals(StudyTypeEnum.COURSE_WORK)) {
+				CourseExercisesProcessLog courseExercisesProcessLog = new CourseExercisesProcessLog();
+				courseExercisesProcessLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
+				courseExercisesProcessLog.setIsAlert(YesOrNoStatus.NO.getCode());
 
-            Example example = new Example(CourseExercisesProcessLog.class);
-            example.and().andEqualTo("status", YesOrNoStatus.YES.getCode())
-                    .andEqualTo("dataType", studyTypeEnum.getOrder())
-                    .andEqualTo("userId", userId)
-                    .andEqualTo("isAlert", YesOrNoStatus.YES.getCode());
-            int count = courseExercisesProcessLogMapper.updateByExampleSelective(courseExercisesProcessLog, example);
-            return count;
-        }catch (Exception e){
-            log.error("all read by type error!:{}", e);
-            return -1;
-        }
-    }
+				Example example = new Example(CourseExercisesProcessLog.class);
+				example.and().andEqualTo("status", YesOrNoStatus.YES.getCode())
+						.andEqualTo("dataType", studyTypeEnum.getOrder()).andEqualTo("userId", userId)
+						.andEqualTo("isAlert", YesOrNoStatus.YES.getCode());
+				int count = courseExercisesProcessLogMapper.updateByExampleSelective(courseExercisesProcessLog,
+						example);
+				return count;
+			} else {
+				// 阶段测试全部已读
+				Map<String, Object> param = Maps.newHashMap();
+				param.put("userName", uName);
+				param.put("type", YesOrNoStatus.NO.getCode());
+				NetSchoolResponse response = userCourseServiceV6.readPeriod(param);
+				log.info("用户{}全部已读阶段测试 返回结果:{}", uName, response.getData());
+				return YesOrNoStatus.YES.getCode();
+			}
+
+		} catch (Exception e) {
+			log.error("all read by type error!:{}", e);
+			return -1;
+		}
+	}
 
     /**
      * 单条已读
@@ -165,39 +175,14 @@ public class CourseExercisesProcessLogManager {
      * @throws BizException
      */
 	public int readyOne(long id, String type, Long syllabusId, Long uid) throws BizException {
-        StudyTypeEnum studyTypeEnum = StudyTypeEnum.create(type);
         CourseExercisesProcessLog courseExercisesProcessLog = new CourseExercisesProcessLog();
         courseExercisesProcessLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
-		if (studyTypeEnum.equals(StudyTypeEnum.PERIOD_TEST)) {
-			List<CourseExercisesProcessLog> processList = courseExercisesProcessLogMapper
-					.selectByExample(
-							new Example.Builder(CourseExercisesProcessLog.class)
-									.where(WeekendSqls.<CourseExercisesProcessLog>custom()
-											.andEqualTo(CourseExercisesProcessLog::getSyllabusId, syllabusId)
-											.andEqualTo(CourseExercisesProcessLog::getUserId, uid)
-											.andEqualTo(CourseExercisesProcessLog::getStatus,
-													YesOrNoStatus.YES.getCode())
-											.andEqualTo(CourseExercisesProcessLog::getDataType,
-													StudyTypeEnum.PERIOD_TEST.getOrder()))
-
-									.build());
-			if (CollectionUtils.isEmpty(processList)) {
-				courseExercisesProcessLog.setDataType(StudyTypeEnum.PERIOD_TEST.getOrder());
-				courseExercisesProcessLog.setSyllabusId(syllabusId);
-				courseExercisesProcessLog.setUserId(uid);
-				courseExercisesProcessLog.setStatus(YesOrNoStatus.YES.getCode());
-				courseExercisesProcessLog.setIsAlert(YesOrNoStatus.YES.getCode());
-				courseExercisesProcessLogMapper.insertSelective(courseExercisesProcessLog);
-			}
-
-		} else {
         courseExercisesProcessLog.setIsAlert(YesOrNoStatus.NO.getCode());
+        courseExercisesProcessLog.setDataType(StudyTypeEnum.COURSE_WORK.getOrder());
         courseExercisesProcessLog.setId(id);
-			courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
+		return	courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
+		
 
-		}
-
-		return YesOrNoStatus.YES.getCode();
     }
 
     /**
@@ -521,4 +506,21 @@ public class CourseExercisesProcessLogManager {
         SyllabusWareInfo syllabusWareInfo = table.get(LESSON_LABEL, syllabusId);
         createCourseWorkAnswerCardEntrance(syllabusWareInfo.getClassId(), syllabusWareInfo.getSyllabusId(), syllabusWareInfo.getVideoType(), syllabusWareInfo.getCoursewareId(), subject, terminal, userId);
     }
+
+
+    /**
+     * 阶段测试单条已读
+     * @param syllabusId
+     * @param courseId
+     * @param uname
+     * @return
+     */
+	public void readyOnePeriod(Long syllabusId, Long courseId, String uname) {
+		Map<String, Object> params = Maps.newHashMap();
+		params.put("syllabusId", syllabusId);
+		params.put("courseId", courseId);
+		params.put("uname", uname);
+		NetSchoolResponse response = userCourseServiceV6.readPeriod(params);
+		log.info("用户{}已读阶段测试大纲id为{} 返回结果:{}", uname, syllabusId, response.getData());
+	}
 }

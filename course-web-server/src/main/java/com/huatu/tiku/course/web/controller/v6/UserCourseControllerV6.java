@@ -28,6 +28,7 @@ import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
+import com.huatu.ztk.commons.exception.SuccessMessage;
 
 import lombok.extern.slf4j.Slf4j;
 /**
@@ -103,7 +104,7 @@ public class UserCourseControllerV6 {
     public Object allReadCourseWork(@Token UserSession userSession,
                                     @PathVariable(value = "type")String type){
 
-        return courseExercisesProcessLogManager.allReadByType(userSession.getId(), type);
+        return courseExercisesProcessLogManager.allReadByType(userSession.getId(), type, userSession.getUname());
     }
 
     /**
@@ -124,11 +125,13 @@ public class UserCourseControllerV6 {
      * @param id
      * @return
      */
-    @PutMapping(value = "oneRead/periodTest/{syllabusId}")
+    @PutMapping(value = "oneRead/periodTest/{syllabusId}/{courseId}")
     public Object readOneCourseWork(@Token UserSession userSession,
                                     @PathVariable(value = "id")int id,
+                                    @PathVariable(value = "courseId")Long courseId,
                                     @PathVariable(value = "syllabusId")Long syllabusId){
-        return courseExercisesProcessLogManager.readyOne(id, "periodTest", syllabusId, (long)userSession.getId());
+         courseExercisesProcessLogManager.readyOnePeriod(syllabusId, courseId,userSession.getUname());
+         return SuccessMessage.create("操作成功");
     }
 
     /**
