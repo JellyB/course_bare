@@ -68,6 +68,6 @@ public interface CourseServiceV6Biz {
      * @return
      * @throws BizException
      */
-    Object learnReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, long courseWareId, int videoType, long exerciseCardId, long classCardId, int terminal)throws BizException;
+    Object learnReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, long courseWareId, int videoType, long exerciseCardId, int reportStatus, int terminal)throws BizException;
 
 }

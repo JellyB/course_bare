@@ -67,24 +67,6 @@ public class DateUtil {
 		return true;
 	}
 
-	/**
-	 * 判断时间是否过期
-	 * @param endTime  yyyy-MM-dd HH:mm:ss格式
-	 * @return
-	 */
-	public static boolean isExpired(String endTime) {
-		if(StringUtils.isEmpty(endTime) || ERRORSTR.equals(endTime.trim())) {
-			return false;
-		}
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-		LocalDateTime startDate = LocalDateTime.parse(endTime, dtf);
-		Long  endLong = startDate.toInstant(ZoneOffset.of("+8")).toEpochMilli();
-		if(endLong > System.currentTimeMillis()) {
-			return false;
-		}
-		return true;
-	}
-
 //	public static void main(String[] args) {
 //		System.out.println(getSimpleDate("2018-02-10 17:20:20", "2019-02-10 17:20:20"));
 //		System.out.println(getSimpleDate("2019-02-10 17:20:20", "2019-03-10 17:20:20"));

@@ -410,13 +410,12 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
      * @param courseWareId
      * @param videoType
      * @param exerciseCardId 课后作业答题卡id
-     * @param classCardId 随堂练习答题卡id
      * @param terminal
      * @return
      * @throws BizException
      */
     @Override
-    public Object learnReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, long courseWareId, int videoType, long exerciseCardId, long classCardId, int reportStatus, int terminal) throws BizException {
+    public Object learnReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, long courseWareId, int videoType, long exerciseCardId, int reportStatus, int terminal) throws BizException {
         Map<String,Object> result = Maps.newHashMap();
 
         Map<String,Object> liveReport = Maps.newHashMap();//直播听课记录

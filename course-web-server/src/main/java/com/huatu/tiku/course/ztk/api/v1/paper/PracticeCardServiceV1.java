@@ -49,7 +49,7 @@ public interface PracticeCardServiceV1 {
      */
     @PostMapping(value = "/v2/practices/{userId}/getCourseExercisesCardInfo")
     Object getCourseExercisesCardInfo(
-            @RequestHeader("userId") long userId,
+            @RequestHeader(value = "userId") long userId,
             @RequestBody List<HashMap<String, Object>> paramsList
     );
 
@@ -79,7 +79,7 @@ public interface PracticeCardServiceV1 {
      */
     @PostMapping(value = "/v2/practices/{userId}/getCourseBreakPointCardInfo")
     Object getCourseBreakPointCardInfo(
-            @RequestHeader("userId") long userId,
+            @RequestHeader(value = "userId") long userId,
             @RequestBody List<HashMap<String, Object>> paramsList
     );
 
