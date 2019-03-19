@@ -286,18 +286,33 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 		if (ResponseUtil.isSuccess(response)) {
 			Stopwatch stopwatchExplain = Stopwatch.createStarted();
 			PeriodTestListVO periodTestListVO = response.getData();
+			List<Long> syllabusIdList = Lists.newArrayList();
 			// key为paperid_syllabusId value 为试卷信息
 			Map<String, PeriodTestListVO.PeriodTestInfo> paperMap = Maps.newHashMap();
+			Map<Long, PeriodTestListVO.PeriodTestInfo> syllabusMap = Maps.newHashMap();
+			if(CollectionUtils.isEmpty(periodTestListVO.getList())){
+			    return null;
+            }
 			periodTestListVO.getList().forEach(courseInfo -> {
 				courseInfo.setUndoCount(courseInfo.getChild().size());
 				courseInfo.getChild().forEach(periodTestInfo -> {
 					log.info("接口unfinish_stage_exam_list调用php响应返回periodTestInfo:{}", periodTestInfo.toString());
-					// TODO 后续变为从redis获取
-					int count = courseExercisesProcessLogMapper
-							.selectCountByExample(new Example.Builder(CourseExercisesProcessLog.class)
+					// 填充app端展示所需时间
+					periodTestInfo.setShowTime(
+							DateUtil.getSimpleDate(periodTestInfo.getStartTime(), periodTestInfo.getEndTime()));
+					periodTestInfo.setIsExpired(DateUtil.isExpired(periodTestInfo.getEndTime()));
+					periodTestInfo.setIsAlert(YesOrNoStatus.YES.getCode());
+					paperMap.put(periodTestInfo.getExamId() + "_" + periodTestInfo.getSyllabusId(), periodTestInfo);
+					syllabusMap.put(periodTestInfo.getSyllabusId(), periodTestInfo);
+					syllabusIdList.add(periodTestInfo.getSyllabusId());
+				});
+			});
+			// 库里存的是不提醒的数据
+			List<CourseExercisesProcessLog> processList = courseExercisesProcessLogMapper
+					.selectByExample(
+							new Example.Builder(CourseExercisesProcessLog.class)
 									.where(WeekendSqls.<CourseExercisesProcessLog>custom()
-											.andEqualTo(CourseExercisesProcessLog::getSyllabusId,
-													periodTestInfo.getSyllabusId())
+											.andIn(CourseExercisesProcessLog::getSyllabusId, syllabusIdList)
 											.andEqualTo(CourseExercisesProcessLog::getUserId, uid)
 											.andEqualTo(CourseExercisesProcessLog::getIsAlert,
 													YesOrNoStatus.YES.getCode())
@@ -307,22 +322,11 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 													StudyTypeEnum.PERIOD_TEST.getKey()))
 
 									.build());
-					if (count > 0) {
-						periodTestInfo.setIsAlert(YesOrNoStatus.YES.getCode());
-					}
-					// 填充app端展示所需时间
-					periodTestInfo.setShowTime(
-							DateUtil.getSimpleDate(periodTestInfo.getStartTime(), periodTestInfo.getEndTime()));
-                    periodTestInfo.setIsExpired(DateUtil.isExpired(periodTestInfo.getEndTime()));
-					paperMap.put(periodTestInfo.getExamId() + "_" + periodTestInfo.getSyllabusId(), periodTestInfo);
-					// 填充考试状态
-//					NetSchoolResponse netSchoolResponse = periodTestServiceV4.getPaperStatus(uid,
-//							periodTestInfo.getSyllabusId(), periodTestInfo.getExamId());
-//					if (ResponseUtil.isSuccess(netSchoolResponse)) {
-//						periodTestInfo.setStatus((int) netSchoolResponse.getData());
-//					}
-				});
+			log.info("用户{}不需要提醒的阶段测试大小为:{}", uid, processList.size());
+			processList.forEach(process -> {
+				syllabusMap.get(process.getSyllabusId()).setIsAlert(YesOrNoStatus.NO.getCode());
 			});
+
 			Set<String> paperSyllabusSet = paperMap.keySet();
 			NetSchoolResponse<Map<String, Integer>> bathResponse = periodTestServiceV4.getPaperStatusBath(uid,
 					paperSyllabusSet);

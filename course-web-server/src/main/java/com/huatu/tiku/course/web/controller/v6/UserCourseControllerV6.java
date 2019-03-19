@@ -87,7 +87,8 @@ public class UserCourseControllerV6 {
     public Object obtainUnFinishedNum(@Token UserSession userSession,
                                       @RequestHeader(value = "cv") String cv,
                                       @RequestHeader(value = "terminal") int terminal){
-        return courseExercisesProcessLogManager.getCountByType(userSession.getId());
+    	
+        return courseExercisesProcessLogManager.getCountByType(userSession.getId(),userSession.getUname());
     }
 
     /**
@@ -110,11 +111,12 @@ public class UserCourseControllerV6 {
      * @param id
      * @return
      */
-    @PutMapping(value = "oneRead/{type}/{id}")
+    @PutMapping(value = "oneRead/{type}/{id}/{syllabusId}")
     public Object readOneCourseWork(@Token UserSession userSession,
                                     @PathVariable(value = "type") String type,
-                                    @PathVariable(value = "id")int id){
-        return courseExercisesProcessLogManager.readyOne(id, type);
+                                    @PathVariable(value = "id")int id,
+                                    @PathVariable(value = "syllabusId")Long syllabusId){
+        return courseExercisesProcessLogManager.readyOne(id, type, syllabusId, (long)userSession.getId());
     }
 
     /**
