@@ -2,6 +2,7 @@ package com.huatu.tiku.course.ztk.api.v1.paper;
 
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.ztk.api.fail.paper.PracticeCardServiceV1Fallback;
+import com.huatu.ztk.commons.exception.BizException;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -91,4 +92,32 @@ public interface PracticeCardServiceV1 {
      */
     @GetMapping(value = "/v1/practices/{id}")
     NetSchoolResponse getAnswerCard(@RequestHeader(value = "token") String token, @RequestHeader(value = "terminal") int terminal, @PathVariable(value = "id") long id);
+
+    /**
+     * 直播随堂练创建答题卡并保存答案信息
+     * @param terminal
+     * @param subject
+     * @param uid
+     * @param name
+     * @param courseType
+     * @param courseId
+     * @param questionId
+     * @param questionInfoList
+     * @return
+     */
+    @PostMapping(value = "/v2/practices/createAndSaveAnswerCoursePracticeCard")
+    Object createAndSaveAnswerCoursePracticeCard(
+            @RequestParam("terminal") Integer terminal,
+            @RequestParam("subject") Integer subject,
+            @RequestParam("userId") Integer uid,
+            @RequestParam("name") String name,
+            @RequestParam("courseType") Integer courseType,
+            @RequestParam("courseId") Long courseId,
+            @RequestParam("questionIds") String questionIds,
+            @RequestParam("answers") String[] answers,
+            @RequestParam("corrects") int[] corrects,
+			@RequestParam("times") int[] times,
+            @RequestBody List<Object> questionInfoList
+    );
+
 }

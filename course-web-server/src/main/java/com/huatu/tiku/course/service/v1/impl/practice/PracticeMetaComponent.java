@@ -1,12 +1,15 @@
 package com.huatu.tiku.course.service.v1.impl.practice;
 
-import com.alibaba.fastjson.JSONObject;
-import com.google.common.collect.Lists;
-import com.huatu.common.utils.collection.HashMapBuilder;
-import com.huatu.tiku.course.bean.practice.*;
-import com.huatu.tiku.course.service.cache.CoursePracticeCacheKey;
-import com.huatu.tiku.course.service.v1.practice.QuestionInfoService;
-import lombok.RequiredArgsConstructor;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -16,9 +19,18 @@ import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
+import com.huatu.common.utils.collection.HashMapBuilder;
+import com.huatu.tiku.course.bean.practice.PracticeRoomRankUserBo;
+import com.huatu.tiku.course.bean.practice.PracticeUserQuestionMetaInfoBo;
+import com.huatu.tiku.course.bean.practice.QuestionInfo;
+import com.huatu.tiku.course.bean.practice.QuestionMetaBo;
+import com.huatu.tiku.course.bean.practice.StudentQuestionMetaBo;
+import com.huatu.tiku.course.service.cache.CoursePracticeCacheKey;
+import com.huatu.tiku.course.service.v1.practice.QuestionInfoService;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * Created by lijun on 2019/2/27
@@ -116,10 +128,8 @@ public class PracticeMetaComponent {
                             .name(jsonObject.getString("name"))
                             .courseId(jsonObject.getLong("courseId"))
                             .totalTime(totalTime)
-                            .totalScore(totalScore < 0 ? 0 : totalScore)
-                            .build();
-                })
-                .collect(Collectors.toList());
+					.totalScore(totalScore < 0 ? 0 : totalScore).build();
+		}).collect(Collectors.toList());
         return result;
     }
 
@@ -133,8 +143,7 @@ public class PracticeMetaComponent {
     }
 
     /**
-     * 构建试题统计信息
-     * '0' 存储消耗总时间
+	 * 构建试题统计信息 '0' 存储消耗总时间
      */
     public void buildQuestionMeta(Long roomId, Long questionId, String answer, Integer time) {
         if (StringUtils.isBlank(answer)) {
@@ -302,5 +311,52 @@ public class PracticeMetaComponent {
         buildUserQuestionMeta(userId, courseId, questionId, answer, time, correct);
         buildQuestionMeta(roomId, questionId, answer, time);
         buildRoomRank(roomId, courseId, userId, userName, questionId, answer, time, correct);
+		//构建总答题题数和作答人数
+		buildRoomRightQuestionSum(courseId, courseId,correct);
+	}
+
+	/**
+	 * 构建房间所有答题用户id+课程id set集合 用来直播下课时生成答题卡信息
+	 *
+	 * @param userId
+	 * @param roomId
+	 * @param courseId
+	 */
+	public void setRoomInfoMeta(Integer userId, Long roomId, Long courseId) {
+		final SetOperations<String, String> opsForSet = redisTemplate.opsForSet();
+		final String userMetaKey = CoursePracticeCacheKey.userMetaKey(userId, courseId);
+		final String key = CoursePracticeCacheKey.roomInfoMetaKey(roomId);
+		opsForSet.add(key, userMetaKey);
+		redisTemplate.expire(key, CoursePracticeCacheKey.getDefaultKeyTTL(),
+				CoursePracticeCacheKey.getDefaultTimeUnit());
+	}
+
+	/**
+	 * 获取房间内所有答题用户set集合 set中成员即为userMetaKey中key
+	 *
+	 * @param roomId
+	 */
+	public List<String> getRoomInfoMeta(Long roomId) {
+		final SetOperations<String, String> opsForSet = redisTemplate.opsForSet();
+		final String key = CoursePracticeCacheKey.roomInfoMetaKey(roomId);
+		Set<String> hashkeys = opsForSet.members(key);
+		return hashkeys.stream().collect(Collectors.toList());
+	}
+
+	/**
+	 * 存储随堂课某个课下答对题的题数和作答总人数用来统计正确率
+	 * @param courseId
+	 */
+	public void buildRoomRightQuestionSum(Long courseId, Long userId, Integer correct) {
+		final String key = CoursePracticeCacheKey.roomRightQuestionSum(courseId);
+		if (2 == correct) {
+			redisTemplate.opsForValue().increment(key, 1);// 设置答对题数
+		}
+		final SetOperations<String, Long> opsForSet = redisTemplate.opsForSet();
+
+		final String allUserSumKey = CoursePracticeCacheKey.roomAllUserSum(courseId);
+		// 设置作答总人数
+		opsForSet.add(allUserSumKey, userId);
+
     }
 }

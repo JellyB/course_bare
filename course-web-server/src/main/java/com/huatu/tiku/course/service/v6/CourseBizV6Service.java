@@ -1,6 +1,8 @@
 package com.huatu.tiku.course.service.v6;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.huatu.common.ErrorResult;
 import com.huatu.common.Result;
 import com.huatu.common.exception.BizException;
@@ -11,9 +13,11 @@ import com.huatu.tiku.course.netschool.api.fall.CourseServiceV6FallBack;
 import com.huatu.tiku.course.netschool.api.fall.UserCourseServiceV6FallBack;
 import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
+import com.huatu.tiku.course.service.v1.AccessLimitService;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
@@ -45,6 +49,9 @@ public class CourseBizV6Service {
 
     @Resource(name = "redisTemplate")
     private ValueOperations valueOperations;
+
+    @Autowired
+    private AccessLimitService accessLimitService;
 
     /**
      * 课程日历详情接口
@@ -121,9 +128,13 @@ public class CourseBizV6Service {
      * @return
      */
     public Object obtainMineCoursesDegradeBack(Map<String,Object> params){
+        if(accessLimitService.tryAccess()){
         NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainMineCourses(params);
         log.warn("obtainMineCoursesDegrade.data:{}", JSONObject.toJSONString(netSchoolResponse));
         return ResponseUtil.build(netSchoolResponse);
+        }else{
+            return new NetSchoolResponse<>(Result.SUCCESS_CODE, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
+        }
     }
 
     /**
@@ -132,8 +143,20 @@ public class CourseBizV6Service {
      * @return
      */
     public Object obtainMineCoursesDegrade(Map<String,Object> params){
-        ErrorResult errorResult = ErrorResult.create(10000010, "当前请求的人数过多，请在5分钟后重试",ResponseUtil.DEFAULT_PAGE_EMPTY);
+        if(accessLimitService.tryAccess()){
+            NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainMineCourses(params);
+            log.warn("obtainMineCoursesDegrade.data:{}", JSONObject.toJSONString(netSchoolResponse));
+            return ResponseUtil.build(netSchoolResponse);
+        }else{
+            if(MapUtils.getInteger(params, "terminal") == 1){
+                log.info("获取我的课程信息 -- 降级:{}, 安卓", params);
+                return new NetSchoolResponse<>(Result.SUCCESS_CODE, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
+            }else{
+                log.info("获取我的课程信息 -- 降级:{}, ios", params);
+                ErrorResult errorResult = ErrorResult.create(10000010, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
         throw new BizException(errorResult);
+    }
+        }
     }
 
 
@@ -143,9 +166,10 @@ public class CourseBizV6Service {
      * @return
      */
     public Object obtainLearnCalenderDegrade(Map<String,Object> params){
-        NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainLearnCalender(params);
+        /*NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainLearnCalender(params);
         log.warn("obtainLearnCalenderDegrade.data:{}", JSONObject.toJSONString(netSchoolResponse));
-        return ResponseUtil.build(netSchoolResponse);
+        return ResponseUtil.build(netSchoolResponse);*/
+        return Lists.newArrayList();
     }
 
     /**
@@ -154,8 +178,23 @@ public class CourseBizV6Service {
      * @return
      */
     public Object calendarDetailDegrade(Map<String,Object> params){
-        NetSchoolResponse netSchoolResponse = courseServiceV6FallBack.calendarDetail(params);
+        /*NetSchoolResponse netSchoolResponse = courseServiceV6FallBack.calendarDetail(params);
         log.warn("calendarDetailDegrade.data:{}", JSONObject.toJSONString(netSchoolResponse));
-        return ResponseUtil.build(netSchoolResponse);
+        return ResponseUtil.build(netSchoolResponse);*/
+
+        Map<String,Object> result = Maps.newHashMap();
+        result.put("msg", "未来七天内，没有直播课哦~");
+        result.put("type", 1);
+        result.put("current_page", 1);
+        result.put("data", Lists.newArrayList());
+        result.put("date", "2019-03-18");
+        result.put("month", "03");
+        result.put("day", "18");
+        result.put("perPage", params.get("pageSize"));
+        result.put("last_page", 0);
+        result.put("total", 0);
+        result.put("from", 0);
+        result.put("to", 0);
+        return result;
     }
 }

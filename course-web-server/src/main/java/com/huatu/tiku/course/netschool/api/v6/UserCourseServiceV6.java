@@ -108,5 +108,13 @@ public interface UserCourseServiceV6 {
 	@PostMapping(value = "/v5/c/class/stage_test_study_record")
 	NetSchoolResponse stageTestStudyRecord(@RequestParam Map<String, Object> params);
 	
-	
+	/**
+	 * 用户未完成阶段测试总数
+	 * @param params
+	 * @return
+	 */
+	@GetMapping(value = "/v5/c/class/unfinish_exam_num")
+	NetSchoolResponse unfinishStageExamCount(@RequestParam Map<String, String> params);
+
+
 }
