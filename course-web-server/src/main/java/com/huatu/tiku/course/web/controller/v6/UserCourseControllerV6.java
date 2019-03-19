@@ -107,18 +107,28 @@ public class UserCourseControllerV6 {
     }
 
     /**
-     * 课后作业&阶段测试 单条已读
+     * 课后作业 单条已读
      * @param userSession
-     * @param type
      * @param id
      * @return
      */
-    @PutMapping(value = "oneRead/{type}/{id}/{syllabusId}")
+    @PutMapping(value = "oneRead/courseWork/{id}")
     public Object readOneCourseWork(@Token UserSession userSession,
-                                    @PathVariable(value = "type") String type,
+                                    @PathVariable(value = "id")int id){
+        return courseExercisesProcessLogManager.readyOne(id, "courseWork", 0L, (long)userSession.getId());
+    }
+
+    /**
+     * 阶段测试 单条已读
+     * @param userSession
+     * @param id
+     * @return
+     */
+    @PutMapping(value = "oneRead/periodTest/{id}/{syllabusId}")
+    public Object readOneCourseWork(@Token UserSession userSession,
                                     @PathVariable(value = "id")int id,
                                     @PathVariable(value = "syllabusId")Long syllabusId){
-        return courseExercisesProcessLogManager.readyOne(id, type, syllabusId, (long)userSession.getId());
+        return courseExercisesProcessLogManager.readyOne(id, "periodTest", syllabusId, (long)userSession.getId());
     }
 
     /**
