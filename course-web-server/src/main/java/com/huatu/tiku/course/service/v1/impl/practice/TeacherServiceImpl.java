@@ -179,12 +179,19 @@ public class TeacherServiceImpl implements TeacherService {
         ListenableFuture<List<CoursePracticeQuestionInfo>> asyncCoursePracticeQuestionInfoByRoomId = getAsyncCoursePracticeQuestionInfoByRoomId(roomId, Lists.newArrayList(questionId));
         final QuestionMetaBo questionMetaBo = practiceMetaComponent.getQuestionMetaBo(roomId, questionId);
         List<CoursePracticeQuestionInfo> practiceQuestionInfoList = asyncCoursePracticeQuestionInfoByRoomId.get();
-        if (CollectionUtils.isNotEmpty(practiceQuestionInfoList)) {
-            CoursePracticeQuestionInfo coursePracticeQuestionInfo = practiceQuestionInfoList.get(0);
-            Long practiceTime = (System.currentTimeMillis() - coursePracticeQuestionInfo.getStartPracticeTime()) / 1000;
-            //计算剩余时间
-            questionMetaBo.setLastPracticeTime(practiceTime > coursePracticeQuestionInfo.getPracticeTime() ? -1 : coursePracticeQuestionInfo.getPracticeTime() - practiceTime.intValue());
-        } else {
+		if (CollectionUtils.isNotEmpty(practiceQuestionInfoList)) {
+			CoursePracticeQuestionInfo coursePracticeQuestionInfo = practiceQuestionInfoList.get(0);
+			if (coursePracticeQuestionInfo.getBizStatus() == CoursePracticeQuestionInfoEnum.FORCESTOP.getStatus()) {
+				// 如果是强制结束的则剩余时间为0
+				questionMetaBo.setLastPracticeTime(-1);
+			} else {
+				Long practiceTime = (System.currentTimeMillis() - coursePracticeQuestionInfo.getStartPracticeTime())
+						/ 1000;
+				// 计算剩余时间
+				questionMetaBo.setLastPracticeTime(practiceTime > coursePracticeQuestionInfo.getPracticeTime() ? -1
+						: coursePracticeQuestionInfo.getPracticeTime() - practiceTime.intValue());
+			}
+		} else {
             questionMetaBo.setLastPracticeTime(-1);
         }
         return questionMetaBo;
