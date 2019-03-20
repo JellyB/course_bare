@@ -416,12 +416,14 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         liveReport.put("gold", 0);
         liveReport.put("learnPercent", 0);
         liveReport.put("abovePercent", 0);
+        liveReport.put("teacherComment", "");
         NetSchoolResponse netSchoolResponse = lessonService.studyReport(studyReport);
         if(ResponseUtil.isSuccess(netSchoolResponse)){
             LinkedHashMap<String,Object> data = (LinkedHashMap<String,Object>)netSchoolResponse.getData();
             liveReport.put("learnTime", MapUtils.getInteger(data, "listenLength"));
             liveReport.put("learnPercent", MapUtils.getInteger(data, "listenLength"));
             liveReport.put("abovePercent", MapUtils.getInteger(data, "concentrationPercent"));
+            liveReport.put("teacherComment", "");
         }
         /**
          * 处理课后作业报告
@@ -455,6 +457,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         result.put("courseWorkPractice", courseWorkPractice);
         result.put("liveReport", liveReport);
         result.put("points", dealLearnReportPoints(courseWareId, videoType));
+        result.put("teacherComment", "");
         return result;
     }
 
@@ -465,7 +468,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
      * @return
      * @throws BizException
      */
-    private Map<Long, String> dealLearnReportPoints(long courseWareId, int videoType)throws BizException{
+    private List<Map<String, Object>> dealLearnReportPoints(long courseWareId, int videoType)throws BizException{
         try{
             WeekendSqls<CourseKnowledge> weekendSqls = WeekendSqls.custom();
             weekendSqls.andEqualTo(CourseKnowledge::getCourseId, courseWareId);
@@ -475,16 +478,21 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             List<CourseKnowledge> courseKnowledges = courseKnowledgeMapper.selectByExample(example);
             List<Long> ids = courseKnowledges.stream().map(CourseKnowledge::getKnowledgeId).collect(Collectors.toList());
             if(CollectionUtils.isEmpty(ids)){
-                return Maps.newHashMap();
+                return Lists.newArrayList();
             }
             List<Knowledge> knowledges = knowledgeManager.findBatch(ids);
             if(CollectionUtils.isEmpty(knowledges)){
-                return Maps.newHashMap();
+                return Lists.newArrayList();
             }
-            return knowledges.stream().collect(Collectors.toMap( i -> i.getId(), i -> i.getName()));
+            return knowledges.stream().map(item ->{
+                Map<String,Object> point = Maps.newHashMap();
+                point.put("key", item.getId());
+                point.put("name", item.getName());
+                return point;
+            }).collect(Collectors.toList());
         }catch (Exception e){
             log.error("dealLearnReportPoints deal questionPoints caught an error!:{}", e);
-            return Maps.newHashMap();
+            return Lists.newArrayList();
         }
     }
 }
