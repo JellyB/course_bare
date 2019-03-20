@@ -230,7 +230,9 @@ public class CourseExercisesProcessLogManager {
         int wcount = MapUtils.getIntValue(result, "wcount");
         int rcount = MapUtils.getIntValue(result, "rcount");
         int uncount = MapUtils.getIntValue(result, "uncount");
-        DataInfo dataInfo = DataInfo.builder().wcount(wcount).ucount(uncount).rcount(rcount).status(status).build();
+        Map<String,Object> paper = (HashMap<String,Object>)result.get("paper");
+        int qcount =  MapUtils.getIntValue(paper, "paper");
+        DataInfo dataInfo = DataInfo.builder().wcount(wcount).ucount(uncount).rcount(rcount).status(status).qcount(qcount).build();
 
         Example example = new Example(CourseExercisesProcessLog.class);
         example.and().andEqualTo("lessonId", coursewareId)
@@ -318,7 +320,7 @@ public class CourseExercisesProcessLogManager {
                 .andEqualTo("userId", answerCard.getUserId())
                 .andEqualTo("cardId", answerCard.getId());
 
-        DataInfo dataInfo = DataInfo.builder().wcount(answerCard.getWcount()).ucount(answerCard.getUcount()).rcount(answerCard.getRcount()).status(answerCard.getStatus()).build();
+        DataInfo dataInfo = DataInfo.builder().wcount(answerCard.getWcount()).ucount(answerCard.getUcount()).rcount(answerCard.getRcount()).qcount(answerCard.getPaper().getQcount()).status(answerCard.getStatus()).build();
         CourseExercisesProcessLog updateLog = new CourseExercisesProcessLog();
         updateLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
         updateLog.setBizStatus(answerCard.getStatus());
@@ -553,13 +555,15 @@ public class CourseExercisesProcessLogManager {
 	    private int wcount;
 	    private int ucount;
 	    private int rcount;
+	    private int qcount;
 
 	    @Builder
-        public DataInfo(int status, int wcount, int ucount, int rcount) {
+        public DataInfo(int status, int wcount, int ucount, int rcount, int qcount) {
             this.status = status;
             this.wcount = wcount;
             this.ucount = ucount;
             this.rcount = rcount;
+            this.qcount = qcount;
         }
     }
 }
