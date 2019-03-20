@@ -347,6 +347,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         PracticeCard practiceCard = JSONObject.parseObject(data.toJSONString(), PracticeCard.class);
         practiceCard.setPaper(practiceForCoursePaper);
         List<QuestionPointTree> points_ = Lists.newArrayList();
+        Map<String,Object> paperInfo = Maps.newHashMap();
 
         List<QuestionPointTree> level1Points = practiceCard.getPoints();
         level1Points.forEach(level1Item -> {
@@ -360,12 +361,16 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
                 });
             }
         });
-
+        paperInfo.put("modules", practiceCard.getPaper().getModules());
+        paperInfo.put("questions", practiceCard.getPaper().getQuestions());
+        data.put("paper", paperInfo);
         data.put("points", points_);
-        data.remove("paper");
         data.putAll(courseExercisesStatisticsManager.obtainCourseRankInfo(practiceCard));
         data.put("tcount", practiceForCoursePaper.getQcount());
         data.put("rcount", practiceCard.getRcount());
+
+        data.put("avgMyCost", practiceCard.getSpeed());
+
         Date date = new Date(practiceCard.getCreateTime() == 0 ? System.currentTimeMillis():practiceCard.getCreateTime());
         data.put("submitTimeInfo", courseDateFormat.format(date));
         return data;
@@ -422,8 +427,17 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
          * 处理课后作业报告
          */
         if(exerciseCardId > 0){
-            courseWorkPractice.putAll((Map<String, Object>)courseWorkReport(userSession, terminal, exerciseCardId));
-            courseWorkPractice.remove("ranks");
+            Map<String, Object> temp = (Map<String, Object>)courseWorkReport(userSession, terminal, exerciseCardId);
+            courseWorkPractice.put("answers", temp.get("answers"));
+            courseWorkPractice.put("avgCorrect", temp.get("avgCorrect"));
+            courseWorkPractice.put("avgMyCost", temp.get("avgMyCost"));
+            courseWorkPractice.put("avgTimeCost", temp.get("avgTimeCost"));
+            courseWorkPractice.put("corrects", temp.get("corrects"));
+            courseWorkPractice.put("doubts", temp.get("doubts"));
+            courseWorkPractice.put("id", temp.get("id"));
+            courseWorkPractice.put("paper", temp.get("paper"));
+            courseWorkPractice.put("rcount", temp.get("rcount"));
+            courseWorkPractice.put("submitTimeInfo", temp.get("submitTimeInfo"));
         }
         /**
          * 处理随堂随堂练习报告
