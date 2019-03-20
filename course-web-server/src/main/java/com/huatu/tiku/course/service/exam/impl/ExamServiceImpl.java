@@ -1,17 +1,12 @@
 package com.huatu.tiku.course.service.exam.impl;
 
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.google.common.collect.Maps;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.common.ArticleTypeListEnum;
 import com.huatu.tiku.course.netschool.api.ExamNetSchoolService;
 import com.huatu.tiku.course.service.exam.ExamService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.text.StrBuilder;
-import org.apache.logging.log4j.core.util.JsonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -21,7 +16,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * @创建人 lizhenjuan
@@ -47,61 +41,25 @@ public class ExamServiceImpl implements ExamService {
      * @param
      * @return
      */
-    public Object getArticleList(int type, int page, int pageSize, int subject) {
-        HashMap param = Maps.newHashMap();
+    public Object getArticleList(int type, int page, int pageSize, int category) {
+        HashMap param = new HashMap();
         param.put("type", type);
         param.put("page", page);
         param.put("pageSize", pageSize);
 
-        List<HashMap> articleList = new ArrayList<>();
-        String articleListKey = articleListKey(type, page, subject);
-        log.info("articleListKey是:{},科目是:{}", articleListKey, subject);
+     /*   String articleListKey = articleListKey(type, page, pageSize, category);
+        log.info("articleListKey是:{},category是:{}", articleListKey, category);
         HashOperations hashOperations = redisTemplate.opsForHash();
-        Object article = hashOperations.get(articleListKey, subject + "");
+        Object article = hashOperations.get(articleListKey, category + "");
         if (null != article) {
-            articleList = getArticleInfo(article, false);
-        } else {
-            //走redis
-            NetSchoolResponse articleResultList = examNetSchoolService.getArticleList(param);
-            if (articleResultList.getData() != null) {
-                hashOperations.put(articleListKey, subject + "", articleResultList.getData());
-                redisTemplate.expire(articleListKey, 5, TimeUnit.MINUTES);
-                final Object data = articleResultList.getData();
-                getArticleInfo(data, true);
-                articleList = getArticleInfo(data, false);
-            }
-        }
-
-        return articleList;
-    }
-
-    /**
-     *
-     */
-    public List<HashMap> getArticleInfo(Object article, Boolean flag) {
-        List<HashMap> articleList = new ArrayList<>();
-        HashMap map = JSON.parseObject(JSON.toJSON(article).toString(), HashMap.class);
-
-        if (null != map) {
-            Object data = map.get("data");
-            articleList = JSON.parseArray(data.toString(), HashMap.class);
-        }
-        HashOperations hashOperations = redisTemplate.opsForHash();
-
-        List<HashMap> collect = articleList.stream().map(articleInfo -> {
-            Object articleId = articleInfo.get("id");
-            if (null != articleId) {
-                if (flag) {
-                    hashOperations.put(buildArticleLikeCount(articleId.toString()), articleId.toString(), articleInfo.get("goodPost"));
-                } else {
-                    //去redis中获取
-                    Object likeCount = hashOperations.get(buildArticleLikeCount(articleId.toString()), articleId.toString());
-                    articleInfo.put("goodPost", likeCount);
-                }
-            }
-            return articleInfo;
-        }).collect(Collectors.toList());
-        return collect;
+            return article;
+        }*/
+        NetSchoolResponse article1List = examNetSchoolService.getArticleList(param);
+       /* if (article1List.getData() != null) {
+            hashOperations.put(articleListKey, category + "", article1List.getData());
+            redisTemplate.expire(articleListKey, 5, TimeUnit.MINUTES);
+        }*/
+        return article1List.getData();
     }
 
     /**
@@ -159,15 +117,8 @@ public class ExamServiceImpl implements ExamService {
         int id = (int) map.get("id");
         HashOperations hashOperations = redisTemplate.opsForHash();
         hashOperations.delete(articleDetail(id), String.valueOf(id));
-        //文章点赞
-        String articleLikeCountKey = buildArticleLikeCount(String.valueOf(id));
-        if (map.get("type").equals(1)) {
-            //点赞
-            hashOperations.increment(articleLikeCountKey, String.valueOf(id), 1);
-        } else {
-            //取消点赞
-            hashOperations.increment(articleLikeCountKey, String.valueOf(id), -1);
-        }
+        //文章列表清除缓存
+
         return like;
     }
 
@@ -175,11 +126,11 @@ public class ExamServiceImpl implements ExamService {
     /**
      * 备考精华列表缓存key
      */
-    public String articleListKey(int type, int page, int subject) {
+    public String articleListKey(int type, int page, int pageSize, int category) {
         StringBuffer listKey = new StringBuffer();
         return listKey.append("article:cache").append(":")
-                .append(subject).append(subject)
                 .append(page).append(":")
+                .append(pageSize).append(":")
                 .append(type).toString();
     }
 
@@ -191,18 +142,6 @@ public class ExamServiceImpl implements ExamService {
         return detailKey.append("article").append(":")
                 .append("detail").append(":")
                 .append(aid).toString();
-    }
-
-    /**
-     * 科目点赞数量
-     *
-     * @return
-     */
-    public String buildArticleLikeCount(String aid) {
-        StringBuffer articleLike = new StringBuffer();
-        return articleLike.append("article:like:count").append(":")
-                .append(aid)
-                .toString();
     }
 
 
