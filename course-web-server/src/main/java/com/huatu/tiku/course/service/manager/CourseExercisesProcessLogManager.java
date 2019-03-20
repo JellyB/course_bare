@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.huatu.tiku.course.bean.vo.RecordProcess;
 import lombok.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -86,9 +87,6 @@ public class CourseExercisesProcessLogManager {
 
     @Autowired
     private UserCourseServiceV6 userCourseServiceV6;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     private static final String LESSON_LABEL = "lesson";
 
@@ -187,6 +185,26 @@ public class CourseExercisesProcessLogManager {
                 .andEqualTo("dataType", StudyTypeEnum.COURSE_WORK.getOrder());
 
 		return	courseExercisesProcessLogMapper.updateByExampleSelective(courseExercisesProcessLog, example);
+    }
+
+    /**
+     * 录播处理进度
+     * @param recordProcess
+     * @throws BizException
+     */
+    public void dealRecordProcess(RecordProcess recordProcess) throws BizException{
+        if(recordProcess.getUserId() == 0 || recordProcess.getSyllabusId() == 0){
+            return;
+        }
+        Table<String, Long, SyllabusWareInfo> syllabusWareInfoTable = dealSyllabusInfo(Sets.newHashSet(recordProcess.getSyllabusId()));
+        SyllabusWareInfo syllabusWareInfo = syllabusWareInfoTable.get(LESSON_LABEL, recordProcess.getSyllabusId());
+        if(null == syllabusWareInfo){
+            return;
+        }
+        this.createCourseWorkAnswerCardEntrance(syllabusWareInfo.getClassId(),
+                recordProcess.getSyllabusId(),
+                syllabusWareInfo.getVideoType(),
+                syllabusWareInfo.getCoursewareId(), recordProcess.getSubject(), recordProcess.getTerminal(), recordProcess.getUserId());
     }
 
     /**

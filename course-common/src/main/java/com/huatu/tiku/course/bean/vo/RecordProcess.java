@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * 描述：
+ * 描述：录播上传进度
  *
  * @author biguodong
  * Create time 2019-03-15 10:18 AM
@@ -15,14 +15,20 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class PlayBackVo {
+public class RecordProcess {
 
     private long syllabusId;
     private String userName;
+    private int userId;
+    private int terminal;
+    private int subject;
 
     @Builder
-    public PlayBackVo(long syllabusId, String userName) {
+    public RecordProcess(long syllabusId, String userName, int userId, int terminal, int subject) {
         this.syllabusId = syllabusId;
         this.userName = userName;
+        this.userId = userId;
+        this.terminal = terminal;
+        this.subject = subject;
     }
 }
