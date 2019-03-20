@@ -36,10 +36,21 @@ public class ProcessReportServiceImpl implements ProcessReportService {
     public Object playBackReport(Map<String, Object> params) {
 
         long syllabusId = MapUtils.getLong(params, "syllabusId");
-        String userName = MapUtils.getString(params, "userName");
-        log.info("学员录播或回放学习进度上报数据:{}", params);
-        RecordProcess playBack = RecordProcess.builder().syllabusId(syllabusId).userName(userName).build();
-        rabbitTemplate.convertAndSend("", RabbitMqConstants.PLAY_BACK_DEAL_INFO, JSONObject.toJSONString(playBack));
+        String userName = MapUtils.getString(params, "username");
+        int userId  = MapUtils.getIntValue(params, "userId");
+        int subject = MapUtils.getIntValue(params, "subject");
+        int terminal = MapUtils.getIntValue(params, "terminal");
+
+        RecordProcess recordProcess = RecordProcess.builder()
+                .syllabusId(syllabusId)
+                .userName(userName)
+                .subject(subject)
+                .terminal(terminal)
+                .userId(userId)
+                .build();
+
+        log.info("学员录播或回放学习进度上报数据:{}", JSONObject.toJSONString(recordProcess));
+        rabbitTemplate.convertAndSend("", RabbitMqConstants.PLAY_BACK_DEAL_INFO, JSONObject.toJSONString(recordProcess));
         return SuccessMessage.create();
     }
 
