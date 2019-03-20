@@ -386,7 +386,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
      * @throws BizException
      */
     @Override
-    public Object learnReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, long courseWareId, int videoType, long exerciseCardId, int reportStatus, int terminal) throws BizException {
+    public Object learnReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, long courseWareId, int videoType, long exerciseCardId, int reportStatus, int terminal, String cv) throws BizException {
         Map<String,Object> result = Maps.newHashMap();
 
         Map<String,Object> liveReport = Maps.newHashMap();//直播听课记录
@@ -429,8 +429,8 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
          * 处理随堂随堂练习报告
          */
         if(reportStatus > 0){
-            NetSchoolResponse classReport = practiceCardService.getClassExerciseReport(courseWareId, videoType, userSession.getToken());
-            if(classReport != ResponseUtil.DEFAULT_PAGE_EMPTY && null != classReport){
+            NetSchoolResponse classReport = practiceCardService.getClassExerciseReport(courseWareId, videoType, userSession.getToken(), terminal, cv);
+            if(classReport != ResponseUtil.DEFAULT_PAGE_EMPTY && null != classReport && null != classReport.getData()){
                 LinkedHashMap linkedHashMap = (LinkedHashMap<String, Object>) classReport.getData();
                 classPractice.putAll(linkedHashMap);
             }
