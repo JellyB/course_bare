@@ -1,6 +1,8 @@
 package com.huatu.tiku.course.service.v6.impl;
 
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.CollationElementIterator;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -22,6 +24,8 @@ import com.huatu.common.utils.reflect.BeanUtil;
 import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.util.ZTKResponseUtil;
+import com.huatu.ztk.paper.vo.PracticeReportVo;
+import com.sun.org.apache.xerces.internal.xs.datatypes.ObjectList;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -399,7 +403,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         Map<String,Object> classPractice = Maps.newHashMap();//随堂练习
         Map<String,Object> courseWorkPractice = Maps.newHashMap();//课后作业报告
         List<QuestionPointTree> courseWorkPracticePoints = Lists.newArrayList();
-        List<QuestionPointTree> classPracticePoints = Lists.newArrayList();
+        List<Map<String,Object>> classPracticePoints = Lists.newArrayList();
         //知识点id展示后台配置的知识点信息
         Map<String,Object> points = Maps.newHashMap();
 
@@ -465,7 +469,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             NetSchoolResponse classReport = practiceCardService.getClassExerciseReport(courseWareId, videoType, userSession.getToken(), terminal, cv);
             if(classReport != ResponseUtil.DEFAULT_PAGE_EMPTY && null != classReport && null != classReport.getData()){
                 LinkedHashMap linkedHashMap = (LinkedHashMap<String, Object>) classReport.getData();
-                classPracticePoints.addAll((List<QuestionPointTree>) linkedHashMap.get("points"));
+                classPracticePoints.addAll((List<Map<String,Object>>) linkedHashMap.get("points"));
                 classPractice.putAll(linkedHashMap);
             }
         }
@@ -484,10 +488,18 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
      * @return
      * @throws BizException
      */
-    private List<QuestionPointTree> dealLearnReportPoints(List<QuestionPointTree> classPracticePoints, List<QuestionPointTree> courseWorkPracticePoints)throws BizException{
+    private List<QuestionPointTree> dealLearnReportPoints(List<Map<String,Object>> classPracticePoints, List<QuestionPointTree> courseWorkPracticePoints)throws BizException{
         try{
 
-            Map<Integer, QuestionPointTree> classPracticePointsMap  = classPracticePoints.stream().collect(Collectors.toMap(item-> item.getId(), item->item));
+            Map<Integer, QuestionPointTree> classPracticePointsMap  = classPracticePoints.stream()
+                    .collect(Collectors.toMap(
+                            item->{
+                                int id = MapUtils.getIntValue(item, "id");
+                                return id;
+                            },item->{
+                                QuestionPointTree questionPointTree = BeanUtil.fromMap(QuestionPointTree.class, item);
+                                return questionPointTree;
+                            }));
             Map<Integer, QuestionPointTree> courseWorkPracticePointsMap  = courseWorkPracticePoints.stream().collect(Collectors.toMap(item-> item.getId(), item->item));
             List<QuestionPointTree> pointTrees = Lists.newArrayList();
 
@@ -532,11 +544,23 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         QuestionPointTree total = new QuestionPointTree();
         total.setQnum(middlePoint.getQnum() + afterPoint.getQnum());
         total.setRnum(middlePoint.getRnum() + afterPoint.getRnum());
-        total.setAccuracy(total.getRnum() / total.getQnum());
+        total.setWnum(middlePoint.getWnum() + afterPoint.getWnum());
+        total.setUnum(middlePoint.getUnum() + afterPoint.getUnum());
         total.setTimes(middlePoint.getTimes() + afterPoint.getTimes());
         total.setId(middlePoint.getId());
         total.setName(middlePoint.getName());
         total.setSpeed(total.getTimes() / total.getQnum());
+        int questionNum = total.getRnum() + total.getWnum();
+        /**
+         * 计算平均时间&正确率
+         */
+        int speed = total.getTimes() / questionNum;
+        double accuracy = 0;
+        if (questionNum > 0) {
+            accuracy = new BigDecimal(total.getRnum() * 100).divide(new BigDecimal(questionNum), 1, RoundingMode.HALF_UP).doubleValue();
+        }
+        total.setAccuracy(speed);
+        total.setAccuracy(accuracy);
         return total;
     }
 }
