@@ -211,7 +211,7 @@ public class CourseExercisesProcessLogManager {
      * 创建课后作业答题卡前置逻辑入口
      * @throws BizException
      */
-    public Object createCourseWorkAnswerCardEntrance(long courseId, long syllabusId, int courseType, long coursewareId, int subjectId, int terminal, int userId) throws BizException{
+    public Object createCourseWorkAnswerCardEntrance(long courseId, long syllabusId, int courseType, long coursewareId, int subject, int terminal, int userId) throws BizException{
         List<Map<String, Object>> list = courseExercisesService.listQuestionByCourseId(courseType, coursewareId);
         if (CollectionUtils.isEmpty(list)) {
             return null;
@@ -221,7 +221,7 @@ public class CourseExercisesProcessLogManager {
                 .map(map -> String.valueOf(map.get("id")))
                 .collect(Collectors.joining(","));
         Object practiceCard = practiceCardService.createCourseExercisesPracticeCard(
-                terminal, subjectId, userId, "课后作业练习",
+                terminal, subject, userId, "课后作业练习",
                 courseType, coursewareId, questionId
         );
         HashMap<String, Object> result = (HashMap<String, Object>) ZTKResponseUtil.build(practiceCard);

@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.service.v6.impl;
 
 
+import java.text.CollationElementIterator;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
@@ -12,8 +13,15 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.huatu.tiku.course.common.VideoTypeEnum;
+import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
+import com.huatu.tiku.course.util.ZTKResponseUtil;
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -42,7 +50,6 @@ import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
 import com.huatu.tiku.course.netschool.api.v6.LessonServiceV6;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.service.manager.CourseExercisesStatisticsManager;
-import com.huatu.tiku.course.service.manager.KnowledgeManager;
 import com.huatu.tiku.course.service.v6.CourseServiceV6Biz;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.DateUtil;
@@ -98,13 +105,10 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
     private UserCourseServiceV6 userCourseServiceV6;
 
     @Autowired
-    private CourseExercisesProcessLogMapper courseExercisesProcessLogMapper;
-
-    @Autowired
     private CourseExercisesStatisticsManager courseExercisesStatisticsManager;
 
     @Autowired
-    private CourseKnowledgeMapper courseKnowledgeMapper;
+    private CourseExercisesProcessLogManager courseExercisesProcessLogManager;
 
     @Autowired
     private PeriodTestServiceV4 periodTestServiceV4;
@@ -114,10 +118,6 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
     @Autowired
     private LessonServiceV6 lessonService;
-
-    @Autowired
-    private KnowledgeManager knowledgeManager;
-
 
     /**
      * 模考大赛解析课信息,多个id使用逗号分隔
@@ -391,12 +391,14 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
      * @throws BizException
      */
     @Override
-    public Object learnReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, long courseWareId, int videoType, long exerciseCardId, int reportStatus, int terminal, String cv) throws BizException {
+    public Object learnReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, long courseWareId, int videoType, long exerciseCardId, int reportStatus, long syllabusId, int terminal, String cv) throws BizException {
         Map<String,Object> result = Maps.newHashMap();
 
         Map<String,Object> liveReport = Maps.newHashMap();//直播听课记录
         Map<String,Object> classPractice = Maps.newHashMap();//随堂练习
         Map<String,Object> courseWorkPractice = Maps.newHashMap();//课后作业报告
+        List<Map<String,Object>> courseWorkPracticePoints = Lists.newArrayList();
+        List<Map<String,Object>> classPracticePoints = Lists.newArrayList();
         //知识点id展示后台配置的知识点信息
         Map<String,Object> points = Maps.newHashMap();
 
@@ -410,23 +412,21 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         studyReport.put("videoType", videoType);
 
         /**
-         * 处理听课记录
+         * 处理听课记录，只有直播有听课记录
          */
-        liveReport.put("learnTime", 0);
-        liveReport.put("gold", 0);
-        liveReport.put("learnPercent", 0);
-        liveReport.put("abovePercent", 0);
-        liveReport.put("teacherComment", "");
+        VideoTypeEnum videoTypeEnum = VideoTypeEnum.create(videoType);
         NetSchoolResponse netSchoolResponse = lessonService.studyReport(studyReport);
-        if(ResponseUtil.isSuccess(netSchoolResponse)){
+        if(ResponseUtil.isSuccess(netSchoolResponse) && videoTypeEnum == VideoTypeEnum.LIVE){
             LinkedHashMap<String,Object> data = (LinkedHashMap<String,Object>)netSchoolResponse.getData();
+            int learnPercent = MapUtils.getInteger(data, "listenLength");
+            int abovePercent = MapUtils.getInteger(data, "concentrationPercent");
             liveReport.put("learnTime", MapUtils.getInteger(data, "listenLength"));
-            liveReport.put("learnPercent", MapUtils.getInteger(data, "listenLength"));
-            liveReport.put("abovePercent", MapUtils.getInteger(data, "concentrationPercent"));
-            liveReport.put("teacherComment", "");
+            liveReport.put("learnPercent", learnPercent);
+            liveReport.put("abovePercent", abovePercent);
+            liveReport.put("teacherComment", String.format("听取了课程 %s %的内容，学习专注度高于全班 %s %的同学", learnPercent, abovePercent));
         }
         /**
-         * 处理课后作业报告
+         * 处理课后作业报告，如果配置了课后作业
          */
         if(exerciseCardId > 0){
             Map<String, Object> temp = (Map<String, Object>)courseWorkReport(userSession, terminal, exerciseCardId);
@@ -439,8 +439,24 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             courseWorkPractice.put("id", temp.get("id"));
             courseWorkPractice.put("paper", temp.get("paper"));
             courseWorkPractice.put("rcount", temp.get("rcount"));
+            courseWorkPractice.put("practiceStatus", YesOrNoStatus.YES.getCode());
             courseWorkPractice.put("submitTimeInfo", temp.get("submitTimeInfo"));
+            courseWorkPracticePoints.addAll((List<Map<String,Object>>) temp.get("points"));
+        }else{
+            try{
+                Object object = courseExercisesProcessLogManager.createCourseWorkAnswerCardEntrance(classId, syllabusId, videoType, courseWareId, userSession.getSubject(), terminal, userSession.getId());
+                if(null != object){
+                    HashMap<String, Object> practiceCard = (HashMap<String, Object>) ZTKResponseUtil.build(object);
+                    courseWorkPractice.put("id", MapUtils.getString(practiceCard, "id"));
+                    courseWorkPractice.put("practiceStatus", YesOrNoStatus.NO.getCode());
+                }
+            }catch (Exception e){
+                courseWorkPractice.put("id", 0);
+                courseWorkPractice.put("practiceStatus", YesOrNoStatus.NO.getCode());
+                log.error("学习报告页面创建课后作业答题卡失败！{}", e);
+            }
         }
+
         /**
          * 处理随堂随堂练习报告
          */
@@ -448,6 +464,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             NetSchoolResponse classReport = practiceCardService.getClassExerciseReport(courseWareId, videoType, userSession.getToken(), terminal, cv);
             if(classReport != ResponseUtil.DEFAULT_PAGE_EMPTY && null != classReport && null != classReport.getData()){
                 LinkedHashMap linkedHashMap = (LinkedHashMap<String, Object>) classReport.getData();
+                classPracticePoints.addAll((List<Map<String,Object>>) linkedHashMap.get("points"));
                 classPractice.putAll(linkedHashMap);
             }
         }else{
@@ -456,43 +473,90 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         result.put("classPractice", classPractice);
         result.put("courseWorkPractice", courseWorkPractice);
         result.put("liveReport", liveReport);
-        result.put("points", dealLearnReportPoints(courseWareId, videoType));
-        result.put("teacherComment", "");
+        result.put("points", dealLearnReportPoints(classPracticePoints, courseWorkPracticePoints));
+        result.put("teacherComment", "课程内容未听取过半，哪里来的勇气完成课后作业，亲，磨刀不误砍柴工，听完技巧再练习吧");
         return result;
     }
 
     /**
      * 处理课件知识点id
-     * @param courseWareId
-     * @param videoType
+     * @param classPracticePoints 随堂练习知识点
+     * @param courseWorkPracticePoints 课后练习知识点
      * @return
      * @throws BizException
      */
-    private List<Map<String, Object>> dealLearnReportPoints(long courseWareId, int videoType)throws BizException{
+    private List<QuestionPointTree> dealLearnReportPoints(List<Map<String,Object>> classPracticePoints, List<Map<String,Object>> courseWorkPracticePoints)throws BizException{
         try{
-            WeekendSqls<CourseKnowledge> weekendSqls = WeekendSqls.custom();
-            weekendSqls.andEqualTo(CourseKnowledge::getCourseId, courseWareId);
-            weekendSqls.andEqualTo(CourseKnowledge::getCourseType, videoType);
 
-            Example example = Example.builder(CourseKnowledge.class).where(weekendSqls).build();
-            List<CourseKnowledge> courseKnowledges = courseKnowledgeMapper.selectByExample(example);
-            List<Long> ids = courseKnowledges.stream().map(CourseKnowledge::getKnowledgeId).collect(Collectors.toList());
-            if(CollectionUtils.isEmpty(ids)){
-                return Lists.newArrayList();
+            Map<Integer, QuestionPointTree> classPracticePointsMap  = Maps.newHashMap();
+            Map<Integer, QuestionPointTree> courseWorkPracticePointsMap  = Maps.newHashMap();
+            List<QuestionPointTree> pointTrees = Lists.newArrayList();
+
+            classPracticePoints.forEach(classPracticePoint -> {
+                QuestionPointTree questionPointTree = new QuestionPointTree();
+                try{
+                    BeanUtils.populate(questionPointTree, classPracticePoint);
+                    classPracticePointsMap.put(questionPointTree.getId(), questionPointTree);
+                }catch (Exception e){
+                    return;
+                }
+            });
+
+            courseWorkPracticePoints.forEach( courseWorkPracticePoint -> {
+                QuestionPointTree questionPointTree = new QuestionPointTree();
+                try{
+                    BeanUtils.populate(questionPointTree, courseWorkPracticePoint);
+                    courseWorkPracticePointsMap.put(questionPointTree.getId(), questionPointTree);
+                }catch (Exception e){
+                    return;
+                }
+            });
+            List<Integer> commonPointIds = Lists.newArrayList();
+            if(CollectionUtils.isEmpty(classPracticePointsMap.keySet()) && CollectionUtils.isEmpty(courseWorkPracticePointsMap.keySet())){
+                return pointTrees;
+            }else if(CollectionUtils.isEmpty(classPracticePointsMap.keySet()) && CollectionUtils.isNotEmpty(courseWorkPracticePointsMap.keySet())){
+                return Lists.newArrayList(courseWorkPracticePointsMap.values());
+            }else if(CollectionUtils.isNotEmpty(classPracticePointsMap.keySet()) && CollectionUtils.isEmpty(courseWorkPracticePointsMap.keySet())){
+                return Lists.newArrayList(courseWorkPracticePointsMap.values());
+            }else{
+                Predicate<QuestionPointTree> predicate = current -> courseWorkPracticePointsMap.keySet().contains(current.getId());
+                classPracticePointsMap.keySet().forEach(sId -> {
+                    QuestionPointTree middelPoint = classPracticePointsMap.get(sId);
+                    if(predicate.test(middelPoint)){
+                        pointTrees.add(dealCommonPoints(middelPoint, courseWorkPracticePointsMap.get(sId)));
+                        commonPointIds.add(sId);
+                    }else{
+                        pointTrees.add(middelPoint);
+                    }
+                });
             }
-            List<Knowledge> knowledges = knowledgeManager.findBatch(ids);
-            if(CollectionUtils.isEmpty(knowledges)){
-                return Lists.newArrayList();
-            }
-            return knowledges.stream().map(item ->{
-                Map<String,Object> point = Maps.newHashMap();
-                point.put("key", item.getId());
-                point.put("name", item.getName());
-                return point;
-            }).collect(Collectors.toList());
+            courseWorkPracticePointsMap.keySet().forEach(sId -> {
+                if(CollectionUtils.isNotEmpty(commonPointIds) && !commonPointIds.contains(sId)){
+                    pointTrees.add(courseWorkPracticePointsMap.get(sId));
+                }
+            });
+            return pointTrees;
         }catch (Exception e){
-            log.error("dealLearnReportPoints deal questionPoints caught an error!:{}", e);
+            log.error("处理随堂练习&课后练习汇总知识点异常:{}", e);
             return Lists.newArrayList();
         }
+    }
+
+    /**
+     * 处理随堂练练习 & 课后作业汇总知识点
+     * @param middlePoint
+     * @param afterPoint
+     * @return
+     */
+    private QuestionPointTree dealCommonPoints(QuestionPointTree middlePoint, QuestionPointTree afterPoint){
+        QuestionPointTree total = new QuestionPointTree();
+        total.setQnum(middlePoint.getQnum() + afterPoint.getQnum());
+        total.setRnum(middlePoint.getRnum() + afterPoint.getRnum());
+        total.setAccuracy(total.getRnum() / total.getQnum());
+        total.setTimes(middlePoint.getTimes() + afterPoint.getTimes());
+        total.setId(middlePoint.getId());
+        total.setName(middlePoint.getName());
+        total.setSpeed(total.getTimes() / total.getQnum());
+        return total;
     }
 }
