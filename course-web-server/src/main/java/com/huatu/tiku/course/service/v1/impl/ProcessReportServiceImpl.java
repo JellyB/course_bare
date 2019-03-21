@@ -2,24 +2,16 @@ package com.huatu.tiku.course.service.v1.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.huatu.common.SuccessMessage;
-import com.huatu.tiku.common.consts.RabbitConsts;
-import com.huatu.tiku.course.bean.vo.PlayBackVo;
+import com.huatu.tiku.course.bean.vo.RecordProcess;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.service.v1.ProcessReportService;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Service;
 
 
-import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -44,10 +36,21 @@ public class ProcessReportServiceImpl implements ProcessReportService {
     public Object playBackReport(Map<String, Object> params) {
 
         long syllabusId = MapUtils.getLong(params, "syllabusId");
-        String userName = MapUtils.getString(params, "userName");
-        log.info("学员录播或回放学习进度上报数据:{}", params);
-        PlayBackVo playBack = PlayBackVo.builder().syllabusId(syllabusId).userName(userName).build();
-        rabbitTemplate.convertAndSend("", RabbitMqConstants.PLAY_BACK_DEAL_INFO, JSONObject.toJSONString(playBack));
+        String userName = MapUtils.getString(params, "username");
+        int userId  = MapUtils.getIntValue(params, "userId");
+        int subject = MapUtils.getIntValue(params, "subject");
+        int terminal = MapUtils.getIntValue(params, "terminal");
+
+        RecordProcess recordProcess = RecordProcess.builder()
+                .syllabusId(syllabusId)
+                .userName(userName)
+                .subject(subject)
+                .terminal(terminal)
+                .userId(userId)
+                .build();
+
+        log.info("学员录播或回放学习进度上报数据:{}", JSONObject.toJSONString(recordProcess));
+        rabbitTemplate.convertAndSend("", RabbitMqConstants.PLAY_BACK_DEAL_INFO, JSONObject.toJSONString(recordProcess));
         return SuccessMessage.create();
     }
 

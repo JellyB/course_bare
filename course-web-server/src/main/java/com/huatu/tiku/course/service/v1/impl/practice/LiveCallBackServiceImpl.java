@@ -93,7 +93,7 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
 			// 获取房间内答题学员key 集合
 			List<String> userCoursekeyList = practiceMetaComponent.getRoomInfoMeta(roomId);
 			// 调用构建用户答题卡信息方法
-			coursePracticeQuestionInfoServiceImpl.generateAnswerCardInfo(questionIds, userCoursekeyList);
+			coursePracticeQuestionInfoServiceImpl.generateAnswerCardInfo(questionIds, userCoursekeyList, roomId);
 		}else {
 			log.info("房间id:{}上课回调", roomId);
 		}

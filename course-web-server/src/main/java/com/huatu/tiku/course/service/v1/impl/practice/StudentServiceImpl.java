@@ -50,7 +50,7 @@ public class StudentServiceImpl implements StudentService {
         //存储答题用户信息到set中
         practiceMetaComponent.setRoomInfoMeta(userId, roomId, courseId);
         //返回做题结果 TODO 送金币
-        return ImmutableMap.of("isCorrect",isCorrect, "coin",3);
+        return ImmutableMap.of("isCorrect",isCorrect, "coin",2);
     }
 
     @Override

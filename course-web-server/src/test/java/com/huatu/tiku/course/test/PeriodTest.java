@@ -1,17 +1,27 @@
 package com.huatu.tiku.course.test;
 
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.fastjson.JSONObject;
 import com.huatu.common.exception.BizException;
 import com.huatu.common.test.BaseWebTest;
 import com.huatu.common.utils.date.TimeMark;
+import com.huatu.tiku.common.bean.reward.RewardMessage;
+import com.huatu.tiku.common.consts.RabbitConsts;
+import com.huatu.tiku.course.bean.practice.PracticeUserQuestionMetaInfoBo;
+import com.huatu.tiku.course.common.CoinType;
 import com.huatu.tiku.course.service.v6.PeriodTestServiceV6;
 import com.huatu.tiku.course.util.EncryptUtils;
+import com.huatu.tiku.springboot.basic.reward.RewardAction.ActionType;
+import com.huatu.ztk.commons.RewardConstants;
 import com.huatu.ztk.paper.vo.PeriodTestSubmitlPayload;
 
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +36,9 @@ public class PeriodTest extends BaseWebTest {
 	
 	@Autowired
 	private EncryptUtils encryptUtil;
+	
+	@Autowired
+	private RabbitTemplate rabbitTemplate;
 	
     @Test
     public void testUpload() throws InterruptedException, ExecutionException, BizException {
@@ -53,4 +66,22 @@ public class PeriodTest extends BaseWebTest {
     	JSONObject json = encryptUtil.setClassCallBackUrl();
     	log.info("获取直播回调地址:{}",json.toJSONString());
     }
+    
+    public void testMapReduce() {
+    	
+    	List<PracticeUserQuestionMetaInfoBo> question = new ArrayList<>();
+    	question.add(PracticeUserQuestionMetaInfoBo.builder().correct(1).build());
+    	question.add(PracticeUserQuestionMetaInfoBo.builder().correct(1).build());
+    	Integer totalScore = question.stream()
+				.map(practiceUserQuestionMetaInfoBo -> practiceUserQuestionMetaInfoBo.getCorrect() == 1 ? 2 : 0)
+				.reduce(0, (a, b) -> a + b);
+    	log.info("总积分为:{}",totalScore);
+    }
+    
+    @Test
+    public void testCoin() {
+    	RewardMessage msg = RewardMessage.builder().gold(100000).uid(233982082).action(CoinType.COURSE_PRACTICE_RIGHT).experience(10000).bizId(System.currentTimeMillis()+"").uname("app_ztk620567022").timestamp(System.currentTimeMillis()).build();
+		rabbitTemplate.convertAndSend("",RabbitConsts.QUEUE_REWARD_ACTION, msg);
+    }
+    
 }

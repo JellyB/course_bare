@@ -1,12 +1,18 @@
 package com.huatu.tiku.course.web.controller.v6.practice;
 
-import com.huatu.common.SuccessMessage;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.service.v1.practice.StudentService;
 import com.huatu.tiku.springboot.users.support.Token;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
 
 /**
  * Created by lijun on 2019/2/18
@@ -45,7 +51,7 @@ public class StudentController {
      */
     @GetMapping("{roomId}/questionRankInfo")
     public Object getQuestionRankInfo(@PathVariable Long roomId) {
-        return studentService.listPracticeRoomRankUser(roomId, 0, 10);
+        return studentService.listPracticeRoomRankUser(roomId, 0, 9);
     }
 
     /**

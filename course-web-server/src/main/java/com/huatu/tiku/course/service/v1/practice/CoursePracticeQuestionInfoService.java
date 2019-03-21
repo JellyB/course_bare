@@ -28,5 +28,5 @@ public interface CoursePracticeQuestionInfoService extends BaseServiceHelper<Cou
      * @param questionIds 试题IDs
      * @param courseUserStrs 学员课程keys
      */
-    void generateAnswerCardInfo(List<Integer> questionIds, List <String> courseUserStrs);
+    void generateAnswerCardInfo(List<Integer> questionIds, List <String> courseUserStrs, Long roomId);
 }

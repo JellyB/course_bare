@@ -6,18 +6,25 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.huatu.tiku.common.CourseQuestionTypeEnum.CourseType;
+import com.huatu.tiku.common.bean.reward.RewardMessage;
+import com.huatu.tiku.common.consts.RabbitConsts;
+import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.practice.PracticeUserQuestionMetaInfoBo;
 import com.huatu.tiku.course.bean.practice.UserCourseBo;
+import com.huatu.tiku.course.common.CoinType;
 import com.huatu.tiku.course.common.CoursePracticeQuestionInfoEnum;
 import com.huatu.tiku.course.service.cache.CoursePracticeCacheKey;
 import com.huatu.tiku.course.service.v1.practice.CoursePracticeQuestionInfoService;
+import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
+import com.huatu.tiku.course.ztk.api.v4.user.UserServiceV4;
 import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
 
 import io.jsonwebtoken.lang.Collections;
@@ -41,6 +48,12 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 
 	@Autowired
 	private PracticeCardServiceV1 practiceCardServiceV1;
+
+	@Autowired
+	private RabbitTemplate rabbitTemplate;
+
+	@Autowired
+	private UserServiceV4 userServiceV4;
 
 	@Override
 	public List<CoursePracticeQuestionInfo> listByRoomIdAndQuestionId(Long roomId, List<Long> questionIdList) {
@@ -72,13 +85,13 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 	}
 
 	@Override
-	public void generateAnswerCardInfo(List<Integer> questionIds, List<String> courseUserStrs) {
+	public void generateAnswerCardInfo(List<Integer> questionIds, List<String> courseUserStrs,Long roomId) {
 		HashOperations<String, String, PracticeUserQuestionMetaInfoBo> opsForHash = redisTemplate.opsForHash();
 		// 遍历所有的key
 		for (String courseUserKey : courseUserStrs) {
 			// 根据key查出对应的答题信息
 			Map<String, PracticeUserQuestionMetaInfoBo> map = opsForHash.entries(courseUserKey);
-
+			Integer rcount = 0;
 			String[] answers = new String[questionIds.size()];
 			int[] corrects = new int[questionIds.size()];
 			int[] times = new int[questionIds.size()];
@@ -94,6 +107,9 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 						corrects[i] = question.getCorrect();
 						times[i] = question.getTime();
 						isAnswer = true;
+						if (question.getCorrect() == 1) {
+							rcount++;
+						}
 					}
 				}
 				if (!isAnswer) {
@@ -109,6 +125,16 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 			practiceCardServiceV1.createAndSaveAnswerCoursePracticeCard(1, 1, userCourse.getUserId(), "随堂练习-直播课",
 					CourseType.LIVE.getCode(), userCourse.getCourseId(), qids, answers, corrects, times,
 					new ArrayList<>());
+			// 赠送图币
+			NetSchoolResponse response = userServiceV4.getUserLevelBatch(new ArrayList<>(userCourse.getUserId()));
+			if (ResponseUtil.isSuccess(response)) {
+				List<Map<String, String>> userInfoList = (List<Map<String, String>>) response.getData();
+				String userName = userInfoList.get(0).get("name");
+				RewardMessage msg = RewardMessage.builder().gold(rcount * 2).uid(userCourse.getUserId())
+						.action(CoinType.COURSE_PRACTICE_RIGHT).experience(rcount * 2).bizId(roomId + userName)
+						.uname(userName).timestamp(System.currentTimeMillis()).build();
+				rabbitTemplate.convertAndSend("", RabbitConsts.QUEUE_REWARD_ACTION, msg);
+			}
 
 		}
 

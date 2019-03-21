@@ -24,11 +24,11 @@ public class CourseWorkWareVo {
     private int serialNumber;
     private long answerCardId;
     private String questionIds;
-    private String answerCardInfo;
+    private Object answerCardInfo;
     private int isAlert;
 
     @Builder
-    public CourseWorkWareVo(String courseWareTitle, long courseWareId, int videoType, String videoLength, int serialNumber, long answerCardId, String questionIds, String answerCardInfo, int isAlert) {
+    public CourseWorkWareVo(String courseWareTitle, long courseWareId, int videoType, String videoLength, int serialNumber, long answerCardId, String questionIds, Object answerCardInfo, int isAlert) {
         this.courseWareTitle = courseWareTitle;
         this.courseWareId = courseWareId;
         this.videoType = videoType;

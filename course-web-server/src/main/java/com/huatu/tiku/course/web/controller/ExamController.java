@@ -45,8 +45,8 @@ public class ExamController {
                                  @RequestParam(defaultValue = "1") int page,
                                  @RequestParam(defaultValue = "10") int pageSize,
                                  @Token UserSession userSession) {
-        int category = userSession.getCategory();
-        return examService.getArticleList(type, page, pageSize, category);
+        int subject = userSession.getSubject();
+        return examService.getArticleList(type, page, pageSize, subject);
     }
 
     /**

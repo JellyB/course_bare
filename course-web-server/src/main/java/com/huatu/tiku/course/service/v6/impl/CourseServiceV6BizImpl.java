@@ -347,6 +347,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         PracticeCard practiceCard = JSONObject.parseObject(data.toJSONString(), PracticeCard.class);
         practiceCard.setPaper(practiceForCoursePaper);
         List<QuestionPointTree> points_ = Lists.newArrayList();
+        Map<String,Object> paperInfo = Maps.newHashMap();
 
         List<QuestionPointTree> level1Points = practiceCard.getPoints();
         level1Points.forEach(level1Item -> {
@@ -360,12 +361,16 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
                 });
             }
         });
-
+        paperInfo.put("modules", practiceCard.getPaper().getModules());
+        paperInfo.put("questions", practiceCard.getPaper().getQuestions());
+        data.put("paper", paperInfo);
         data.put("points", points_);
-        data.remove("paper");
         data.putAll(courseExercisesStatisticsManager.obtainCourseRankInfo(practiceCard));
         data.put("tcount", practiceForCoursePaper.getQcount());
         data.put("rcount", practiceCard.getRcount());
+
+        data.put("avgMyCost", practiceCard.getSpeed());
+
         Date date = new Date(practiceCard.getCreateTime() == 0 ? System.currentTimeMillis():practiceCard.getCreateTime());
         data.put("submitTimeInfo", courseDateFormat.format(date));
         return data;
@@ -411,19 +416,30 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         liveReport.put("gold", 0);
         liveReport.put("learnPercent", 0);
         liveReport.put("abovePercent", 0);
+        liveReport.put("teacherComment", "");
         NetSchoolResponse netSchoolResponse = lessonService.studyReport(studyReport);
         if(ResponseUtil.isSuccess(netSchoolResponse)){
             LinkedHashMap<String,Object> data = (LinkedHashMap<String,Object>)netSchoolResponse.getData();
             liveReport.put("learnTime", MapUtils.getInteger(data, "listenLength"));
             liveReport.put("learnPercent", MapUtils.getInteger(data, "listenLength"));
             liveReport.put("abovePercent", MapUtils.getInteger(data, "concentrationPercent"));
+            liveReport.put("teacherComment", "");
         }
         /**
          * 处理课后作业报告
          */
         if(exerciseCardId > 0){
-            courseWorkPractice.putAll((Map<String, Object>)courseWorkReport(userSession, terminal, exerciseCardId));
-            courseWorkPractice.remove("ranks");
+            Map<String, Object> temp = (Map<String, Object>)courseWorkReport(userSession, terminal, exerciseCardId);
+            courseWorkPractice.put("answers", temp.get("answers"));
+            courseWorkPractice.put("avgCorrect", temp.get("avgCorrect"));
+            courseWorkPractice.put("avgMyCost", temp.get("avgMyCost"));
+            courseWorkPractice.put("avgTimeCost", temp.get("avgTimeCost"));
+            courseWorkPractice.put("corrects", temp.get("corrects"));
+            courseWorkPractice.put("doubts", temp.get("doubts"));
+            courseWorkPractice.put("id", temp.get("id"));
+            courseWorkPractice.put("paper", temp.get("paper"));
+            courseWorkPractice.put("rcount", temp.get("rcount"));
+            courseWorkPractice.put("submitTimeInfo", temp.get("submitTimeInfo"));
         }
         /**
          * 处理随堂随堂练习报告
@@ -441,6 +457,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         result.put("courseWorkPractice", courseWorkPractice);
         result.put("liveReport", liveReport);
         result.put("points", dealLearnReportPoints(courseWareId, videoType));
+        result.put("teacherComment", "");
         return result;
     }
 
@@ -451,7 +468,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
      * @return
      * @throws BizException
      */
-    private Map<Long, String> dealLearnReportPoints(long courseWareId, int videoType)throws BizException{
+    private List<Map<String, Object>> dealLearnReportPoints(long courseWareId, int videoType)throws BizException{
         try{
             WeekendSqls<CourseKnowledge> weekendSqls = WeekendSqls.custom();
             weekendSqls.andEqualTo(CourseKnowledge::getCourseId, courseWareId);
@@ -461,16 +478,21 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             List<CourseKnowledge> courseKnowledges = courseKnowledgeMapper.selectByExample(example);
             List<Long> ids = courseKnowledges.stream().map(CourseKnowledge::getKnowledgeId).collect(Collectors.toList());
             if(CollectionUtils.isEmpty(ids)){
-                return Maps.newHashMap();
+                return Lists.newArrayList();
             }
             List<Knowledge> knowledges = knowledgeManager.findBatch(ids);
             if(CollectionUtils.isEmpty(knowledges)){
-                return Maps.newHashMap();
+                return Lists.newArrayList();
             }
-            return knowledges.stream().collect(Collectors.toMap( i -> i.getId(), i -> i.getName()));
+            return knowledges.stream().map(item ->{
+                Map<String,Object> point = Maps.newHashMap();
+                point.put("key", item.getId());
+                point.put("name", item.getName());
+                return point;
+            }).collect(Collectors.toList());
         }catch (Exception e){
             log.error("dealLearnReportPoints deal questionPoints caught an error!:{}", e);
-            return Maps.newHashMap();
+            return Lists.newArrayList();
         }
     }
 }
