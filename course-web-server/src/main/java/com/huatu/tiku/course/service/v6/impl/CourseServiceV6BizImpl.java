@@ -3,7 +3,6 @@ package com.huatu.tiku.course.service.v6.impl;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.CollationElementIterator;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
@@ -15,18 +14,9 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.huatu.common.utils.reflect.BeanUtil;
-import com.huatu.tiku.course.common.VideoTypeEnum;
-import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
-import com.huatu.tiku.course.util.ZTKResponseUtil;
-import com.huatu.ztk.paper.vo.PracticeReportVo;
-import com.sun.org.apache.xerces.internal.xs.datatypes.ObjectList;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -43,34 +33,30 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.huatu.common.exception.BizException;
+import com.huatu.common.utils.reflect.BeanUtil;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.vo.PeriodTestListVO;
 import com.huatu.tiku.course.common.EstimateCourseRedisKey;
-import com.huatu.tiku.course.common.StudyTypeEnum;
+import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.common.YesOrNoStatus;
-import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
-import com.huatu.tiku.course.dao.manual.CourseKnowledgeMapper;
 import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
 import com.huatu.tiku.course.netschool.api.v6.LessonServiceV6;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
+import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.service.manager.CourseExercisesStatisticsManager;
 import com.huatu.tiku.course.service.v6.CourseServiceV6Biz;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.DateUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
+import com.huatu.tiku.course.util.ZTKResponseUtil;
 import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
 import com.huatu.tiku.course.ztk.api.v4.paper.PeriodTestServiceV4;
-import com.huatu.tiku.entity.CourseExercisesProcessLog;
-import com.huatu.tiku.entity.CourseKnowledge;
-import com.huatu.tiku.entity.knowledge.Knowledge;
 import com.huatu.ztk.knowledge.bean.QuestionPointTree;
 import com.huatu.ztk.paper.bean.PracticeCard;
 import com.huatu.ztk.paper.bean.PracticeForCoursePaper;
 
 import lombok.extern.slf4j.Slf4j;
-import tk.mybatis.mapper.entity.Example;
-import tk.mybatis.mapper.weekend.WeekendSqls;
 
 
 /**
