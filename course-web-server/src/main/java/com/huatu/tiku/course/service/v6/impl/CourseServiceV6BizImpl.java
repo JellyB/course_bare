@@ -423,7 +423,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             liveReport.put("learnTime", MapUtils.getInteger(data, "listenLength"));
             liveReport.put("learnPercent", learnPercent);
             liveReport.put("abovePercent", abovePercent);
-            liveReport.put("teacherComment", String.format("听取了课程 %s %的内容，学习专注度高于全班 %s %的同学", learnPercent, abovePercent));
+            liveReport.put("teacherComment", MapUtils.getString(data, "msg"));
         }
         /**
          * 处理课后作业报告，如果配置了课后作业
@@ -467,8 +467,6 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
                 classPracticePoints.addAll((List<Map<String,Object>>) linkedHashMap.get("points"));
                 classPractice.putAll(linkedHashMap);
             }
-        }else{
-            classPractice.putAll(Maps.newHashMap());
         }
         result.put("classPractice", classPractice);
         result.put("courseWorkPractice", courseWorkPractice);
