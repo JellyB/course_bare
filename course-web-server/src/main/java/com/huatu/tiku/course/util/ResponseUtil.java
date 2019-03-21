@@ -134,4 +134,16 @@ public class ResponseUtil {
         }
         return false;
     }
+
+    /**
+     * 严禁的成功校验
+     * @param response
+     * @return
+     */
+    public static boolean isHardSuccess(NetSchoolResponse response){
+        if(response != null && response.getCode() ==  NetSchoolConfig.HARD_SUCCESS_CODE){
+            return true;
+        }
+        return false;
+    }
 }
