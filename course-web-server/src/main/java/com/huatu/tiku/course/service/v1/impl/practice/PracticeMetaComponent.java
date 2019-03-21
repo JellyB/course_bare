@@ -295,9 +295,9 @@ public class PracticeMetaComponent {
 		//构建总答题题数和作答人数
 		buildRoomRightQuestionSum(courseId, courseId,correct);
 		//创建课件中试题作答情况
-		buildCourseQuestionMeta(courseId, questionId, answer, time);
+		//buildCourseQuestionMeta(courseId, questionId, answer, time);
 		//构建课件中包含哪些试题
-		addCoursePracticedQuestion(courseId,questionId);
+		//addCoursePracticedQuestion(courseId,questionId);
 	}
 
 	/**
