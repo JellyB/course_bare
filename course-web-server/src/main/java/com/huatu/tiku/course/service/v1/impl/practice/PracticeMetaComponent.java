@@ -123,7 +123,8 @@ public class PracticeMetaComponent {
 			return PracticeRoomRankUserBo.builder().id(jsonObject.getInteger("id")).name(jsonObject.getString("name"))
 					.courseId(jsonObject.getLong("courseId")).totalTime(totalTime)
 					.totalScore(totalScore < 0 ? 0 : totalScore).build();
-		}).collect(Collectors.toList());
+			//排除积分为0的
+		}).filter(practiceRoomRankUserBo -> practiceRoomRankUserBo.getTotalScore() > 0).collect(Collectors.toList());
 		return result;
 	}
 
