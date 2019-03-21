@@ -31,12 +31,14 @@ import com.huatu.tiku.course.service.cache.CoursePracticeCacheKey;
 import com.huatu.tiku.course.service.v1.practice.QuestionInfoService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Created by lijun on 2019/2/27
  */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class PracticeMetaComponent {
 
 	// 试题信息统计 存放时间的Key
@@ -193,7 +195,6 @@ public class PracticeMetaComponent {
 			}
 			answerCountNum[answerCountNum.length - 1] = 100 - totalExpendLast;
 		}
-
 		// 获取所有的答案总数量 - 需要考虑多选题的问题
 		final Integer totalCount = entrySet.stream().filter(entry -> !entry.getKey().equals(QUESTION_TOTAL_TIME_KEY))
 				.map(Map.Entry::getValue).reduce(0, (a, b) -> a + b);
