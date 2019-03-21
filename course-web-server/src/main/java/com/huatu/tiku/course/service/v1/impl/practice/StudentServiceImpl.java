@@ -52,7 +52,8 @@ public class StudentServiceImpl implements StudentService {
             practiceMetaComponent.buildUserQuestionMeta(userId, courseId, questionId, answer, time, 0);
         }
         final QuestionInfo questionInfo = baseQuestionInfoList.get(0);
-        boolean isCorrect = formatAnswer(answer).equals(questionInfo.getAnswer());
+        answer = formatAnswer(answer);
+        boolean isCorrect = answer.equals(questionInfo.getAnswer());
         practiceMetaComponent.buildMetaInfo(userId, userName, roomId, courseId, questionId, answer, time, isCorrect ? 1 : 2);
         //存储答题用户信息到set中
         practiceMetaComponent.setRoomInfoMeta(userId, roomId, courseId);
