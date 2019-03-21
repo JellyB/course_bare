@@ -294,6 +294,10 @@ public class PracticeMetaComponent {
 		buildRoomRank(roomId, courseId, userId, userName, questionId, answer, time, correct);
 		//构建总答题题数和作答人数
 		buildRoomRightQuestionSum(courseId, courseId,correct);
+		//创建课件中试题作答情况
+		buildCourseQuestionMeta(courseId, questionId, answer, time);
+		//构建课件中包含哪些试题
+		addCoursePracticedQuestion(courseId,questionId);
 	}
 
 	/**
@@ -340,4 +344,97 @@ public class PracticeMetaComponent {
 		opsForSet.add(allUserSumKey, userId);
 
 	}
+
+	/**
+	 * 构建课件试题统计信息 '0' 存储消耗总时间
+	 */
+	public void buildCourseQuestionMeta(Long coursewareId, Long questionId, String answer, Integer time) {
+		if (StringUtils.isBlank(answer)) {
+			return;
+		}
+		final HashOperations<String, String, Integer> hashOperations = redisTemplate.opsForHash();
+		final String key = CoursePracticeCacheKey.questionCoursewareMetaKey(coursewareId, questionId);
+		hashOperations.increment(key, QUESTION_TOTAL_TIME_KEY, time);
+		hashOperations.increment(key, answer, 1);
+		redisTemplate.expire(key, CoursePracticeCacheKey.getDefaultKeyTTL(),
+				CoursePracticeCacheKey.getDefaultTimeUnit());
+	}
+
+	/**
+	 * 获取课件试题统计信息
+	 */
+	public QuestionMetaBo getCourseQuestionMetaBo(Long coursewareId, Long questionId) {
+		final HashOperations<String, String, Integer> hashOperations = redisTemplate.opsForHash();
+		final String key = CoursePracticeCacheKey.questionCoursewareMetaKey(coursewareId, questionId);
+		// 当前试题未答
+		final Integer totalTime = hashOperations.get(key, QUESTION_TOTAL_TIME_KEY);
+		// 当前试题信息不存在
+		List<QuestionInfo> baseQuestionInfoList = questionInfoService
+				.getBaseQuestionInfo(Lists.newArrayList(questionId));
+		if (CollectionUtils.isEmpty(baseQuestionInfoList)) {
+			return new QuestionMetaBo();
+		}
+		final QuestionInfo questionInfo = baseQuestionInfoList.get(0);
+
+		if (null == totalTime || totalTime == 0) {
+			return QuestionMetaBo.builder().id(questionInfo.getId()).answer(questionInfo.getAnswer()).build();
+		}
+		final int[] answerCountNum = new int[4];
+		final Set<Map.Entry<String, Integer>> entrySet = hashOperations.entries(key).entrySet();
+		// 获取A/B/C/D 各个选项的数量
+		entrySet.stream().forEach(entry -> {
+			// 只统计A、B、C、D 四个选项
+			IntStream.rangeClosed(1, 4).forEach(index -> {
+				if (entry.getKey().contains(String.valueOf(index))) {
+					answerCountNum[index - 1] += entry.getValue();
+				}
+			});
+		});
+		// 各个试题选择数量为百分比
+		int sum;
+		if ((sum = Arrays.stream(answerCountNum).sum()) != 0) {
+			// 最后一个选项单独计算 保证所有的加起来是百分之百
+			int totalExpendLast = 0;
+			for (int index = 0; index < answerCountNum.length - 1; index++) {
+				answerCountNum[index] = (answerCountNum[index] * 100 / sum);
+				totalExpendLast += answerCountNum[index];
+			}
+			answerCountNum[answerCountNum.length - 1] = 100 - totalExpendLast;
+		}
+
+		// 获取所有的答案总数量 - 需要考虑多选题的问题
+		final Integer totalCount = entrySet.stream().filter(entry -> !entry.getKey().equals(QUESTION_TOTAL_TIME_KEY))
+				.map(Map.Entry::getValue).reduce(0, (a, b) -> a + b);
+		// 计算正确率 - 此处如果是多选题前端无法自行计算
+		double correctCate = 0d;
+		final Optional<Map.Entry<String, Integer>> correctInfo = entrySet.stream()
+				.filter(entry -> entry.getKey().equals(questionInfo.getAnswer())).findFirst();
+		if (correctInfo.isPresent()) {
+			correctCate = ((double) correctInfo.get().getValue() / totalCount) * 100;
+		}
+		// 矫正最终的正确率，保证单选题的时候 选项选择率和正确率一致
+		if (questionInfo.getAnswer().length() == 1 && Integer.valueOf(questionInfo.getAnswer()) < answerCountNum.length
+				&& answerCountNum[Integer.valueOf(questionInfo.getAnswer()) - 1] != correctCate) {
+			correctCate = answerCountNum[Integer.valueOf(questionInfo.getAnswer())];
+		}
+
+		return QuestionMetaBo.builder().id(questionInfo.getId()).answer(questionInfo.getAnswer())
+				.avgTime(totalTime / totalCount).count(totalCount).percents(answerCountNum).correctCate(correctCate)
+				.build();
+	}
+
+	/**
+	 * 添加课件已练习试题数量
+	 *
+	 * @param coursewareId     课件ID
+	 * @param questionId 试题ID
+	 */
+	public void addCoursePracticedQuestion(Long coursewareId, Long questionId) {
+		final SetOperations<String, Long> setOperations = redisTemplate.opsForSet();
+		final String key = CoursePracticeCacheKey.coursePractedQuestionKey(coursewareId);
+		setOperations.add(key, questionId);
+		redisTemplate.expire(key, CoursePracticeCacheKey.getDefaultKeyTTL(),
+				CoursePracticeCacheKey.getDefaultTimeUnit());
+	}
+
 }
