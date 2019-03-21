@@ -126,7 +126,7 @@ public class PracticeMetaComponent {
 					.courseId(jsonObject.getLong("courseId")).totalTime(totalTime)
 					.totalScore(totalScore < 0 ? 0 : totalScore).build();
 			//排除积分为0的
-		}).filter(practiceRoomRankUserBo -> practiceRoomRankUserBo.getTotalScore() > 0).collect(Collectors.toList());
+		}).collect(Collectors.toList());
 		return result;
 	}
 

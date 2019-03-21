@@ -1,5 +1,17 @@
 package com.huatu.tiku.course.service.v1.impl.practice;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.huatu.tiku.course.bean.practice.PracticeRoomRankUserBo;
@@ -9,18 +21,8 @@ import com.huatu.tiku.course.service.cache.CoursePracticeCacheKey;
 import com.huatu.tiku.course.service.v1.practice.CoursePracticeQuestionInfoService;
 import com.huatu.tiku.course.service.v1.practice.QuestionInfoService;
 import com.huatu.tiku.course.service.v1.practice.StudentService;
-import lombok.RequiredArgsConstructor;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.SetOperations;
-import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Created by lijun on 2019/2/27
@@ -64,9 +66,12 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public List<PracticeRoomRankUserBo> listPracticeRoomRankUser(Long roomId, Integer start, Integer end) {
-        return practiceMetaComponent.getRoomRankInfo(roomId, start, end);
-    }
+	public List<PracticeRoomRankUserBo> listPracticeRoomRankUser(Long roomId, Integer start, Integer end) {
+		return practiceMetaComponent.getRoomRankInfo(roomId, start, end).stream()
+				.filter(practiceRoomRankUserBo -> practiceRoomRankUserBo.getTotalScore() > 0)
+				.collect(Collectors.toList());
+
+	}
 
     @Override
     public PracticeRoomRankUserBo getUserRankInfo(Integer userId, Long courseId) {
