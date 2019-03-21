@@ -117,8 +117,8 @@ public class PracticeMetaComponent {
 				end);
 
 		List<PracticeRoomRankUserBo> result = typedTupleSet.stream().map(typedTuple -> {
-			int totalTime = typedTuple.getScore().intValue() % 1000;
-			int totalScore = (typedTuple.getScore().intValue() - totalTime) / 1000;
+			int totalTime = typedTuple.getScore().intValue() % 10000;
+			int totalScore = (typedTuple.getScore().intValue() - totalTime) / 10000;
 			final JSONObject jsonObject = JSONObject.parseObject(typedTuple.getValue());
 			return PracticeRoomRankUserBo.builder().id(jsonObject.getInteger("id")).name(jsonObject.getString("name"))
 					.courseId(jsonObject.getLong("courseId")).totalTime(totalTime)
