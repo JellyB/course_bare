@@ -119,13 +119,14 @@ public class PracticeMetaComponent {
 				end);
 
 		List<PracticeRoomRankUserBo> result = typedTupleSet.stream().map(typedTuple -> {
-			int totalTime = typedTuple.getScore().intValue() % 10000;
-			int totalScore = (typedTuple.getScore().intValue() - totalTime) / 10000;
+			int totalTimereverse = typedTuple.getScore().intValue() % 10000;
+			int totalTime = 10000 - totalTimereverse;
+			int totalScore = (typedTuple.getScore().intValue() - totalTimereverse) / 10000;
 			final JSONObject jsonObject = JSONObject.parseObject(typedTuple.getValue());
 			return PracticeRoomRankUserBo.builder().id(jsonObject.getInteger("id")).name(jsonObject.getString("name"))
 					.courseId(jsonObject.getLong("courseId")).totalTime(totalTime)
 					.totalScore(totalScore < 0 ? 0 : totalScore).build();
-			//排除积分为0的
+			// 学生端会排除积分为0的
 		}).collect(Collectors.toList());
 		return result;
 	}
