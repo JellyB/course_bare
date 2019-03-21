@@ -111,7 +111,7 @@ public class CourseBizV6Service {
     public Object obtainMineCourses(Map<String,Object> params){
         try{
             NetSchoolResponse netSchoolResponse = userCourseService.obtainMineCourses(params);
-            if(null != netSchoolResponse && null != netSchoolResponse.getData()){
+            if(null != netSchoolResponse && null !=  netSchoolResponse.getData() && ResponseUtil.isHardSuccess(netSchoolResponse)){
                 userCourseServiceV6FallBack.setCourseMineStaticData(params, netSchoolResponse);
             }
             return ResponseUtil.build(netSchoolResponse);
