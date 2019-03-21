@@ -176,7 +176,7 @@ public class CourseControllerV5 {
         //添加答题信息
         courseUtil.addExercisesCardInfo((LinkedHashMap) purchasesTimetable, userSession.getId(), true);
         courseUtil.addPeriodTestInfo((LinkedHashMap) purchasesTimetable, userSession.getId());
-        courseUtil.addStudyReportInfo((LinkedHashMap) purchasesTimetable, userSession.getId());
+        courseUtil.addLearnReportInfo((LinkedHashMap) purchasesTimetable, userSession.getId());
         return purchasesTimetable;
     }
 

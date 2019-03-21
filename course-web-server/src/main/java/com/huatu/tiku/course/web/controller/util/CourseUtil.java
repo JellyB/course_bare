@@ -5,6 +5,9 @@ import com.huatu.common.spring.event.EventPublisher;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.common.TypeEnum;
+import com.huatu.tiku.course.common.VideoTypeEnum;
+import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.hbase.api.v1.VideoServiceV1;
 import com.huatu.tiku.course.service.v1.practice.PracticeUserMetaService;
 import com.huatu.tiku.course.util.DateUtil;
@@ -162,17 +165,14 @@ public class CourseUtil {
 
         response.computeIfPresent("list", (key, value) -> {
                     List<HashMap<String, Object>> paramsList = ((List<Map>) value).stream()
-                            //type 	0阶段测试1课程2课件 （只有type=2时，有answerCard属性）
-                            .filter(map -> (null != MapUtils.getString(map, "type")
-                                    && MapUtils.getString(map, "type").equals("2"))
+                            .filter(map -> (null != MapUtils.getString(map, SyllabusInfo.Type)
+                                    && MapUtils.getString(map, SyllabusInfo.Type).equals(String.valueOf(TypeEnum.COURSE_WARE.getType())))
                             )
-                            //videoType	1点播2直播3直播回放4阶段测试题
-                            //coursewareId	课件id
-                            .filter(map -> null != map.get("videoType") && null != map.get("coursewareId"))
+                            .filter(map -> null != map.get(SyllabusInfo.VideoType) && null != map.get(SyllabusInfo.CourseWareId))
                             .map(map -> {
                                 HashMap<String, Object> build = HashMapBuilder.<String, Object>newBuilder()
-                                        .put("courseType", MapUtils.getIntValue(map, "videoType", 0))
-                                        .put("courseId", MapUtils.getIntValue(map, "coursewareId", 0))
+                                        .put(SyllabusInfo.VideoType, MapUtils.getIntValue(map, SyllabusInfo.VideoType, 0))
+                                        .put(SyllabusInfo.CourseId, MapUtils.getIntValue(map, SyllabusInfo.CourseWareId, 0))
                                         .build();
                                 return build;
                             })
@@ -194,10 +194,10 @@ public class CourseUtil {
                         //获取答题卡信息状态
                         Function<HashMap<String, Object>, Map> getCourse = (valueData) -> {
                             Optional<Map> first = courseExercisesCards.stream()
-                                    .filter(result -> null != result.get("courseId") && null != result.get("courseType"))
+                                    .filter(result -> null != result.get(SyllabusInfo.CourseId) && null != result.get("courseType"))
                                     .filter(result ->
-                                            MapUtils.getString(result, "courseId").equals(MapUtils.getString(valueData, "coursewareId"))
-                                                    && MapUtils.getString(result, "courseType").equals(MapUtils.getString(valueData, "videoType"))
+                                            MapUtils.getString(result, SyllabusInfo.CourseId).equals(MapUtils.getString(valueData, SyllabusInfo.CourseWareId))
+                                                    && MapUtils.getString(result, "courseType").equals(MapUtils.getString(valueData, SyllabusInfo.VideoType))
                                     )
                                     .findFirst();
                             if (first.isPresent()) {
@@ -242,10 +242,8 @@ public class CourseUtil {
     public void addPeriodTestInfo(LinkedHashMap response, int userId){
                 response.computeIfPresent("list", (key, value) -> {
                         Set<String> paperIds = ((List<Map>) value).stream()
-                                //videoType	1点播2直播3直播回放4阶段测试题
-                                .filter(map -> MapUtils.getString(map, "videoType").equals("4"))
-                                //coursewareId	-》课件id  | id -》节点id
-                                .filter(map -> null != map.get("coursewareId") && null != map.get("id"))
+                                .filter(map -> VideoTypeEnum.create(MapUtils.getIntValue(map, "videoType")) == VideoTypeEnum.PERIOD_TEST)
+                                .filter(map -> null != map.get(SyllabusInfo.CourseWareId) && null != map.get("id"))
                                 .map(map -> {
                                     StringBuilder stringBuilder = new StringBuilder();
                                     stringBuilder
@@ -300,11 +298,11 @@ public class CourseUtil {
      * @param response
      * @param userId
      */
-    public void addStudyReportInfo(LinkedHashMap response, int userId){
+    public void addLearnReportInfo(LinkedHashMap response, int userId){
         response.computeIfPresent("list", (key, value) -> {
                     List<HashMap<String, Object>> courseWareIds = ((List<Map>) value).stream()
                             //.filter(map -> (null != map.get("classExercisesNum")) && (MapUtils.getInteger(map,"classExercisesNum") > 0))
-                            .filter(map -> null != map.get("videoType") && null != map.get("coursewareId"))
+                            .filter(map -> null != map.get(SyllabusInfo.VideoType) && null != map.get(SyllabusInfo.CourseWareId))
                             .map(map -> {
                                 HashMap<String, Object> build = HashMapBuilder.<String, Object>newBuilder()
                                         .put("courseType", MapUtils.getIntValue(map, "videoType", 0))
