@@ -51,7 +51,7 @@ public class StudentController {
      */
     @GetMapping("{roomId}/questionRankInfo")
     public Object getQuestionRankInfo(@PathVariable Long roomId) {
-        return studentService.listPracticeRoomRankUser(roomId, 0, 10);
+        return studentService.listPracticeRoomRankUser(roomId, 0, 9);
     }
 
     /**
