@@ -131,16 +131,15 @@ public class TeacherServiceImpl implements TeacherService {
                 && 0 != coursePracticeQuestionInfo.getStartPracticeTime()) {
             throw new BizException(ErrorResult.create(5000000, "该试题已经开始考试"));
         }
-        final CoursePracticeQuestionInfo info = CoursePracticeQuestionInfo.builder()
-                .roomId(roomId)
-                .questionId(questionId.intValue())
-                .startPracticeTime(System.currentTimeMillis())
-                .practiceTime(practiceTime)
-                .build();
-        info.setBizStatus(CoursePracticeQuestionInfoEnum.FINISH.getStatus());
+		if (coursePracticeQuestionInfo == null) {
+			coursePracticeQuestionInfo = CoursePracticeQuestionInfo.builder().roomId(roomId)
+					.questionId(questionId.intValue()).startPracticeTime(System.currentTimeMillis())
+					.practiceTime(practiceTime).build();
+		}
+		coursePracticeQuestionInfo.setBizStatus(CoursePracticeQuestionInfoEnum.FINISH.getStatus());
 		// 添加房间练习题数量到缓存
 		practiceMetaComponent.addRoomPracticedQuestion(roomId, questionId);
-        coursePracticeQuestionInfoService.save(info);
+        coursePracticeQuestionInfoService.save(coursePracticeQuestionInfo);
     }
 
     @Override
