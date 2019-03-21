@@ -18,6 +18,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.huatu.common.utils.reflect.BeanUtil;
 import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.util.ZTKResponseUtil;
@@ -397,8 +398,8 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         Map<String,Object> liveReport = Maps.newHashMap();//直播听课记录
         Map<String,Object> classPractice = Maps.newHashMap();//随堂练习
         Map<String,Object> courseWorkPractice = Maps.newHashMap();//课后作业报告
-        List<Map<String,Object>> courseWorkPracticePoints = Lists.newArrayList();
-        List<Map<String,Object>> classPracticePoints = Lists.newArrayList();
+        List<QuestionPointTree> courseWorkPracticePoints = Lists.newArrayList();
+        List<QuestionPointTree> classPracticePoints = Lists.newArrayList();
         //知识点id展示后台配置的知识点信息
         Map<String,Object> points = Maps.newHashMap();
 
@@ -441,7 +442,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             courseWorkPractice.put("rcount", temp.get("rcount"));
             courseWorkPractice.put("practiceStatus", YesOrNoStatus.YES.getCode());
             courseWorkPractice.put("submitTimeInfo", temp.get("submitTimeInfo"));
-            courseWorkPracticePoints.addAll((List<Map<String,Object>>) temp.get("points"));
+            courseWorkPracticePoints.addAll((List<QuestionPointTree>) temp.get("points"));
         }else{
             try{
                 Object object = courseExercisesProcessLogManager.createCourseWorkAnswerCardEntrance(classId, syllabusId, videoType, courseWareId, userSession.getSubject(), terminal, userSession.getId());
@@ -464,7 +465,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             NetSchoolResponse classReport = practiceCardService.getClassExerciseReport(courseWareId, videoType, userSession.getToken(), terminal, cv);
             if(classReport != ResponseUtil.DEFAULT_PAGE_EMPTY && null != classReport && null != classReport.getData()){
                 LinkedHashMap linkedHashMap = (LinkedHashMap<String, Object>) classReport.getData();
-                classPracticePoints.addAll((List<Map<String,Object>>) linkedHashMap.get("points"));
+                classPracticePoints.addAll((List<QuestionPointTree>) linkedHashMap.get("points"));
                 classPractice.putAll(linkedHashMap);
             }
         }
@@ -483,32 +484,13 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
      * @return
      * @throws BizException
      */
-    private List<QuestionPointTree> dealLearnReportPoints(List<Map<String,Object>> classPracticePoints, List<Map<String,Object>> courseWorkPracticePoints)throws BizException{
+    private List<QuestionPointTree> dealLearnReportPoints(List<QuestionPointTree> classPracticePoints, List<QuestionPointTree> courseWorkPracticePoints)throws BizException{
         try{
 
-            Map<Integer, QuestionPointTree> classPracticePointsMap  = Maps.newHashMap();
-            Map<Integer, QuestionPointTree> courseWorkPracticePointsMap  = Maps.newHashMap();
+            Map<Integer, QuestionPointTree> classPracticePointsMap  = classPracticePoints.stream().collect(Collectors.toMap(item-> item.getId(), item->item));
+            Map<Integer, QuestionPointTree> courseWorkPracticePointsMap  = courseWorkPracticePoints.stream().collect(Collectors.toMap(item-> item.getId(), item->item));
             List<QuestionPointTree> pointTrees = Lists.newArrayList();
 
-            classPracticePoints.forEach(classPracticePoint -> {
-                QuestionPointTree questionPointTree = new QuestionPointTree();
-                try{
-                    BeanUtils.populate(questionPointTree, classPracticePoint);
-                    classPracticePointsMap.put(questionPointTree.getId(), questionPointTree);
-                }catch (Exception e){
-                    return;
-                }
-            });
-
-            courseWorkPracticePoints.forEach( courseWorkPracticePoint -> {
-                QuestionPointTree questionPointTree = new QuestionPointTree();
-                try{
-                    BeanUtils.populate(questionPointTree, courseWorkPracticePoint);
-                    courseWorkPracticePointsMap.put(questionPointTree.getId(), questionPointTree);
-                }catch (Exception e){
-                    return;
-                }
-            });
             List<Integer> commonPointIds = Lists.newArrayList();
             if(CollectionUtils.isEmpty(classPracticePointsMap.keySet()) && CollectionUtils.isEmpty(courseWorkPracticePointsMap.keySet())){
                 return pointTrees;
