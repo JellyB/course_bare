@@ -99,4 +99,22 @@ public final class CoursePracticeCacheKey {
 	public static String roomAllUserSum(Long courseId) {
 		return "course:practice:roomAllUserSum:"+ courseId;
 	}
+
+    /**
+     * 获取课件下试题统计信息key
+     *
+     * @param coursewareId     课件ID
+     * @param questionId 试题信息
+     * @return 获取试题统计信息key
+     */
+    public static String questionCoursewareMetaKey(Long coursewareId, Long questionId) {
+        return "course:practice:courseware:questionMeta:" + questionId + ":" + coursewareId;
+    }
+
+    /**
+     * 课件中已经练习试题
+     */
+    public static String coursePractedQuestionKey(Long coursewareId) {
+        return "course:practice:coursePracticedQuestionKey:" + coursewareId;
+    }
 }
