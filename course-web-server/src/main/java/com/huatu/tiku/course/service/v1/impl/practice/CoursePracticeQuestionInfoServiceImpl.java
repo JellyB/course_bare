@@ -129,15 +129,15 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 					new ArrayList<>());
 			log.info("随堂练用户id:{} courseId:{}生成答题卡", userCourse.getUserId(), userCourse.getCourseId());
 			// 赠送图币
-			NetSchoolResponse response = userServiceV4.getUserLevelBatch(new ArrayList<>(userCourse.getUserId()));
-			if (ResponseUtil.isSuccess(response)) {
-				List<Map<String, String>> userInfoList = (List<Map<String, String>>) response.getData();
-				String userName = userInfoList.get(0).get("name");
-				RewardMessage msg = RewardMessage.builder().gold(rcount * 2).uid(userCourse.getUserId())
-						.action(CoinType.COURSE_PRACTICE_RIGHT).experience(rcount * 2).bizId(roomId + userName)
-						.uname(userName).timestamp(System.currentTimeMillis()).build();
-				rabbitTemplate.convertAndSend("", RabbitConsts.QUEUE_REWARD_ACTION, msg);
-			}
+//			NetSchoolResponse response = userServiceV4.getUserLevelBatch(new ArrayList<>(userCourse.getUserId()));
+//			if (ResponseUtil.isSuccess(response)) {
+//				List<Map<String, String>> userInfoList = (List<Map<String, String>>) response.getData();
+//				String userName = userInfoList.get(0).get("name");
+//				RewardMessage msg = RewardMessage.builder().gold(rcount * 2).uid(userCourse.getUserId())
+//						.action(CoinType.COURSE_PRACTICE_RIGHT).experience(rcount * 2).bizId(roomId + userName)
+//						.uname(userName).timestamp(System.currentTimeMillis()).build();
+//				rabbitTemplate.convertAndSend("", RabbitConsts.QUEUE_REWARD_ACTION, msg);
+//			}
 
 		}
 
