@@ -28,6 +28,7 @@ import com.huatu.tiku.course.ztk.api.v4.user.UserServiceV4;
 import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
 
 import io.jsonwebtoken.lang.Collections;
+import lombok.extern.slf4j.Slf4j;
 import service.impl.BaseServiceHelperImpl;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.weekend.WeekendSqls;
@@ -36,6 +37,7 @@ import tk.mybatis.mapper.weekend.WeekendSqls;
  * Created by lijun on 2019/2/21
  */
 @Service
+@Slf4j
 public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl<CoursePracticeQuestionInfo>
 		implements CoursePracticeQuestionInfoService {
 
@@ -125,6 +127,7 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 			practiceCardServiceV1.createAndSaveAnswerCoursePracticeCard(1, 1, userCourse.getUserId(), "随堂练习-直播课",
 					CourseType.LIVE.getCode(), userCourse.getCourseId(), qids, answers, corrects, times,
 					new ArrayList<>());
+			log.info("随堂练用户id:{} courseId:{}生成答题卡", userCourse.getUserId(), userCourse.getCourseId());
 			// 赠送图币
 			NetSchoolResponse response = userServiceV4.getUserLevelBatch(new ArrayList<>(userCourse.getUserId()));
 			if (ResponseUtil.isSuccess(response)) {
