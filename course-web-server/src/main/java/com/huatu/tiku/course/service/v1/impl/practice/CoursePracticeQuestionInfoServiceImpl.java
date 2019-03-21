@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.service.v1.impl.practice;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -129,7 +130,7 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 					new ArrayList<>());
 			log.info("随堂练用户id:{} courseId:{}生成答题卡", userCourse.getUserId(), userCourse.getCourseId());
 			// 赠送图币
-			NetSchoolResponse response = userServiceV4.getUserLevelBatch(new ArrayList<>(userCourse.getUserId()));
+			NetSchoolResponse response = userServiceV4.getUserLevelBatch(Arrays.asList(userCourse.getUserId().toString()));
 			if (ResponseUtil.isSuccess(response)) {
 				List<Map<String, String>> userInfoList = (List<Map<String, String>>) response.getData();
 				String userName = userInfoList.get(0).get("name");
