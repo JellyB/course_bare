@@ -54,6 +54,14 @@ public interface PracticeCardServiceV1 {
     );
 
     /**
+     * 批量查询课后作业答题卡
+     * @param ids
+     * @return
+     */
+    @GetMapping(value = "/v2/practices/getCourseExercisesCardInfoBatch")
+    Object getCourseExercisesCardInfoBatch(@RequestParam(value = "ids") String ids);
+
+    /**
      * 批量获取随堂练习报告状态
      * @param userId
      * @param paramsList

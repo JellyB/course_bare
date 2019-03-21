@@ -245,12 +245,7 @@ public class CourseExercisesProcessLogManager {
     public synchronized void createCourseWorkAnswerCard(int userId, Integer courseType, Long coursewareId, Long courseId, Long syllabusId, HashMap<String,Object> result){
         Long cardId = MapUtils.getLongValue(result, "id");
         int status = MapUtils.getIntValue(result, "status");
-        int wcount = MapUtils.getIntValue(result, "wcount");
-        int rcount = MapUtils.getIntValue(result, "rcount");
-        int uncount = MapUtils.getIntValue(result, "uncount");
         Map<String,Object> paper = (HashMap<String,Object>)result.get("paper");
-        int qcount =  MapUtils.getIntValue(paper, "paper");
-        DataInfo dataInfo = DataInfo.builder().wcount(wcount).ucount(uncount).rcount(rcount).status(status).qcount(qcount).build();
 
         Example example = new Example(CourseExercisesProcessLog.class);
         example.and().andEqualTo("lessonId", coursewareId)
@@ -273,7 +268,6 @@ public class CourseExercisesProcessLogManager {
             newLog.setLessonId(coursewareId);
             newLog.setCardId(cardId);
             newLog.setBizStatus(status);
-            newLog.setDataInfo(JSONObject.toJSONString(dataInfo));
             courseExercisesProcessLogMapper.insertSelective(newLog);
             putIntoDealList(syllabusId);
         }else{
@@ -284,7 +278,6 @@ public class CourseExercisesProcessLogManager {
             BeanUtils.copyProperties(courseExercisesProcessLog, update);
             update.setGmtModify(new Timestamp(System.currentTimeMillis()));
             update.setBizStatus(status);
-            update.setDataInfo(JSONObject.toJSONString(dataInfo));
             courseExercisesProcessLogMapper.updateByExampleSelective(update, example);
         }
     }
@@ -338,11 +331,9 @@ public class CourseExercisesProcessLogManager {
                 .andEqualTo("userId", answerCard.getUserId())
                 .andEqualTo("cardId", answerCard.getId());
 
-        DataInfo dataInfo = DataInfo.builder().wcount(answerCard.getWcount()).ucount(answerCard.getUcount()).rcount(answerCard.getRcount()).qcount(answerCard.getPaper().getQcount()).status(answerCard.getStatus()).build();
         CourseExercisesProcessLog updateLog = new CourseExercisesProcessLog();
         updateLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
         updateLog.setBizStatus(answerCard.getStatus());
-        updateLog.setDataInfo(JSONObject.toJSONString(dataInfo));
         courseExercisesProcessLogMapper.updateByExampleSelective(updateLog, example);
         courseExercisesStatisticsManager.dealCourseExercisesStatistics(answerCard);
     }
@@ -373,6 +364,7 @@ public class CourseExercisesProcessLogManager {
     public Object courseWorkList(long userId, int page, int size) throws BizException{
 
         List<CourseWorkCourseVo> courseWorkCourseVos = Lists.newArrayList();
+        Map<Long, DataInfo> answerCardMaps = Maps.newHashMap();
         List<HashMap<String, Object>> dataList = courseExercisesProcessLogMapper.getCoursePageInfo(userId, page, size);
 
         Set<Long> allSyllabusIds = Sets.newHashSet();
@@ -394,6 +386,21 @@ public class CourseExercisesProcessLogManager {
                 .andIn("syllabusId", allSyllabusIds);
 
         List<CourseExercisesProcessLog> logList = courseExercisesProcessLogMapper.selectByExample(example);
+        String cardIds = logList.stream().map(CourseExercisesProcessLog::getCardId).map(String::valueOf).collect(Collectors.joining(","));
+        if(StringUtils.isNotBlank(cardIds)){
+            Object practiceCardInfos = practiceCardService.getCourseExercisesCardInfoBatch(cardIds);
+            List<HashMap<String, Object>> answerCardInfo = (List<HashMap<String, Object>>) ZTKResponseUtil.build(practiceCardInfos);
+            answerCardMaps.putAll(answerCardInfo.stream().collect(Collectors.toMap(item -> MapUtils.getLong(item,"id"), item -> {
+                DataInfo dataInfo = new DataInfo();
+                try{
+                    org.apache.commons.beanutils.BeanUtils.populate(dataInfo, item);
+                    return dataInfo;
+                }catch (Exception e) {
+                    log.error("答题卡信息转换异常:{}", e);
+                    return dataInfo;
+                }
+            })));
+        }
         Map<Long, CourseExercisesProcessLog> courseExercisesProcessLogMap = logList.stream().collect(Collectors.toMap(wareLog -> wareLog.getSyllabusId(), wareLog -> wareLog));
 
         dataList.forEach(item->{
@@ -428,10 +435,10 @@ public class CourseExercisesProcessLogManager {
                         .questionIds("")
                         .isAlert(courseExercisesProcessLog.getIsAlert())
                         .build();
-                    if(StringUtils.isEmpty(courseExercisesProcessLog.getDataInfo())){
-                        courseWorkWareVo.setAnswerCardInfo(new DataInfo());
+                    if(answerCardMaps.containsKey(courseExercisesProcessLog.getCardId())){
+                        courseWorkWareVo.setAnswerCardInfo(answerCardMaps.get(courseExercisesProcessLog.getCardId()));
                     }else{
-                        courseWorkWareVo.setAnswerCardInfo(JSONObject.parseObject(courseExercisesProcessLog.getDataInfo(), DataInfo.class));
+                        courseWorkWareVo.setAnswerCardInfo(new DataInfo());
                     }
                 return courseWorkWareVo;
             }).collect(Collectors.toList());
