@@ -85,7 +85,7 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 	}
 
 	@Override
-	public void generateAnswerCardInfo(List<Integer> questionIds, List<String> courseUserStrs) {
+	public void generateAnswerCardInfo(List<Integer> questionIds, List<String> courseUserStrs,Long roomId) {
 		HashOperations<String, String, PracticeUserQuestionMetaInfoBo> opsForHash = redisTemplate.opsForHash();
 		// 遍历所有的key
 		for (String courseUserKey : courseUserStrs) {
@@ -131,9 +131,8 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 				List<Map<String, String>> userInfoList = (List<Map<String, String>>) response.getData();
 				String userName = userInfoList.get(0).get("name");
 				RewardMessage msg = RewardMessage.builder().gold(rcount * 2).uid(userCourse.getUserId())
-						.action(CoinType.COURSE_PRACTICE_RIGHT).experience(rcount * 2)
-						.bizId(System.currentTimeMillis() + "").uname(userName).timestamp(System.currentTimeMillis())
-						.build();
+						.action(CoinType.COURSE_PRACTICE_RIGHT).experience(rcount * 2).bizId(roomId + userName)
+						.uname(userName).timestamp(System.currentTimeMillis()).build();
 				rabbitTemplate.convertAndSend("", RabbitConsts.QUEUE_REWARD_ACTION, msg);
 			}
 
