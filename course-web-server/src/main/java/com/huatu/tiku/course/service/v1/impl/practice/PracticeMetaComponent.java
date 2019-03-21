@@ -174,12 +174,12 @@ public class PracticeMetaComponent {
 		if (null == totalTime || totalTime == 0) {
 			return QuestionMetaBo.builder().id(questionInfo.getId()).answer(questionInfo.getAnswer()).build();
 		}
-		final int[] answerCountNum = new int[4];
+		final int[] answerCountNum = new int[questionInfo.getChoiceList().size()];
 		final Set<Map.Entry<String, Integer>> entrySet = hashOperations.entries(key).entrySet();
 		// 获取A/B/C/D 各个选项的数量
 		entrySet.stream().forEach(entry -> {
-			// 只统计A、B、C、D 四个选项
-			IntStream.rangeClosed(1, 4).forEach(index -> {
+			// 只统计A、B、C、D 四个选项  统计本题中所有选项
+			IntStream.rangeClosed(1, questionInfo.getChoiceList().size()).forEach(index -> {
 				if (entry.getKey().contains(String.valueOf(index))) {
 					answerCountNum[index - 1] += entry.getValue();
 				}
@@ -202,14 +202,23 @@ public class PracticeMetaComponent {
 		// 计算正确率 - 此处如果是多选题前端无法自行计算
 		double correctCate = 0d;
 		final Optional<Map.Entry<String, Integer>> correctInfo = entrySet.stream()
-				.filter(entry -> entry.getKey().equals(questionInfo.getAnswer())).findFirst();
+				.filter(entry -> {
+					String answers = entry.getKey();
+					char[] chars = answers.toCharArray();
+					Arrays.sort(chars);
+					String sortedAnswers = new String(chars);
+					if (sortedAnswers.equals(questionInfo.getAnswer())) {
+						return true;
+					}
+					return false;
+				}).findFirst();
 		if (correctInfo.isPresent()) {
 			correctCate = ((double) correctInfo.get().getValue() / totalCount) * 100;
 		}
 		// 矫正最终的正确率，保证单选题的时候 选项选择率和正确率一致
 		if (questionInfo.getAnswer().length() == 1 && Integer.valueOf(questionInfo.getAnswer()) < answerCountNum.length
 				&& answerCountNum[Integer.valueOf(questionInfo.getAnswer()) - 1] != correctCate) {
-			correctCate = answerCountNum[Integer.valueOf(questionInfo.getAnswer())];
+			correctCate = answerCountNum[Integer.valueOf(questionInfo.getAnswer()) - 1];
 		}
 
 		return QuestionMetaBo.builder().id(questionInfo.getId()).answer(questionInfo.getAnswer())
@@ -439,4 +448,21 @@ public class PracticeMetaComponent {
 				CoursePracticeCacheKey.getDefaultTimeUnit());
 	}
 
+	/**
+	 * 检查用户是否作答本题(已作答返回false)
+	 * @param userId
+	 * @param courseId
+	 * @param questionId
+	 */
+	public boolean checkUserHasAnswer(Integer userId, Long courseId, Long questionId) {
+		final HashOperations<String, String, PracticeUserQuestionMetaInfoBo> hashOperations = redisTemplate
+				.opsForHash();
+		String key = CoursePracticeCacheKey.userMetaKey(userId, courseId);
+		PracticeUserQuestionMetaInfoBo practiceUserQuestionMetaInfoBo = hashOperations.get(key, String.valueOf(questionId));
+		if(practiceUserQuestionMetaInfoBo != null) {
+			return false;
+		}
+		return true;
+		
+	}
 }

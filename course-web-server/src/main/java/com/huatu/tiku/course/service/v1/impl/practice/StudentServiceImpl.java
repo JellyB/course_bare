@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.service.v1.impl.practice;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,7 +40,11 @@ public class StudentServiceImpl implements StudentService {
     private final RedisTemplate redisTemplate;
     @Override
     public Map<String,Object> putAnswer(Long roomId, Long courseId, Integer userId, String userName, Long questionId, String answer, Integer time) {
-        List<QuestionInfo> baseQuestionInfoList = questionInfoService.getBaseQuestionInfo(Lists.newArrayList(questionId));
+    	//判断是否已经作答
+    	if(!practiceMetaComponent.checkUserHasAnswer(userId, courseId, questionId)) {
+    		return new HashMap<>();
+    	}
+    	List<QuestionInfo> baseQuestionInfoList = questionInfoService.getBaseQuestionInfo(Lists.newArrayList(questionId));
         if (CollectionUtils.isEmpty(baseQuestionInfoList)) {
             return null;
         }
