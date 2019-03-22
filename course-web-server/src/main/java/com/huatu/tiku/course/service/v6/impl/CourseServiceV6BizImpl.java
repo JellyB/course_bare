@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisZSetCommands;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
@@ -369,6 +370,19 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
     }
 
     /**
+     * 判断用户是否已经提交了课后作业答题卡信息
+     * @param userId
+     * @param courseWareId
+     * @param videoType
+     * @return
+     */
+    private boolean checkUserSubmitAnswerCard(long userId, long courseWareId, int videoType){
+        String existsKey = CourseCacheKey.getCourseWorkDealData(videoType, courseWareId);
+        HashOperations<String, String, String> existsHash = redisTemplate.opsForHash();
+        return existsHash.hasKey(existsKey, String.valueOf(userId);
+    }
+
+    /**
      * 我的学习报告
      *
      * @param userSession
@@ -418,9 +432,10 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             liveReport.put("teacherComment", MapUtils.getString(data, "msg"));
         }
         /**
-         * 处理课后作业报告，如果配置了课后作业
+         * 处理课后作业报告，如果用户主动提交了答题卡信息处理
+         * 否则提示学员去做题界面做题并提交答题卡
          */
-        if(exerciseCardId > 0){
+        if(checkUserSubmitAnswerCard(userSession.getId(), courseWareId, videoType)){
             Map<String, Object> temp = (Map<String, Object>)courseWorkReport(userSession, terminal, exerciseCardId);
             int status = MapUtils.getIntValue(temp, "status");
             courseWorkPractice.put("answers", temp.get("answers"));

@@ -113,6 +113,19 @@ public class CourseCacheKey {
 
     public static String getProcessLogSyllabusDealList(){return PROCESS_LOG_SYLLABUS_DEAL_LIST;}
 
+    /**
+     * 用户提交答题卡userId set 缓存
+     * @param courseType
+     * @param courserId
+     * @return
+     */
     public static String getCourseWorkDealData(Integer courseType, Long courserId){return String.format(COURSE_WORK_DEAL_DATA, courseType, courserId);}
+
+    /**
+     * 课后作业统计排名信息
+     * @param courseType
+     * @param courseId
+     * @return
+     */
     public static String getCourseWorkRankInfo(Integer courseType, Long courseId){return String.format(COURSE_WORK_RANK_INFO, courseType, courseId);}
 }
