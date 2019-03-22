@@ -84,7 +84,7 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
 	 * 直播上下课回调
 	 */
 	@Override
-	//@Async
+	@Async
 	public void saveLiveInfo(Long roomId, String op) {
 
 		if (LiveCallBackTypeEnum.END.getKey().equals(op)) {
