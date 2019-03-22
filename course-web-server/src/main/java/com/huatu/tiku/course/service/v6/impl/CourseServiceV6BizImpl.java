@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import com.huatu.common.ErrorResult;
 import com.huatu.ztk.paper.common.AnswerCardStatus;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -329,6 +330,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         SimpleDateFormat courseDateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm");
         NetSchoolResponse netSchoolResponse = practiceCardService.getAnswerCard(userSession.getToken(), terminal, cardId);
         if(null == netSchoolResponse.getData()){
+            log.error("课后作业答题卡信息不存在:{}", cardId);
             return new JSONObject();
         }
         Object response = ResponseUtil.build(netSchoolResponse);
@@ -339,6 +341,11 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
         PracticeCard practiceCard = JSONObject.parseObject(data.toJSONString(), PracticeCard.class);
         practiceCard.setPaper(practiceForCoursePaper);
+        if(checkUserSubmitAnswerCard(userSession.getId(), practiceForCoursePaper.getCourseId(), practiceForCoursePaper.getCourseType())){
+            log.error("学员没有提交答题卡:userId:{}, courseWareId:{}, videoType:{}", userSession.getId(), practiceForCoursePaper.getCourseId(), practiceForCoursePaper.getCourseType());
+            ErrorResult errorResult = ErrorResult.create(10000103, "请先提交答题卡后查看报告！");
+            throw new BizException(errorResult);
+        }
         List<QuestionPointTree> points_ = Lists.newArrayList();
         Map<String,Object> paperInfo = Maps.newHashMap();
 
