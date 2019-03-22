@@ -465,8 +465,4 @@ public class PracticeMetaComponent {
 		return true;
 		
 	}
-	public static void main(String[] args) {
-		final int[] answerCountNum = new int[0];
-		System.out.println(answerCountNum);
-	}
 }
