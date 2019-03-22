@@ -127,6 +127,7 @@ public class CourseExercisesStatisticsManager {
         rankInfo.put("maxCorrect", 0);
         rankInfo.put("myRank", 0);
         rankInfo.put("ranks", Lists.newArrayList());
+        log.debug("课后作业答题卡信息:{}", JSONObject.toJSONString(practiceCard));
 
         try {
             PracticeForCoursePaper practiceForCoursePaper = (PracticeForCoursePaper) practiceCard.getPaper();
