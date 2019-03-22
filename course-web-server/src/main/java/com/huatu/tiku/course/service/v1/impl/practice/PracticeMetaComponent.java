@@ -172,7 +172,7 @@ public class PracticeMetaComponent {
 		final QuestionInfo questionInfo = baseQuestionInfoList.get(0);
 
 		if (null == totalTime || totalTime == 0) {
-			return QuestionMetaBo.builder().id(questionInfo.getId()).answer(questionInfo.getAnswer()).build();
+			return QuestionMetaBo.builder().id(questionInfo.getId()).answer(questionInfo.getAnswer()).percents(new int[0]).build();
 		}
 		final int[] answerCountNum = new int[questionInfo.getChoiceList().size()];
 		final Set<Map.Entry<String, Integer>> entrySet = hashOperations.entries(key).entrySet();
@@ -464,5 +464,9 @@ public class PracticeMetaComponent {
 		}
 		return true;
 		
+	}
+	public static void main(String[] args) {
+		final int[] answerCountNum = new int[0];
+		System.out.println(answerCountNum);
 	}
 }
