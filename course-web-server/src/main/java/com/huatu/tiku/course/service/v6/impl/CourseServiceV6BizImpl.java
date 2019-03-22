@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import com.huatu.ztk.paper.common.AnswerCardStatus;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -421,6 +422,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
          */
         if(exerciseCardId > 0){
             Map<String, Object> temp = (Map<String, Object>)courseWorkReport(userSession, terminal, exerciseCardId);
+            int status = MapUtils.getIntValue(temp, "status");
             courseWorkPractice.put("answers", temp.get("answers"));
             courseWorkPractice.put("avgCorrect", temp.get("avgCorrect"));
             courseWorkPractice.put("avgMyCost", temp.get("avgMyCost"));
@@ -430,7 +432,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             courseWorkPractice.put("id", temp.get("id"));
             courseWorkPractice.put("paper", temp.get("paper"));
             courseWorkPractice.put("rcount", temp.get("rcount"));
-            courseWorkPractice.put("practiceStatus", YesOrNoStatus.YES.getCode());
+            courseWorkPractice.put("practiceStatus", AnswerCardStatus.CREATE == status ? YesOrNoStatus.NO.getCode() : YesOrNoStatus.YES.getCode());
             courseWorkPractice.put("submitTimeInfo", temp.get("submitTimeInfo"));
             courseWorkPracticePoints.addAll((List<QuestionPointTree>) temp.get("points"));
         }else{

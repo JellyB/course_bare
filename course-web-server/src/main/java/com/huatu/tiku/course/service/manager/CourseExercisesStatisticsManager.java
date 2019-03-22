@@ -179,7 +179,8 @@ public class CourseExercisesStatisticsManager {
             rankInfo.put("myRank", myRank);
             return rankInfo;
         }catch (Exception e){
-            log.error("obtainCourseRankInfo caught an error!{}", e);
+            log.info("答题卡信息:{}",JSONObject.toJSONString(practiceCard));
+            log.error("获取课作业排名统计信息异常!{}", e);
             return rankInfo;
         }
     }
