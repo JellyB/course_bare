@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import com.huatu.common.ErrorResult;
 import com.huatu.ztk.paper.common.AnswerCardStatus;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -25,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisZSetCommands;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
@@ -328,6 +330,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         SimpleDateFormat courseDateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm");
         NetSchoolResponse netSchoolResponse = practiceCardService.getAnswerCard(userSession.getToken(), terminal, cardId);
         if(null == netSchoolResponse.getData()){
+            log.error("课后作业答题卡信息不存在:{}", cardId);
             return new JSONObject();
         }
         Object response = ResponseUtil.build(netSchoolResponse);
@@ -338,6 +341,11 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
         PracticeCard practiceCard = JSONObject.parseObject(data.toJSONString(), PracticeCard.class);
         practiceCard.setPaper(practiceForCoursePaper);
+        if(checkUserSubmitAnswerCard(userSession.getId(), practiceForCoursePaper.getCourseId(), practiceForCoursePaper.getCourseType())){
+            log.error("学员没有提交答题卡:userId:{}, courseWareId:{}, videoType:{}", userSession.getId(), practiceForCoursePaper.getCourseId(), practiceForCoursePaper.getCourseType());
+            ErrorResult errorResult = ErrorResult.create(10000103, "请先提交答题卡后查看报告！");
+            throw new BizException(errorResult);
+        }
         List<QuestionPointTree> points_ = Lists.newArrayList();
         Map<String,Object> paperInfo = Maps.newHashMap();
 
@@ -366,6 +374,19 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         Date date = new Date(practiceCard.getCreateTime() == 0 ? System.currentTimeMillis():practiceCard.getCreateTime());
         data.put("submitTimeInfo", courseDateFormat.format(date));
         return data;
+    }
+
+    /**
+     * 判断用户是否已经提交了课后作业答题卡信息
+     * @param userId
+     * @param courseWareId
+     * @param videoType
+     * @return
+     */
+    private boolean checkUserSubmitAnswerCard(long userId, long courseWareId, int videoType){
+        String existsKey = CourseCacheKey.getCourseWorkDealData(videoType, courseWareId);
+        HashOperations<String, String, String> existsHash = redisTemplate.opsForHash();
+        return existsHash.hasKey(existsKey, String.valueOf(userId);
     }
 
     /**
@@ -418,9 +439,10 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             liveReport.put("teacherComment", MapUtils.getString(data, "msg"));
         }
         /**
-         * 处理课后作业报告，如果配置了课后作业
+         * 处理课后作业报告，如果用户主动提交了答题卡信息处理
+         * 否则提示学员去做题界面做题并提交答题卡
          */
-        if(exerciseCardId > 0){
+        if(checkUserSubmitAnswerCard(userSession.getId(), courseWareId, videoType)){
             Map<String, Object> temp = (Map<String, Object>)courseWorkReport(userSession, terminal, exerciseCardId);
             int status = MapUtils.getIntValue(temp, "status");
             courseWorkPractice.put("answers", temp.get("answers"));
@@ -442,6 +464,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
                     HashMap<String, Object> practiceCard = (HashMap<String, Object>) ZTKResponseUtil.build(object);
                     courseWorkPractice.put("id", MapUtils.getString(practiceCard, "id"));
                     courseWorkPractice.put("practiceStatus", YesOrNoStatus.NO.getCode());
+                    classPractice.put("practiceStatus", YesOrNoStatus.YES.getCode());
+                }else{
+                    classPractice.put("practiceStatus", YesOrNoStatus.NO.getCode());
                 }
             }catch (Exception e){
                 courseWorkPractice.put("id", 0);
