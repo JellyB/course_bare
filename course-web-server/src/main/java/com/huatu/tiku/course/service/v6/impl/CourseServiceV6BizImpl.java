@@ -386,7 +386,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
     private boolean checkUserSubmitAnswerCard(long userId, long courseWareId, int videoType){
         String existsKey = CourseCacheKey.getCourseWorkDealData(videoType, courseWareId);
         HashOperations<String, String, String> existsHash = redisTemplate.opsForHash();
-        return existsHash.hasKey(existsKey, String.valueOf(userId);
+        return existsHash.hasKey(existsKey, String.valueOf(userId));
     }
 
     /**
