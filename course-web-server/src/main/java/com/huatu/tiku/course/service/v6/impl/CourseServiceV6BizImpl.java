@@ -311,7 +311,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 			log.info("接口unfinish_stage_exam_list解析用时:{}", String.valueOf(stopwatchExplain.stop()));
 			return periodTestListVO;
 		}
-		return null;
+		return new PeriodTestListVO();
 	}
 
     /**
