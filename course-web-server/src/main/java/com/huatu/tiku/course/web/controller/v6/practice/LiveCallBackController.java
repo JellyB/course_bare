@@ -40,6 +40,7 @@ public class LiveCallBackController {
 	@PostMapping(value = "/{roomId}/liveCallBack")
 	public Object liveCallBack(@PathVariable Long roomId, @RequestBody List<LiveCallbackBo> liveCallbackBoList)
 			throws ExecutionException, InterruptedException {
+		log.info("php直播转录播回调接口参数:{}", roomId, liveCallbackBoList.toString());
 		if (CollectionUtils.isNotEmpty(liveCallbackBoList)) {
 			liveCallBackService.liveCallBackAllInfo(roomId, liveCallbackBoList);
 		}
@@ -59,8 +60,9 @@ public class LiveCallBackController {
 			HttpServletResponse response) {
 		// TODO 生成答题卡
 		try {
-			log.info("直播上下课回调接口调用------>roomId:{},回调类型:{},回调唯一标示:{},签名为:{},调用时间:{},时间戳为:{}", room_id, op, qid, sign,op_time,timestamp);
-			liveCallBackService.saveLiveInfo(room_id,op);
+			log.info("直播上下课回调接口调用------>roomId:{},回调类型:{},回调唯一标示:{},签名为:{},调用时间:{},时间戳为:{}", room_id, op, qid, sign,
+					op_time, timestamp);
+			liveCallBackService.saveLiveInfo(room_id, op);
 			response.setContentType("application/json; charset=utf-8");
 			response.getWriter().write("{\"code\": 0, \"msg\":\"success\"}");
 		} catch (IOException e) {
