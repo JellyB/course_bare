@@ -442,6 +442,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
                     HashMap<String, Object> practiceCard = (HashMap<String, Object>) ZTKResponseUtil.build(object);
                     courseWorkPractice.put("id", MapUtils.getString(practiceCard, "id"));
                     courseWorkPractice.put("practiceStatus", YesOrNoStatus.NO.getCode());
+                    classPractice.put("practiceStatus", YesOrNoStatus.YES.getCode());
+                }else{
+                    classPractice.put("practiceStatus", YesOrNoStatus.NO.getCode());
                 }
             }catch (Exception e){
                 courseWorkPractice.put("id", 0);
