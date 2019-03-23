@@ -101,11 +101,4 @@ public class PeriodTest extends BaseWebTest {
     	log.info("findByRoomIdAndLiveCoursewareId :{}",findByRoomIdAndLiveCoursewareId);
     }
     
-    public static void main(String[] args) {
-    	String str = "213";
-    	char[] chars = str.toCharArray();
-        Arrays.sort(str.toCharArray());
-        String sorted = new String(chars);
-        System.out.println(sorted);
-	}
 }
