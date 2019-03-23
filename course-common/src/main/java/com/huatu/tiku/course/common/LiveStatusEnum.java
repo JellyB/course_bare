@@ -24,7 +24,7 @@ public enum  LiveStatusEnum {
     public static LiveStatusEnum create(int liveStatus){
         for (LiveStatusEnum liveStatusEnum : values()) {
             if(liveStatusEnum.getCode() == liveStatus){
-                return liveStatusEnum
+                return liveStatusEnum;
             }
         }
         return null;
