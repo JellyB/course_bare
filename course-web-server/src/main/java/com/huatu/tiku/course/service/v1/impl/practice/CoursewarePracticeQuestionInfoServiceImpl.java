@@ -1,20 +1,22 @@
 package com.huatu.tiku.course.service.v1.impl.practice;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.huatu.tiku.course.bean.practice.QuestionMetaBo;
 import com.huatu.tiku.course.bean.vo.CoursewarePracticeQuestionVo;
 import com.huatu.tiku.course.service.v1.practice.CoursewarePracticeQuestionInfoService;
 import com.huatu.tiku.course.service.v1.practice.LiveCourseRoomInfoService;
-import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
 import com.huatu.tiku.entity.CoursewarePracticeQuestionInfo;
+
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import service.impl.BaseServiceHelperImpl;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.weekend.WeekendSqls;
-
-import java.util.List;
 
 /**
  * @author shanjigang
@@ -24,12 +26,15 @@ import java.util.List;
 @Slf4j
 public class CoursewarePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl<CoursewarePracticeQuestionInfo>
         implements CoursewarePracticeQuestionInfoService {
+	
     public CoursewarePracticeQuestionInfoServiceImpl() {
         super(CoursewarePracticeQuestionInfo.class);
     }
 
+    @Autowired
     private  LiveCourseRoomInfoService liveCourseRoomInfoService;
 
+    @Autowired
     private  PracticeMetaComponent practiceMetaComponent;
     /**
      * 根据 roomId coursewareId 列表查询
