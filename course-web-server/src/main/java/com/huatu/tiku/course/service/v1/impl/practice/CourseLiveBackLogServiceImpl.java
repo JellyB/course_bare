@@ -32,7 +32,7 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 
 		final WeekendSqls<CourseLiveBackLog> weekendSqls = WeekendSqls.<CourseLiveBackLog>custom()
 				.andEqualTo(CourseLiveBackLog::getRoomId, roomId)
-				.andEqualTo(CourseLiveBackLog::getLiveCoursewareId, coursewareId);
+				.andEqualTo(CourseLiveBackLog::getLiveBackCoursewareId, coursewareId);
 		final Example example = Example.builder(CourseLiveBackLog.class).where(weekendSqls).build();
 		List<CourseLiveBackLog> courseLiveBackLogList = selectByExample(example);
 		if (CollectionUtils.isNotEmpty(courseLiveBackLogList)) {

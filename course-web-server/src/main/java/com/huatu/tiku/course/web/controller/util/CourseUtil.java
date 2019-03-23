@@ -303,79 +303,6 @@ public class CourseUtil {
             );
     }
 
-    /**
-     * 处理学习报告状态信息
-     * @param response
-     * @param userId
-     */
-    /**
-     * 处理学习报告状态信息，如果为直播，且用户观看了直播，老师下课就生成学习报告
-     * 如果为录播，并且配置了开关为 true 则可以查看学习报告
-     * @param response
-     * @param userId
-     */
-    public void addLearnReportInfo(LinkedHashMap response, int userId){
-        response.computeIfPresent("list", (key, value) -> {
-
-                    List<HashMap<String, Object>> courseWareIds = ((List<Map>) value).stream()
-                            .filter(map -> null != map.get(SyllabusInfo.VideoType) && null != map.get(SyllabusInfo.CourseWareId))
-                            .map(map -> {
-                                HashMap<String, Object> build = HashMapBuilder.<String, Object>newBuilder()
-                                        .put("courseType", MapUtils.getIntValue(map, "videoType", 0))
-                                        .put("courseId", MapUtils.getIntValue(map, "coursewareId", 0))
-                                        .build();
-                                return build;
-                            })
-                            .collect(Collectors.toList());
-
-                    log.info("处理随堂练习状态，userId = {},courseWareIds = {}", userId, courseWareIds);
-                    Object classExerciseStatus = practiceCardServiceV1.getClassExerciseStatus(userId, courseWareIds);
-                    Object build = ZTKResponseUtil.build(classExerciseStatus);
-
-                    Map<Object, Object> defaultMap = HashMapBuilder.newBuilder()
-                            .put("reportStatus", 0)
-                            .build();
-
-                    if (null != build && CollectionUtils.isNotEmpty((List<Map>) build)) {
-
-                        //获取随堂练习报告状态
-                        Function<HashMap<String, Object>, Map> getCourse = (valueData) -> {
-                            Optional<Map> first = ((List<Map>) build).stream()
-                                    .filter(result -> null != result.get("courseId") && null != result.get("courseType"))
-                                    .filter(result -> MapUtils.getString(result, "courseId").equals(MapUtils.getString(valueData, "coursewareId"))
-                                                    && MapUtils.getString(result, "courseType").equals(MapUtils.getString(valueData, "videoType"))
-                                    )
-                                    .findFirst();
-                            if (first.isPresent()) {
-                                Map map = first.get();
-                                map.remove("courseId");
-                                map.remove("courseType");
-                                return map;
-                            } else {
-                                return defaultMap;
-                            }
-                        };
-                        List<Map> mapList = ((List<Map>) value).stream()
-                                .map(valueData -> {
-                                    Map status = getCourse.apply((HashMap<String, Object>) valueData);
-                                    valueData.putAll(status);
-                                    return valueData;
-                                })
-                                .collect(Collectors.toList());
-                        return mapList;
-
-                    } else {
-                        List<Map> mapList = ((List<Map>) value).stream()
-                                .map(valueData -> {
-                                    valueData.put("reportStatus", 0);
-                                    return valueData;
-                                })
-                                .collect(Collectors.toList());
-                        return mapList;
-                    }
-                }
-        );
-    }
 
 
     /**
@@ -391,10 +318,8 @@ public class CourseUtil {
         for (Map<String, Object> stringObjectMap : list) {
             try{
                 int type =  MapUtils.getInteger(stringObjectMap, SyllabusInfo.Type);
-                int studyReport = MapUtils.getIntValue(stringObjectMap, SyllabusInfo.StudyReport);
-                YesOrNoStatus studyReportEnum = YesOrNoStatus.create(studyReport);
                 TypeEnum typeEnum = TypeEnum.create(type);
-                if(typeEnum != TypeEnum.COURSE_WARE || studyReportEnum == YesOrNoStatus.NO){
+                if(typeEnum != TypeEnum.COURSE_WARE){
                     stringObjectMap.put("reportStatus", YesOrNoStatus.UN_DEFINED.getCode());
                     continue;
                 }
@@ -411,6 +336,11 @@ public class CourseUtil {
                         stringObjectMap.putAll(playBack);
                         break;
                     case DOT_LIVE:
+                        int studyReport = MapUtils.getIntValue(stringObjectMap, SyllabusInfo.StudyReport);
+                        YesOrNoStatus studyReportEnum = YesOrNoStatus.create(studyReport);
+                        if(studyReportEnum == YesOrNoStatus.NO){
+                            stringObjectMap.put("reportStatus", YesOrNoStatus.UN_DEFINED.getCode());
+                        }
                         Map dotLive = doDotLive(courseWareId, userId);
                         stringObjectMap.putAll(dotLive);
                         break;
@@ -475,6 +405,7 @@ public class CourseUtil {
      * @throws BizException
      */
     private Map doDotLive(long courseWareId, int userId) throws BizException{
+
         Map<String,Object> result = Maps.newHashMap();
         result.put("reportStatus", YesOrNoStatus.NO.getCode());
         NetSchoolResponse netSchoolResponse = practiceCardServiceV1.getClassExerciseReport(courseWareId, VideoTypeEnum.DOT_LIVE.getVideoType(), userId);

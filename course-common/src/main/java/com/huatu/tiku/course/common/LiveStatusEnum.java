@@ -14,9 +14,9 @@ import lombok.Getter;
 @Getter
 public enum  LiveStatusEnum {
 
-    UN_START(1, "未开始"),
-    ON_LIVE(2, "直播中"),
-    FINISHED(3, "已经结束");
+    UN_START(0, "未开始"),
+    ON_LIVE(1, "直播中"),
+    FINISHED(2, "已经结束");
 
     private int code;
     private String value;
