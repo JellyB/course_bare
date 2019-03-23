@@ -505,7 +505,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
                         courseWareId = courseLiveBackLog.getLiveCoursewareId();
                     }
                 }
-                NetSchoolResponse classReport = practiceCardService.getClassExerciseReport(courseWareId, videoType, userSession.getToken(), terminal, cv);
+                NetSchoolResponse classReport = practiceCardService.getClassExerciseReport(courseWareId, videoType, userSession.getId());
                 if(classReport != ResponseUtil.DEFAULT_PAGE_EMPTY && null != classReport && null != classReport.getData()){
                     /**
                      * 如果答题卡存在，直播或直播回放放答题卡存在
@@ -522,7 +522,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
                     classPractice.put("practiceStatus", YesOrNoStatus.NO.getCode());
                 }
             }else if(videoType == VideoTypeEnum.DOT_LIVE.getVideoType()){
-                NetSchoolResponse classReport = practiceCardService.getClassExerciseReport(courseWareId, videoType, userSession.getToken(), terminal, cv);
+                NetSchoolResponse classReport = practiceCardService.getClassExerciseReport(courseWareId, videoType, userSession.getId());
                 if(classReport != ResponseUtil.DEFAULT_PAGE_EMPTY && null != classReport && null != classReport.getData()){
                     LinkedHashMap linkedHashMap = (LinkedHashMap<String, Object>) classReport.getData();
                     classPractice.putAll(linkedHashMap);
