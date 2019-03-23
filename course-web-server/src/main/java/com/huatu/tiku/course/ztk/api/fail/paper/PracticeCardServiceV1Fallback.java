@@ -52,7 +52,7 @@ public class PracticeCardServiceV1Fallback implements PracticeCardServiceV1 {
 	}
 
 	@Override
-	public Object createAndSaveAnswerCoursePracticeCard(Integer terminal, Integer subject, Integer uid, String name,
+	public Object createAndSaveAnswerCoursePracticeCard(Integer uid, String name,
 			Integer courseType, Long courseId, String questionIds, String[] answers, int[] corrects, int[] times) {
 		return ZTKResponseUtil.defaultResult();
 	}

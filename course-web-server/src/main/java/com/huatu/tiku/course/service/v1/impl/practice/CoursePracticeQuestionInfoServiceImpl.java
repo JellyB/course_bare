@@ -125,7 +125,7 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 			UserCourseBo userCourse = CoursePracticeCacheKey.getUserAndCourseByUserMetaKey(courseUserKey);
 			String qids = StringUtils.join(questionIds, ",");
 			// 直播课type为2
-			practiceCardServiceV1.createAndSaveAnswerCoursePracticeCard(1, 1, userCourse.getUserId(), "随堂练习-直播课",
+			practiceCardServiceV1.createAndSaveAnswerCoursePracticeCard(userCourse.getUserId(), "随堂练习-直播课",
 					CourseType.LIVE.getCode(), userCourse.getCourseId(), qids, answers, corrects, times);
 			log.info("随堂练用户id:{} courseId:{}生成答题卡", userCourse.getUserId(), userCourse.getCourseId());
 			// 赠送图币

@@ -104,8 +104,6 @@ public interface PracticeCardServiceV1 {
      */
     @PostMapping(value = "/v2/practices/createAndSaveAnswerCoursePracticeCard")
     Object createAndSaveAnswerCoursePracticeCard(
-            @RequestParam("terminal") Integer terminal,
-            @RequestParam("subject") Integer subject,
             @RequestParam("userId") Integer uid,
             @RequestParam("name") String name,
             @RequestParam("courseType") Integer courseType,
@@ -114,7 +112,6 @@ public interface PracticeCardServiceV1 {
             @RequestParam("answers") String[] answers,
             @RequestParam("corrects") int[] corrects,
             @RequestParam("times") int[] times
-            //@RequestBody List<Object> questionInfoList
     );
 
     /**
