@@ -45,4 +45,9 @@ public class SyllabusInfo {
      */
     public static String StudyReport = "studyReport";
 
+    /**
+     * 直播是否结束{@link com.huatu.tiku.course.common.LiveStatusEnum}
+     */
+    public static final String LiveStatus = "liveStatus";
+
 }
