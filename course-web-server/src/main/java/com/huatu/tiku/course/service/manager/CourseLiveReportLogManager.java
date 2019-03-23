@@ -40,6 +40,7 @@ public class CourseLiveReportLogManager {
             newLog.setBjyRoomId(liveRecordInfo.getBjyRoomId());
             newLog.setClassId(liveRecordInfo.getClassId());
             newLog.setCardId(liveRecordInfo.getCourseWareId());
+            newLog.setCourseWareId(liveRecordInfo.getCourseWareId());
             newLog.setUserId(new Long(liveRecordInfoWithUserInfo.getUserId()));
             courseLiveReportLogMapper.insertSelective(newLog);
         }else{
