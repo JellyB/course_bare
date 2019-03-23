@@ -1,6 +1,5 @@
 package com.huatu.tiku.course.service.v1.impl.practice;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +10,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Service;
 
 import com.huatu.tiku.common.CourseQuestionTypeEnum.CourseType;
@@ -92,6 +92,7 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 		HashOperations<String, String, PracticeUserQuestionMetaInfoBo> opsForHash = redisTemplate.opsForHash();
 		//存储统计信息
 		HashOperations<String, String, Integer> metaOpsForHash = redisTemplate.opsForHash();
+		final SetOperations<String, Integer> setOperations = redisTemplate.opsForSet();
 		
 		// 遍历所有的key
 		for (String courseUserKey : courseUserStrs) {
@@ -135,6 +136,8 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 			UserCourseBo userCourse = CoursePracticeCacheKey.getUserAndCourseByUserMetaKey(courseUserKey);
 			String qids = StringUtils.join(questionIds, ",");
 			//存储该房间下统计信息
+			String key = CoursePracticeCacheKey.roomIdUserMetaKey(roomId,userCourse.getCourseId());
+			setOperations.add(key,userCourse.getUserId());
 			String metaKey = CoursePracticeCacheKey.roomIdCourseIdTypeMetaKey(roomId, userCourse.getCourseId(), 2);
 			Map<String, Integer> metaEntries = metaOpsForHash.entries(metaKey);
 			Integer oldRcount = metaEntries.get(CoursePracticeCacheKey.RCOUNT);

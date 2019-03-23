@@ -132,5 +132,13 @@ public final class CoursePracticeCacheKey {
         return "course:practice:courseware:roomIdCourseIdTypeMetaKey" + roomId +":"+ coursewareId + ":" + type;
     }
     
+    /**
+     * 直播班级统计人数
+     * @param roomId
+     * @return
+     */
+	public static String roomIdUserMetaKey(Long roomId, Long coursewareId) {
+		return "course:practice:courseware:roomIdCourseIdTypeUserMetaKey" + roomId + ":" + coursewareId;
+	}
 
 }
