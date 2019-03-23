@@ -20,6 +20,7 @@ import com.huatu.tiku.course.service.v1.practice.QuestionInfoService;
 import com.huatu.tiku.course.service.v1.practice.TeacherService;
 import com.huatu.tiku.entity.CourseBreakpointQuestion;
 import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
+import com.huatu.tiku.entity.CoursewarePracticeQuestionInfo;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -282,16 +283,17 @@ public class TeacherServiceImpl implements TeacherService {
 	}
 
     public List<QuestionMetaBo> getCoursewareAnswerQuestionInfo(Long roomId,Long coursewareId){
+        //获取房间下的课件Id
+        List<Integer> coursewareIds = liveCourseRoomInfoService.getLiveCourseIdListByRoomId(roomId);
         //获取房间下的已作答试题
         List<Long> roomPracticedQuestionIds = practiceMetaComponent.getRoomPracticedQuestion(roomId);
         List<QuestionMetaBo> questionMetaBos=Lists.newArrayList();
-        roomPracticedQuestionIds.forEach(questionId->{
-            QuestionMetaBo questionMetaBo = practiceMetaComponent.getCourseQuestionMetaBo( roomId,coursewareId,questionId);
-            if (questionMetaBo!=null){
+        coursewareIds.forEach(coursewareId1->{
+            roomPracticedQuestionIds.forEach(questionId->{
+                QuestionMetaBo questionMetaBo = practiceMetaComponent.getCourseQuestionMetaBo( roomId,Long.valueOf(coursewareId1),questionId);
                 questionMetaBos.add(questionMetaBo);
-            }
+            });
         });
-
         return questionMetaBos;
     }
 
