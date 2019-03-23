@@ -247,7 +247,7 @@ public class CourseUtil {
                         Set<String> paperIds = ((List<Map>) value).stream()
                                 //videoType	1点播2直播3直播回放4阶段测试题
                                 .filter(map -> MapUtils.getString(map, "videoType").equals("4"))
-                                //coursewareId	-》课件id  | id -》节点id
+                                //coursewareId	课件id
                                 .filter(map -> null != map.get("coursewareId") && null != map.get("id"))
                                 .map(map -> {
                                     StringBuilder stringBuilder = new StringBuilder();
@@ -271,7 +271,7 @@ public class CourseUtil {
 					valueData.put("testStatus", MapUtils.getInteger(data, stringBuilder.toString(), -1));
 					// 设置是否过期
 					if (1 == MapUtils.getInteger(valueData, "isEffective")
-							&& System.currentTimeMillis() > (MapUtils.getLong(valueData, "liveStartTime"))) {
+							&& DateUtil.isExpired(MapUtils.getString(valueData, "endTime"))) {
 						valueData.put("isExpired", 1);
 					} else {
 						valueData.put("isExpired", 0);
