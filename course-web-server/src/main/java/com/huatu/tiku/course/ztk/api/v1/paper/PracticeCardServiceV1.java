@@ -113,8 +113,8 @@ public interface PracticeCardServiceV1 {
             @RequestParam("questionIds") String questionIds,
             @RequestParam("answers") String[] answers,
             @RequestParam("corrects") int[] corrects,
-            @RequestParam("times") int[] times,
-            @RequestBody List<Object> questionInfoList
+            @RequestParam("times") int[] times
+            //@RequestBody List<Object> questionInfoList
     );
 
     /**
