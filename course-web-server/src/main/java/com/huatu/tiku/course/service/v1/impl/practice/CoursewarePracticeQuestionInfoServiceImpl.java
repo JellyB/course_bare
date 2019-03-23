@@ -6,10 +6,13 @@ import com.huatu.tiku.course.bean.practice.QuestionMetaBo;
 import com.huatu.tiku.course.bean.vo.CoursewarePracticeQuestionVo;
 import com.huatu.tiku.course.service.v1.practice.CoursewarePracticeQuestionInfoService;
 import com.huatu.tiku.course.service.v1.practice.LiveCourseRoomInfoService;
+import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
 import com.huatu.tiku.entity.CoursewarePracticeQuestionInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import service.impl.BaseServiceHelperImpl;
+import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.weekend.WeekendSqls;
 
 import java.util.List;
 
@@ -32,13 +35,13 @@ public class CoursewarePracticeQuestionInfoServiceImpl extends BaseServiceHelper
      * 根据 roomId coursewareId 列表查询
      */
     public List<CoursewarePracticeQuestionVo> listByCoursewareIdAndQuestionIds(Long roomId, Long coursewareId){
-      /* WeekendSqls<CoursewarePracticeQuestionInfo> weekendSqls = WeekendSqls.<CoursePracticeQuestionInfo>custom()
+        WeekendSqls<CoursewarePracticeQuestionInfo> weekendSqls = WeekendSqls.<CoursewarePracticeQuestionInfo>custom()
                 .andEqualTo(CoursewarePracticeQuestionInfo::getRoomId, roomId)
                 .andEqualTo(CoursewarePracticeQuestionInfo::getCoursewareId, coursewareId);
         Example example = Example.builder(CoursewarePracticeQuestionInfo.class).where(weekendSqls).build();
-        List<CoursewarePracticeQuestionInfo> list=selectByExample(example);*/
+        List<CoursewarePracticeQuestionInfo> list=selectByExample(example);
         List<CoursewarePracticeQuestionVo> coursewarePracticeQuestionVos=Lists.newArrayList();
-       /* for(int i=0;i<list.size();i++){
+       for(int i=0;i<list.size();i++){
             CoursewarePracticeQuestionInfo info=list.get(i);
             String meta=info.getMeta();
             List<QuestionMetaBo> questionMetaBos=(List<QuestionMetaBo>)JSONObject.parseObject(meta,QuestionMetaBo.class);
@@ -47,7 +50,7 @@ public class CoursewarePracticeQuestionInfoServiceImpl extends BaseServiceHelper
             course.setRoomId(info.getRoomId());
             course.setMeta(questionMetaBos);
             coursewarePracticeQuestionVos.add(course);
-        }*/
+        }
         return coursewarePracticeQuestionVos;
     }
 
