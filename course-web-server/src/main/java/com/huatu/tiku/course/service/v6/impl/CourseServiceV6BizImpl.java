@@ -346,7 +346,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
         PracticeCard practiceCard = JSONObject.parseObject(data.toJSONString(), PracticeCard.class);
         practiceCard.setPaper(practiceForCoursePaper);
-        if(checkUserSubmitAnswerCard(userSession.getId(), practiceForCoursePaper.getCourseId(), practiceForCoursePaper.getCourseType())){
+        if(!checkUserSubmitAnswerCard(userSession.getId(), practiceForCoursePaper.getCourseId(), practiceForCoursePaper.getCourseType())){
             log.error("学员没有提交答题卡:userId:{}, courseWareId:{}, videoType:{}", userSession.getId(), practiceForCoursePaper.getCourseId(), practiceForCoursePaper.getCourseType());
             ErrorResult errorResult = ErrorResult.create(10000103, "请先提交答题卡后查看报告！");
             throw new BizException(errorResult);
