@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 import com.huatu.common.ErrorResult;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
+import com.huatu.tiku.course.service.v1.practice.PracticeUserMetaService;
 import com.huatu.tiku.entity.CourseLiveBackLog;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -116,6 +117,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
     @Autowired
     private CourseLiveBackLogService courseLiveBackLogService;
+
+    @Autowired
+    private PracticeUserMetaService practiceUserMetaService;
 
     /**
      * 模考大赛解析课信息,多个id使用逗号分隔
@@ -522,6 +526,10 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
                     LinkedHashMap linkedHashMap = (LinkedHashMap<String, Object>) classReport.getData();
                     if(MapUtils.getLong(linkedHashMap, "id") > 0) {
                         classPractice.put("practiceStatus", YesOrNoStatus.YES.getCode());
+                        //处理随堂练习统计信息
+                        if(videoType == VideoTypeEnum.LIVE.getVideoType()){
+                            practiceUserMetaService.getCountDateByRIdAndCId(Long.valueOf(bjyRoomId), courseWareId);
+                        }
                     }else{
                         classPractice.put("practiceStatus", YesOrNoStatus.NO.getCode());
                     }
