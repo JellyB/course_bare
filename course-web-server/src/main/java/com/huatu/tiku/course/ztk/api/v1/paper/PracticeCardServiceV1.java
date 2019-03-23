@@ -104,8 +104,6 @@ public interface PracticeCardServiceV1 {
      */
     @PostMapping(value = "/v2/practices/createAndSaveAnswerCoursePracticeCard")
     Object createAndSaveAnswerCoursePracticeCard(
-            @RequestParam("terminal") Integer terminal,
-            @RequestParam("subject") Integer subject,
             @RequestParam("userId") Integer uid,
             @RequestParam("name") String name,
             @RequestParam("courseType") Integer courseType,
@@ -113,8 +111,7 @@ public interface PracticeCardServiceV1 {
             @RequestParam("questionIds") String questionIds,
             @RequestParam("answers") String[] answers,
             @RequestParam("corrects") int[] corrects,
-            @RequestParam("times") int[] times,
-            @RequestBody List<Object> questionInfoList
+            @RequestParam("times") int[] times
     );
 
     /**
@@ -127,6 +124,6 @@ public interface PracticeCardServiceV1 {
     @GetMapping(value = "/v4/practice/{courseId}/{playType}/report")
     NetSchoolResponse getClassExerciseReport(@PathVariable(value = "courseId") long courseId,
                                              @PathVariable(value = "playType") int playType,
-                                             @RequestParam(value = "uId") int userId);
+                                             @RequestParam(value = "uid") int userId);
 
 }

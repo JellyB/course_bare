@@ -7,6 +7,7 @@ import com.huatu.common.spring.event.EventPublisher;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.common.LiveStatusEnum;
 import com.huatu.tiku.course.common.TypeEnum;
 import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.common.YesOrNoStatus;
@@ -391,9 +392,9 @@ public class CourseUtil {
             try{
                 int type =  MapUtils.getInteger(stringObjectMap, SyllabusInfo.Type);
                 int studyReport = MapUtils.getIntValue(stringObjectMap, SyllabusInfo.StudyReport);
-                YesOrNoStatus yesOrNoStatus = YesOrNoStatus.create(studyReport);
+                YesOrNoStatus studyReportEnum = YesOrNoStatus.create(studyReport);
                 TypeEnum typeEnum = TypeEnum.create(type);
-                if(typeEnum != TypeEnum.COURSE_WARE || yesOrNoStatus == YesOrNoStatus.NO){
+                if(typeEnum != TypeEnum.COURSE_WARE || studyReportEnum == YesOrNoStatus.NO){
                     stringObjectMap.put("reportStatus", YesOrNoStatus.UN_DEFINED.getCode());
                     continue;
                 }
@@ -402,11 +403,11 @@ public class CourseUtil {
                 String bjyRoomId = MapUtils.getString(stringObjectMap, SyllabusInfo.BjyRoomId);
                 switch (videoTypeEnum){
                     case LIVE:
-                        Map live = doLiveReport(userId, courseWareId, bjyRoomId);
+                        Map live = doLiveReport(stringObjectMap);
                         stringObjectMap.putAll(live);
                         break;
                     case LIVE_PLAY_BACK:
-                        Map playBack = doLivePlayBack(userId, courseWareId, bjyRoomId);
+                        Map playBack = doLivePlayBack(courseWareId, bjyRoomId);
                         stringObjectMap.putAll(playBack);
                         break;
                     case DOT_LIVE:
@@ -426,41 +427,28 @@ public class CourseUtil {
 
     /**
      * 直播报告处理
-     * @param userId
-     * @param liveCourseWareId
-     * @param bjyRoomId
+     * @param stringObjectMap
      * @return
      * @throws BizException
      */
-    private Map doLiveReport(int userId, long liveCourseWareId, String bjyRoomId) throws BizException{
+    private Map doLiveReport(Map<String, Object> stringObjectMap) throws BizException{
         Map<String, Object> result = Maps.newHashMap();
-        Example example = new Example(CourseLiveReportLog.class);
-        example.and()
-                .andEqualTo("bjyRoomId", bjyRoomId)
-                .andEqualTo("userId",  userId)
-                .andEqualTo("courseWareId", liveCourseWareId);
-        try{
-            CourseLiveReportLog courseLiveReportLog = courseLiveReportLogMapper.selectOneByExample(example);
-            if(null == courseLiveReportLog){
-                result.put("reportStatus", YesOrNoStatus.NO.getCode());
-            }else{
-                result.put("reportStatus", YesOrNoStatus.YES.getCode());
-            }
-        }catch (Exception e){
-            result.put("reportStatus", YesOrNoStatus.NO.getCode());
+        int liveStatus = MapUtils.getIntValue(stringObjectMap, SyllabusInfo.LiveStatus);
+        LiveStatusEnum liveStatusEnum = LiveStatusEnum.create(liveStatus);
+        if(liveStatusEnum == LiveStatusEnum.FINISHED){
+            result.put("reportStatus", YesOrNoStatus.YES.getCode());
         }
         return result;
     }
 
     /**
      * 直播回放报告处理
-     * @param userId
      * @param liveBackCoursewareId
      * @param bjyRoomId
      * @return
      * @throws BizException
      */
-    private Map doLivePlayBack(int userId, long liveBackCoursewareId, String bjyRoomId) throws BizException{
+    private Map doLivePlayBack(long liveBackCoursewareId, String bjyRoomId) throws BizException{
         Map<String,Object> result = Maps.newHashMap();
         Example example = new Example(CourseLiveBackLog.class);
         example.and()
@@ -470,10 +458,10 @@ public class CourseUtil {
             CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(Long.valueOf(bjyRoomId), liveBackCoursewareId);
             if(null == courseLiveBackLog){
                 result.put("reportStatus", YesOrNoStatus.NO.getCode());
-                return result;
+            }else{
+                result.put("reportStatus", YesOrNoStatus.YES.getCode());
             }
-            long liveCourseWareId = courseLiveBackLog.getLiveCoursewareId();
-            return doLiveReport(userId, liveCourseWareId, bjyRoomId);
+            return result;
         }catch (Exception e){
             result.put("reportStatus", YesOrNoStatus.NO.getCode());
             return result;
