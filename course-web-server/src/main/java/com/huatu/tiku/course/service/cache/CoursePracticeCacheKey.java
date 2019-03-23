@@ -11,6 +11,16 @@ import com.huatu.tiku.course.bean.practice.UserCourseBo;
  * Created by lijun on 2019/2/27
  */
 public final class CoursePracticeCacheKey {
+	
+	/**
+	 * 统计hash中做对题数
+	 */
+	 public static String RCOUNT="rcount";
+	 
+	 /**
+	  * 统计hash中总用时
+	  */
+	 public static String TOTALTIME="totalTime";
 
     /**
      * 获取用户个人信息统计
@@ -110,5 +120,17 @@ public final class CoursePracticeCacheKey {
     public static String questionCoursewareMetaKey(Long roomId,Long coursewareId, Long questionId) {
         return "course:practice:courseware:questionMeta:" + roomId +":"+ questionId + ":" + coursewareId;
     }
+    
+    /**
+     * 直播班级统计数据用户查看
+     * @param roomId
+     * @param coursewareId
+     * @param type
+     * @return
+     */
+    public static String roomIdCourseIdTypeMetaKey(Long roomId,Long coursewareId, Integer type) {
+        return "course:practice:courseware:roomIdCourseIdTypeMetaKey" + roomId +":"+ coursewareId + ":" + type;
+    }
+    
 
 }

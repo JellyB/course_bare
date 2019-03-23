@@ -1,5 +1,7 @@
 package com.huatu.tiku.course.service.v1.practice;
 
+import java.util.Map;
+
 import com.huatu.tiku.entity.CoursePracticeUserMeta;
 
 import service.BaseServiceHelper;
@@ -18,4 +20,12 @@ public interface PracticeUserMetaService extends BaseServiceHelper<CoursePractic
 	 * @return
 	 */
 	Long getLiveCourseIdListByRoomId(Long roomId, Long userId, Integer courseId);
+	
+	/**
+	 * 根据直播房间id和课件id获取班级统计数据
+	 * @param roomId
+	 * @param courseId
+	 * @return
+	 */
+	Map<String,Integer> getCountDateByRIdAndCId(Long roomId, Long courseId);
 }
