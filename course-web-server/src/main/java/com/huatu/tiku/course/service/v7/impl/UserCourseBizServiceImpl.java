@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.service.v7.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Maps;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.vo.LiveRecordInfo;
 import com.huatu.tiku.course.bean.vo.LiveRecordInfoWithUserInfo;
@@ -47,7 +48,7 @@ public class UserCourseBizServiceImpl implements UserCourseBizV7Service {
     @Override
     public void dealLiveReport(int userId, String userName, int subject, int terminal, String cv, LiveRecordInfo liveRecordInfo) throws BizException {
 
-        Map<String,Object> params = LocalMapParamHandler.get();
+        Map<String,Object> params = Maps.newHashMap();
         params.put("userName", userName);
         params.put("syllabusId", liveRecordInfo.getSyllabusId());
         params.put("terminal", terminal);
