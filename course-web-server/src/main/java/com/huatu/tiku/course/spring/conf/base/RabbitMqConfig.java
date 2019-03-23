@@ -109,4 +109,13 @@ public class RabbitMqConfig {
         return new Queue(RabbitMqConstants.PERIOD_TEST_SUBMIT_CARD_INFO);
     }
 
+    /**
+     * 直播上报队列
+     * @return
+     */
+    @Bean
+    public Queue courseLiveReportLive(){
+        return new Queue(RabbitMqConstants.COURSE_LIVE_REPORT_LOG);
+    }
+
 }

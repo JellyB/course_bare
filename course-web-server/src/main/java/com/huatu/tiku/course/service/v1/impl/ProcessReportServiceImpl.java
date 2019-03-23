@@ -54,4 +54,8 @@ public class ProcessReportServiceImpl implements ProcessReportService {
         return SuccessMessage.create();
     }
 
+    @Override
+    public Object liveReport() {
+        return null;
+    }
 }

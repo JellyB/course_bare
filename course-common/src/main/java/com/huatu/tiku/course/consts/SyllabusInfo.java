@@ -30,6 +30,11 @@ public class SyllabusInfo {
     public static String VideoType = "videoType";
 
     /**
+     * 百家云房间id
+     */
+    public static String BjyRoomId = "bjyRoomId";
+
+    /**
      * 类型
      */
     public static String Type = "type";

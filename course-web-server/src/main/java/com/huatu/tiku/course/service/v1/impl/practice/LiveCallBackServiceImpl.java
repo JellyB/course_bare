@@ -12,8 +12,10 @@ import com.huatu.tiku.course.bean.practice.LiveCallbackBo;
 import com.huatu.tiku.course.bean.practice.PracticeRoomRankUserBo;
 import com.huatu.tiku.course.bean.practice.QuestionMetaBo;
 import com.huatu.tiku.course.common.LiveCallBackTypeEnum;
+import com.huatu.tiku.course.dao.manual.CourseLiveBackLogMapper;
 import com.huatu.tiku.course.service.v1.practice.LiveCallBackService;
 import com.huatu.tiku.course.service.v1.practice.TeacherService;
+import com.huatu.tiku.entity.CourseLiveBackLog;
 import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
 
 import lombok.RequiredArgsConstructor;
@@ -35,11 +37,31 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
 
 	private final CoursePracticeQuestionInfoServiceImpl coursePracticeQuestionInfoServiceImpl;
 
+	private final CourseLiveBackLogMapper courseLiveBackLogMapper;
+
 	@Override
 	@Async
 	public void liveCallBackAllInfo(Long roomId, List<LiveCallbackBo> liveCallbackBoList)
 			throws ExecutionException, InterruptedException {
 		// 获取所有试题信息
+		liveCallbackBoList.forEach(callback -> {
+			WeekendSqls<CourseLiveBackLog> sql = WeekendSqls.<CourseLiveBackLog>custom()
+					.andEqualTo(CourseLiveBackLog::getRoomId, roomId)
+					.andEqualTo(CourseLiveBackLog::getLiveCoursewareId, callback.getLiveCourseId());
+			Example example = Example.builder(CourseLiveBackLog.class).where(sql).build();
+			List<CourseLiveBackLog> courseLiveBackLogList = courseLiveBackLogMapper.selectByExample(example);
+			if (CollectionUtils.isEmpty(courseLiveBackLogList)) {
+				courseLiveBackLogMapper.insertSelective(
+						CourseLiveBackLog.builder().roomId(roomId).liveCoursewareId(callback.getLiveCourseId())
+								.liveBackCoursewareId(callback.getRecordCourseId()).build());
+			} else {
+				log.info("直播转回调房间ID:{},直播课件id:{},更新转录播信息:{}", roomId, callback.getLiveCourseId(),
+						callback.getRecordCourseId());
+				CourseLiveBackLog backLog = courseLiveBackLogList.get(0);
+				backLog.setLiveBackCoursewareId(callback.getRecordCourseId());
+				courseLiveBackLogMapper.updateByPrimaryKeySelective(backLog);
+			}
+		});
 
 	}
 
@@ -84,7 +106,7 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
 	 * 直播上下课回调
 	 */
 	@Override
-	//@Async
+	@Async
 	public void saveLiveInfo(Long roomId, String op) {
 
 		if (LiveCallBackTypeEnum.END.getKey().equals(op)) {
@@ -94,7 +116,7 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
 			List<String> userCoursekeyList = practiceMetaComponent.getRoomInfoMeta(roomId);
 			// 调用构建用户答题卡信息方法
 			coursePracticeQuestionInfoServiceImpl.generateAnswerCardInfo(questionIds, userCoursekeyList, roomId);
-		}else {
+		} else {
 			log.info("房间id:{}上课回调", roomId);
 		}
 

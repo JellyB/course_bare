@@ -1,6 +1,8 @@
 package com.huatu.tiku.course.service.v1;
 
 
+import lombok.Builder;
+
 import java.util.Map;
 
 /**
@@ -19,4 +21,8 @@ public interface ProcessReportService{
      * @return
      */
     Object playBackReport(Map<String,Object> params);
+
+
+
+    Object liveReport();
 }

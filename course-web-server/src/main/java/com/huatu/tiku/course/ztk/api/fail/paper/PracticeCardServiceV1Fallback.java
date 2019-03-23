@@ -67,18 +67,6 @@ public class PracticeCardServiceV1Fallback implements PracticeCardServiceV1 {
         return ResponseUtil.DEFAULT_PAGE_EMPTY;
     }
 
-    /**
-     * 获取随堂练习报告
-     *
-     * @param courseId
-     * @param playType
-     * @param token
-     * @return
-     */
-    @Override
-    public NetSchoolResponse getClassExerciseReport(long courseId, int playType, String token, int terminal, String cv) {
-        return ResponseUtil.DEFAULT_PAGE_EMPTY;
-    }
 
     /**
      * 批量查询课后作业答题卡
@@ -88,6 +76,20 @@ public class PracticeCardServiceV1Fallback implements PracticeCardServiceV1 {
      */
     @Override
     public Object getCourseExercisesCardInfoBatch(String ids) {
+        return ResponseUtil.DEFAULT_PAGE_EMPTY;
+    }
+
+
+    /**
+     * 获取随堂练习报告
+     *
+     * @param courseId
+     * @param playType
+     * @param userId
+     * @return
+     */
+    @Override
+    public NetSchoolResponse getClassExerciseReport(long courseId, int playType, int userId) {
         return ResponseUtil.DEFAULT_PAGE_EMPTY;
     }
 }

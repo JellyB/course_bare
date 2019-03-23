@@ -172,7 +172,7 @@ public class PracticeMetaComponent {
 		final QuestionInfo questionInfo = baseQuestionInfoList.get(0);
 
 		if (null == totalTime || totalTime == 0) {
-			return QuestionMetaBo.builder().id(questionInfo.getId()).answer(questionInfo.getAnswer()).build();
+			return QuestionMetaBo.builder().id(questionInfo.getId()).answer(questionInfo.getAnswer()).percents(new int[0]).type(questionInfo.getType()).build();
 		}
 		final int[] answerCountNum = new int[questionInfo.getChoiceList().size()];
 		final Set<Map.Entry<String, Integer>> entrySet = hashOperations.entries(key).entrySet();
@@ -220,9 +220,8 @@ public class PracticeMetaComponent {
 				&& answerCountNum[Integer.valueOf(questionInfo.getAnswer()) - 1] != correctCate) {
 			correctCate = answerCountNum[Integer.valueOf(questionInfo.getAnswer()) - 1];
 		}
-
 		return QuestionMetaBo.builder().id(questionInfo.getId()).answer(questionInfo.getAnswer())
-				.avgTime(totalTime / totalCount).count(totalCount).percents(answerCountNum).correctCate(correctCate)
+				.avgTime(totalTime / totalCount).count(totalCount).percents(answerCountNum).correctCate(correctCate).type(questionInfo.getType())
 				.build();
 	}
 

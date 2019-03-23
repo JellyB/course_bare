@@ -1,20 +1,25 @@
 package com.huatu.tiku.course.web.controller.util;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Maps;
+import com.huatu.common.exception.BizException;
 import com.huatu.common.spring.event.EventPublisher;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.common.TypeEnum;
 import com.huatu.tiku.course.common.VideoTypeEnum;
+import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.consts.SyllabusInfo;
+import com.huatu.tiku.course.dao.manual.CourseLiveReportLogMapper;
 import com.huatu.tiku.course.hbase.api.v1.VideoServiceV1;
-import com.huatu.tiku.course.service.v1.practice.PracticeUserMetaService;
-import com.huatu.tiku.course.util.DateUtil;
+import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.course.util.ZTKResponseUtil;
 import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
 import com.huatu.tiku.course.ztk.api.v4.paper.PeriodTestServiceV4;
+import com.huatu.tiku.entity.CourseLiveBackLog;
+import com.huatu.tiku.entity.CourseLiveReportLog;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
 import com.huatu.tiku.springboot.basic.reward.event.RewardActionEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +27,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -47,6 +53,12 @@ public class CourseUtil {
     @Autowired
     private PeriodTestServiceV4 PeriodTestService;
 
+    @Autowired
+    private CourseLiveReportLogMapper courseLiveReportLogMapper;
+
+
+    @Autowired
+    private CourseLiveBackLogService courseLiveBackLogService;
 
     /**
      * 添加课程播放的时间-用以每日任务处理
@@ -242,7 +254,9 @@ public class CourseUtil {
     public void addPeriodTestInfo(LinkedHashMap response, int userId){
                 response.computeIfPresent("list", (key, value) -> {
                         Set<String> paperIds = ((List<Map>) value).stream()
+                                //videoType	1点播2直播3直播回放4阶段测试题
                                 .filter(map -> VideoTypeEnum.create(MapUtils.getIntValue(map, "videoType")) == VideoTypeEnum.PERIOD_TEST)
+                                    //coursewareId	课件id
                                 .filter(map -> null != map.get(SyllabusInfo.CourseWareId) && null != map.get("id"))
                                 .map(map -> {
                                     StringBuilder stringBuilder = new StringBuilder();
@@ -294,14 +308,15 @@ public class CourseUtil {
      * @param userId
      */
     /**
-     * 处理阶段考试状态信息
+     * 处理学习报告状态信息，如果为直播，且用户观看了直播，老师下课就生成学习报告
+     * 如果为录播，并且配置了开关为 true 则可以查看学习报告
      * @param response
      * @param userId
      */
     public void addLearnReportInfo(LinkedHashMap response, int userId){
         response.computeIfPresent("list", (key, value) -> {
+
                     List<HashMap<String, Object>> courseWareIds = ((List<Map>) value).stream()
-                            //.filter(map -> (null != map.get("classExercisesNum")) && (MapUtils.getInteger(map,"classExercisesNum") > 0))
                             .filter(map -> null != map.get(SyllabusInfo.VideoType) && null != map.get(SyllabusInfo.CourseWareId))
                             .map(map -> {
                                 HashMap<String, Object> build = HashMapBuilder.<String, Object>newBuilder()
@@ -359,5 +374,117 @@ public class CourseUtil {
                     }
                 }
         );
+    }
+
+
+    /**
+     * 处理学习报告逻辑
+     * @param response
+     * @param userId
+     */
+    public void addLearnReportInfoV2(LinkedHashMap response, int userId){
+        List<Map<String, Object>> list = (List<Map<String, Object>>)response.get("list");
+        if(CollectionUtils.isEmpty(list)){
+            return;
+        }
+        for (Map<String, Object> stringObjectMap : list) {
+            VideoTypeEnum videoTypeEnum = VideoTypeEnum.create(MapUtils.getIntValue(stringObjectMap, SyllabusInfo.VideoType));
+            long courseWareId = MapUtils.getLong(stringObjectMap, SyllabusInfo.CourseWareId);
+            String bjyRoomId = MapUtils.getString(stringObjectMap, SyllabusInfo.BjyRoomId);
+            switch (videoTypeEnum){
+                case LIVE:
+                    Map live = doLiveReport(userId, courseWareId, bjyRoomId);
+                    stringObjectMap.putAll(live);
+                    break;
+                case LIVE_PLAY_BACK:
+                    Map playBack = doLivePlayBack(userId, courseWareId, bjyRoomId);
+                    stringObjectMap.putAll(playBack);
+                    break;
+                case DOT_LIVE:
+                    Map dotLive = doDotLive(courseWareId, userId);
+                    stringObjectMap.putAll(dotLive);
+                    break;
+                    default:
+                        Map defaultMap = Maps.newHashMap();
+                        defaultMap.put("reportStatus", YesOrNoStatus.NO.getCode());
+                        stringObjectMap.putAll(defaultMap);
+            }
+        }
+    }
+
+    /**
+     * 直播报告处理
+     * @param userId
+     * @param liveCourseWareId
+     * @param bjyRoomId
+     * @return
+     * @throws BizException
+     */
+    private Map doLiveReport(int userId, long liveCourseWareId, String bjyRoomId) throws BizException{
+        Map<String, Object> result = Maps.newHashMap();
+        Example example = new Example(CourseLiveReportLog.class);
+        example.and()
+                .andEqualTo("bjyRoomId", bjyRoomId)
+                .andEqualTo("userId",  userId)
+                .andEqualTo("courseWareId", liveCourseWareId);
+        try{
+            CourseLiveReportLog courseLiveReportLog = courseLiveReportLogMapper.selectOneByExample(example);
+            if(null == courseLiveReportLog){
+                result.put("reportStatus", YesOrNoStatus.NO.getCode());
+            }else{
+                result.put("reportStatus", YesOrNoStatus.YES.getCode());
+            }
+        }catch (Exception e){
+            result.put("reportStatus", YesOrNoStatus.NO.getCode());
+        }
+        return result;
+    }
+
+    /**
+     * 直播回放报告处理
+     * @param userId
+     * @param liveBackCoursewareId
+     * @param bjyRoomId
+     * @return
+     * @throws BizException
+     */
+    private Map doLivePlayBack(int userId, long liveBackCoursewareId, String bjyRoomId) throws BizException{
+        Map<String,Object> result = Maps.newHashMap();
+        Example example = new Example(CourseLiveBackLog.class);
+        example.and()
+                .andEqualTo("liveBackCoursewareId", liveBackCoursewareId)
+                .andEqualTo("roomId", bjyRoomId);
+        try{
+            CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(Long.valueOf(bjyRoomId), liveBackCoursewareId);
+            if(null == courseLiveBackLog){
+                result.put("reportStatus", YesOrNoStatus.NO.getCode());
+                return result;
+            }
+            long liveCourseWareId = courseLiveBackLog.getLiveCoursewareId();
+            return doLiveReport(userId, liveCourseWareId, bjyRoomId);
+        }catch (Exception e){
+            result.put("reportStatus", YesOrNoStatus.NO.getCode());
+            return result;
+        }
+    }
+
+    /**
+     * 录播逻辑处理
+     * @param courseWareId
+     * @return
+     * @throws BizException
+     */
+    private Map doDotLive(long courseWareId, int userId) throws BizException{
+        Map<String,Object> result = Maps.newHashMap();
+        result.put("reportStatus", YesOrNoStatus.NO.getCode());
+        NetSchoolResponse netSchoolResponse = practiceCardServiceV1.getClassExerciseReport(courseWareId, VideoTypeEnum.DOT_LIVE.getVideoType(), userId);
+        if(ResponseUtil.isSuccess(netSchoolResponse) && null != netSchoolResponse.getData() ){
+            Map<String,Object> data = (Map<String,Object>)netSchoolResponse.getData();
+            if(data.containsKey("id")){
+                result.put("reportStatus", YesOrNoStatus.YES.getCode());
+                return result;
+            }
+        }
+        return result;
     }
 }

@@ -16,7 +16,8 @@ public class DateUtil {
 	public static String ERRORSTR = "0000-00-00 00:00:00";
 
 	public static String getSimpleDate(String startTime, String endTime) {
-		if (ERRORSTR.equals(startTime.trim()) || ERRORSTR.equals(endTime.trim())) {
+		if (ERRORSTR.equals(startTime.trim()) || ERRORSTR.equals(endTime.trim()) || "".equals(startTime)
+				|| "".equals(endTime)) {
 			return "";
 		}
 		DateTimeFormatter dtfOld = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
