@@ -119,10 +119,10 @@ public class PeriodTest extends BaseWebTest {
 		Map<String, Integer> metaEntries = metaOpsForHash.entries(key);
 		Integer oldRcount = metaEntries.get(CoursePracticeCacheKey.RCOUNT);
 		Integer oldTotal = metaEntries.get(CoursePracticeCacheKey.TOTALTIME);
-		Integer totalRcount = 0;
-		Integer totalTime = 0;
-		metaEntries.put(CoursePracticeCacheKey.RCOUNT, (oldRcount == null ? totalRcount : totalRcount + oldRcount));
-		metaEntries.put(CoursePracticeCacheKey.TOTALTIME, (oldTotal == null ? totalTime : totalTime + oldTotal));
+		Integer totalRcount = 1;
+		Integer totalTime = 1;
+		metaOpsForHash.put(key,CoursePracticeCacheKey.RCOUNT, (oldRcount == null ? totalRcount : totalRcount + oldRcount));
+		metaOpsForHash.put(key,CoursePracticeCacheKey.TOTALTIME, (oldTotal == null ? totalTime : totalTime + oldTotal));
 		
 		System.out.println("----------->"+metaOpsForHash.get(key, CoursePracticeCacheKey.RCOUNT));
 	}

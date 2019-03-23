@@ -139,8 +139,8 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 			Map<String, Integer> metaEntries = metaOpsForHash.entries(metaKey);
 			Integer oldRcount = metaEntries.get(CoursePracticeCacheKey.RCOUNT);
 			Integer oldTotal = metaEntries.get(CoursePracticeCacheKey.TOTALTIME);
-			metaEntries.put(CoursePracticeCacheKey.RCOUNT, (oldRcount == null ? totalRcount : totalRcount + oldRcount));
-			metaEntries.put(CoursePracticeCacheKey.TOTALTIME, (oldTotal == null ? totalTime : totalTime + oldTotal));
+			metaOpsForHash.put(metaKey,CoursePracticeCacheKey.RCOUNT, (oldRcount == null ? totalRcount : totalRcount + oldRcount));
+			metaOpsForHash.put(metaKey,CoursePracticeCacheKey.TOTALTIME, (oldTotal == null ? totalTime : totalTime + oldTotal));
 			// 直播课type为2
 			practiceCardServiceV1.createAndSaveAnswerCoursePracticeCard(userCourse.getUserId(), "随堂练习-直播课",
 					CourseType.LIVE.getCode(), userCourse.getCourseId(), qids, answers, corrects, times);
