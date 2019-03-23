@@ -136,7 +136,7 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 			UserCourseBo userCourse = CoursePracticeCacheKey.getUserAndCourseByUserMetaKey(courseUserKey);
 			String qids = StringUtils.join(questionIds, ",");
 			//存储该房间下统计信息
-			String key = CoursePracticeCacheKey.roomIdUserMetaKey(roomId,userCourse.getCourseId());
+			String key = CoursePracticeCacheKey.roomIdUserMetaKey(roomId,userCourse.getCourseId(), 2);
 			setOperations.add(key,userCourse.getUserId());
 			String metaKey = CoursePracticeCacheKey.roomIdCourseIdTypeMetaKey(roomId, userCourse.getCourseId(), 2);
 			Map<String, Integer> metaEntries = metaOpsForHash.entries(metaKey);

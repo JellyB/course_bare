@@ -117,7 +117,7 @@ public class PeriodTest extends BaseWebTest {
 	@Test
 	public void testredisHash() {
 		final SetOperations<String, Integer> setOperations = redisTemplate.opsForSet();
-		String key_1 = CoursePracticeCacheKey.roomIdUserMetaKey(111L,111L);
+		String key_1 = CoursePracticeCacheKey.roomIdUserMetaKey(111L,111L, 2);
 		setOperations.add(key_1,222);
 		Long count = setOperations.size(key_1);
 		if (count == null || count == 0) {
