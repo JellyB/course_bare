@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.service.v7;
 
 import com.huatu.common.exception.BizException;
+import com.huatu.tiku.course.bean.vo.LiveRecordInfo;
 
 /**
  * 描述：
@@ -13,14 +14,11 @@ public interface UserCourseBizV7Service {
     /**
      * 直播数据上报处理
      * @param userId
-     * @param syllabusId
-     * @param bjyRoomId
-     * @param courseWareId
-     * @param classId
+     * @param liveRecordInfo
      * @param terminal
      * @param subject
      * @throws BizException
      */
-    void dealLiveReport(int userId, long syllabusId, String bjyRoomId, long classId, long courseWareId, int subject, int terminal) throws BizException;
+    void dealLiveReport(int userId, String userName, int subject, int terminal, String cv, LiveRecordInfo liveRecordInfo) throws BizException;
 
 }

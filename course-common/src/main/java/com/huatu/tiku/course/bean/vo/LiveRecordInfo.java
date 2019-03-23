@@ -2,6 +2,8 @@ package com.huatu.tiku.course.bean.vo;
 
 import lombok.*;
 
+import java.io.Serializable;
+
 /**
  * 描述：
  *
@@ -12,7 +14,7 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-public class LiveRecordInfo {
+public class LiveRecordInfo implements Serializable {
 
     private long syllabusId;
     private long classId;
