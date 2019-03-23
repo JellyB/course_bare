@@ -125,7 +125,7 @@ public final class CoursePracticeCacheKey {
      * 直播班级统计数据用户查看
      * @param roomId
      * @param coursewareId
-     * @param type
+     * @param type 2直播 1录播
      * @return
      */
     public static String roomIdCourseIdTypeMetaKey(Long roomId,Long coursewareId, Integer type) {
@@ -137,7 +137,7 @@ public final class CoursePracticeCacheKey {
      * @param roomId
      * @return
      */
-	public static String roomIdUserMetaKey(Long roomId, Long coursewareId) {
+	public static String roomIdUserMetaKey(Long roomId, Long coursewareId, Integer type) {
 		return "course:practice:courseware:roomIdCourseIdTypeUserMetaKey" + roomId + ":" + coursewareId;
 	}
 

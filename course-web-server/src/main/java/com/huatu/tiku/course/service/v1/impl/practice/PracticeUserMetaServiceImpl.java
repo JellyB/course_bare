@@ -55,7 +55,7 @@ public class PracticeUserMetaServiceImpl extends BaseServiceHelperImpl<CoursePra
 	public Map<String, Integer> getCountDateByRIdAndCId(Long roomId, Long coursewareId) {
 		HashOperations<String, String, Integer> metaOpsForHash = redisTemplate.opsForHash();
 		final SetOperations<String, Integer> setOperations = redisTemplate.opsForSet();
-		Long count = setOperations.size(CoursePracticeCacheKey.roomIdUserMetaKey(roomId,coursewareId));
+		Long count = setOperations.size(CoursePracticeCacheKey.roomIdUserMetaKey(roomId,coursewareId,2));
 		if (count == null || count == 0) {
 			count = 1L;
 		}
