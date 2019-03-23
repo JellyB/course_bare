@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 import com.huatu.common.ErrorResult;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.entity.CourseLiveBackLog;
-import com.huatu.ztk.paper.common.AnswerCardStatus;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -186,7 +185,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             int startIndex = (page - 1) * size;
             int endIndex = page * size > all.size() ? all.size() : page * size;
             if (startIndex < 0 || startIndex >= endIndex) {
-                return NetSchoolResponse.DEFAULT;
+                return NetSchoolResponse.newInstance(initResultSet(page,size,startIndex,endIndex,all));
             }
             courseIds = all.subList(startIndex, endIndex)
                     .stream()
@@ -199,13 +198,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             Object data = netSchoolResponse.getData();
             if (data instanceof LinkedHashMap) {
                 sortClassById((LinkedHashMap) data, courseIds);
-                ((LinkedHashMap) data).put("current_page", page);
-                ((LinkedHashMap) data).put("last_page", page * size >= all.size() ? page : page + 1);
-                ((LinkedHashMap) data).put("per_page", size);
-                ((LinkedHashMap) data).put("from", startIndex);
-                ((LinkedHashMap) data).put("to", endIndex);
-                ((LinkedHashMap) data).put("total", all.size());
-
+                fillPageResult(page,size,startIndex,endIndex,all,(LinkedHashMap)data);
             }
             return netSchoolResponse;
         } catch (Exception e) {
@@ -214,7 +207,23 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             connection.close();
         }
 
-        return NetSchoolResponse.DEFAULT;
+        return NetSchoolResponse.newInstance(initResultSet(page,size,0,0,Lists.newArrayList()));
+    }
+
+    private LinkedHashMap initResultSet(int page, int size, int startIndex, int endIndex, List<RedisZSetCommands.Tuple> all) {
+        LinkedHashMap data = Maps.newLinkedHashMap();
+        data.put("data",Lists.newArrayList());
+        fillPageResult(page,size,startIndex,endIndex,all,data);
+        return data;
+    }
+
+    private void fillPageResult(int page, int size, int startIndex, int endIndex, List<RedisZSetCommands.Tuple> all, LinkedHashMap data) {
+        data.put("current_page", page);
+        data.put("last_page", page * size >= all.size() ? page : page + 1);
+        data.put("per_page", size);
+        data.put("from", startIndex);
+        data.put("to", endIndex);
+        data.put("total", all.size());
     }
 
     /**
