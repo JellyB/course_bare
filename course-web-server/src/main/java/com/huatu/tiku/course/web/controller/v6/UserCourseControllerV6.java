@@ -318,7 +318,7 @@ public class UserCourseControllerV6 {
     }
 
     /**
-     * 直播学习记录上报
+     * 直播学习记录上报,只上报给 php
      * @param userSession
      * @param syllabusId
      * @return
@@ -332,7 +332,6 @@ public class UserCourseControllerV6 {
 
         Map<String,Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = userCourseService.saveLiveRecord(params);
-        courseExercisesProcessLogManager.saveLiveRecord(userSession.getId(), userSession.getSubject(), terminal, syllabusId);
         return ResponseUtil.build(netSchoolResponse);
 
     }
