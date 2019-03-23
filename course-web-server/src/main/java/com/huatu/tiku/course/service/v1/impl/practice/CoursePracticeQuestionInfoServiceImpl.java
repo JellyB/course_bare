@@ -100,6 +100,7 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 			Integer totalRcount=0;
 			//总用时
 			Integer totalTime=0;
+			Integer answerCount=0;
 			// 根据key查出对应的答题信息
 			Map<String, PracticeUserQuestionMetaInfoBo> map = opsForHash.entries(courseUserKey);
 			Integer rcount = 0;
@@ -119,6 +120,7 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 						times[i] = question.getTime();
 						//累计总用时
 						totalTime += question.getTime();
+						answerCount++;
 						isAnswer = true;
 						if (question.getCorrect() == 1) {
 							rcount++;
@@ -142,8 +144,12 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 			Map<String, Integer> metaEntries = metaOpsForHash.entries(metaKey);
 			Integer oldRcount = metaEntries.get(CoursePracticeCacheKey.RCOUNT);
 			Integer oldTotal = metaEntries.get(CoursePracticeCacheKey.TOTALTIME);
+			if(answerCount == 0) {
+				answerCount = 1;
+			}
 			metaOpsForHash.put(metaKey,CoursePracticeCacheKey.RCOUNT, (oldRcount == null ? totalRcount : totalRcount + oldRcount));
-			metaOpsForHash.put(metaKey,CoursePracticeCacheKey.TOTALTIME, (oldTotal == null ? totalTime : totalTime + oldTotal));
+			
+			metaOpsForHash.put(metaKey,CoursePracticeCacheKey.TOTALTIME, (oldTotal == null ? (totalTime / answerCount) : (totalTime / answerCount) + oldTotal));
 			// 直播课type为2
 			practiceCardServiceV1.createAndSaveAnswerCoursePracticeCard(userCourse.getUserId(), "随堂练习-直播课",
 					CourseType.LIVE.getCode(), userCourse.getCourseId(), qids, answers, corrects, times);
