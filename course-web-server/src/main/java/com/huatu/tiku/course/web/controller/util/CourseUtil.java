@@ -388,26 +388,38 @@ public class CourseUtil {
             return;
         }
         for (Map<String, Object> stringObjectMap : list) {
-            VideoTypeEnum videoTypeEnum = VideoTypeEnum.create(MapUtils.getIntValue(stringObjectMap, SyllabusInfo.VideoType));
-            long courseWareId = MapUtils.getLong(stringObjectMap, SyllabusInfo.CourseWareId);
-            String bjyRoomId = MapUtils.getString(stringObjectMap, SyllabusInfo.BjyRoomId);
-            switch (videoTypeEnum){
-                case LIVE:
-                    Map live = doLiveReport(userId, courseWareId, bjyRoomId);
-                    stringObjectMap.putAll(live);
-                    break;
-                case LIVE_PLAY_BACK:
-                    Map playBack = doLivePlayBack(userId, courseWareId, bjyRoomId);
-                    stringObjectMap.putAll(playBack);
-                    break;
-                case DOT_LIVE:
-                    Map dotLive = doDotLive(courseWareId, userId);
-                    stringObjectMap.putAll(dotLive);
-                    break;
+            try{
+                int type =  MapUtils.getInteger(stringObjectMap, SyllabusInfo.Type);
+                int studyReport = MapUtils.getIntValue(stringObjectMap, SyllabusInfo.StudyReport);
+                YesOrNoStatus yesOrNoStatus = YesOrNoStatus.create(studyReport);
+                TypeEnum typeEnum = TypeEnum.create(type);
+                if(typeEnum != TypeEnum.COURSE_WARE || yesOrNoStatus == YesOrNoStatus.NO){
+                    stringObjectMap.put("reportStatus", YesOrNoStatus.UN_DEFINED.getCode());
+                    continue;
+                }
+                VideoTypeEnum videoTypeEnum = VideoTypeEnum.create(MapUtils.getIntValue(stringObjectMap, SyllabusInfo.VideoType));
+                long courseWareId = MapUtils.getLong(stringObjectMap, SyllabusInfo.CourseWareId);
+                String bjyRoomId = MapUtils.getString(stringObjectMap, SyllabusInfo.BjyRoomId);
+                switch (videoTypeEnum){
+                    case LIVE:
+                        Map live = doLiveReport(userId, courseWareId, bjyRoomId);
+                        stringObjectMap.putAll(live);
+                        break;
+                    case LIVE_PLAY_BACK:
+                        Map playBack = doLivePlayBack(userId, courseWareId, bjyRoomId);
+                        stringObjectMap.putAll(playBack);
+                        break;
+                    case DOT_LIVE:
+                        Map dotLive = doDotLive(courseWareId, userId);
+                        stringObjectMap.putAll(dotLive);
+                        break;
                     default:
                         Map defaultMap = Maps.newHashMap();
                         defaultMap.put("reportStatus", YesOrNoStatus.NO.getCode());
                         stringObjectMap.putAll(defaultMap);
+                }
+            }catch (Exception e){
+                log.error("处理大纲我的学习好高状态异常:{}, userId:{}",stringObjectMap, userId);
             }
         }
     }
