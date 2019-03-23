@@ -51,18 +51,4 @@ public interface StudentService {
      */
     PracticeRoomRankUserBo getUserRankInfo(Integer userId, Long courseId);
 
-    /**
-     * 根据课件Id查询试题的统计信息
-     * @param courseId 课件Id
-     * @return
-     */
-    Object getCourseQuestionInfo(Long courseId);
-
-    /**
-     * 根据课件Id查询课件的随堂练习正确率
-     * @param courseId 课件Id
-     * @return
-     */
-    Integer getCourseRightRate(Long courseId,Long roomId);
-
 }

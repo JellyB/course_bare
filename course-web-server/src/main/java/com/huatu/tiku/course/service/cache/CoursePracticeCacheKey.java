@@ -107,14 +107,8 @@ public final class CoursePracticeCacheKey {
      * @param questionId 试题信息
      * @return 获取试题统计信息key
      */
-    public static String questionCoursewareMetaKey(Long coursewareId, Long questionId) {
-        return "course:practice:courseware:questionMeta:" + questionId + ":" + coursewareId;
+    public static String questionCoursewareMetaKey(Long roomId,Long coursewareId, Long questionId) {
+        return "course:practice:courseware:questionMeta:" + roomId +":"+ questionId + ":" + coursewareId;
     }
 
-    /**
-     * 课件中已经练习试题
-     */
-    public static String coursePractedQuestionKey(Long coursewareId) {
-        return "course:practice:coursePracticedQuestionKey:" + coursewareId;
-    }
 }

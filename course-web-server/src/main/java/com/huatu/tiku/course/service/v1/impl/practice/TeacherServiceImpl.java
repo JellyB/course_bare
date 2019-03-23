@@ -1,22 +1,5 @@
 package com.huatu.tiku.course.service.v1.impl.practice;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
-import org.springframework.stereotype.Service;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.util.concurrent.ListenableFutureCallback;
-
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -29,6 +12,7 @@ import com.huatu.tiku.course.bean.practice.QuestionInfo;
 import com.huatu.tiku.course.bean.practice.QuestionMetaBo;
 import com.huatu.tiku.course.bean.practice.TeacherQuestionBo;
 import com.huatu.tiku.course.common.CoursePracticeQuestionInfoEnum;
+import com.huatu.tiku.course.service.cache.CoursePracticeCacheKey;
 import com.huatu.tiku.course.service.v1.CourseBreakpointService;
 import com.huatu.tiku.course.service.v1.practice.CoursePracticeQuestionInfoService;
 import com.huatu.tiku.course.service.v1.practice.LiveCourseRoomInfoService;
@@ -36,10 +20,28 @@ import com.huatu.tiku.course.service.v1.practice.QuestionInfoService;
 import com.huatu.tiku.course.service.v1.practice.TeacherService;
 import com.huatu.tiku.entity.CourseBreakpointQuestion;
 import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
-
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections.CollectionUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.stereotype.Service;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.ListenableFutureCallback;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.weekend.WeekendSqls;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Created by lijun on 2019/2/21
@@ -55,7 +57,8 @@ public class TeacherServiceImpl implements TeacherService {
 
     private final QuestionInfoService questionInfoService;
     private final PracticeMetaComponent practiceMetaComponent;
-
+    @Autowired
+    private final RedisTemplate redisTemplate;
     @Override
     public Map<String,Object> getQuestionInfoByRoomId(Long roomId) throws ExecutionException, InterruptedException {
     	Map<String,Object> retMap = Maps.newHashMap();
@@ -277,4 +280,48 @@ public class TeacherServiceImpl implements TeacherService {
 		coursePracticeQuestionInfoService.save(coursePracticeQuestionInfo);
 
 	}
+
+    public List<QuestionMetaBo> getCoursewareAnswerQuestionInfo(Long roomId,Long coursewareId){
+        //获取房间下的已作答试题
+        List<Long> roomPracticedQuestionIds = practiceMetaComponent.getRoomPracticedQuestion(roomId);
+        List<QuestionMetaBo> questionMetaBos=Lists.newArrayList();
+        roomPracticedQuestionIds.forEach(questionId->{
+            QuestionMetaBo questionMetaBo = practiceMetaComponent.getCourseQuestionMetaBo( roomId,coursewareId,questionId);
+            if (questionMetaBo!=null){
+                questionMetaBos.add(questionMetaBo);
+            }
+        });
+
+        return questionMetaBos;
+    }
+
+    /**
+     * 根据课件Id查询课件的随堂练习正确率
+     * @param coursewareId 课件Id
+     * @return
+     */
+    public Integer getCourseRightRate(Long coursewareId,Long roomId){
+        //获取课件下答对题的数目
+        final String key = CoursePracticeCacheKey.roomRightQuestionSum(coursewareId);
+        Integer rightNum=Integer.parseInt(redisTemplate.opsForValue().get(key,0,-1));
+
+        //获取课件下作答总人数
+        final SetOperations<String, Long> opsForSet = redisTemplate.opsForSet();
+        final String allUserSumKey = CoursePracticeCacheKey.roomAllUserSum(coursewareId);
+        Integer answerNum = opsForSet.members(allUserSumKey).size();
+
+        //获取课件下试题的数量
+        List<Integer> questionIds=coursePracticeQuestionInfoService.getQuestionsInfoByRoomId(roomId);
+        Integer questionNum=questionIds.size();
+        if (questionNum==0){
+            questionNum=1;
+        }
+
+        //计算课件的正确率
+        Integer rightRate=0;
+        if (answerNum!=0){
+            rightRate=rightNum/(answerNum * questionNum)  * 100;
+        }
+        return rightRate;
+    }
 }

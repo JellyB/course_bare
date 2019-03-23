@@ -79,4 +79,24 @@ public class TeacherController {
 		teacherService.stopAnswer(roomId, questionId);
 		return SuccessMessage.create();
 	}
+
+    /**
+     * 获取课件下试题作答信息
+     */
+    @GetMapping("{roomId}/{coursewareId}/couserwareAnswerInfo")
+    public Object getCourseQuestionAnswerInfo(
+            @PathVariable Long roomId,
+            @PathVariable Long coursewareId) {
+        return teacherService.getCoursewareAnswerQuestionInfo(roomId, coursewareId);
+    }
+
+    /**
+     * 查询课件的随堂练习正确率
+     */
+    @GetMapping("{roomId}/{coursewareId}/couserwareAccuracy")
+    public Object getCoursewareQuestionAccuracy(
+            @PathVariable Long roomId,
+            @PathVariable Long coursewareId) {
+        return teacherService.getCourseRightRate(coursewareId, roomId);
+    }
 }

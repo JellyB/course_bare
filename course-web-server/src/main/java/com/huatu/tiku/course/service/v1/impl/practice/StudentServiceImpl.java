@@ -94,43 +94,4 @@ public class StudentServiceImpl implements StudentService {
         return Arrays.stream(answer.split("")).sorted().collect(Collectors.joining(""));
     }
 
-    /**
-     * 根据课件Id查询试题的统计信息
-     * @param courseId 课件Id
-     * @return
-     */
-    public Object getCourseQuestionInfo(Long courseId){
-        return null;
-    }
-
-    /**
-     * 根据课件Id查询课件的随堂练习正确率
-     * @param courseId 课件Id
-     * @return
-     */
-    public Integer getCourseRightRate(Long courseId,Long roomId){
-        //获取课件下答对题的数目
-        final String key = CoursePracticeCacheKey.roomRightQuestionSum(courseId);
-        Integer rightNum=Integer.parseInt(redisTemplate.opsForValue().get(key,0,-1));
-
-        //获取课件下作答总人数
-        final SetOperations<String, Long> opsForSet = redisTemplate.opsForSet();
-        final String allUserSumKey = CoursePracticeCacheKey.roomAllUserSum(courseId);
-        Integer answerNum = opsForSet.members(allUserSumKey).size();
-
-        //获取课件下试题的数量
-        List<Integer> questionIds=coursePracticeQuestionInfoService.getQuestionsInfoByRoomId(roomId);
-        Integer questionNum=questionIds.size();
-        if (questionNum==0){
-            questionNum=1;
-        }
-
-        //计算课件的正确率
-        Integer rightRate=0;
-        if (answerNum!=0){
-            rightRate=rightNum/(answerNum * questionNum)  * 100;
-        }
-        return rightRate;
-    }
-
 }
