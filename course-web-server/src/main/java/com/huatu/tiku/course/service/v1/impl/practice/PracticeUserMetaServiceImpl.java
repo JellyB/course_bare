@@ -1,12 +1,17 @@
 package com.huatu.tiku.course.service.v1.impl.practice;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Maps;
 import com.huatu.tiku.course.dao.manual.CoursePracticeUserMataMapper;
+import com.huatu.tiku.course.service.cache.CoursePracticeCacheKey;
 import com.huatu.tiku.course.service.v1.practice.PracticeUserMetaService;
 import com.huatu.tiku.entity.CoursePracticeUserMeta;
 
@@ -26,6 +31,9 @@ public class PracticeUserMetaServiceImpl extends BaseServiceHelperImpl<CoursePra
 	}
 
 	@Autowired
+	private RedisTemplate redisTemplate;
+	
+	@Autowired
 	private CoursePracticeUserMataMapper coursePracticeUserMataMapper;
 
 	@Override
@@ -40,5 +48,18 @@ public class PracticeUserMetaServiceImpl extends BaseServiceHelperImpl<CoursePra
 			return userMetaList.get(0).getAnswerCardId();
 		}
 		return null;
+	}
+
+	@Override
+	public Map<String, Integer> getCountDateByRIdAndCId(Long roomId, Long coursewareId) {
+		HashOperations<String, String, Integer> metaOpsForHash = redisTemplate.opsForHash();
+		Map<String, Integer> metaEntries = metaOpsForHash
+				.entries(CoursePracticeCacheKey.roomIdCourseIdTypeMetaKey(roomId, coursewareId, 2));
+		Integer rCount = metaEntries.get(CoursePracticeCacheKey.RCOUNT);
+		Integer totalTime = metaEntries.get(CoursePracticeCacheKey.TOTALTIME);
+		Map<String, Integer> retMap = Maps.newHashMap();
+		retMap.put("classAverageTime", totalTime);
+		retMap.put("classAverageRcount", rCount);
+		return retMap;
 	}
 }

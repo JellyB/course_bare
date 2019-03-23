@@ -90,8 +90,15 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 	@Override
 	public void generateAnswerCardInfo(List<Integer> questionIds, List<String> courseUserStrs,Long roomId) {
 		HashOperations<String, String, PracticeUserQuestionMetaInfoBo> opsForHash = redisTemplate.opsForHash();
+		//存储统计信息
+		HashOperations<String, String, Integer> metaOpsForHash = redisTemplate.opsForHash();
+		
 		// 遍历所有的key
 		for (String courseUserKey : courseUserStrs) {
+			//总做对题数
+			Integer totalRcount=0;
+			//总用时
+			Integer totalTime=0;
 			// 根据key查出对应的答题信息
 			Map<String, PracticeUserQuestionMetaInfoBo> map = opsForHash.entries(courseUserKey);
 			Integer rcount = 0;
@@ -109,9 +116,12 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 						answers[i] = question.getAnswer();
 						corrects[i] = question.getCorrect();
 						times[i] = question.getTime();
+						//累计总用时
+						totalTime += question.getTime();
 						isAnswer = true;
 						if (question.getCorrect() == 1) {
 							rcount++;
+							totalRcount++;
 						}
 					}
 				}
@@ -124,6 +134,13 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 			}
 			UserCourseBo userCourse = CoursePracticeCacheKey.getUserAndCourseByUserMetaKey(courseUserKey);
 			String qids = StringUtils.join(questionIds, ",");
+			//存储该房间下统计信息
+			String metaKey = CoursePracticeCacheKey.roomIdCourseIdTypeMetaKey(roomId, userCourse.getCourseId(), 2);
+			Map<String, Integer> metaEntries = metaOpsForHash.entries(metaKey);
+			Integer oldRcount = metaEntries.get(CoursePracticeCacheKey.RCOUNT);
+			Integer oldTotal = metaEntries.get(CoursePracticeCacheKey.TOTALTIME);
+			metaEntries.put(CoursePracticeCacheKey.RCOUNT, (oldRcount == null ? totalRcount : totalRcount + oldRcount));
+			metaEntries.put(CoursePracticeCacheKey.TOTALTIME, (oldTotal == null ? totalTime : totalTime + oldTotal));
 			// 直播课type为2
 			practiceCardServiceV1.createAndSaveAnswerCoursePracticeCard(userCourse.getUserId(), "随堂练习-直播课",
 					CourseType.LIVE.getCode(), userCourse.getCourseId(), qids, answers, corrects, times);
