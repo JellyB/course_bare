@@ -111,7 +111,7 @@ public class CourseBizV6Service {
     public Object obtainMineCourses(Map<String,Object> params){
         try{
             NetSchoolResponse netSchoolResponse = userCourseService.obtainMineCourses(params);
-            if(null != netSchoolResponse && null != netSchoolResponse.getData()){
+            if(null != netSchoolResponse && null !=  netSchoolResponse.getData() && ResponseUtil.isHardSuccess(netSchoolResponse)){
                 userCourseServiceV6FallBack.setCourseMineStaticData(params, netSchoolResponse);
             }
             return ResponseUtil.build(netSchoolResponse);
@@ -129,9 +129,9 @@ public class CourseBizV6Service {
      */
     public Object obtainMineCoursesDegradeBack(Map<String,Object> params){
         if(accessLimitService.tryAccess()){
-            NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainMineCourses(params);
-            log.warn("obtainMineCoursesDegrade.data:{}", JSONObject.toJSONString(netSchoolResponse));
-            return ResponseUtil.build(netSchoolResponse);
+        NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainMineCourses(params);
+        log.warn("obtainMineCoursesDegrade.data:{}", JSONObject.toJSONString(netSchoolResponse));
+        return ResponseUtil.build(netSchoolResponse);
         }else{
             return new NetSchoolResponse<>(Result.SUCCESS_CODE, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
         }
@@ -154,8 +154,8 @@ public class CourseBizV6Service {
             }else{
                 log.info("获取我的课程信息 -- 降级:{}, ios", params);
                 ErrorResult errorResult = ErrorResult.create(10000010, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
-                throw new BizException(errorResult);
-            }
+        throw new BizException(errorResult);
+    }
         }
     }
 

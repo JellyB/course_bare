@@ -131,16 +131,16 @@ public class TeacherServiceImpl implements TeacherService {
                 && 0 != coursePracticeQuestionInfo.getStartPracticeTime()) {
             throw new BizException(ErrorResult.create(5000000, "该试题已经开始考试"));
         }
-        final CoursePracticeQuestionInfo info = CoursePracticeQuestionInfo.builder()
-                .roomId(roomId)
-                .questionId(questionId.intValue())
-                .startPracticeTime(System.currentTimeMillis())
-                .practiceTime(practiceTime)
-                .build();
-        info.setBizStatus(CoursePracticeQuestionInfoEnum.FINISH.getStatus());
+		if (coursePracticeQuestionInfo == null) {
+			coursePracticeQuestionInfo = CoursePracticeQuestionInfo.builder().roomId(roomId)
+					.questionId(questionId.intValue()).startPracticeTime(System.currentTimeMillis())
+					.practiceTime(practiceTime).build();
+		}
+		coursePracticeQuestionInfo.setBizStatus(CoursePracticeQuestionInfoEnum.FINISH.getStatus());
+		coursePracticeQuestionInfo.setStartPracticeTime(System.currentTimeMillis());
 		// 添加房间练习题数量到缓存
 		practiceMetaComponent.addRoomPracticedQuestion(roomId, questionId);
-        coursePracticeQuestionInfoService.save(info);
+        coursePracticeQuestionInfoService.save(coursePracticeQuestionInfo);
     }
 
     @Override
@@ -179,12 +179,19 @@ public class TeacherServiceImpl implements TeacherService {
         ListenableFuture<List<CoursePracticeQuestionInfo>> asyncCoursePracticeQuestionInfoByRoomId = getAsyncCoursePracticeQuestionInfoByRoomId(roomId, Lists.newArrayList(questionId));
         final QuestionMetaBo questionMetaBo = practiceMetaComponent.getQuestionMetaBo(roomId, questionId);
         List<CoursePracticeQuestionInfo> practiceQuestionInfoList = asyncCoursePracticeQuestionInfoByRoomId.get();
-        if (CollectionUtils.isNotEmpty(practiceQuestionInfoList)) {
-            CoursePracticeQuestionInfo coursePracticeQuestionInfo = practiceQuestionInfoList.get(0);
-            Long practiceTime = (System.currentTimeMillis() - coursePracticeQuestionInfo.getStartPracticeTime()) / 1000;
-            //计算剩余时间
-            questionMetaBo.setLastPracticeTime(practiceTime > coursePracticeQuestionInfo.getPracticeTime() ? -1 : coursePracticeQuestionInfo.getPracticeTime() - practiceTime.intValue());
-        } else {
+		if (CollectionUtils.isNotEmpty(practiceQuestionInfoList)) {
+			CoursePracticeQuestionInfo coursePracticeQuestionInfo = practiceQuestionInfoList.get(0);
+			if (coursePracticeQuestionInfo.getBizStatus() == CoursePracticeQuestionInfoEnum.FORCESTOP.getStatus()) {
+				// 如果是强制结束的则剩余时间为0
+				questionMetaBo.setLastPracticeTime(-1);
+			} else {
+				Long practiceTime = (System.currentTimeMillis() - coursePracticeQuestionInfo.getStartPracticeTime())
+						/ 1000;
+				// 计算剩余时间
+				questionMetaBo.setLastPracticeTime(practiceTime > coursePracticeQuestionInfo.getPracticeTime() ? -1
+						: coursePracticeQuestionInfo.getPracticeTime() - practiceTime.intValue());
+			}
+		} else {
             questionMetaBo.setLastPracticeTime(-1);
         }
         return questionMetaBo;

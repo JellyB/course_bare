@@ -2,6 +2,8 @@ package com.huatu.tiku.course.netschool.api.fall;
 
 import java.util.Map;
 
+import com.google.common.collect.Maps;
+import javafx.beans.binding.ObjectExpression;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
@@ -78,9 +80,16 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
         log.warn("response from call back obtainMineCourses");
         String key = COURSE_MINE_PRE + RequestUtil.getParamSign(params);
         NetSchoolResponse response = FallbackCacheHolder.get(key);
-        if(null == response){
+        if(!ResponseUtil.isHardSuccess(response)){
             log.warn("obtain mine courses not in fallbackHolder...");
-            return NetSchoolResponse.newInstance(Lists.newArrayList());
+            Map<String,Object> fallBack = Maps.newHashMap();
+            fallBack.put("data", Lists.newArrayList());
+            fallBack.put("total", 0);
+            fallBack.put("current_page", 1);
+            fallBack.put("per_page", 10);
+            fallBack.put("last_page", 0);
+            fallBack.put("topNumber", 0);
+            return NetSchoolResponse.newInstance(fallBack);
         }
         return response;
     }
@@ -165,6 +174,11 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
 
 	@Override
 	public NetSchoolResponse unfinishStageExamCount(Map<String, String> params) {
+		 return NetSchoolResponse.DEFAULT;
+	}
+
+	@Override
+	public NetSchoolResponse readPeriod(Map<String, Object> params) {
 		 return NetSchoolResponse.DEFAULT;
 	}
 }

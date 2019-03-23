@@ -64,10 +64,14 @@ public interface CourseServiceV6Biz {
      * @param netClassId
      * @param courseWareId
      * @param videoType
+     * @param syllabusId
      * @param terminal
+     * @param exerciseCardId
+     * @param reportStatus
+     * @param cv
      * @return
      * @throws BizException
      */
-    Object learnReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, long courseWareId, int videoType, long exerciseCardId, long classCardId, int terminal)throws BizException;
+    Object learnReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, long courseWareId, int videoType, long exerciseCardId, int reportStatus, long syllabusId, int terminal, String cv)throws BizException;
 
 }

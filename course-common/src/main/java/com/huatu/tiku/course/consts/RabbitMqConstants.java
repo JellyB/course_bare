@@ -23,4 +23,9 @@ public class RabbitMqConstants {
      */
     public static final String PERIOD_TEST_SUBMIT_CARD_INFO = "period_test_submit_card_info";
 
+    /**
+     * 学员直播上课队列
+     */
+    public static final String COURSE_LIVE_REPORT_LOG = "course_live_report_log";
+
 }

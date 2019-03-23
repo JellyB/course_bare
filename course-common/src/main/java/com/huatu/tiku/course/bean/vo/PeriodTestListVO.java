@@ -59,5 +59,6 @@ public class PeriodTestListVO {
 		private String showTime;//app端展示时间
 		private Integer isEffective;//是否有活动时间 1有效0无效
 		private Boolean isExpired;//是否过期 1过期0未过期
+		private Integer alreadyRead;// 0未读1已读
 	}
 }

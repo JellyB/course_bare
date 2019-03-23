@@ -54,6 +54,24 @@ public interface PracticeCardServiceV1 {
     );
 
     /**
+     * 批量查询课后作业答题卡
+     * @param ids
+     * @return
+     */
+    @GetMapping(value = "/v2/practices/getCourseExercisesCardInfoBatch")
+    Object getCourseExercisesCardInfoBatch(@RequestParam(value = "ids") String ids);
+
+    /**
+     * 批量获取随堂练习报告状态
+     * @param userId
+     * @param paramsList
+     * @return
+     */
+    @PostMapping(value = "/v4/practice/status/{userId}")
+    Object getClassExerciseStatus(@PathVariable(value = "userId") int userId, @RequestBody List<HashMap<String,Object>> paramsList);
+
+
+    /**
      * 查询课中练习答题卡信息
      */
     @PostMapping(value = "/v2/practices/{userId}/getCourseBreakPointCardInfo")
@@ -71,7 +89,7 @@ public interface PracticeCardServiceV1 {
      */
     @GetMapping(value = "/v1/practices/{id}")
     NetSchoolResponse getAnswerCard(@RequestHeader(value = "token") String token, @RequestHeader(value = "terminal") int terminal, @PathVariable(value = "id") long id);
-    
+
     /**
      * 直播随堂练创建答题卡并保存答案信息
      * @param terminal
@@ -93,10 +111,22 @@ public interface PracticeCardServiceV1 {
             @RequestParam("courseType") Integer courseType,
             @RequestParam("courseId") Long courseId,
             @RequestParam("questionIds") String questionIds,
-            @RequestParam("answers") String[] answers, 
+            @RequestParam("answers") String[] answers,
             @RequestParam("corrects") int[] corrects,
-			@RequestParam("times") int[] times, 
+            @RequestParam("times") int[] times,
             @RequestBody List<Object> questionInfoList
     );
+
+    /**
+     * 获取随堂练习报告
+     * @param courseId
+     * @param playType
+     * @param userId
+     * @return
+     */
+    @GetMapping(value = "/v4/practice/{courseId}/{playType}/report")
+    NetSchoolResponse getClassExerciseReport(@PathVariable(value = "courseId") long courseId,
+                                             @PathVariable(value = "playType") int playType,
+                                             @RequestParam(value = "uId") int userId);
 
 }

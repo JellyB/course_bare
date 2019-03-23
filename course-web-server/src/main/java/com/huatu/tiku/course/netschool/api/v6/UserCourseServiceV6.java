@@ -115,6 +115,15 @@ public interface UserCourseServiceV6 {
 	 */
 	@GetMapping(value = "/v5/c/class/unfinish_exam_num")
 	NetSchoolResponse unfinishStageExamCount(@RequestParam Map<String, String> params);
+
+
+	/**
+	 * 阶段测试单条获取全部已读
+	 * @param params
+	 * @return
+	 */
+	@PostMapping(value = "/v5/c/class/unfinish_exam_status_record")
+	NetSchoolResponse readPeriod(@RequestParam Map<String, Object> params);
 	
 	
 }

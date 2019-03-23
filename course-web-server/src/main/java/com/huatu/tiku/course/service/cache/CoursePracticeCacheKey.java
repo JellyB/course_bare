@@ -50,7 +50,7 @@ public final class CoursePracticeCacheKey {
     public static String questionMetaKey(Long roomId, Long questionId) {
         return "course:practice:questionMeta:" + questionId + ":" + roomId;
     }
-    
+
     /**
      * 房间内所有答题 用户id+课程id set
      * @param roomId
@@ -70,7 +70,7 @@ public final class CoursePracticeCacheKey {
     public static TimeUnit getDefaultTimeUnit() {
         return TimeUnit.DAYS;
     }
-    
+
     /**
      * 根据userMetaKey获取userid和courseid
      * @param userMetaKey
@@ -90,7 +90,7 @@ public final class CoursePracticeCacheKey {
 	public static String roomRightQuestionSum(Long courseId) {
 		return "course:practice:roomRightQuestionSum:"+ courseId;
 	}
-	
+
 	/**
 	 * 指定课中总答题人数
 	 * @param courseId
@@ -99,4 +99,22 @@ public final class CoursePracticeCacheKey {
 	public static String roomAllUserSum(Long courseId) {
 		return "course:practice:roomAllUserSum:"+ courseId;
 	}
+
+    /**
+     * 获取课件下试题统计信息key
+     *
+     * @param coursewareId     课件ID
+     * @param questionId 试题信息
+     * @return 获取试题统计信息key
+     */
+    public static String questionCoursewareMetaKey(Long coursewareId, Long questionId) {
+        return "course:practice:courseware:questionMeta:" + questionId + ":" + coursewareId;
+    }
+
+    /**
+     * 课件中已经练习试题
+     */
+    public static String coursePractedQuestionKey(Long coursewareId) {
+        return "course:practice:coursePracticedQuestionKey:" + coursewareId;
+    }
 }

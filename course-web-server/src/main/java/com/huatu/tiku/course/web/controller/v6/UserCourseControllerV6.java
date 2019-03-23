@@ -2,9 +2,6 @@ package com.huatu.tiku.course.web.controller.v6;
 
 import java.util.Map;
 
-import com.google.common.collect.Lists;
-import com.huatu.common.ErrorResult;
-import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -87,7 +84,7 @@ public class UserCourseControllerV6 {
     public Object obtainUnFinishedNum(@Token UserSession userSession,
                                       @RequestHeader(value = "cv") String cv,
                                       @RequestHeader(value = "terminal") int terminal){
-    	
+
         return courseExercisesProcessLogManager.getCountByType(userSession.getId(),userSession.getUname());
     }
 
@@ -101,22 +98,34 @@ public class UserCourseControllerV6 {
     public Object allReadCourseWork(@Token UserSession userSession,
                                     @PathVariable(value = "type")String type){
 
-        return courseExercisesProcessLogManager.allReadByType(userSession.getId(), type);
+        return courseExercisesProcessLogManager.allReadByType(userSession.getId(), type, userSession.getUname());
     }
 
     /**
-     * 课后作业&阶段测试 单条已读
+     * 课后作业 单条已读
      * @param userSession
-     * @param type
+     * @param courseType
+     * @return
+     */
+    @PutMapping(value = "oneRead/courseWork/{courseType}/{courseWareId}")
+    public Object readOneCourseWork(@Token UserSession userSession,
+                                    @PathVariable(value = "courseType") int courseType,
+                                    @PathVariable(value = "courseWareId")long courseWareId){
+        return courseExercisesProcessLogManager.readyOneCourseWork(userSession.getId(), courseWareId, courseType);
+    }
+
+    /**
+     * 阶段测试 单条已读
+     * @param userSession
      * @param id
      * @return
      */
-    @PutMapping(value = "oneRead/{type}/{id}/{syllabusId}")
+    @PutMapping(value = "oneRead/periodTest/{syllabusId}/{courseId}")
     public Object readOneCourseWork(@Token UserSession userSession,
-                                    @PathVariable(value = "type") String type,
-                                    @PathVariable(value = "id")int id,
+                                    @PathVariable(value = "courseId")Long courseId,
                                     @PathVariable(value = "syllabusId")Long syllabusId){
-        return courseExercisesProcessLogManager.readyOne(id, type, syllabusId, (long)userSession.getId());
+         courseExercisesProcessLogManager.readyOnePeriod(syllabusId, courseId,userSession.getUname());
+         return null;
     }
 
     /**
@@ -191,9 +200,10 @@ public class UserCourseControllerV6 {
                               @RequestParam(value = "lessonId") long courseWareId,
                               @RequestParam(value = "videoType") int videoType,
                               @RequestParam(value = "exerciseCardId") long exerciseCardId,
-                              @RequestParam(value = "classCardId") long classCardId){
+                              @RequestParam(value = "reportStatus") int reportStatus,
+                              @RequestParam(value = "syllabusId") long syllabusId){
 
-        return courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, exerciseCardId, classCardId, terminal);
+        return courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, exerciseCardId, reportStatus, syllabusId, terminal, cv);
 
     }
 
@@ -308,7 +318,7 @@ public class UserCourseControllerV6 {
     }
 
     /**
-     * 直播学习记录上报
+     * 直播学习记录上报,只上报给 php
      * @param userSession
      * @param syllabusId
      * @return
@@ -322,7 +332,6 @@ public class UserCourseControllerV6 {
 
         Map<String,Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = userCourseService.saveLiveRecord(params);
-        courseExercisesProcessLogManager.saveLiveRecord(userSession.getId(), userSession.getSubject(), terminal, syllabusId);
         return ResponseUtil.build(netSchoolResponse);
 
     }

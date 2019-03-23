@@ -2,17 +2,24 @@ package com.huatu.tiku.course.web.controller.util;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
+import com.huatu.common.exception.BizException;
 import com.huatu.common.spring.event.EventPublisher;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.common.TypeEnum;
+import com.huatu.tiku.course.common.VideoTypeEnum;
+import com.huatu.tiku.course.common.YesOrNoStatus;
+import com.huatu.tiku.course.consts.SyllabusInfo;
+import com.huatu.tiku.course.dao.manual.CourseLiveReportLogMapper;
 import com.huatu.tiku.course.hbase.api.v1.VideoServiceV1;
-import com.huatu.tiku.course.service.v1.practice.PracticeUserMetaService;
-import com.huatu.tiku.course.util.DateUtil;
+import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.course.util.ZTKResponseUtil;
 import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
 import com.huatu.tiku.course.ztk.api.v4.paper.PeriodTestServiceV4;
+import com.huatu.tiku.entity.CourseLiveBackLog;
+import com.huatu.tiku.entity.CourseLiveReportLog;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
 import com.huatu.tiku.springboot.basic.reward.event.RewardActionEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +27,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -46,7 +54,11 @@ public class CourseUtil {
     private PeriodTestServiceV4 PeriodTestService;
 
     @Autowired
-    private PracticeUserMetaService practiceUserMetaService;
+    private CourseLiveReportLogMapper courseLiveReportLogMapper;
+
+
+    @Autowired
+    private CourseLiveBackLogService courseLiveBackLogService;
 
     /**
      * 添加课程播放的时间-用以每日任务处理
@@ -165,17 +177,14 @@ public class CourseUtil {
 
         response.computeIfPresent("list", (key, value) -> {
                     List<HashMap<String, Object>> paramsList = ((List<Map>) value).stream()
-                            //type 	0阶段测试1课程2课件 （只有type=2时，有answerCard属性）
-                            .filter(map -> (null != MapUtils.getString(map, "type")
-                                    && MapUtils.getString(map, "type").equals("2"))
+                            .filter(map -> (null != MapUtils.getString(map, SyllabusInfo.Type)
+                                    && MapUtils.getString(map, SyllabusInfo.Type).equals(String.valueOf(TypeEnum.COURSE_WARE.getType())))
                             )
-                            //videoType	1点播2直播3直播回放4阶段测试题
-                            //coursewareId	课件id
-                            .filter(map -> null != map.get("videoType") && null != map.get("coursewareId"))
+                            .filter(map -> null != map.get(SyllabusInfo.VideoType) && null != map.get(SyllabusInfo.CourseWareId))
                             .map(map -> {
                                 HashMap<String, Object> build = HashMapBuilder.<String, Object>newBuilder()
-                                        .put("courseType", MapUtils.getIntValue(map, "videoType", 0))
-                                        .put("courseId", MapUtils.getIntValue(map, "coursewareId", 0))
+                                        .put(SyllabusInfo.VideoType, MapUtils.getIntValue(map, SyllabusInfo.VideoType, 0))
+                                        .put(SyllabusInfo.CourseId, MapUtils.getIntValue(map, SyllabusInfo.CourseWareId, 0))
                                         .build();
                                 return build;
                             })
@@ -197,10 +206,10 @@ public class CourseUtil {
                         //获取答题卡信息状态
                         Function<HashMap<String, Object>, Map> getCourse = (valueData) -> {
                             Optional<Map> first = courseExercisesCards.stream()
-                                    .filter(result -> null != result.get("courseId") && null != result.get("courseType"))
+                                    .filter(result -> null != result.get(SyllabusInfo.CourseId) && null != result.get("courseType"))
                                     .filter(result ->
-                                            MapUtils.getString(result, "courseId").equals(MapUtils.getString(valueData, "coursewareId"))
-                                                    && MapUtils.getString(result, "courseType").equals(MapUtils.getString(valueData, "videoType"))
+                                            MapUtils.getString(result, SyllabusInfo.CourseId).equals(MapUtils.getString(valueData, SyllabusInfo.CourseWareId))
+                                                    && MapUtils.getString(result, "courseType").equals(MapUtils.getString(valueData, SyllabusInfo.VideoType))
                                     )
                                     .findFirst();
                             if (first.isPresent()) {
@@ -246,9 +255,9 @@ public class CourseUtil {
                 response.computeIfPresent("list", (key, value) -> {
                         Set<String> paperIds = ((List<Map>) value).stream()
                                 //videoType	1点播2直播3直播回放4阶段测试题
-                                .filter(map -> MapUtils.getString(map, "videoType").equals("4"))
-                                //coursewareId	课件id
-                                .filter(map -> null != map.get("coursewareId") && null != map.get("id"))
+                                .filter(map -> VideoTypeEnum.create(MapUtils.getIntValue(map, "videoType")) == VideoTypeEnum.PERIOD_TEST)
+                                    //coursewareId	课件id
+                                .filter(map -> null != map.get(SyllabusInfo.CourseWareId) && null != map.get("id"))
                                 .map(map -> {
                                     StringBuilder stringBuilder = new StringBuilder();
                                     stringBuilder
@@ -271,7 +280,8 @@ public class CourseUtil {
 					valueData.put("testStatus", MapUtils.getInteger(data, stringBuilder.toString(), -1));
 					// 设置是否过期
 					if (1 == MapUtils.getInteger(valueData, "isEffective")
-							&& DateUtil.isExpired(MapUtils.getString(valueData, "endTime"))) {
+                            //当前时间大于结束时间（liveStartTime）
+							&& System.currentTimeMillis() > (MapUtils.getLong(valueData, "liveStartTime"))*1000) {
 						valueData.put("isExpired", 1);
 					} else {
 						valueData.put("isExpired", 0);
@@ -298,39 +308,65 @@ public class CourseUtil {
      * @param userId
      */
     /**
-     * 处理阶段考试状态信息
+     * 处理学习报告状态信息，如果为直播，且用户观看了直播，老师下课就生成学习报告
+     * 如果为录播，并且配置了开关为 true 则可以查看学习报告
      * @param response
      * @param userId
      */
-    public void addStudyReportInfo(LinkedHashMap response, long userId){
+    public void addLearnReportInfo(LinkedHashMap response, int userId){
         response.computeIfPresent("list", (key, value) -> {
-                    List<Integer> courseWareIds = ((List<Map>) value).stream()
-                            .filter(map -> (null != map.get("classExercisesNum")) && (MapUtils.getInteger(map,"classExercisesNum") > 0))
-                            .map(map -> MapUtils.getIntValue(map, "coursewareId", 0))
+
+                    List<HashMap<String, Object>> courseWareIds = ((List<Map>) value).stream()
+                            .filter(map -> null != map.get(SyllabusInfo.VideoType) && null != map.get(SyllabusInfo.CourseWareId))
+                            .map(map -> {
+                                HashMap<String, Object> build = HashMapBuilder.<String, Object>newBuilder()
+                                        .put("courseType", MapUtils.getIntValue(map, "videoType", 0))
+                                        .put("courseId", MapUtils.getIntValue(map, "coursewareId", 0))
+                                        .build();
+                                return build;
+                            })
                             .collect(Collectors.toList());
 
-                    //查询用户答题信息
-                    log.info("处理学习报告状态，userId = {},courseWareIds = {}", userId, courseWareIds);
+                    log.info("处理随堂练习状态，userId = {},courseWareIds = {}", userId, courseWareIds);
+                    Object classExerciseStatus = practiceCardServiceV1.getClassExerciseStatus(userId, courseWareIds);
+                    Object build = ZTKResponseUtil.build(classExerciseStatus);
 
-                    //todo 获取阶段测试报告状态
+                    Map<Object, Object> defaultMap = HashMapBuilder.newBuilder()
+                            .put("reportStatus", 0)
+                            .build();
 
-                    //todo 查询redis数据查询状态
-                    int defaultStatus = -1;
-                    Map<Integer, Integer> periodMaps = Maps.newHashMap();
+                    if (null != build && CollectionUtils.isNotEmpty((List<Map>) build)) {
 
-                    if (null != periodMaps && periodMaps.size() > 0) {
+                        //获取随堂练习报告状态
+                        Function<HashMap<String, Object>, Map> getCourse = (valueData) -> {
+                            Optional<Map> first = ((List<Map>) build).stream()
+                                    .filter(result -> null != result.get("courseId") && null != result.get("courseType"))
+                                    .filter(result -> MapUtils.getString(result, "courseId").equals(MapUtils.getString(valueData, "coursewareId"))
+                                                    && MapUtils.getString(result, "courseType").equals(MapUtils.getString(valueData, "videoType"))
+                                    )
+                                    .findFirst();
+                            if (first.isPresent()) {
+                                Map map = first.get();
+                                map.remove("courseId");
+                                map.remove("courseType");
+                                return map;
+                            } else {
+                                return defaultMap;
+                            }
+                        };
                         List<Map> mapList = ((List<Map>) value).stream()
                                 .map(valueData -> {
-                                    Integer status = periodMaps.getOrDefault(MapUtils.getIntValue(valueData, "coursewareId", 0), defaultStatus);
-                                    valueData.put("reportStatus", status);
+                                    Map status = getCourse.apply((HashMap<String, Object>) valueData);
+                                    valueData.putAll(status);
                                     return valueData;
                                 })
                                 .collect(Collectors.toList());
                         return mapList;
+
                     } else {
                         List<Map> mapList = ((List<Map>) value).stream()
                                 .map(valueData -> {
-                                    valueData.put("reportStatus", defaultStatus);
+                                    valueData.put("reportStatus", 0);
                                     return valueData;
                                 })
                                 .collect(Collectors.toList());
@@ -338,5 +374,115 @@ public class CourseUtil {
                     }
                 }
         );
+    }
+
+
+    /**
+     * 处理学习报告逻辑
+     * @param response
+     * @param userId
+     */
+    public void addLearnReportInfoV2(LinkedHashMap response, int userId){
+        List<Map<String, Object>> list = (List<Map<String, Object>>)response.get("list");
+        if(CollectionUtils.isEmpty(list)){
+            return;
+        }
+        for (Map<String, Object> stringObjectMap : list) {
+            VideoTypeEnum videoTypeEnum = VideoTypeEnum.create(MapUtils.getIntValue(stringObjectMap, SyllabusInfo.VideoType));
+            long courseWareId = MapUtils.getLong(stringObjectMap, SyllabusInfo.CourseWareId);
+            String bjyRoomId = MapUtils.getString(stringObjectMap, SyllabusInfo.BjyRoomId);
+            switch (videoTypeEnum){
+                case LIVE:
+                    Map live = doLiveReport(userId, courseWareId, bjyRoomId);
+                    stringObjectMap.putAll(live);
+                    break;
+                case LIVE_PLAY_BACK:
+                    Map playBack = doLivePlayBack(userId, courseWareId, bjyRoomId);
+                    stringObjectMap.putAll(playBack);
+                    break;
+                case DOT_LIVE:
+                    Map dotLive = doDotLive(courseWareId, userId);
+                    stringObjectMap.putAll(dotLive);
+                    break;
+                    default:
+                        Map defaultMap = Maps.newHashMap();
+                        defaultMap.put("reportStatus", YesOrNoStatus.NO.getCode());
+                        stringObjectMap.putAll(defaultMap);
+            }
+        }
+    }
+
+    /**
+     * 直播报告处理
+     * @param userId
+     * @param liveCourseWareId
+     * @param bjyRoomId
+     * @return
+     * @throws BizException
+     */
+    private Map doLiveReport(int userId, long liveCourseWareId, String bjyRoomId) throws BizException{
+        Map<String, Object> result = Maps.newHashMap();
+        Example example = new Example(CourseLiveReportLog.class);
+        example.and()
+                .andEqualTo("bjyRoomId", bjyRoomId)
+                .andEqualTo("userId",  userId)
+                .andEqualTo("courseWareId", liveCourseWareId);
+        try{
+            CourseLiveReportLog courseLiveReportLog = courseLiveReportLogMapper.selectOneByExample(example);
+            if(null == courseLiveReportLog){
+                result.put("reportStatus", YesOrNoStatus.NO.getCode());
+            }else{
+                result.put("reportStatus", YesOrNoStatus.YES.getCode());
+            }
+        }catch (Exception e){
+            result.put("reportStatus", YesOrNoStatus.NO.getCode());
+        }
+        return result;
+    }
+
+    /**
+     * 直播回放报告处理
+     * @param userId
+     * @param liveBackCoursewareId
+     * @param bjyRoomId
+     * @return
+     * @throws BizException
+     */
+    private Map doLivePlayBack(int userId, long liveBackCoursewareId, String bjyRoomId) throws BizException{
+        Map<String,Object> result = Maps.newHashMap();
+        Example example = new Example(CourseLiveBackLog.class);
+        example.and()
+                .andEqualTo("liveBackCoursewareId", liveBackCoursewareId)
+                .andEqualTo("roomId", bjyRoomId);
+        try{
+            CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(Long.valueOf(bjyRoomId), liveBackCoursewareId);
+            if(null == courseLiveBackLog){
+                result.put("reportStatus", YesOrNoStatus.NO.getCode());
+                return result;
+            }
+            long liveCourseWareId = courseLiveBackLog.getLiveCoursewareId();
+            return doLiveReport(userId, liveCourseWareId, bjyRoomId);
+        }catch (Exception e){
+            result.put("reportStatus", YesOrNoStatus.NO.getCode());
+            return result;
+        }
+    }
+
+    /**
+     * 录播逻辑处理
+     * @param courseWareId
+     * @return
+     * @throws BizException
+     */
+    private Map doDotLive(long courseWareId, int userId) throws BizException{
+        Map<String,Object> result = Maps.newHashMap();
+        result.put("reportStatus", YesOrNoStatus.NO.getCode());
+        NetSchoolResponse netSchoolResponse = practiceCardServiceV1.getClassExerciseReport(courseWareId, VideoTypeEnum.DOT_LIVE.getVideoType(), userId);
+        Map<String,Object> data = (Map<String,Object>)netSchoolResponse.getData();
+        if(data.containsKey("id")){
+            result.put("reportStatus", YesOrNoStatus.YES.getCode());
+            return result;
+        }
+        return result;
     }
 }

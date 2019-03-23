@@ -49,5 +49,10 @@ public class QuestionMetaBo {
      * 剩余练习时间
      */
     private Integer lastPracticeTime;
+    
+    /**
+     * 试题类型
+     */
+    private Integer type;
 
 }
