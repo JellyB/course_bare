@@ -61,8 +61,15 @@ public class PracticeUserMetaServiceImpl extends BaseServiceHelperImpl<CoursePra
 		}
 		Map<String, Integer> metaEntries = metaOpsForHash
 				.entries(CoursePracticeCacheKey.roomIdCourseIdTypeMetaKey(roomId, coursewareId, 2));
+		
 		Integer rCount = metaEntries.get(CoursePracticeCacheKey.RCOUNT);
+		if(rCount == null) {
+			rCount = 0;
+		}
 		Integer totalTime = metaEntries.get(CoursePracticeCacheKey.TOTALTIME);
+		if(totalTime == null) {
+			totalTime = 0;
+		}
 		Map<String, Integer> retMap = Maps.newHashMap();
 		retMap.put("classAverageTime", totalTime / count.intValue());
 		retMap.put("classAverageRcount", rCount / count.intValue());
