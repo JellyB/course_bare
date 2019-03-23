@@ -41,7 +41,7 @@ public class CourseLiveReportLogManager {
             newLog.setClassId(liveRecordInfo.getClassId());
             newLog.setCardId(liveRecordInfo.getCourseWareId());
             newLog.setUserId(new Long(liveRecordInfoWithUserInfo.getUserId()));
-            courseLiveReportLogMapper.insertSelective(courseLiveReportLog);
+            courseLiveReportLogMapper.insertSelective(newLog);
         }else{
             return;
         }
