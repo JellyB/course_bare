@@ -1,8 +1,14 @@
 package com.huatu.tiku.course.mq.listeners;
 
+import com.alibaba.fastjson.JSONObject;
+import com.huatu.tiku.course.bean.vo.LiveRecordInfo;
+import com.huatu.tiku.course.bean.vo.LiveRecordInfoWithUserInfo;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
+import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
+import com.huatu.tiku.course.service.manager.CourseLiveReportLogManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -16,11 +22,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class CourseLiveReportLogListener {
 
+    @Autowired
+    private CourseExercisesProcessLogManager courseExercisesProcessLogManager;
 
+    @Autowired
+    private CourseLiveReportLogManager courseLiveReportLogManager;
 
     @RabbitListener(queues = RabbitMqConstants.COURSE_LIVE_REPORT_LOG)
     public void onMessage(String message){
-        //todo 入库
-
+        LiveRecordInfoWithUserInfo liveRecordInfoWithUserId = JSONObject.parseObject(message, LiveRecordInfoWithUserInfo.class);
+        LiveRecordInfo liveRecordInfo = liveRecordInfoWithUserId.getLiveRecordInfo();
+        //创建课后作业
+        courseExercisesProcessLogManager.saveLiveRecord(liveRecordInfoWithUserId.getUserId(), liveRecordInfoWithUserId.getSubject(), liveRecordInfoWithUserId.getTerminal(),liveRecordInfo.getSyllabusId());
+        //已听课学员记录
+        courseLiveReportLogManager.saveOrUpdate(liveRecordInfoWithUserId);
     }
 }

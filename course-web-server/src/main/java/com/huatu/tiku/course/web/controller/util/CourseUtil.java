@@ -478,10 +478,12 @@ public class CourseUtil {
         Map<String,Object> result = Maps.newHashMap();
         result.put("reportStatus", YesOrNoStatus.NO.getCode());
         NetSchoolResponse netSchoolResponse = practiceCardServiceV1.getClassExerciseReport(courseWareId, VideoTypeEnum.DOT_LIVE.getVideoType(), userId);
-        Map<String,Object> data = (Map<String,Object>)netSchoolResponse.getData();
-        if(data.containsKey("id")){
-            result.put("reportStatus", YesOrNoStatus.YES.getCode());
-            return result;
+        if(ResponseUtil.isSuccess(netSchoolResponse) && null != netSchoolResponse.getData() ){
+            Map<String,Object> data = (Map<String,Object>)netSchoolResponse.getData();
+            if(data.containsKey("id")){
+                result.put("reportStatus", YesOrNoStatus.YES.getCode());
+                return result;
+            }
         }
         return result;
     }

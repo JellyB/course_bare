@@ -32,24 +32,20 @@ public class UserCourseControllerV7 {
     @Autowired
     private UserCourseBizV7Service userCourseBizV7Service;
 
-    @Autowired
-    private UserCourseServiceV6 userCourseService;
+
 
     /**
      * 直播学习记录上报
      * @param userSession
      * @return
      */
-    @LocalMapParam
     @PostMapping(value = "liveRecord")
     public Object saveLiveRecord(@Token UserSession userSession,
                                  @RequestHeader(value = "terminal") int terminal,
                                  @RequestHeader(value = "cv") String cv,
                                  @RequestBody LiveRecordInfo liveRecordInfo){
 
-        Map<String,Object> params = LocalMapParamHandler.get();
-        userCourseService.saveLiveRecord(params);
-        userCourseBizV7Service.dealLiveReport(userSession.getId(), liveRecordInfo.getSyllabusId(), liveRecordInfo.getBjyRoomId(), liveRecordInfo.getClassId(), liveRecordInfo.getCourseWareId(), userSession.getSubject(), terminal);
+        userCourseBizV7Service.dealLiveReport(userSession.getId(), userSession.getUname(), userSession.getSubject(), terminal, cv, liveRecordInfo);
         return SuccessMessage.create();
 
     }
