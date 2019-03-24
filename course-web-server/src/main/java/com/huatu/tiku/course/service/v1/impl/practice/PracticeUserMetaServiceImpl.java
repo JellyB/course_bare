@@ -16,6 +16,7 @@ import com.huatu.tiku.course.service.cache.CoursePracticeCacheKey;
 import com.huatu.tiku.course.service.v1.practice.PracticeUserMetaService;
 import com.huatu.tiku.entity.CoursePracticeUserMeta;
 
+import lombok.extern.slf4j.Slf4j;
 import service.impl.BaseServiceHelperImpl;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.weekend.WeekendSqls;
@@ -24,6 +25,7 @@ import tk.mybatis.mapper.weekend.WeekendSqls;
  * Created by lijun on 2019/3/7
  */
 @Service
+@Slf4j
 public class PracticeUserMetaServiceImpl extends BaseServiceHelperImpl<CoursePracticeUserMeta>
 		implements PracticeUserMetaService {
 
@@ -73,6 +75,7 @@ public class PracticeUserMetaServiceImpl extends BaseServiceHelperImpl<CoursePra
 		Map<String, Integer> retMap = Maps.newHashMap();
 		retMap.put("classAverageTime", totalTime / count.intValue());
 		retMap.put("classAverageRcount", rCount / count.intValue());
+		log.info("随堂练roomId:{},coursewareId:{},获取班级统计数据结果:{}", roomId, coursewareId, retMap.toString());
 		return retMap;
 	}
 }

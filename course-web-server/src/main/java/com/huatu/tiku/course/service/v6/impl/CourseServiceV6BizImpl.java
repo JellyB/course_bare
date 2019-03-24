@@ -551,9 +551,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
                 LinkedHashMap linkedHashMap = (LinkedHashMap<String, Object>) classReport.getData();
                 if(MapUtils.getLong(linkedHashMap, "id") > 0) {
                     classPractice.put("practiceStatus", YesOrNoStatus.YES.getCode());
-                    classPractice.putAll(practiceUserMetaService.getCountDateByRIdAndCId(Long.valueOf(bjyRoomId), courseWareId));
                     classPracticePoints.addAll((List<Map<String,Object>>) linkedHashMap.get("points"));
                     classPractice.putAll(linkedHashMap);
+                    classPractice.putAll(practiceUserMetaService.getCountDateByRIdAndCId(Long.valueOf(bjyRoomId), courseWareId));
                 }
             }
         }else if(videoType == VideoTypeEnum.DOT_LIVE){

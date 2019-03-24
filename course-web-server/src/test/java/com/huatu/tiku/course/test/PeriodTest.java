@@ -24,6 +24,7 @@ import com.huatu.tiku.course.common.CoinType;
 import com.huatu.tiku.course.dao.manual.CourseLiveBackLogMapper;
 import com.huatu.tiku.course.service.cache.CoursePracticeCacheKey;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
+import com.huatu.tiku.course.service.v1.practice.PracticeUserMetaService;
 import com.huatu.tiku.course.service.v6.PeriodTestServiceV6;
 import com.huatu.tiku.course.util.EncryptUtils;
 import com.huatu.tiku.entity.CourseLiveBackLog;
@@ -53,6 +54,9 @@ public class PeriodTest extends BaseWebTest {
 	
 	@Autowired
 	private RedisTemplate redisTemplate;
+	
+	@Autowired
+	private PracticeUserMetaService practiceUserMetaService;
 
 	@Test
 	public void testUpload() throws InterruptedException, ExecutionException, BizException {
@@ -142,6 +146,12 @@ public class PeriodTest extends BaseWebTest {
 		retMap.put("classAverageRcount", rCount / count.intValue());
 		
 		System.out.println("----------->"+retMap);
+	}
+	
+	@Test
+	public void testsuitanglian() {
+		Map<String, Integer> countDateByRIdAndCId = practiceUserMetaService.getCountDateByRIdAndCId(19032445485676L, 37465L);
+		System.out.println(countDateByRIdAndCId.toString());
 	}
 
 }
