@@ -3,9 +3,6 @@ package com.huatu.tiku.course.service.v6;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
-import com.huatu.tiku.springboot.users.support.Token;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -67,11 +64,10 @@ public interface CourseServiceV6Biz {
      * @param syllabusId
      * @param terminal
      * @param exerciseCardId
-     * @param reportStatus
      * @param cv
      * @return
      * @throws BizException
      */
-    Object learnReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, long courseWareId, int videoType, long exerciseCardId, int reportStatus, long syllabusId, int terminal, String cv)throws BizException;
+    Object learnReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, long courseWareId, int videoType, long exerciseCardId, long syllabusId, int terminal, String cv)throws BizException;
 
 }

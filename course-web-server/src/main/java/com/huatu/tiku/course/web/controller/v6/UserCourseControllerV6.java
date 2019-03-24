@@ -200,10 +200,10 @@ public class UserCourseControllerV6 {
                               @RequestParam(value = "lessonId") long courseWareId,
                               @RequestParam(value = "videoType") int videoType,
                               @RequestParam(value = "exerciseCardId") long exerciseCardId,
-                              @RequestParam(value = "reportStatus") int reportStatus,
+                              @RequestParam(value = "reportStatus",defaultValue = "1") int reportStatus,
                               @RequestParam(value = "syllabusId") long syllabusId){
 
-        return courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, exerciseCardId, reportStatus, syllabusId, terminal, cv);
+        return courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, exerciseCardId, syllabusId, terminal, cv);
 
     }
 
