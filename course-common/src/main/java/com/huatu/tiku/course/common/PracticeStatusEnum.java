@@ -15,7 +15,7 @@ public enum PracticeStatusEnum {
 
     NONE(0, "没有"),
     AVAILABLE(1 , "可以获取查看"),
-    MISSED(2, "错过");
+    MISSED_OR_UNFINISHED(2, "错过或未完成");
 
     private int code;
     private String value;

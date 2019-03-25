@@ -56,7 +56,6 @@ import com.huatu.tiku.course.service.v6.CourseServiceV6Biz;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.DateUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
-import com.huatu.tiku.course.util.ZTKResponseUtil;
 import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
 import com.huatu.tiku.course.ztk.api.v4.paper.PeriodTestServiceV4;
 import com.huatu.ztk.knowledge.bean.QuestionPointTree;
@@ -514,6 +513,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             NetSchoolResponse netSchoolResponse = lessonService.studyReport(studyReport);
             if(ResponseUtil.isSuccess(netSchoolResponse)){
                 LinkedHashMap<String,Object> data = (LinkedHashMap<String,Object>)netSchoolResponse.getData();
+                log.info("学习报告 - 直播时长 - 响应参数:{}", data);
                 int learnPercent = MapUtils.getInteger(data, "listenLength");
                 int abovePercent = MapUtils.getInteger(data, "concentrationPercent");
                 liveReport.put("learnTime", MapUtils.getInteger(data, "listenLength"));
@@ -562,7 +562,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
                        classPractice.putAll(practiceUserMetaService.getCountDateByRIdAndCId(Long.valueOf(bjyRoomId), courseWareId));
                    }
                }else{
-                   classPractice.put("practiceStatus", PracticeStatusEnum.MISSED.getCode());
+                   classPractice.put("practiceStatus", PracticeStatusEnum.MISSED_OR_UNFINISHED.getCode());
                }
            }else{
                classPractice.put("practiceStatus", PracticeStatusEnum.NONE.getCode());
@@ -618,7 +618,6 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
          * 否则提示学员去做题界面做题并提交答题卡
          */
         Stopwatch stopWatch = Stopwatch.createStarted();
-        courseWorkPractice.put("practiceStatus", PracticeStatusEnum.NONE.getCode());
         boolean checkUserSubmitAnswerCard;
         if(videoType == VideoTypeEnum.LIVE || playBackAvailable){
             checkUserSubmitAnswerCard = checkUserSubmitAnswerCard(userSession.getId(), courseWareId, VideoTypeEnum.LIVE.getVideoType());
@@ -640,22 +639,12 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             courseWorkPractice.put("submitTimeInfo", temp.get("submitTimeInfo"));
             courseWorkPracticePoints.addAll((List<QuestionPointTree>) temp.get("points"));
         }else{
-            try{
-                if(exerciseCardId > 0){
-                    courseWorkPractice.put("id", String.valueOf(exerciseCardId));
-                }else{
-                    //如果用户没有做过课后作业，直播录播直接创建答题卡，录播创建一张直播的答题卡
-                    Object object = courseExercisesProcessLogManager.createCourseWorkAnswerCardEntrance(classId, syllabusId, playBackAvailable ? VideoTypeEnum.LIVE.getVideoType() : videoType.getVideoType(), courseWareId, userSession.getSubject(), terminal, userSession.getId());
-                    if(null != object){
-                        HashMap<String, Object> practiceCard = (HashMap<String, Object>) ZTKResponseUtil.build(object);
-                        courseWorkPractice.put("id", MapUtils.getString(practiceCard, "id"));
-                    }else{
-                        courseWorkPractice.put("id", "0");
-                    }
-                }
-            }catch (Exception e){
-                courseWorkPractice.put("id", "0");
-                log.error("进入学习报告详情页面创建课后作业答题卡失败！{}", e);
+            if(exerciseCardId > 0){
+                courseWorkPractice.put("id", String.valueOf(exerciseCardId));
+                courseWorkPractice.put("practiceStatus", PracticeStatusEnum.MISSED_OR_UNFINISHED.getCode());
+            }else{
+                courseWorkPractice.put("id", String.valueOf(exerciseCardId));
+                courseWorkPractice.put("practiceStatus", PracticeStatusEnum.NONE.getCode());
             }
         }
         log.info("学习报告 - 课后作业 - 课后作业答题卡信息:{},{},{},{},{}, 耗时:{}", classId, syllabusId, videoType.getVideoType(), courseWareId, userSession.getId(), stopWatch.elapsed(TimeUnit.MILLISECONDS));
