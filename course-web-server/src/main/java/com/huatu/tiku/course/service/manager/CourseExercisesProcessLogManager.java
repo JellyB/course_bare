@@ -212,6 +212,7 @@ public class CourseExercisesProcessLogManager {
      * @throws BizException
      */
     public Object createCourseWorkAnswerCardEntrance(long courseId, long syllabusId, int courseType, long coursewareId, int subject, int terminal, int userId) throws BizException{
+        Stopwatch stopwatch = Stopwatch.createStarted();
         List<Map<String, Object>> list = courseExercisesService.listQuestionByCourseId(courseType, coursewareId);
         if (CollectionUtils.isEmpty(list)) {
             return null;
@@ -230,6 +231,7 @@ public class CourseExercisesProcessLogManager {
         }
         result.computeIfPresent("id", (key, value) -> String.valueOf(value));
         createCourseWorkAnswerCard(userId, courseType, coursewareId, courseId, syllabusId, result);
+        log.info("课后作业 - 创建课后答题卡请求参数:courseId:{},syllabusId:{},courseType:{},coursewareId:{},userId:{},耗时:{}", courseId, syllabusId, courseType, coursewareId,userId, stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return result;
     }
 

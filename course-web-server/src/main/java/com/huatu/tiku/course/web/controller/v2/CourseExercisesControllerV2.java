@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 /**
- * 描述： 直播 & 录播创建课后作业答题卡逻辑
+ * 描述：录播创建课后作业答题卡逻辑
  *
  * @author biguodong
  * Create time 2019-03-08 5:14 PM

@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.web.controller.util;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.huatu.common.exception.BizException;
 import com.huatu.common.spring.event.EventPublisher;
@@ -32,6 +33,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -311,6 +313,7 @@ public class CourseUtil {
      * @param userId
      */
     public void addLearnReportInfoV2(LinkedHashMap response, int userId){
+        Stopwatch stopwatch = Stopwatch.createStarted();
         List<Map<String, Object>> list = (List<Map<String, Object>>)response.get("list");
         if(CollectionUtils.isEmpty(list)){
             return;
@@ -320,7 +323,7 @@ public class CourseUtil {
                 int type =  MapUtils.getInteger(stringObjectMap, SyllabusInfo.Type);
                 TypeEnum typeEnum = TypeEnum.create(type);
                 if(typeEnum != TypeEnum.COURSE_WARE){
-                    stringObjectMap.put("reportStatus", YesOrNoStatus.UN_DEFINED.getCode());
+                    stringObjectMap.put(SyllabusInfo.ReportStatus, YesOrNoStatus.UN_DEFINED.getCode());
                     continue;
                 }
                 VideoTypeEnum videoTypeEnum = VideoTypeEnum.create(MapUtils.getIntValue(stringObjectMap, SyllabusInfo.VideoType));
@@ -339,20 +342,21 @@ public class CourseUtil {
                         int studyReport = MapUtils.getIntValue(stringObjectMap, SyllabusInfo.StudyReport);
                         YesOrNoStatus studyReportEnum = YesOrNoStatus.create(studyReport);
                         if(studyReportEnum == YesOrNoStatus.NO){
-                            stringObjectMap.put("reportStatus", YesOrNoStatus.UN_DEFINED.getCode());
+                            stringObjectMap.put(SyllabusInfo.ReportStatus, YesOrNoStatus.UN_DEFINED.getCode());
                         }
                         Map dotLive = doDotLive(courseWareId, userId);
                         stringObjectMap.putAll(dotLive);
                         break;
                     default:
                         Map defaultMap = Maps.newHashMap();
-                        defaultMap.put("reportStatus", YesOrNoStatus.NO.getCode());
+                        defaultMap.put(SyllabusInfo.ReportStatus, YesOrNoStatus.NO.getCode());
                         stringObjectMap.putAll(defaultMap);
                 }
             }catch (Exception e){
                 log.error("处理大纲我的学习好高状态异常:{}, userId:{}",stringObjectMap, userId);
             }
         }
+        log.info("大纲列表 - 学习报告 - 请求参数params:{},userId:{}, 耗时:{}", response, userId,stopwatch.elapsed(TimeUnit.MILLISECONDS));
     }
 
     /**
@@ -366,7 +370,7 @@ public class CourseUtil {
         int liveStatus = MapUtils.getIntValue(stringObjectMap, SyllabusInfo.LiveStatus);
         LiveStatusEnum liveStatusEnum = LiveStatusEnum.create(liveStatus);
         if(liveStatusEnum == LiveStatusEnum.FINISHED){
-            result.put("reportStatus", YesOrNoStatus.YES.getCode());
+            result.put(SyllabusInfo.ReportStatus, YesOrNoStatus.YES.getCode());
         }
         return result;
     }

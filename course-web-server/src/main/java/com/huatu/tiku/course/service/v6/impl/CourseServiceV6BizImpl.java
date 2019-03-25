@@ -18,9 +18,12 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.huatu.common.ErrorResult;
+import com.huatu.tiku.course.common.PracticeStatusEnum;
+import com.huatu.tiku.course.dao.manual.CoursePracticeQuestionInfoMapper;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.course.service.v1.practice.PracticeUserMetaService;
 import com.huatu.tiku.entity.CourseLiveBackLog;
+import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -44,7 +47,6 @@ import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.vo.PeriodTestListVO;
 import com.huatu.tiku.course.common.EstimateCourseRedisKey;
 import com.huatu.tiku.course.common.VideoTypeEnum;
-import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
 import com.huatu.tiku.course.netschool.api.v6.LessonServiceV6;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
@@ -62,6 +64,7 @@ import com.huatu.ztk.paper.bean.PracticeCard;
 import com.huatu.ztk.paper.bean.PracticeForCoursePaper;
 
 import lombok.extern.slf4j.Slf4j;
+import tk.mybatis.mapper.entity.Example;
 
 
 /**
@@ -120,6 +123,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
     @Autowired
     private PracticeUserMetaService practiceUserMetaService;
+
+    @Autowired
+    private CoursePracticeQuestionInfoMapper coursePracticeQuestionInfoMapper;
 
     /**
      * 模考大赛解析课信息,多个id使用逗号分隔
@@ -541,33 +547,59 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
          */
         //直播回放或直播处理逻辑
         Stopwatch stopwatch = Stopwatch.createStarted();
-        classPractice.put("practiceStatus", YesOrNoStatus.NO.getCode());
         if(playBackAvailable || videoType == VideoTypeEnum.LIVE){
-            NetSchoolResponse classReport = practiceCardService.getClassExerciseReport(courseWareId, VideoTypeEnum.LIVE.getVideoType(), userSession.getId());
-            /**
-             * 如果直播答题卡id存在
-             */
-            if(classReport != ResponseUtil.DEFAULT_PAGE_EMPTY && null != classReport && null != classReport.getData()){
-                LinkedHashMap linkedHashMap = (LinkedHashMap<String, Object>) classReport.getData();
-                if(MapUtils.getLong(linkedHashMap, "id") > 0) {
-                    classPractice.put("practiceStatus", YesOrNoStatus.YES.getCode());
-                    classPracticePoints.addAll((List<Map<String,Object>>) linkedHashMap.get("points"));
-                    classPractice.putAll(linkedHashMap);
-                    classPractice.putAll(practiceUserMetaService.getCountDateByRIdAndCId(Long.valueOf(bjyRoomId), courseWareId));
-                }
-            }
+           if(checkClassPracticeReportAvailable(bjyRoomId)){
+               NetSchoolResponse classReport = practiceCardService.getClassExerciseReport(courseWareId, VideoTypeEnum.LIVE.getVideoType(), userSession.getId());
+               /**
+                * 如果直播答题卡id存在
+                */
+               if(classReport != ResponseUtil.DEFAULT_PAGE_EMPTY && null != classReport && null != classReport.getData()){
+                   LinkedHashMap linkedHashMap = (LinkedHashMap<String, Object>) classReport.getData();
+                   if(MapUtils.getLong(linkedHashMap, "id") > 0) {
+                       classPractice.put("practiceStatus", PracticeStatusEnum.AVAILABLE.getCode());
+                       classPracticePoints.addAll((List<Map<String,Object>>) linkedHashMap.get("points"));
+                       classPractice.putAll(linkedHashMap);
+                       classPractice.putAll(practiceUserMetaService.getCountDateByRIdAndCId(Long.valueOf(bjyRoomId), courseWareId));
+                   }
+               }else{
+                   classPractice.put("practiceStatus", PracticeStatusEnum.MISSED.getCode());
+               }
+           }else{
+               classPractice.put("practiceStatus", PracticeStatusEnum.NONE.getCode());
+           }
         }else if(videoType == VideoTypeEnum.DOT_LIVE){
             NetSchoolResponse classReport = practiceCardService.getClassExerciseReport(courseWareId, videoType.getVideoType(), userSession.getId());
             if(classReport != ResponseUtil.DEFAULT_PAGE_EMPTY && null != classReport && null != classReport.getData()){
                 LinkedHashMap linkedHashMap = (LinkedHashMap<String, Object>) classReport.getData();
                 classPractice.putAll(linkedHashMap);
                 classPracticePoints.addAll((List<Map<String,Object>>) linkedHashMap.get("points"));
-                classPractice.put("practiceStatus", YesOrNoStatus.YES.getCode());
+                classPractice.put("practiceStatus", PracticeStatusEnum.AVAILABLE.getCode());
+            }else{
+                classPractice.put("practiceStatus", PracticeStatusEnum.NONE.getCode());
             }
         }
         log.info("学习报告 - 随堂练习 - 请求参数:{},{},{},{},{},耗时:{}", userSession.getId(), bjyRoomId, courseWareId, videoType.getVideoType(),playBackAvailable, stopwatch.elapsed(TimeUnit.MILLISECONDS));
     }
 
+    /**
+     * 查看此房间下是否出题
+     * @param bjyRoomId
+     * @return
+     */
+    private boolean checkClassPracticeReportAvailable(String bjyRoomId){
+        try{
+            Example example = new Example(CoursePracticeQuestionInfo.class);
+            List<Integer> bizStatus = Lists.newArrayList(2,3);
+            example.and()
+                    .andEqualTo("roomId", Long.valueOf(bjyRoomId))
+                    .andIn("bizStatus", bizStatus);
+            List<CoursePracticeQuestionInfo> list = coursePracticeQuestionInfoMapper.selectByExample(example);
+            return CollectionUtils.isEmpty(list) ? false : true;
+        }catch (Exception e){
+            log.error("随堂练习 - 老师是否放题异常:{}", e);
+            return false;
+        }
+    }
     /**
      * 处理学习报告 -- 课后作业
      * @param userSession 用户信息
@@ -586,7 +618,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
          * 否则提示学员去做题界面做题并提交答题卡
          */
         Stopwatch stopWatch = Stopwatch.createStarted();
-        courseWorkPractice.put("practiceStatus", YesOrNoStatus.NO.getCode());
+        courseWorkPractice.put("practiceStatus", PracticeStatusEnum.NONE.getCode());
         boolean checkUserSubmitAnswerCard;
         if(videoType == VideoTypeEnum.LIVE || playBackAvailable){
             checkUserSubmitAnswerCard = checkUserSubmitAnswerCard(userSession.getId(), courseWareId, VideoTypeEnum.LIVE.getVideoType());
@@ -604,7 +636,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             courseWorkPractice.put("id", MapUtils.getString(temp, "id"));
             courseWorkPractice.put("paper", temp.get("paper"));
             courseWorkPractice.put("rcount", temp.get("rcount"));
-            courseWorkPractice.put("practiceStatus", YesOrNoStatus.YES.getCode());
+            courseWorkPractice.put("practiceStatus", PracticeStatusEnum.AVAILABLE.getCode());
             courseWorkPractice.put("submitTimeInfo", temp.get("submitTimeInfo"));
             courseWorkPracticePoints.addAll((List<QuestionPointTree>) temp.get("points"));
         }else{

@@ -50,4 +50,9 @@ public class SyllabusInfo {
      */
     public static final String LiveStatus = "liveStatus";
 
+    /**
+     * 大纲学习报告生成状态
+     */
+    public static final String ReportStatus = "reportStatus";
+
 }
