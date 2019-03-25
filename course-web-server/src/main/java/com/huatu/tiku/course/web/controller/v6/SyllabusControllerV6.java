@@ -100,9 +100,9 @@ public class SyllabusControllerV6 {
         Object response = ResponseUtil.build(syllabusService.buyAfterSyllabus(map));
         //添加答题信息
         courseUtil.addExercisesCardInfo((LinkedHashMap) response, userSession.getId(), false);
-        courseUtil.addLiveCardExercisesCardInfo((LinkedHashMap) response, userSession.getId(), false);
         courseUtil.addPeriodTestInfo((LinkedHashMap) response, userSession.getId());
         courseUtil.addLearnReportInfoV2((LinkedHashMap) response, userSession.getId());
+        courseUtil.addLiveCardExercisesCardInfo((LinkedHashMap) response, userSession.getId(), false);
         return response;
     }
 
