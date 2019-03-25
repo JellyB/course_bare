@@ -513,12 +513,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             NetSchoolResponse netSchoolResponse = lessonService.studyReport(studyReport);
             if(ResponseUtil.isSuccess(netSchoolResponse)){
                 LinkedHashMap<String,Object> data = (LinkedHashMap<String,Object>)netSchoolResponse.getData();
-                log.info("学习报告 - 直播时长 - 响应参数:{}", data);
-                int learnPercent = MapUtils.getInteger(data, "listenLength");
-                int abovePercent = MapUtils.getInteger(data, "concentrationPercent");
                 liveReport.put("learnTime", MapUtils.getInteger(data, "listenLength"));
-                liveReport.put("learnPercent", learnPercent);
-                liveReport.put("abovePercent", abovePercent);
+                liveReport.put("learnPercent", MapUtils.getInteger(data, "listenPercent"));
+                liveReport.put("abovePercent", MapUtils.getInteger(data, "concentrationPercent"));
                 liveReport.put("teacherComment", MapUtils.getString(data, "msg"));
                 stopwatch.stop();
                 log.info("学习报告 - 直播学习时长 - 请求参数:{},耗时:{}", studyReport, stopwatch.elapsed(TimeUnit.MILLISECONDS));
