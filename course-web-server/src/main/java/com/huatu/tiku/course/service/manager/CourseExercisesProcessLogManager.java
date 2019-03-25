@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.huatu.tiku.course.bean.vo.RecordProcess;
-import com.huatu.tiku.course.common.VideoTypeEnum;
 import lombok.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -213,12 +212,6 @@ public class CourseExercisesProcessLogManager {
      * @throws BizException
      */
     public Object createCourseWorkAnswerCardEntrance(long courseId, long syllabusId, int courseType, long coursewareId, int subject, int terminal, int userId) throws BizException{
-        /**
-         * 如果是直播回放转为直播
-         */
-        if(courseType == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
-            courseType = VideoTypeEnum.LIVE.getVideoType();
-        }
         Stopwatch stopwatch = Stopwatch.createStarted();
         List<Map<String, Object>> list = courseExercisesService.listQuestionByCourseId(courseType, coursewareId);
         if (CollectionUtils.isEmpty(list)) {

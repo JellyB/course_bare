@@ -303,7 +303,6 @@ public class CourseUtil {
             if(need2Str){
                 answerCard.computeIfPresent("id", (mapK, mapV) -> String.valueOf(mapV));
             }
-            detail.put(SyllabusInfo.CourseWareId, courseLiveBackLog.getLiveCoursewareId());
             detail.put("answerCard", answerCard);
         }
     }
