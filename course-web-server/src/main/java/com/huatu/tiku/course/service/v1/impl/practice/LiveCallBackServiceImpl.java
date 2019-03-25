@@ -86,12 +86,12 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
 	 * 持久化试题统计信息 - 试题统计信息只缺最终的答题统计信息，此处执行修改操作
 	 */
 	public void enduranceQuestionInfo(final Long roomId) {
-		List<Long> roomPracticedQuestion = practiceMetaComponent.getRoomPracticedQuestion(roomId);
+		List<String> roomPracticedQuestion = practiceMetaComponent.getRoomPracticedQuestion(roomId);
 		if (CollectionUtils.isEmpty(roomPracticedQuestion)) {
 			return;
 		}
 		roomPracticedQuestion.forEach(questionId -> {
-			QuestionMetaBo questionMetaBo = practiceMetaComponent.getQuestionMetaBo(roomId, questionId);
+			QuestionMetaBo questionMetaBo = practiceMetaComponent.getQuestionMetaBo(roomId, Long.parseLong(questionId));
 			WeekendSqls<CoursePracticeQuestionInfo> sql = WeekendSqls.<CoursePracticeQuestionInfo>custom()
 					.andEqualTo(CoursePracticeQuestionInfo::getRoomId, roomId)
 					.andEqualTo(CoursePracticeQuestionInfo::getQuestionId, questionId);

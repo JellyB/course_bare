@@ -83,11 +83,10 @@ public class TeacherController {
     /**
      * 获取课件下试题作答信息
      */
-    @GetMapping("{roomId}/{coursewareId}/couserwareAnswerInfo")
+    @GetMapping("{roomId}/couserwareAnswerInfo")
     public Object getCourseQuestionAnswerInfo(
-            @PathVariable Long roomId,
-            @PathVariable Long coursewareId) {
-        return teacherService.getCoursewareAnswerQuestionInfo(roomId, coursewareId);
+            @PathVariable Long roomId) {
+        return teacherService.getCoursewareAnswerQuestionInfo(roomId);
     }
 
     /**

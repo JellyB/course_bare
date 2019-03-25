@@ -65,7 +65,7 @@ public class StudentServiceImpl implements StudentService {
     public StudentQuestionMetaBo getStudentQuestionMetaBo(Integer userId, Long roomId, Long courseId, Long questionId) {
         StudentQuestionMetaBo studentQuestionMetaBo = practiceMetaComponent.getStudentQuestionMetaBo(userId, roomId, courseId, questionId);
         //构建用户的答题信息
-        List<Long> roomPracticedQuestionList = practiceMetaComponent.getRoomPracticedQuestion(roomId);
+        List<String> roomPracticedQuestionList = practiceMetaComponent.getRoomPracticedQuestion(roomId);
         //设置已答总题量
         studentQuestionMetaBo.setTotalQuestionNum(roomPracticedQuestionList.size());
         return studentQuestionMetaBo;
