@@ -343,6 +343,7 @@ public class CourseUtil {
                         YesOrNoStatus studyReportEnum = YesOrNoStatus.create(studyReport);
                         if(studyReportEnum == YesOrNoStatus.NO){
                             stringObjectMap.put(SyllabusInfo.ReportStatus, YesOrNoStatus.UN_DEFINED.getCode());
+                            continue;
                         }
                         Map dotLive = doDotLive(courseWareId, userId);
                         stringObjectMap.putAll(dotLive);

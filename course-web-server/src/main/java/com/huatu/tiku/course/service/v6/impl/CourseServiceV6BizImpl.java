@@ -577,6 +577,8 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             }else{
                 classPractice.put("practiceStatus", PracticeStatusEnum.MISSED_OR_UNFINISHED.getCode());
             }
+        }else{
+            classPractice.put("practiceStatus", PracticeStatusEnum.NONE.getCode());
         }
         log.info("学习报告 - 随堂练习 - 请求参数:{},{},{},{},{},耗时:{}", userSession.getId(), bjyRoomId, courseWareId, videoType.getVideoType(),playBackAvailable, stopwatch.elapsed(TimeUnit.MILLISECONDS));
     }
@@ -624,7 +626,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         }else{
             checkUserSubmitAnswerCard = checkUserSubmitAnswerCard(userSession.getId(), courseWareId, videoType.getVideoType());
         }
-        if(checkUserSubmitAnswerCard){
+        if(checkUserSubmitAnswerCard && exerciseCardId > 0){
             Map<String, Object> temp = (Map<String, Object>)courseWorkReport(userSession, terminal, exerciseCardId);
             courseWorkPractice.put("answers", temp.get("answers"));
             courseWorkPractice.put("avgCorrect", temp.get("avgCorrect"));
