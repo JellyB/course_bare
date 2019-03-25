@@ -175,6 +175,7 @@ public class CourseControllerV5 {
         Object purchasesTimetable = courseServiceBiz.findPurchasesTimetable(userSession.getId(), map);
         //添加答题信息
         courseUtil.addExercisesCardInfo((LinkedHashMap) purchasesTimetable, userSession.getId(), true);
+        courseUtil.addLiveCardExercisesCardInfo((LinkedHashMap) purchasesTimetable, userSession.getId(), true);
         courseUtil.addPeriodTestInfo((LinkedHashMap) purchasesTimetable, userSession.getId());
         courseUtil.addLearnReportInfoV2((LinkedHashMap) purchasesTimetable, userSession.getId());
         return purchasesTimetable;

@@ -55,4 +55,9 @@ public class SyllabusInfo {
      */
     public static final String ReportStatus = "reportStatus";
 
+    /**
+     * 课后练习数量
+     */
+    public static final String AfterCourseNum = "afterCoreseNum";
+
 }

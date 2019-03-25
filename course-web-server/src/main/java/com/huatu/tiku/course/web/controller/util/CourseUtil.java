@@ -2,6 +2,7 @@ package com.huatu.tiku.course.web.controller.util;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.huatu.common.exception.BizException;
 import com.huatu.common.spring.event.EventPublisher;
@@ -13,15 +14,14 @@ import com.huatu.tiku.course.common.TypeEnum;
 import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.consts.SyllabusInfo;
-import com.huatu.tiku.course.dao.manual.CourseLiveReportLogMapper;
 import com.huatu.tiku.course.hbase.api.v1.VideoServiceV1;
+import com.huatu.tiku.course.service.v1.CourseExercisesService;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.course.util.ZTKResponseUtil;
 import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
 import com.huatu.tiku.course.ztk.api.v4.paper.PeriodTestServiceV4;
 import com.huatu.tiku.entity.CourseLiveBackLog;
-import com.huatu.tiku.entity.CourseLiveReportLog;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
 import com.huatu.tiku.springboot.basic.reward.event.RewardActionEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -57,11 +57,10 @@ public class CourseUtil {
     private PeriodTestServiceV4 PeriodTestService;
 
     @Autowired
-    private CourseLiveReportLogMapper courseLiveReportLogMapper;
-
+    private CourseLiveBackLogService courseLiveBackLogService;
 
     @Autowired
-    private CourseLiveBackLogService courseLiveBackLogService;
+    private CourseExercisesService courseExercisesService;
 
     /**
      * 添加课程播放的时间-用以每日任务处理
@@ -246,6 +245,82 @@ public class CourseUtil {
                     }
                 }
         );
+    }
+
+    /**
+     * 课程大纲-售后-添加课后答题结果信息
+     * @param response
+     * @param userId
+     * @param need2Str
+     */
+    public void addLiveCardExercisesCardInfo(LinkedHashMap response, long userId, boolean need2Str){
+        List<Map<String,Object>> list = (List<Map<String,Object>>) response.get("list");
+        Map<Object, Object> defaultMap = HashMapBuilder.newBuilder()
+                .put("status", 0)
+                .put("rcount", 0)
+                .put("wcount", 0)
+                .put("ucount", 0)
+                .put("id", need2Str ? "0" : 0)
+                .build();
+
+        /**
+         * 查询直播回放的直播课件信息
+         */
+        for(Map<String,Object> detail : list){
+            int type = MapUtils.getIntValue(detail, SyllabusInfo.Type);
+            int videoType = MapUtils.getIntValue(detail, SyllabusInfo.VideoType);
+            int courseWareId = MapUtils.getIntValue(detail, SyllabusInfo.CourseWareId);
+            TypeEnum typeEnum = TypeEnum.create(type);
+            VideoTypeEnum videoTypeEnum = VideoTypeEnum.create(videoType);
+            if(typeEnum != TypeEnum.COURSE_WARE){
+                continue;
+            }
+            if(videoTypeEnum != VideoTypeEnum.LIVE_PLAY_BACK){
+                continue;
+            }
+            long bjyRoomId = MapUtils.getLongValue(detail, SyllabusInfo.BjyRoomId);
+            CourseLiveBackLog courseLiveBackLog = checkLiveBackWithCourseWork(bjyRoomId, courseWareId);
+            if(null == courseLiveBackLog){
+                continue;
+            }
+            List<Map<String, Object>> listQuestionByCourseId = courseExercisesService.listQuestionByCourseId(VideoTypeEnum.LIVE.getVideoType(), courseLiveBackLog.getLiveCoursewareId());
+            if (CollectionUtils.isEmpty(listQuestionByCourseId)) {
+               continue;
+            }
+            detail.put(SyllabusInfo.AfterCourseNum, listQuestionByCourseId.size());
+            HashMap<String,Object> params = Maps.newHashMap();
+            params.put(SyllabusInfo.VideoType, VideoTypeEnum.LIVE.getVideoType());
+            params.put(SyllabusInfo.CourseId, courseLiveBackLog.getLiveCoursewareId());
+            Object courseExercisesCardInfo = practiceCardServiceV1.getCourseExercisesCardInfo(userId, Lists.newArrayList(params));
+            Object build = ZTKResponseUtil.build(courseExercisesCardInfo);
+            List<Map> courseExercisesCards = (List<Map>) build;
+            if(CollectionUtils.isEmpty(courseExercisesCards)){
+                detail.put("answerCard", defaultMap);
+            }
+            Map<String,Object> answerCard = courseExercisesCards.get(0);
+            answerCard.remove("courseId");
+            answerCard.remove("courseType");
+            if(need2Str){
+                answerCard.computeIfPresent("id", (mapK, mapV) -> String.valueOf(mapV));
+            }
+            detail.put("answerCard", answerCard);
+        }
+    }
+
+
+    /**
+     * 核查直播回放是否由直播生成
+     * @param bjyRoomId
+     * @param liveBackCoursewareId
+     * @return
+     */
+    private CourseLiveBackLog checkLiveBackWithCourseWork(long bjyRoomId, long liveBackCoursewareId){
+        Example example = new Example(CourseLiveBackLog.class);
+        example.and()
+                .andEqualTo("roomId", bjyRoomId)
+                .andEqualTo("liveBackCoursewareId", liveBackCoursewareId);
+        CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(bjyRoomId, liveBackCoursewareId);
+        return courseLiveBackLog;
     }
 
 
