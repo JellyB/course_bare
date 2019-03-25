@@ -637,7 +637,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             courseWorkPractice.put("rcount", temp.get("rcount"));
             courseWorkPractice.put("practiceStatus", PracticeStatusEnum.AVAILABLE.getCode());
             courseWorkPractice.put("submitTimeInfo", temp.get("submitTimeInfo"));
-            courseWorkPracticePoints.addAll((List<QuestionPointTree>) temp.get("points"));
+            courseWorkPracticePoints.addAll((List<QuestionPointTree>) temp.getOrDefault("points", Lists.<QuestionPointTree>newArrayList()));
         }else{
             if(exerciseCardId > 0){
                 courseWorkPractice.put("id", String.valueOf(exerciseCardId));
