@@ -575,7 +575,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
                 classPracticePoints.addAll((List<Map<String,Object>>) linkedHashMap.get("points"));
                 classPractice.put("practiceStatus", PracticeStatusEnum.AVAILABLE.getCode());
             }else{
-                classPractice.put("practiceStatus", PracticeStatusEnum.NONE.getCode());
+                classPractice.put("practiceStatus", PracticeStatusEnum.MISSED_OR_UNFINISHED.getCode());
             }
         }
         log.info("学习报告 - 随堂练习 - 请求参数:{},{},{},{},{},耗时:{}", userSession.getId(), bjyRoomId, courseWareId, videoType.getVideoType(),playBackAvailable, stopwatch.elapsed(TimeUnit.MILLISECONDS));
