@@ -570,7 +570,13 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
                 LinkedHashMap linkedHashMap = (LinkedHashMap<String, Object>) classReport.getData();
                 classPractice.putAll(linkedHashMap);
                 classPracticePoints.addAll((List<Map<String,Object>>) linkedHashMap.get("points"));
-                classPractice.put("practiceStatus", PracticeStatusEnum.AVAILABLE.getCode());
+                int wcount = MapUtils.getIntValue(linkedHashMap, "wcount");
+                int rcount = MapUtils.getIntValue(linkedHashMap, "rcount");
+                if((rcount + wcount) > 0){
+                    classPractice.put("practiceStatus", PracticeStatusEnum.AVAILABLE.getCode());
+                }else{
+                    classPractice.put("practiceStatus", PracticeStatusEnum.MISSED_OR_UNFINISHED.getCode());
+                }
             }else{
                 classPractice.put("practiceStatus", PracticeStatusEnum.MISSED_OR_UNFINISHED.getCode());
             }
