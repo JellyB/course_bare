@@ -296,14 +296,16 @@ public class CourseUtil {
             List<Map> courseExercisesCards = (List<Map>) build;
             if(CollectionUtils.isEmpty(courseExercisesCards)){
                 detail.put("answerCard", defaultMap);
+                continue;
+            }else{
+                Map<String,Object> answerCard = courseExercisesCards.get(0);
+                answerCard.remove("courseId");
+                answerCard.remove("courseType");
+                if(need2Str){
+                    answerCard.computeIfPresent("id", (mapK, mapV) -> String.valueOf(mapV));
+                }
+                detail.put("answerCard", answerCard);
             }
-            Map<String,Object> answerCard = courseExercisesCards.get(0);
-            answerCard.remove("courseId");
-            answerCard.remove("courseType");
-            if(need2Str){
-                answerCard.computeIfPresent("id", (mapK, mapV) -> String.valueOf(mapV));
-            }
-            detail.put("answerCard", answerCard);
         }
     }
 
