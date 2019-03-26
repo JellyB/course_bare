@@ -30,6 +30,16 @@ public class SyllabusInfo {
     public static String VideoType = "videoType";
 
     /**
+     * 查询paper服务所映射的 videoType 字段
+     */
+    public static String PaperCourseType = "courseType";
+
+    /**
+     * 查询paper服务所映射的 courseId 字段
+     */
+    public static String PaperCourseId = "courseId";
+
+    /**
      * 百家云房间id
      */
     public static String BjyRoomId = "bjyRoomId";

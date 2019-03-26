@@ -289,8 +289,8 @@ public class CourseUtil {
             }
             detail.put(SyllabusInfo.AfterCourseNum, listQuestionByCourseId.size());
             HashMap<String,Object> params = Maps.newHashMap();
-            params.put(SyllabusInfo.VideoType, VideoTypeEnum.LIVE.getVideoType());
-            params.put(SyllabusInfo.CourseId, courseLiveBackLog.getLiveCoursewareId());
+            params.put(SyllabusInfo.PaperCourseType, VideoTypeEnum.LIVE.getVideoType());
+            params.put(SyllabusInfo.PaperCourseId, courseLiveBackLog.getLiveCoursewareId());
             Object courseExercisesCardInfo = practiceCardServiceV1.getCourseExercisesCardInfo(userId, Lists.newArrayList(params));
             Object build = ZTKResponseUtil.build(courseExercisesCardInfo);
             List<Map> courseExercisesCards = (List<Map>) build;
