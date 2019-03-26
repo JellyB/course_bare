@@ -10,7 +10,11 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.huatu.common.ErrorResult;
 import com.huatu.tiku.course.bean.vo.RecordProcess;
+import com.huatu.tiku.course.common.VideoTypeEnum;
+import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
+import com.huatu.tiku.entity.CourseLiveBackLog;
 import lombok.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -87,6 +91,9 @@ public class CourseExercisesProcessLogManager {
 
     @Autowired
     private UserCourseServiceV6 userCourseServiceV6;
+
+    @Autowired
+    private CourseLiveBackLogService courseLiveBackLogService;
 
     private static final String LESSON_LABEL = "lesson";
 
@@ -213,6 +220,24 @@ public class CourseExercisesProcessLogManager {
      */
     public Object createCourseWorkAnswerCardEntrance(long courseId, long syllabusId, int courseType, long coursewareId, int subject, int terminal, int userId) throws BizException{
         Stopwatch stopwatch = Stopwatch.createStarted();
+
+        if(courseType == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
+            SyllabusWareInfo syllabusWareInfo = requestSingleSyllabusInfoWithCache(syllabusId);
+            if(null == syllabusWareInfo || StringUtils.isEmpty(syllabusWareInfo.getRoomId())){
+                log.error("此大纲下查询不到百家云房间信息:{}", syllabusId);
+                ErrorResult errorResult = ErrorResult.create(1000010, "数据错误", Maps.newHashMap());
+                throw new BizException(errorResult);
+            }
+            String roomId = syllabusWareInfo.getRoomId();
+            CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(Long.valueOf(roomId), coursewareId);
+            if(null != courseLiveBackLog && null != courseLiveBackLog.getLiveCoursewareId()){
+                coursewareId = courseLiveBackLog.getLiveCoursewareId();
+                courseType = VideoTypeEnum.LIVE.getVideoType();
+            }else{
+                log.error("查询不到此直播回放对应的直播信息:{}", syllabusId);
+            }
+        }
+
         List<Map<String, Object>> list = courseExercisesService.listQuestionByCourseId(courseType, coursewareId);
         if (CollectionUtils.isEmpty(list)) {
             return null;
@@ -484,6 +509,37 @@ public class CourseExercisesProcessLogManager {
         return table;
     }
 
+    /**
+     * 使用单个大纲id获取大纲详细信息
+     * @param syllabusId
+     * @return
+     * @throws BizException
+     */
+    private SyllabusWareInfo requestSingleSyllabusInfoWithCache(long syllabusId) throws BizException{
+        ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
+        String key = CourseCacheKey.getProcessLogSyllabusInfo(syllabusId);
+        if(redisTemplate.hasKey(key)){
+            String value = valueOperations.get(key);
+            try{
+                SyllabusWareInfo syllabusWareInfo = JSONObject.parseObject(value, SyllabusWareInfo.class);
+                return syllabusWareInfo;
+            }catch (Exception e){
+                redisTemplate.delete(key);
+            }
+        }
+        HashMap<String, Object> params = HashMapBuilder.<String,Object>newBuilder().put("syllabusIds", syllabusId).build();
+        NetSchoolResponse<LinkedHashMap<String, Object>> netSchoolResponse = syllabusService.courseWareInfo(params);
+        if(ResponseUtil.isFailure(netSchoolResponse) || netSchoolResponse == NetSchoolResponse.DEFAULT){
+            return null;
+        }
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<LinkedHashMap<String, Object>> data = (List<LinkedHashMap<String, Object>>)netSchoolResponse.getData();
+
+        SyllabusWareInfo syllabusWareInfo = objectMapper.convertValue(data.get(0), SyllabusWareInfo.class);
+        valueOperations.set(key, JSONObject.toJSONString(syllabusWareInfo));
+        redisTemplate.expire(key, 20, TimeUnit.MINUTES);
+        return syllabusWareInfo;
+    }
     /**
      * 请求大纲信息并缓存到 redis
      * @param syllabusIds
