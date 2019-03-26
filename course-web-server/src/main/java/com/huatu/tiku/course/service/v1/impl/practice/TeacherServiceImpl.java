@@ -14,13 +14,9 @@ import com.huatu.tiku.course.bean.practice.TeacherQuestionBo;
 import com.huatu.tiku.course.common.CoursePracticeQuestionInfoEnum;
 import com.huatu.tiku.course.service.cache.CoursePracticeCacheKey;
 import com.huatu.tiku.course.service.v1.CourseBreakpointService;
-import com.huatu.tiku.course.service.v1.practice.CoursePracticeQuestionInfoService;
-import com.huatu.tiku.course.service.v1.practice.LiveCourseRoomInfoService;
-import com.huatu.tiku.course.service.v1.practice.QuestionInfoService;
-import com.huatu.tiku.course.service.v1.practice.TeacherService;
+import com.huatu.tiku.course.service.v1.practice.*;
 import com.huatu.tiku.entity.CourseBreakpointQuestion;
 import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
-import com.huatu.tiku.entity.CoursewarePracticeQuestionInfo;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -60,6 +56,8 @@ public class TeacherServiceImpl implements TeacherService {
     private final PracticeMetaComponent practiceMetaComponent;
     @Autowired
     private final RedisTemplate redisTemplate;
+    @Autowired
+    private CoursewarePracticeQuestionInfoService coursewarePracticeQuestionInfoService;
     @Override
     public Map<String,Object> getQuestionInfoByRoomId(Long roomId) throws ExecutionException, InterruptedException {
     	Map<String,Object> retMap = Maps.newHashMap();
@@ -282,19 +280,9 @@ public class TeacherServiceImpl implements TeacherService {
 
 	}
 
-    public List<QuestionMetaBo> getCoursewareAnswerQuestionInfo(Long roomId,Long coursewareId){
-        //获取房间下的课件Id
-        List<Integer> coursewareIds = liveCourseRoomInfoService.getLiveCourseIdListByRoomId(roomId);
-        //获取房间下的已作答试题
-        List<Long> roomPracticedQuestionIds = practiceMetaComponent.getRoomPracticedQuestion(roomId);
-        List<QuestionMetaBo> questionMetaBos=Lists.newArrayList();
-        coursewareIds.forEach(coursewareId1->{
-            roomPracticedQuestionIds.forEach(questionId->{
-                QuestionMetaBo questionMetaBo = practiceMetaComponent.getCourseQuestionMetaBo( roomId,Long.valueOf(coursewareId1),questionId);
-                questionMetaBos.add(questionMetaBo);
-            });
-        });
-        return questionMetaBos;
+    public List<QuestionMetaBo> getCoursewareAnswerQuestionInfo(Long roomId){
+        coursewarePracticeQuestionInfoService.generateCoursewareAnswerCardInfo(roomId);
+       return null;
     }
 
     /**

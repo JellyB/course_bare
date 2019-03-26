@@ -267,9 +267,9 @@ public class PracticeMetaComponent {
 	 * @param questionId 试题ID
 	 */
 	public void addRoomPracticedQuestion(Long roomId, Long questionId) {
-		final SetOperations<String, Long> setOperations = redisTemplate.opsForSet();
+		final SetOperations<String, String> setOperations = redisTemplate.opsForSet();
 		final String key = CoursePracticeCacheKey.roomPractedQuestionNumKey(roomId);
-		setOperations.add(key, questionId);
+		setOperations.add(key, questionId.toString());
 		redisTemplate.expire(key, CoursePracticeCacheKey.getDefaultKeyTTL(),
 				CoursePracticeCacheKey.getDefaultTimeUnit());
 	}
@@ -279,10 +279,10 @@ public class PracticeMetaComponent {
 	 *
 	 * @param roomId 房间ID
 	 */
-	public List<Long> getRoomPracticedQuestion(Long roomId) {
-		final SetOperations<String, Long> setOperations = redisTemplate.opsForSet();
+	public List<String> getRoomPracticedQuestion(Long roomId) {
+		final SetOperations<String, String> setOperations = redisTemplate.opsForSet();
 		final String key = CoursePracticeCacheKey.roomPractedQuestionNumKey(roomId);
-		Set<Long> set = setOperations.members(key);
+		Set<String> set = setOperations.members(key);
 		return set.stream().collect(Collectors.toList());
 	}
 

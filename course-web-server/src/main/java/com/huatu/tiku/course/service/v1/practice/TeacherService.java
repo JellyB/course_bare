@@ -48,10 +48,9 @@ public interface TeacherService {
     /**
      * 获取课件下试题的作答信息
      * @param roomId
-     * @param coursewareId 课件Id
      * @return
      */
-    List<QuestionMetaBo> getCoursewareAnswerQuestionInfo(Long roomId,Long coursewareId);
+    List<QuestionMetaBo> getCoursewareAnswerQuestionInfo(Long roomId);
 
     /**
      * 根据课件Id查询课件的随堂练习正确率
