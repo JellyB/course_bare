@@ -30,6 +30,16 @@ public class SyllabusInfo {
     public static String VideoType = "videoType";
 
     /**
+     * 查询paper服务所映射的 videoType 字段
+     */
+    public static String PaperCourseType = "courseType";
+
+    /**
+     * 查询paper服务所映射的 courseId 字段
+     */
+    public static String PaperCourseId = "courseId";
+
+    /**
      * 百家云房间id
      */
     public static String BjyRoomId = "bjyRoomId";
@@ -54,5 +64,10 @@ public class SyllabusInfo {
      * 大纲学习报告生成状态
      */
     public static final String ReportStatus = "reportStatus";
+
+    /**
+     * 课后练习数量
+     */
+    public static final String AfterCourseNum = "afterCoreseNum";
 
 }

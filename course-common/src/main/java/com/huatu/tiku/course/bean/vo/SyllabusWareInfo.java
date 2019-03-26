@@ -25,10 +25,11 @@ public class SyllabusWareInfo {
     private Integer serialNumber;
     private Integer videoType;
     private String length;
+    private String roomId;
 
     @Builder
 
-    public SyllabusWareInfo(String className, Long classId, Long syllabusId, String coursewareName, Long coursewareId, Integer serialNumber, Integer videoType, String length) {
+    public SyllabusWareInfo(String className, Long classId, Long syllabusId, String coursewareName, Long coursewareId, Integer serialNumber, Integer videoType, String length, String roomId) {
         this.className = className;
         this.classId = classId;
         this.syllabusId = syllabusId;
@@ -37,5 +38,6 @@ public class SyllabusWareInfo {
         this.serialNumber = serialNumber;
         this.videoType = videoType;
         this.length = length;
+        this.roomId = roomId;
     }
 }

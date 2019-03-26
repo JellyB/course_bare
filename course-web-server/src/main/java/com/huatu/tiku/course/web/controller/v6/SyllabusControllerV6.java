@@ -102,6 +102,7 @@ public class SyllabusControllerV6 {
         courseUtil.addExercisesCardInfo((LinkedHashMap) response, userSession.getId(), false);
         courseUtil.addPeriodTestInfo((LinkedHashMap) response, userSession.getId());
         courseUtil.addLearnReportInfoV2((LinkedHashMap) response, userSession.getId());
+        courseUtil.addLiveCardExercisesCardInfo((LinkedHashMap) response, userSession.getId(), false);
         return response;
     }
 

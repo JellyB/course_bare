@@ -177,6 +177,7 @@ public class CourseControllerV5 {
         courseUtil.addExercisesCardInfo((LinkedHashMap) purchasesTimetable, userSession.getId(), true);
         courseUtil.addPeriodTestInfo((LinkedHashMap) purchasesTimetable, userSession.getId());
         courseUtil.addLearnReportInfoV2((LinkedHashMap) purchasesTimetable, userSession.getId());
+        courseUtil.addLiveCardExercisesCardInfo((LinkedHashMap) purchasesTimetable, userSession.getId(), true);
         return purchasesTimetable;
     }
 
