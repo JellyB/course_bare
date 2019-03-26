@@ -17,13 +17,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * 描述：课程接口v6
  *
  * @author biguodong
- * Create time 2018-11-26 下午4:22
+ *         Create time 2018-11-26 下午4:22
  **/
 
 @Slf4j
@@ -40,15 +39,17 @@ public class CourseControllerV6 {
 
     @Autowired
     private CourseServiceV6Biz courseServiceV6Biz;
+
     /**
      * App课程列表
+     *
      * @param cateId
      * @return
      */
     @LocalMapParam
     @GetMapping(value = "list")
-    public Object obtainCourseList(@RequestParam(value = "cateId") String cateId){
-        Map<String,Object> params = LocalMapParamHandler.get();
+    public Object obtainCourseList(@RequestParam(value = "cateId") String cateId) {
+        Map<String, Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = courseService.obtainCourseList(params);
         return ResponseUtil.build(netSchoolResponse);
     }
@@ -56,6 +57,7 @@ public class CourseControllerV6 {
 
     /**
      * 日历详情
+     *
      * @param userSession
      * @param cv
      * @param date
@@ -73,14 +75,15 @@ public class CourseControllerV6 {
             @RequestParam(value = "date") String date,
             @RequestParam(value = "id", required = false) String id,
             @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "pageSize", defaultValue = "20") int pageSize){
-        Map<String,Object> params = LocalMapParamHandler.get();
+            @RequestParam(value = "pageSize", defaultValue = "20") int pageSize) {
+        Map<String, Object> params = LocalMapParamHandler.get();
         return courseBizV6Service.calendarDetail(params);
     }
 
 
     /**
      * 课程分类详情
+     *
      * @param cateId
      * @param cv
      * @param terminal
@@ -94,13 +97,15 @@ public class CourseControllerV6 {
                                    @RequestHeader(value = "terminal") int terminal,
                                    @RequestParam(value = "cateId") int cateId,
                                    @RequestParam(value = "page", defaultValue = "1") int page,
-                                   @RequestParam(value = "typeId") int typeId){
-        Map<String,Object> params = LocalMapParamHandler.get();
+                                   @RequestParam(value = "typeId") int typeId) {
+        Map<String, Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = courseService.courseTypeDetail(params);
         return ResponseUtil.build(netSchoolResponse);
     }
+
     /**
      * 课程搜索接口
+     *
      * @param keyWord
      * @param page
      * @return
@@ -120,13 +125,14 @@ public class CourseControllerV6 {
 
     /**
      * 合集课程列表
+     *
      * @param collectId
      * @return
      */
     @LocalMapParam
     @GetMapping(value = "collectDetail")
     public Object collectDetail(@RequestParam(value = "collectId") long collectId,
-                                @RequestParam(value = "page", defaultValue = "1") int page){
+                                @RequestParam(value = "page", defaultValue = "1") int page) {
         Map<String, Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = courseService.collectDetail(params);
         return ResponseUtil.build(netSchoolResponse);
@@ -134,12 +140,30 @@ public class CourseControllerV6 {
 
     /**
      * 模考大赛解析课信息,多个id使用逗号分隔
+     *
      * @param classIds
      * @return
      */
     @GetMapping(value = "courseAnalysis")
-    public Object courseAnalysis(@RequestParam(value = "classIds") String classIds){
+    public Object courseAnalysis(@RequestParam(value = "classIds") String classIds) {
         HashMap<String, LinkedHashMap> result = courseServiceV6Biz.getClassAnalysis(classIds);
         return result;
+    }
+
+    /**
+     * 小模考历史解析课信息列表
+     *
+     * @param
+     * @return
+     */
+    @LocalMapParam
+    @GetMapping(value = "analysisClassList")
+    public Object courseList(@RequestHeader int subject,
+                             @RequestParam(value = "page", defaultValue = "1") int page,
+                             @RequestParam(value = "size", defaultValue = "30") int size,
+                             @RequestParam(value = "startTime",defaultValue = "-1") long startTime,
+                             @RequestParam(value = "endTime",defaultValue = Long.MAX_VALUE+"") long endTime) {
+        NetSchoolResponse netSchoolResponse = courseServiceV6Biz.analysisClassList(subject,page,size,startTime,endTime);
+        return ResponseUtil.build(netSchoolResponse);
     }
 }

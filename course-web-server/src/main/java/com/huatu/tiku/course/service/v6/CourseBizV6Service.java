@@ -4,26 +4,20 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.huatu.common.Result;
-import com.huatu.common.utils.web.RequestUtil;
 import com.huatu.springboot.degrade.core.Degrade;
-import com.huatu.tiku.course.bean.CourseListV3DTO;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.fall.CourseServiceV6FallBack;
 import com.huatu.tiku.course.netschool.api.fall.UserCourseServiceV6FallBack;
 import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.service.v1.AccessLimitService;
-import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 描述：
@@ -100,7 +94,7 @@ public class CourseBizV6Service {
     public Object obtainMineCourses(Map<String,Object> params){
         try{
             NetSchoolResponse netSchoolResponse = userCourseService.obtainMineCourses(params);
-            if(null != netSchoolResponse && null != netSchoolResponse.getData()){
+            if(null != netSchoolResponse && null !=  netSchoolResponse.getData() && ResponseUtil.isHardSuccess(netSchoolResponse)){
                 userCourseServiceV6FallBack.setCourseMineStaticData(params, netSchoolResponse);
             }
             return ResponseUtil.build(netSchoolResponse);
@@ -108,6 +102,21 @@ public class CourseBizV6Service {
             log.error("obtainMineCourses caught an exception and return from fallBack:{}", e);
             NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainMineCourses(params);
             return ResponseUtil.build(netSchoolResponse);
+        }
+    }
+
+    /**
+     * 我的课程降级方法
+     * @param params
+     * @return
+     */
+    public Object obtainMineCoursesDegradeBack(Map<String,Object> params){
+        if(accessLimitService.tryAccess()){
+        NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainMineCourses(params);
+        log.warn("obtainMineCoursesDegrade.data:{}", JSONObject.toJSONString(netSchoolResponse));
+        return ResponseUtil.build(netSchoolResponse);
+        }else{
+            return new NetSchoolResponse<>(Result.SUCCESS_CODE, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
         }
     }
 

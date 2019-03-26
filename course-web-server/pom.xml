@@ -162,7 +162,10 @@
         <dependency>
             <groupId>tk.mybatis</groupId>
             <artifactId>mapper-spring-boot-starter</artifactId>
-            <version>2.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.pagehelper</groupId>
+            <artifactId>pagehelper-spring-boot-starter</artifactId>
         </dependency>
 
 
@@ -208,6 +211,18 @@
         <dependency>
             <groupId>com.huatu.tiku</groupId>
             <artifactId>pandora-backend-common</artifactId>
+            <version>${default.env.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.huatu.ztk</groupId>
+            <artifactId>paper-common</artifactId>
+            <version>1.0-${project.environment}-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.huatu.tiku</groupId>
+            <artifactId>pandora-teacher-common</artifactId>
             <version>${default.env.version}</version>
         </dependency>
     </dependencies>

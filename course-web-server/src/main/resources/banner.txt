@@ -14,7 +14,7 @@ ${AnsiColor.RED}
 
 
 
-                ${AnsiColor.BRIGHT_YELLOW}
+                ${AnsiColor.RED}
                 ////////////////////////////////////////////////////////////////////
                 //                          _ooOoo_                               //
                 //                         o8888888o                              //

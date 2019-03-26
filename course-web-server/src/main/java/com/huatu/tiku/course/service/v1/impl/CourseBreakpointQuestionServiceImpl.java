@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.service.v1.impl;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Lists;
 import com.huatu.tiku.course.service.v1.CourseBreakpointQuestionService;
 import com.huatu.tiku.course.service.cache.CacheUtil;
 import com.huatu.tiku.course.service.cache.CourseBreakpointCacheKey;
@@ -8,6 +9,7 @@ import com.huatu.tiku.course.util.ZTKResponseUtil;
 import com.huatu.tiku.course.ztk.api.v1.question.QuestionServiceV1;
 import com.huatu.tiku.entity.CourseBreakpointQuestion;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import service.impl.BaseServiceHelperImpl;
@@ -72,10 +74,13 @@ public class CourseBreakpointQuestionServiceImpl extends BaseServiceHelperImpl<C
 
     @Override
     public List<CourseBreakpointQuestion> listQuestionIdByBreakpointIdList(List<Long> list) {
+        if(CollectionUtils.isEmpty(list)){
+            return Lists.newArrayList();
+        }
         WeekendSqls<CourseBreakpointQuestion> sql = WeekendSqls.custom();
         sql.andIn(CourseBreakpointQuestion::getBreakpointId, list);
         Example example = Example.builder(CourseBreakpointQuestion.class)
-                .where(sql)
+                .where(sql).orderByAsc("pptIndex")
                 .build();
         List<CourseBreakpointQuestion> questions = selectByExample(example);
         return questions;

@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.netschool.api.v6;
 
 import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.netschool.api.fall.LessonServiceFallback;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -15,7 +16,7 @@ import java.util.Map;
  * Create time 2019-01-17 下午6:23
  **/
 
-@FeignClient(value = "o-course-service", path = "/lumenapi")
+@FeignClient(value = "o-course-service", path = "/lumenapi", fallback = LessonServiceFallback.class)
 public interface LessonServiceV6 {
 
 
@@ -52,6 +53,14 @@ public interface LessonServiceV6 {
      */
     @PutMapping(value = "/v5/c/lesson/collection_cancel")
     NetSchoolResponse collectionCancel(@RequestParam Map<String, Object> params);
+
+    /**
+     * 我的学习时长
+     * @param params 请求参数a
+     * @return
+     */
+    @GetMapping(value = "/v5/c/lesson/study_report")
+    NetSchoolResponse studyReport(@RequestParam Map<String, Object> params);
 
 
 

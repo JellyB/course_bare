@@ -67,6 +67,14 @@ public interface OrderServiceV5 {
      */
     @PostMapping(value = "/v4/common/order/zero_order")
     NetSchoolResponse zeroOrder(@RequestParam Map<String, Object> params);
+    
+    /**
+     * 批量送课
+     * @param params
+     * @return
+     */
+    @PostMapping(value = "/v4/common/order/batch_zero_order")
+    NetSchoolResponse batchZeroOrder(@RequestParam Map<String, Object> params);
 
     /**
      * 用户是否已经有估分送课

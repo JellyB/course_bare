@@ -13,6 +13,11 @@ public class NetSchoolConfig {
     public static final int SUCCESS_CODE = 0;
 
     /**
+     * 请求php严禁的success code
+     */
+    public static final int HARD_SUCCESS_CODE = 10000;
+
+    /**
      * IOS审核值
      */
     public static final int IOS_AUDIT_VALUE = 11;

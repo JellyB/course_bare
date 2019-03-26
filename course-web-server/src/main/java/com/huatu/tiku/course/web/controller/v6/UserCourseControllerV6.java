@@ -1,29 +1,24 @@
 package com.huatu.tiku.course.web.controller.v6;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.huatu.common.ErrorResult;
-import com.huatu.common.SuccessMessage;
 import com.huatu.common.exception.BizException;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
-import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
+import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.service.v6.CourseBizV6Service;
+import com.huatu.tiku.course.service.v6.CourseServiceV6Biz;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -45,6 +40,12 @@ public class UserCourseControllerV6 {
 
     @Autowired
     private CourseBizV6Service courseBizV6Service;
+
+    @Autowired
+    private CourseServiceV6Biz courseServiceV6Biz;
+
+    @Autowired
+    private CourseExercisesProcessLogManager courseExercisesProcessLogManager;
 
 
     /**
@@ -79,10 +80,8 @@ public class UserCourseControllerV6 {
     public Object obtainUnFinishedNum(@Token UserSession userSession,
                                       @RequestHeader(value = "cv") String cv,
                                       @RequestHeader(value = "terminal") int terminal){
-        Map<String,Integer> result = Maps.newHashMap();
-        result.put(StudyTypeEnum.COURSE_WORK.getType(), 5);
-        result.put(StudyTypeEnum.PERIOD_TEST.getType(), 10);
-        return result;
+
+        return courseExercisesProcessLogManager.getCountByType(userSession.getId(),userSession.getUname());
     }
 
     /**
@@ -95,21 +94,34 @@ public class UserCourseControllerV6 {
     public Object allReadCourseWork(@Token UserSession userSession,
                                     @PathVariable(value = "type")String type){
 
-        return SuccessMessage.create("操作成功！");
+        return courseExercisesProcessLogManager.allReadByType(userSession.getId(), type, userSession.getUname());
     }
 
     /**
-     * 课后作业&阶段测试 单条已读
+     * 课后作业 单条已读
      * @param userSession
-     * @param type
+     * @param courseType
+     * @return
+     */
+    @PutMapping(value = "oneRead/courseWork/{courseType}/{courseWareId}")
+    public Object readOneCourseWork(@Token UserSession userSession,
+                                    @PathVariable(value = "courseType") int courseType,
+                                    @PathVariable(value = "courseWareId")long courseWareId){
+        return courseExercisesProcessLogManager.readyOneCourseWork(userSession.getId(), courseWareId, courseType);
+    }
+
+    /**
+     * 阶段测试 单条已读
+     * @param userSession
      * @param id
      * @return
      */
-    @PutMapping(value = "oneRead/{type}/{id}")
+    @PutMapping(value = "oneRead/periodTest/{syllabusId}/{courseId}")
     public Object readOneCourseWork(@Token UserSession userSession,
-                                    @PathVariable(value = "type") String type,
-                                    @PathVariable(value = "id")int id){
-        return SuccessMessage.create("操作成功");
+                                    @PathVariable(value = "courseId")Long courseId,
+                                    @PathVariable(value = "syllabusId")Long syllabusId){
+         courseExercisesProcessLogManager.readyOnePeriod(syllabusId, courseId,userSession.getUname());
+         return null;
     }
 
     /**
@@ -122,97 +134,74 @@ public class UserCourseControllerV6 {
                             @RequestParam(value = "page", defaultValue = "1")int page,
                             @RequestParam(value = "size", defaultValue = "20") int size){
 
-        List<CourseInfo> list = Lists.newArrayList();
-        List<CourseWareInfo> courseWareInfoList1 = Lists.newArrayList();
-        List<CourseWareInfo> courseWareInfoList2 = Lists.newArrayList();
-        courseWareInfoList1.add(CourseWareInfo.builder()
-                .courseWareTitle("2014年资料分析真题-1")
-                .courseWareId(942913)
-                .videoLength("高清 - 28分钟37秒")
-                .serialNumber(1)
-                .answerCardId(12345678L)
-                .questionIds("26603,26604,26605,26606,26607,26608")
-                .answerCardInfo("剩余4/6题")
-                .isAlert(1)
-                .build());
-        courseWareInfoList1.add(CourseWareInfo.builder()
-                .courseWareTitle("2014年资料分析真题-2")
-                .courseWareId(942914)
-                .videoLength("高清 - 28分钟51秒")
-                .serialNumber(2)
-                .answerCardId(12345679L)
-                .questionIds("26613,26614,26615,26616,26617,26618")
-                .answerCardInfo("剩余4/6题")
-                .isAlert(0)
-                .build());
-
-        courseWareInfoList2.add(CourseWareInfo.builder()
-                .courseWareTitle("管理常识-1")
-                .courseWareId(942951)
-                .videoLength("高清 - 28分钟37秒")
-                .serialNumber(1)
-                .answerCardId(12345681L)
-                .questionIds("26613,26614,26615,26616,26617,26618")
-                .answerCardInfo("剩余4/6题")
-                .isAlert(1)
-                .build());
-        courseWareInfoList2.add(CourseWareInfo.builder()
-                .courseWareTitle("管理常识-3")
-                .courseWareId(942952)
-                .videoLength("高清 - 28分钟37秒")
-                .serialNumber(3)
-                .answerCardId(12345683L)
-                .questionIds("26633,26634,26635,26636,26637,26638")
-                .answerCardInfo("剩余4/6题")
-                .isAlert(1)
-                .build());
-        courseWareInfoList2.add(CourseWareInfo.builder()
-                .courseWareTitle("管理常识-5")
-                .courseWareId(942955)
-                .videoLength("高清 - 28分钟37秒")
-                .serialNumber(5)
-                .answerCardId(12345685L)
-                .questionIds("26653,26654,26655,26656,26657,26658")
-                .answerCardInfo("剩余4/6题")
-                .isAlert(1)
-                .build());
-        courseWareInfoList2.add(CourseWareInfo.builder()
-                .courseWareTitle("管理常识-7")
-                .courseWareId(942957)
-                .videoLength("高清 - 28分钟37秒")
-                .serialNumber(7)
-                .answerCardId(12345687L)
-                .questionIds("26673,26674,26675,26676,26677,26678")
-                .answerCardInfo("剩余4/6题")
-                .isAlert(1)
-                .build());
-        courseWareInfoList2.add(CourseWareInfo.builder()
-                .courseWareTitle("管理常识-9")
-                .courseWareId(942959)
-                .videoLength("高清 - 28分钟37秒")
-                .serialNumber(9)
-                .answerCardId(12345689L)
-                .questionIds("26693,26694,26695,26696,26697,26698")
-                .answerCardInfo("剩余4/6题")
-                .isAlert(1)
-                .build());
-
-
-        list.add(CourseInfo.builder()
-                .courseId(98017)
-                .courseTitle("模考专用】14年国考资料分析真题")
-                .undoCount(2)
-                .wareInfoList(courseWareInfoList1)
-                .build());
-        list.add(CourseInfo.builder()
-                .courseId(98018)
-                .courseTitle("《管理常识》模块真题精讲")
-                .undoCount(5)
-                .wareInfoList(courseWareInfoList2)
-                .build());
-        return list;
+        return courseExercisesProcessLogManager.courseWorkList(userSession.getId(), page, size);
     }
 
+
+    /**
+     * 阶段测试列表
+     * @param userSession
+     * @param page
+     * @param size
+     * @return
+     */
+    @LocalMapParam(checkToken = true)
+    @GetMapping(value = "periodTest/detailList")
+    public Object periodTestList(@Token UserSession userSession,
+                            @RequestParam(value = "page", defaultValue = "1")int page,
+                            @RequestParam(value = "pageSize", defaultValue = "20") int size){
+    	 Map<String,Object> params = LocalMapParamHandler.get();
+    	 params.put("userId", userSession.getId());
+        return courseServiceV6Biz.periodTestList(params);
+    }
+
+    /**
+     * 我的课后作业报告
+     * @param userSession
+     * @param cv
+     * @param terminal
+     * @param cardId
+     * @return
+     */
+    @GetMapping(value = "/courseWork/{id}")
+    @LocalMapParam(checkToken = true)
+    public Object testReport(@Token UserSession userSession,
+                             @RequestHeader(value = "cv", defaultValue = "1.0") String cv,
+                             @RequestHeader(value = "terminal") int terminal,
+                             @PathVariable(value = "id") long cardId){
+        return courseServiceV6Biz.courseWorkReport(userSession, terminal, cardId);
+    }
+
+
+    /**
+     * 听课记录 & 课后作业 学习报告
+     * @param userSession
+     * @param terminal
+     * @param cv
+     * @param bjyRoomId
+     * @param classId
+     * @param netClassId
+     * @param courseWareId
+     * @param videoType
+     * @return
+     */
+    @GetMapping(value = "/learnReport")
+    @LocalMapParam(checkToken = true)
+    public Object learnReport(@Token UserSession userSession,
+                              @RequestHeader(value = "terminal") int terminal,
+                              @RequestHeader(value = "cv", defaultValue = "1.0") String cv,
+                              @RequestParam(value = "bjyRoomId", defaultValue = "") String bjyRoomId,
+                              @RequestParam(value = "classId") long classId,
+                              @RequestParam(value = "netClassId") long netClassId,
+                              @RequestParam(value = "lessonId") long courseWareId,
+                              @RequestParam(value = "videoType") int videoType,
+                              @RequestParam(value = "exerciseCardId") long exerciseCardId,
+                              @RequestParam(value = "reportStatus",defaultValue = "1") int reportStatus,
+                              @RequestParam(value = "syllabusId") long syllabusId){
+
+        return courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, exerciseCardId, syllabusId, terminal, cv);
+
+    }
 
 
 
@@ -331,7 +320,7 @@ public class UserCourseControllerV6 {
     }
 
     /**
-     * 直播学习记录上报
+     * 直播学习记录上报,只上报给 php
      * @param userSession
      * @param syllabusId
      * @return
@@ -339,37 +328,13 @@ public class UserCourseControllerV6 {
     @LocalMapParam
     @PostMapping(value = "liveRecord")
     public Object saveLiveRecord(@Token UserSession userSession,
+                                 @RequestHeader(value = "terminal") int terminal,
+                                 @RequestHeader(value = "cv") String cv,
                                  @RequestParam(defaultValue = "0") int syllabusId){
 
         Map<String,Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = userCourseService.saveLiveRecord(params);
         return ResponseUtil.build(netSchoolResponse);
 
-    }
-
-    @AllArgsConstructor
-    @Setter
-    @Getter
-    @Builder
-    public static class CourseInfo{
-        private String courseTitle;
-        private int courseId;
-        private int undoCount;
-        private List<CourseWareInfo> wareInfoList;
-    }
-
-    @AllArgsConstructor
-    @Setter
-    @Getter
-    @Builder
-    public static class CourseWareInfo{
-        private String courseWareTitle;
-        private int courseWareId;
-        private String videoLength;
-        private int serialNumber;
-        private long answerCardId;
-        private String questionIds;
-        private String answerCardInfo;
-        private int isAlert;
     }
 }

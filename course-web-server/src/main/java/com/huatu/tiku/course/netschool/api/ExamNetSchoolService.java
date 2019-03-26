@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * @创建人 lizhenjuan
  * @创建时间 2019/2/15
- * @描述  代理备考精华接口
+ * @描述 代理备考精华接口
  */
 
 @FeignClient(value = "o-course-service")
@@ -21,14 +21,10 @@ public interface ExamNetSchoolService {
     @GetMapping("/lumenapi/v5/c/article/article")
     NetSchoolResponse getArticleList(@RequestParam Map<String, Object> params);
 
-    @GetMapping("/lumenapi/v4/common/service/detail")
-    NetSchoolResponse detail(@RequestParam Map<String, Object> params);
+    @GetMapping("/lumenapi/v5/c/article/detail")
+    NetSchoolResponse detail(@RequestParam Map<String,Object> params);
 
     @PostMapping("/lumenapi/v5/c/article/like")
     NetSchoolResponse like(@RequestParam Map<String, Object> params);
-
-    @GetMapping("/lumenapi/v5/c/article/cate_list")
-    NetSchoolResponse  typeList();
-
 
 }

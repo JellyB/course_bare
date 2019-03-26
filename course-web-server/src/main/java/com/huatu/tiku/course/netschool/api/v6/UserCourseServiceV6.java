@@ -1,14 +1,16 @@
 package com.huatu.tiku.course.netschool.api.v6;
 
-import com.huatu.tiku.course.bean.NetSchoolResponse;
-import com.huatu.tiku.course.netschool.api.fall.UserCourseServiceV6FallBack;
+import java.util.Map;
+
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.Map;
+import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.bean.vo.PeriodTestListVO;
+import com.huatu.tiku.course.netschool.api.fall.UserCourseServiceV6FallBack;
 
 /**
  * 描述：
@@ -88,4 +90,40 @@ public interface UserCourseServiceV6 {
      */
     @PostMapping(value = "/v4/common/user/live_record")
     NetSchoolResponse saveLiveRecord(@RequestParam Map<String, Object> params);
+    
+	/**
+	 * 获取未完成的阶段测试列表
+	 * 
+	 * @param params
+	 * @return
+	 */
+	@GetMapping(value = "/v5/c/class/unfinish_stage_exam_list")
+	NetSchoolResponse<PeriodTestListVO> unfinishStageExamList(@RequestParam Map<String, Object> params);
+	
+	/**
+	 * 阶段测完成试状态上报php
+	 * @param params
+	 * @return
+	 */
+	@PostMapping(value = "/v5/c/class/stage_test_study_record")
+	NetSchoolResponse stageTestStudyRecord(@RequestParam Map<String, Object> params);
+	
+	/**
+	 * 用户未完成阶段测试总数
+	 * @param params
+	 * @return
+	 */
+	@GetMapping(value = "/v5/c/class/unfinish_exam_num")
+	NetSchoolResponse unfinishStageExamCount(@RequestParam Map<String, String> params);
+
+
+	/**
+	 * 阶段测试单条获取全部已读
+	 * @param params
+	 * @return
+	 */
+	@PostMapping(value = "/v5/c/class/unfinish_exam_status_record")
+	NetSchoolResponse readPeriod(@RequestParam Map<String, Object> params);
+	
+	
 }

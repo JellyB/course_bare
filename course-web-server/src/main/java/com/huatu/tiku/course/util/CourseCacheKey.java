@@ -48,6 +48,21 @@ public class CourseCacheKey {
 
 
     /**
+     * 直播录播数据上报key
+     */
+    private static final String PROCESS_REPORT_DELAY_QUEUE = "process_report_delay";
+
+    private static final String PROCESS_LOG_SYLLABUS_INFO = "process_log_syllabus_v6$%s";
+    private static final String PROCESS_LOG_SYLLABUS_DEAL_LIST = "process_log_syllabus_list_v6";
+    private static final String USER_ACCOUNT_INFO_KEY = "user_account_info_key";
+
+    /**
+     * 课后作业统计key
+     */
+    private static final String COURSE_WORK_DEAL_DATA = "course_work_deal_v1$%s$%s";
+    private static final String COURSE_WORK_RANK_INFO = "course_work_rank_info_v1$%s$%s";
+
+    /**
      * IOS 内侧版本信息
      */
     public static final String IOS_AUDIT_VERSION = "ios_audit_versions";
@@ -86,5 +101,31 @@ public class CourseCacheKey {
         return String.format(REWARD_RECORD,action,uid);
     }
 
+    public static String getProcessReportDelayQueue(){
+        return PROCESS_REPORT_DELAY_QUEUE;
+    }
 
+    public static String getProcessLogSyllabusInfo(Long syllabusId){return String.format(PROCESS_LOG_SYLLABUS_INFO, syllabusId);}
+
+    public static String getUserAccountInfoKey(){
+        return USER_ACCOUNT_INFO_KEY;
+    }
+
+    public static String getProcessLogSyllabusDealList(){return PROCESS_LOG_SYLLABUS_DEAL_LIST;}
+
+    /**
+     * 用户提交答题卡userId set 缓存
+     * @param courseType
+     * @param courserId
+     * @return
+     */
+    public static String getCourseWorkDealData(Integer courseType, Long courserId){return String.format(COURSE_WORK_DEAL_DATA, courseType, courserId);}
+
+    /**
+     * 课后作业统计排名信息
+     * @param courseType
+     * @param courseId
+     * @return
+     */
+    public static String getCourseWorkRankInfo(Integer courseType, Long courseId){return String.format(COURSE_WORK_RANK_INFO, courseType, courseId);}
 }

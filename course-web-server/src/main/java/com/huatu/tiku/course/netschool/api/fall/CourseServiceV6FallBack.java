@@ -125,6 +125,11 @@ public class CourseServiceV6FallBack implements CourseServiceV6 {
         return NetSchoolResponse.DEFAULT;
     }
 
+    @Override
+    public NetSchoolResponse analysisClassList(Map<String, Object> params) {
+        return NetSchoolResponse.DEFAULT;
+    }
+
     /**
      * 缓存日历详情接口数据
      * @param params
