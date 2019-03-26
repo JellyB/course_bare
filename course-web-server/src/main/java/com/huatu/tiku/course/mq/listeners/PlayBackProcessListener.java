@@ -26,7 +26,7 @@ public class PlayBackProcessListener {
 
 
     /**
-     * 直播观看到 85% 创建答题卡
+     * 录播观看到 85% 创建答题卡
      * @param message
      */
     @RabbitListener(queues = RabbitMqConstants.PLAY_BACK_DEAL_INFO)

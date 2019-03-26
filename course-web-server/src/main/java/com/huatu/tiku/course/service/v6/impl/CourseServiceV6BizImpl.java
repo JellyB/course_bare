@@ -682,7 +682,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             }else if(CollectionUtils.isEmpty(classPracticePointsMap.keySet()) && CollectionUtils.isNotEmpty(courseWorkPracticePointsMap.keySet())){
                 return Lists.newArrayList(courseWorkPracticePointsMap.values());
             }else if(CollectionUtils.isNotEmpty(classPracticePointsMap.keySet()) && CollectionUtils.isEmpty(courseWorkPracticePointsMap.keySet())){
-                return Lists.newArrayList(courseWorkPracticePointsMap.values());
+                return Lists.newArrayList(classPracticePointsMap.values());
             }else{
                 Predicate<QuestionPointTree> predicate = current -> courseWorkPracticePointsMap.keySet().contains(current.getId());
                 classPracticePointsMap.keySet().forEach(sId -> {
