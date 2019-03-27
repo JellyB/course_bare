@@ -218,7 +218,7 @@ public class CourseExercisesProcessLogManager {
      * 创建课后作业答题卡前置逻辑入口
      * @throws BizException
      */
-    public Object createCourseWorkAnswerCardEntrance(long courseId, long syllabusId, int courseType, long coursewareId, int subject, int terminal, int userId) throws BizException{
+    public synchronized Object createCourseWorkAnswerCardEntrance(long courseId, long syllabusId, int courseType, long coursewareId, int subject, int terminal, int userId) throws BizException{
         Stopwatch stopwatch = Stopwatch.createStarted();
 
         if(courseType == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
@@ -268,7 +268,6 @@ public class CourseExercisesProcessLogManager {
      * @param syllabusId
      * @param result
      */
-    @Async
     public synchronized void createCourseWorkAnswerCard(int userId, Integer courseType, Long coursewareId, Long courseId, Long syllabusId, HashMap<String,Object> result){
         Long cardId = MapUtils.getLongValue(result, "id");
         int status = MapUtils.getIntValue(result, "status");

@@ -3,6 +3,7 @@ package com.huatu.tiku.course.service.manager;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.vo.LiveRecordInfo;
 import com.huatu.tiku.course.bean.vo.LiveRecordInfoWithUserInfo;
+import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.dao.manual.CourseLiveReportLogMapper;
 import com.huatu.tiku.entity.CourseLiveReportLog;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,6 @@ public class CourseLiveReportLogManager {
     @Autowired
     private CourseLiveReportLogMapper courseLiveReportLogMapper;
 
-    @Async
     public synchronized void saveOrUpdate(LiveRecordInfoWithUserInfo liveRecordInfoWithUserInfo) throws BizException{
         LiveRecordInfo liveRecordInfo = liveRecordInfoWithUserInfo.getLiveRecordInfo();
         Example example = new Example(CourseLiveReportLog.class);
@@ -32,7 +32,8 @@ public class CourseLiveReportLogManager {
                 .andEqualTo("userId", liveRecordInfoWithUserInfo.getUserId())
                 .andEqualTo("bjyRoomId",liveRecordInfo.getBjyRoomId())
                 .andEqualTo("classId", liveRecordInfo.getClassId())
-                .andEqualTo("courseWareId", liveRecordInfo.getCourseWareId());
+                .andEqualTo("courseWareId", liveRecordInfo.getCourseWareId())
+                .andEqualTo("status", YesOrNoStatus.YES.getCode());
 
         CourseLiveReportLog courseLiveReportLog = courseLiveReportLogMapper.selectOneByExample(example);
         if(null == courseLiveReportLog){
@@ -42,6 +43,7 @@ public class CourseLiveReportLogManager {
             newLog.setCardId(liveRecordInfo.getCourseWareId());
             newLog.setCourseWareId(liveRecordInfo.getCourseWareId());
             newLog.setUserId(new Long(liveRecordInfoWithUserInfo.getUserId()));
+            newLog.setStatus(YesOrNoStatus.YES.getCode());
             courseLiveReportLogMapper.insertSelective(newLog);
         }else{
             return;

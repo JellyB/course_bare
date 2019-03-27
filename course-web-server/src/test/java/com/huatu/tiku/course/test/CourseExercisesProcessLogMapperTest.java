@@ -1,15 +1,20 @@
 package com.huatu.tiku.course.test;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.huatu.common.test.BaseWebTest;
+import com.huatu.tiku.course.bean.vo.LiveRecordInfo;
+import com.huatu.tiku.course.bean.vo.LiveRecordInfoWithUserInfo;
 import com.huatu.tiku.course.bean.vo.SyllabusWareInfo;
+import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.entity.CourseExercisesProcessLog;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 
@@ -32,6 +37,10 @@ public class CourseExercisesProcessLogMapperTest extends BaseWebTest {
 
     @Autowired
     private CourseExercisesProcessLogManager courseExercisesProcessLogManager;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
 
 
     @Test
@@ -67,5 +76,28 @@ public class CourseExercisesProcessLogMapperTest extends BaseWebTest {
             }
         });
 
+    }
+
+    /**
+     *
+     */
+    @Test
+    public void saveLiveReport(){
+        for(int i = 0; i < 1000; i ++){
+            LiveRecordInfo liveRecordInfo = LiveRecordInfo.builder()
+                    .courseWareId(1000123)
+                    .classId(73987)
+                    .syllabusId(5476947)
+                    .bjyRoomId("19032545565293")
+                    .build();
+
+            LiveRecordInfoWithUserInfo liveRecordInfoWithUserId = LiveRecordInfoWithUserInfo
+                    .builder()
+                    .subject(1)
+                    .terminal(1)
+                    .userId(234934290)
+                    .liveRecordInfo(liveRecordInfo).build();
+            rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_LIVE_REPORT_LOG, JSONObject.toJSONString(liveRecordInfoWithUserId));
+        }
     }
 }
