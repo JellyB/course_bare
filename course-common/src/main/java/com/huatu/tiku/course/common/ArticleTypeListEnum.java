@@ -14,7 +14,8 @@ public enum ArticleTypeListEnum {
 
     HOT(1, 1, "热门"),
     SHI_ZHENG_HOT(2, 2, "时政热点"),
-    ANSWER_SKILL(3, 3, "答题技巧");
+    ANSWER_SKILL(3, 3, "解题技巧"),
+    BKZD(4, 4, "备考指导");
 
     private Integer code;
     private Integer sort;
