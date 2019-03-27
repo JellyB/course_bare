@@ -176,7 +176,7 @@ public class CourseUtil {
      * @param userId   用户ID
      */
     public void addExercisesCardInfo(LinkedHashMap response, long userId, boolean need2Str) {
-
+        Stopwatch stopwatch = Stopwatch.createStarted();
         response.computeIfPresent("list", (key, value) -> {
                     List<HashMap<String, Object>> paramsList = ((List<Map>) value).stream()
                             .filter(map -> (null != MapUtils.getString(map, SyllabusInfo.Type)
@@ -245,6 +245,7 @@ public class CourseUtil {
                     }
                 }
         );
+        log.info("学习报告 - 课后作业答题卡信息:userId:{},耗时:{}", userId,  stopwatch.elapsed(TimeUnit.MILLISECONDS));
     }
 
     /**
@@ -283,6 +284,7 @@ public class CourseUtil {
             if(null == courseLiveBackLog){
                 continue;
             }
+            Stopwatch stopwatch = Stopwatch.createStarted();
             List<Map<String, Object>> listQuestionByCourseId = courseExercisesService.listQuestionByCourseId(VideoTypeEnum.LIVE.getVideoType(), courseLiveBackLog.getLiveCoursewareId());
             if (CollectionUtils.isEmpty(listQuestionByCourseId)) {
                continue;
@@ -306,6 +308,7 @@ public class CourseUtil {
                 }
                 detail.put("answerCard", answerCard);
             }
+            log.info("学习报告 - 直播回放获取答题卡信息:userId:{},courseWareId:{}", userId, courseWareId);
         }
     }
 
