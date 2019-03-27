@@ -1,36 +1,26 @@
 package com.huatu.tiku.course.web.controller.v6;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.collect.Lists;
 import com.huatu.common.ErrorResult;
 import com.huatu.common.exception.BizException;
-import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
+import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.service.v6.CourseBizV6Service;
 import com.huatu.tiku.course.service.v6.CourseServiceV6Biz;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
-import com.huatu.ztk.commons.exception.SuccessMessage;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
 /**
  * 描述：我的课程接口
  *
@@ -50,7 +40,7 @@ public class UserCourseControllerV6 {
 
     @Autowired
     private CourseBizV6Service courseBizV6Service;
-    
+
     @Autowired
     private CourseServiceV6Biz courseServiceV6Biz;
 
@@ -110,13 +100,14 @@ public class UserCourseControllerV6 {
     /**
      * 课后作业 单条已读
      * @param userSession
-     * @param id
+     * @param courseType
      * @return
      */
-    @PutMapping(value = "oneRead/courseWork/{id}")
+    @PutMapping(value = "oneRead/courseWork/{courseType}/{courseWareId}")
     public Object readOneCourseWork(@Token UserSession userSession,
-                                    @PathVariable(value = "id")int id){
-        return courseExercisesProcessLogManager.readyOne(id, "courseWork", 0L, (long)userSession.getId());
+                                    @PathVariable(value = "courseType") int courseType,
+                                    @PathVariable(value = "courseWareId")long courseWareId){
+        return courseExercisesProcessLogManager.readyOneCourseWork(userSession.getId(), courseWareId, courseType);
     }
 
     /**
@@ -127,11 +118,10 @@ public class UserCourseControllerV6 {
      */
     @PutMapping(value = "oneRead/periodTest/{syllabusId}/{courseId}")
     public Object readOneCourseWork(@Token UserSession userSession,
-                                    @PathVariable(value = "id")int id,
                                     @PathVariable(value = "courseId")Long courseId,
                                     @PathVariable(value = "syllabusId")Long syllabusId){
          courseExercisesProcessLogManager.readyOnePeriod(syllabusId, courseId,userSession.getUname());
-         return SuccessMessage.create("操作成功");
+         return null;
     }
 
     /**
@@ -147,7 +137,7 @@ public class UserCourseControllerV6 {
         return courseExercisesProcessLogManager.courseWorkList(userSession.getId(), page, size);
     }
 
-   
+
     /**
      * 阶段测试列表
      * @param userSession
@@ -206,10 +196,10 @@ public class UserCourseControllerV6 {
                               @RequestParam(value = "lessonId") long courseWareId,
                               @RequestParam(value = "videoType") int videoType,
                               @RequestParam(value = "exerciseCardId") long exerciseCardId,
-                              @RequestParam(value = "classCardId") long classCardId,
-                              @RequestParam(value = "reportStatus") int reportStatus){
+                              @RequestParam(value = "reportStatus",defaultValue = "1") int reportStatus,
+                              @RequestParam(value = "syllabusId") long syllabusId){
 
-        return courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, exerciseCardId, reportStatus, terminal);
+        return courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, exerciseCardId, syllabusId, terminal, cv);
 
     }
 
@@ -275,7 +265,13 @@ public class UserCourseControllerV6 {
                                     @RequestParam(value = "page", defaultValue = "1", required = false) int page,
                                     @RequestParam(value = "pageSize", defaultValue = "20", required = false) int pageSize){
         Map<String,Object> params = LocalMapParamHandler.get();
-        return courseBizV6Service.obtainMineCourses(params);
+        Object object =  courseBizV6Service.obtainMineCourses(params);
+        if(null == object){
+            ErrorResult errorResult = ErrorResult.create(1000010, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
+            throw new BizException(errorResult);
+        }else{
+            return object;
+        }
     }
 
 
@@ -324,7 +320,7 @@ public class UserCourseControllerV6 {
     }
 
     /**
-     * 直播学习记录上报
+     * 直播学习记录上报,只上报给 php
      * @param userSession
      * @param syllabusId
      * @return
@@ -338,7 +334,6 @@ public class UserCourseControllerV6 {
 
         Map<String,Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = userCourseService.saveLiveRecord(params);
-        courseExercisesProcessLogManager.saveLiveRecord(userSession.getId(), userSession.getSubject(), terminal, syllabusId);
         return ResponseUtil.build(netSchoolResponse);
 
     }

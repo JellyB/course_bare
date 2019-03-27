@@ -1,10 +1,10 @@
 package com.huatu.tiku.course.service.v1.practice;
 
-import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
-import service.BaseServiceHelper;
-
 import java.util.List;
-import java.util.Set;
+
+import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
+
+import service.BaseServiceHelper;
 
 /**
  * Created by lijun on 2019/2/21
@@ -28,5 +28,5 @@ public interface CoursePracticeQuestionInfoService extends BaseServiceHelper<Cou
      * @param questionIds 试题IDs
      * @param courseUserStrs 学员课程keys
      */
-    void generateAnswerCardInfo(List<Integer> questionIds, List <String> courseUserStrs);
+    void generateAnswerCardInfo(List<Integer> questionIds, List <String> courseUserStrs, Long roomId);
 }

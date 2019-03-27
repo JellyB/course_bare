@@ -4,6 +4,7 @@ import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v6.SyllabusServiceV6;
+import com.huatu.tiku.course.service.v1.VersionControlService;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
@@ -36,6 +37,9 @@ public class SyllabusControllerV6 {
 
     @Autowired
     private CourseUtil courseUtil;
+
+    @Autowired
+    private VersionControlService versionControlService;
 
     /**
      * 课程大纲课程列表 7.1.1
@@ -100,8 +104,11 @@ public class SyllabusControllerV6 {
         Object response = ResponseUtil.build(syllabusService.buyAfterSyllabus(map));
         //添加答题信息
         courseUtil.addExercisesCardInfo((LinkedHashMap) response, userSession.getId(), false);
-        courseUtil.addPeriodTestInfo((LinkedHashMap) response, userSession.getId());
-        courseUtil.addStudyReportInfo((LinkedHashMap) response, userSession.getId());
+        if(versionControlService.checkLearnReportShow(terminal, cv)){
+            courseUtil.addPeriodTestInfo((LinkedHashMap) response, userSession.getId());
+            courseUtil.addLearnReportInfoV2((LinkedHashMap) response, userSession.getId());
+            courseUtil.addLiveCardExercisesCardInfo((LinkedHashMap) response, userSession.getId(), false);
+        }
         return response;
     }
 

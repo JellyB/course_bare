@@ -54,6 +54,14 @@ public interface PracticeCardServiceV1 {
     );
 
     /**
+     * 批量查询课后作业答题卡
+     * @param ids
+     * @return
+     */
+    @GetMapping(value = "/v2/practices/getCourseExercisesCardInfoBatch")
+    Object getCourseExercisesCardInfoBatch(@RequestParam(value = "ids") String ids);
+
+    /**
      * 批量获取随堂练习报告状态
      * @param userId
      * @param paramsList
@@ -96,8 +104,6 @@ public interface PracticeCardServiceV1 {
      */
     @PostMapping(value = "/v2/practices/createAndSaveAnswerCoursePracticeCard")
     Object createAndSaveAnswerCoursePracticeCard(
-            @RequestParam("terminal") Integer terminal,
-            @RequestParam("subject") Integer subject,
             @RequestParam("userId") Integer uid,
             @RequestParam("name") String name,
             @RequestParam("courseType") Integer courseType,
@@ -105,18 +111,19 @@ public interface PracticeCardServiceV1 {
             @RequestParam("questionIds") String questionIds,
             @RequestParam("answers") String[] answers,
             @RequestParam("corrects") int[] corrects,
-            @RequestParam("times") int[] times,
-            @RequestBody List<Object> questionInfoList
+            @RequestParam("times") int[] times
     );
 
     /**
      * 获取随堂练习报告
      * @param courseId
      * @param playType
-     * @param token
+     * @param userId
      * @return
      */
     @GetMapping(value = "/v4/practice/{courseId}/{playType}/report")
-    NetSchoolResponse getClassExerciseReport(@PathVariable(value = "courseId") long courseId, @PathVariable(value = "playType") int playType, @RequestHeader(value = "token") String token);
+    NetSchoolResponse getClassExerciseReport(@PathVariable(value = "courseId") long courseId,
+                                             @PathVariable(value = "playType") int playType,
+                                             @RequestParam(value = "uid") int userId);
 
 }

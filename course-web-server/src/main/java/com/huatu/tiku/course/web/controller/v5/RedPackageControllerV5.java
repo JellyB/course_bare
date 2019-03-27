@@ -2,6 +2,7 @@ package com.huatu.tiku.course.web.controller.v5;
 
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.course.netschool.api.v5.MessageServiceV5;
+import com.huatu.tiku.course.netschool.api.v5.RedPackageDegradeServiceV5;
 import com.huatu.tiku.course.netschool.api.v5.RedPackageServiceV5;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
@@ -21,6 +22,9 @@ public class RedPackageControllerV5 {
 
     @Autowired
     private RedPackageServiceV5 redPackageService;
+
+    @Autowired
+    private RedPackageDegradeServiceV5 redPackageDegradeService;
 
     @Autowired
     private MessageServiceV5 messageService;
@@ -76,7 +80,7 @@ public class RedPackageControllerV5 {
     @GetMapping("checkRedEnv")
     public Object checkRedEnv() {
         HashMap<String, Object> map = LocalMapParamHandler.get();
-        return ResponseUtil.build(redPackageService.checkRedEnv(map));
+        return ResponseUtil.build(redPackageDegradeService.checkRedEnv(map));
     }
 
     /**
@@ -122,6 +126,6 @@ public class RedPackageControllerV5 {
      */
     @GetMapping("/showRedEvn")
     public Object showRedEvn(){
-        return ResponseUtil.build(redPackageService.showRedEvn());
+        return ResponseUtil.build(redPackageDegradeService.showRedEvn());
     }
 }

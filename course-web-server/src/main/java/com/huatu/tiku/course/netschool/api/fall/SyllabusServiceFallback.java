@@ -26,6 +26,6 @@ public class SyllabusServiceFallback implements SyllabusServiceV7{
      */
     @Override
     public NetSchoolResponse courseWareInfo(Map<String, Object> params) {
-        return null;
+        return NetSchoolResponse.DEFAULT;
     }
 }

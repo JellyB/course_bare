@@ -50,4 +50,5 @@ public interface StudentService {
      * @param courseId 房间ID
      */
     PracticeRoomRankUserBo getUserRankInfo(Integer userId, Long courseId);
+
 }

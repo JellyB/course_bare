@@ -89,8 +89,13 @@ feign:
 
 
 hystrix:
+  threadpool: 
+    default:
+      coreSize: 50 #默认10
   command:
     default:
+      circuitBreaker: 
+        requestVolumeThreshold: 1500 #默认20
       execution:
         isolation:
           thread:

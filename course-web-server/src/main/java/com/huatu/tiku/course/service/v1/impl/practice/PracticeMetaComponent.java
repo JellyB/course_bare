@@ -31,12 +31,14 @@ import com.huatu.tiku.course.service.cache.CoursePracticeCacheKey;
 import com.huatu.tiku.course.service.v1.practice.QuestionInfoService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Created by lijun on 2019/2/27
  */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class PracticeMetaComponent {
 
 	// 试题信息统计 存放时间的Key
@@ -117,12 +119,14 @@ public class PracticeMetaComponent {
 				end);
 
 		List<PracticeRoomRankUserBo> result = typedTupleSet.stream().map(typedTuple -> {
-			int totalTime = typedTuple.getScore().intValue() % 1000;
-			int totalScore = (typedTuple.getScore().intValue() - totalTime) / 1000;
+			int totalTimereverse = typedTuple.getScore().intValue() % 10000;
+			int totalTime = 10000 - totalTimereverse;
+			int totalScore = (typedTuple.getScore().intValue() - totalTimereverse) / 10000;
 			final JSONObject jsonObject = JSONObject.parseObject(typedTuple.getValue());
 			return PracticeRoomRankUserBo.builder().id(jsonObject.getInteger("id")).name(jsonObject.getString("name"))
 					.courseId(jsonObject.getLong("courseId")).totalTime(totalTime)
 					.totalScore(totalScore < 0 ? 0 : totalScore).build();
+			// 学生端会排除积分为0的
 		}).collect(Collectors.toList());
 		return result;
 	}
@@ -168,14 +172,14 @@ public class PracticeMetaComponent {
 		final QuestionInfo questionInfo = baseQuestionInfoList.get(0);
 
 		if (null == totalTime || totalTime == 0) {
-			return QuestionMetaBo.builder().id(questionInfo.getId()).answer(questionInfo.getAnswer()).build();
+			return QuestionMetaBo.builder().id(questionInfo.getId()).answer(questionInfo.getAnswer()).percents(new int[0]).type(questionInfo.getType()).build();
 		}
-		final int[] answerCountNum = new int[4];
+		final int[] answerCountNum = new int[questionInfo.getChoiceList().size()];
 		final Set<Map.Entry<String, Integer>> entrySet = hashOperations.entries(key).entrySet();
 		// 获取A/B/C/D 各个选项的数量
 		entrySet.stream().forEach(entry -> {
-			// 只统计A、B、C、D 四个选项
-			IntStream.rangeClosed(1, 4).forEach(index -> {
+			// 只统计A、B、C、D 四个选项  统计本题中所有选项
+			IntStream.rangeClosed(1, questionInfo.getChoiceList().size()).forEach(index -> {
 				if (entry.getKey().contains(String.valueOf(index))) {
 					answerCountNum[index - 1] += entry.getValue();
 				}
@@ -192,25 +196,32 @@ public class PracticeMetaComponent {
 			}
 			answerCountNum[answerCountNum.length - 1] = 100 - totalExpendLast;
 		}
-
 		// 获取所有的答案总数量 - 需要考虑多选题的问题
 		final Integer totalCount = entrySet.stream().filter(entry -> !entry.getKey().equals(QUESTION_TOTAL_TIME_KEY))
 				.map(Map.Entry::getValue).reduce(0, (a, b) -> a + b);
 		// 计算正确率 - 此处如果是多选题前端无法自行计算
 		double correctCate = 0d;
 		final Optional<Map.Entry<String, Integer>> correctInfo = entrySet.stream()
-				.filter(entry -> entry.getKey().equals(questionInfo.getAnswer())).findFirst();
+				.filter(entry -> {
+					String answers = entry.getKey();
+					char[] chars = answers.toCharArray();
+					Arrays.sort(chars);
+					String sortedAnswers = new String(chars);
+					if (sortedAnswers.equals(questionInfo.getAnswer())) {
+						return true;
+					}
+					return false;
+				}).findFirst();
 		if (correctInfo.isPresent()) {
 			correctCate = ((double) correctInfo.get().getValue() / totalCount) * 100;
 		}
 		// 矫正最终的正确率，保证单选题的时候 选项选择率和正确率一致
 		if (questionInfo.getAnswer().length() == 1 && Integer.valueOf(questionInfo.getAnswer()) < answerCountNum.length
 				&& answerCountNum[Integer.valueOf(questionInfo.getAnswer()) - 1] != correctCate) {
-			correctCate = answerCountNum[Integer.valueOf(questionInfo.getAnswer())];
+			correctCate = answerCountNum[Integer.valueOf(questionInfo.getAnswer()) - 1];
 		}
-
 		return QuestionMetaBo.builder().id(questionInfo.getId()).answer(questionInfo.getAnswer())
-				.avgTime(totalTime / totalCount).count(totalCount).percents(answerCountNum).correctCate(correctCate)
+				.avgTime(totalTime / totalCount).count(totalCount).percents(answerCountNum).correctCate(correctCate).type(questionInfo.getType())
 				.build();
 	}
 
@@ -256,9 +267,9 @@ public class PracticeMetaComponent {
 	 * @param questionId 试题ID
 	 */
 	public void addRoomPracticedQuestion(Long roomId, Long questionId) {
-		final SetOperations<String, Long> setOperations = redisTemplate.opsForSet();
+		final SetOperations<String, String> setOperations = redisTemplate.opsForSet();
 		final String key = CoursePracticeCacheKey.roomPractedQuestionNumKey(roomId);
-		setOperations.add(key, questionId);
+		setOperations.add(key, questionId.toString());
 		redisTemplate.expire(key, CoursePracticeCacheKey.getDefaultKeyTTL(),
 				CoursePracticeCacheKey.getDefaultTimeUnit());
 	}
@@ -268,10 +279,10 @@ public class PracticeMetaComponent {
 	 *
 	 * @param roomId 房间ID
 	 */
-	public List<Long> getRoomPracticedQuestion(Long roomId) {
-		final SetOperations<String, Long> setOperations = redisTemplate.opsForSet();
+	public List<String> getRoomPracticedQuestion(Long roomId) {
+		final SetOperations<String, String> setOperations = redisTemplate.opsForSet();
 		final String key = CoursePracticeCacheKey.roomPractedQuestionNumKey(roomId);
-		Set<Long> set = setOperations.members(key);
+		Set<String> set = setOperations.members(key);
 		return set.stream().collect(Collectors.toList());
 	}
 
@@ -293,6 +304,8 @@ public class PracticeMetaComponent {
 		buildRoomRank(roomId, courseId, userId, userName, questionId, answer, time, correct);
 		//构建总答题题数和作答人数
 		buildRoomRightQuestionSum(courseId, courseId,correct);
+		//创建课件中试题作答情况 答案 用时
+		//buildCourseQuestionMeta(roomId,courseId, questionId, answer, time);
 	}
 
 	/**
@@ -338,5 +351,109 @@ public class PracticeMetaComponent {
 		// 设置作答总人数
 		opsForSet.add(allUserSumKey, userId);
 
+	}
+
+	/**
+	 * 构建课件试题统计信息 '0' 存储消耗总时间
+	 */
+	public void buildCourseQuestionMeta(Long roomId,Long coursewareId, Long questionId, String answer, Integer time) {
+		if (StringUtils.isBlank(answer)) {
+			return;
+		}
+		final HashOperations<String, String, Integer> hashOperations = redisTemplate.opsForHash();
+		final String key = CoursePracticeCacheKey.questionCoursewareMetaKey(roomId,coursewareId, questionId);
+		hashOperations.increment(key, QUESTION_TOTAL_TIME_KEY, time);
+		hashOperations.increment(key, answer, 1);
+		redisTemplate.expire(key, CoursePracticeCacheKey.getDefaultKeyTTL(),
+				CoursePracticeCacheKey.getDefaultTimeUnit());
+	}
+
+	/**
+	 * 获取课件试题统计信息
+	 */
+	public QuestionMetaBo getCourseQuestionMetaBo(Long roomId,Long coursewareId, Long questionId) {
+		final HashOperations<String, String, Integer> hashOperations = redisTemplate.opsForHash();
+		final String key = CoursePracticeCacheKey.questionCoursewareMetaKey(roomId,coursewareId, questionId);
+		// 当前试题未答
+		final Integer totalTime = hashOperations.get(key, QUESTION_TOTAL_TIME_KEY);
+		// 当前试题信息不存在
+		List<QuestionInfo> baseQuestionInfoList = questionInfoService
+				.getBaseQuestionInfo(Lists.newArrayList(questionId));
+		if (CollectionUtils.isEmpty(baseQuestionInfoList)) {
+			return new QuestionMetaBo();
+		}
+		final QuestionInfo questionInfo = baseQuestionInfoList.get(0);
+
+		if (null == totalTime || totalTime == 0) {
+			return QuestionMetaBo.builder().id(questionInfo.getId()).answer(questionInfo.getAnswer()).build();
+		}
+		final int[] answerCountNum = new int[questionInfo.getChoiceList().size()];
+		final Set<Map.Entry<String, Integer>> entrySet = hashOperations.entries(key).entrySet();
+		// 获取A/B/C/D 各个选项的数量
+		entrySet.stream().forEach(entry -> {
+			// 只统计A、B、C、D 四个选项  统计本题中所有选项
+			IntStream.rangeClosed(1, questionInfo.getChoiceList().size()).forEach(index -> {
+				if (entry.getKey().contains(String.valueOf(index))) {
+					answerCountNum[index - 1] += entry.getValue();
+				}
+			});
+		});
+		// 各个试题选择数量为百分比
+		int sum;
+		if ((sum = Arrays.stream(answerCountNum).sum()) != 0) {
+			// 最后一个选项单独计算 保证所有的加起来是百分之百
+			int totalExpendLast = 0;
+			for (int index = 0; index < answerCountNum.length - 1; index++) {
+				answerCountNum[index] = (answerCountNum[index] * 100 / sum);
+				totalExpendLast += answerCountNum[index];
+			}
+			answerCountNum[answerCountNum.length - 1] = 100 - totalExpendLast;
+		}
+		// 获取所有的答案总数量 - 需要考虑多选题的问题
+		final Integer totalCount = entrySet.stream().filter(entry -> !entry.getKey().equals(QUESTION_TOTAL_TIME_KEY))
+				.map(Map.Entry::getValue).reduce(0, (a, b) -> a + b);
+		// 计算正确率 - 此处如果是多选题前端无法自行计算
+		double correctCate = 0d;
+		final Optional<Map.Entry<String, Integer>> correctInfo = entrySet.stream()
+				.filter(entry -> {
+					String answers = entry.getKey();
+					char[] chars = answers.toCharArray();
+					Arrays.sort(chars);
+					String sortedAnswers = new String(chars);
+					if (sortedAnswers.equals(questionInfo.getAnswer())) {
+						return true;
+					}
+					return false;
+				}).findFirst();
+		if (correctInfo.isPresent()) {
+			correctCate = ((double) correctInfo.get().getValue() / totalCount) * 100;
+		}
+		// 矫正最终的正确率，保证单选题的时候 选项选择率和正确率一致
+		if (questionInfo.getAnswer().length() == 1 && Integer.valueOf(questionInfo.getAnswer()) < answerCountNum.length
+				&& answerCountNum[Integer.valueOf(questionInfo.getAnswer()) - 1] != correctCate) {
+			correctCate = answerCountNum[Integer.valueOf(questionInfo.getAnswer()) - 1];
+		}
+
+		return QuestionMetaBo.builder().id(questionInfo.getId()).answer(questionInfo.getAnswer())
+				.avgTime(totalTime / totalCount).count(totalCount).percents(answerCountNum).correctCate(correctCate)
+				.build();
+	}
+
+	/**
+	 * 检查用户是否作答本题(已作答返回false)
+	 * @param userId
+	 * @param courseId
+	 * @param questionId
+	 */
+	public boolean checkUserHasAnswer(Integer userId, Long courseId, Long questionId) {
+		final HashOperations<String, String, PracticeUserQuestionMetaInfoBo> hashOperations = redisTemplate
+				.opsForHash();
+		String key = CoursePracticeCacheKey.userMetaKey(userId, courseId);
+		PracticeUserQuestionMetaInfoBo practiceUserQuestionMetaInfoBo = hashOperations.get(key, String.valueOf(questionId));
+		if(practiceUserQuestionMetaInfoBo != null) {
+			return false;
+		}
+		return true;
+		
 	}
 }

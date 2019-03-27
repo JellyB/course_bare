@@ -3,10 +3,7 @@ package com.huatu.tiku.course.service.v6;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.huatu.common.ErrorResult;
 import com.huatu.common.Result;
-import com.huatu.common.exception.BizException;
-import com.huatu.common.utils.web.RequestUtil;
 import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.fall.CourseServiceV6FallBack;
@@ -14,15 +11,12 @@ import com.huatu.tiku.course.netschool.api.fall.UserCourseServiceV6FallBack;
 import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.service.v1.AccessLimitService;
-import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.Map;
 
 /**
@@ -47,9 +41,6 @@ public class CourseBizV6Service {
     @Autowired
     private UserCourseServiceV6FallBack userCourseServiceV6FallBack;
 
-    @Resource(name = "redisTemplate")
-    private ValueOperations valueOperations;
-
     @Autowired
     private AccessLimitService accessLimitService;
 
@@ -61,13 +52,9 @@ public class CourseBizV6Service {
     @Degrade(key = "calendarDetail", name = "课程日历详情")
     public Object calendarDetail(Map<String,Object> params){
         try{
-            String cacheKey = CourseCacheKey.calendarDetailV6(RequestUtil.getParamSign(params));
-            NetSchoolResponse netSchoolResponse = (NetSchoolResponse) valueOperations.get(cacheKey);
-            if(null == netSchoolResponse){
-                netSchoolResponse = courseService.calendarDetail(params);
-                if (null != netSchoolResponse && null != netSchoolResponse.getData()) {
-                    courseServiceV6FallBack.setCalendarDetailStaticData(params, netSchoolResponse);
-                }
+            NetSchoolResponse netSchoolResponse = courseService.calendarDetail(params);
+            if (null != netSchoolResponse && null != netSchoolResponse.getData()) {
+                courseServiceV6FallBack.setCalendarDetailStaticData(params, netSchoolResponse);
             }
             return ResponseUtil.build(netSchoolResponse);
         }catch (Exception e){
@@ -85,13 +72,9 @@ public class CourseBizV6Service {
     @Degrade(key = "obtainLearnCalender", name = "我的学习日历")
     public Object obtainLearnCalender(Map<String,Object> params){
         try{
-            String cacheKey = CourseCacheKey.calendarLearnV6(RequestUtil.getParamSign(params));
-            NetSchoolResponse netSchoolResponse =  (NetSchoolResponse)valueOperations.get(cacheKey);
-            if(null == netSchoolResponse){
-                netSchoolResponse = userCourseService.obtainLearnCalender(params);
-                if(null != netSchoolResponse && null != netSchoolResponse.getData()){
-                    userCourseServiceV6FallBack.setCalendarLearnStaticData(params, netSchoolResponse);
-                }
+            NetSchoolResponse netSchoolResponse = userCourseService.obtainLearnCalender(params);
+            if(null != netSchoolResponse && null != netSchoolResponse.getData()){
+                userCourseServiceV6FallBack.setCalendarLearnStaticData(params, netSchoolResponse);
             }
             return ResponseUtil.build(netSchoolResponse);
         }catch (Exception e){
@@ -111,7 +94,7 @@ public class CourseBizV6Service {
     public Object obtainMineCourses(Map<String,Object> params){
         try{
             NetSchoolResponse netSchoolResponse = userCourseService.obtainMineCourses(params);
-            if(null != netSchoolResponse && null != netSchoolResponse.getData()){
+            if(null != netSchoolResponse && null !=  netSchoolResponse.getData() && ResponseUtil.isHardSuccess(netSchoolResponse)){
                 userCourseServiceV6FallBack.setCourseMineStaticData(params, netSchoolResponse);
             }
             return ResponseUtil.build(netSchoolResponse);
@@ -144,18 +127,17 @@ public class CourseBizV6Service {
      */
     public Object obtainMineCoursesDegrade(Map<String,Object> params){
         if(accessLimitService.tryAccess()){
-            NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainMineCourses(params);
-            log.warn("obtainMineCoursesDegrade.data:{}", JSONObject.toJSONString(netSchoolResponse));
+            NetSchoolResponse netSchoolResponse = userCourseService.obtainMineCourses(params);
+            log.info("obtainMineCoursesDegrade.data:{}", JSONObject.toJSONString(netSchoolResponse));
             return ResponseUtil.build(netSchoolResponse);
         }else{
             if(MapUtils.getInteger(params, "terminal") == 1){
-                log.info("获取我的课程信息 -- 降级:{}, 安卓", params);
+                log.info("我的课程降级 -- 安卓:{}", params);
                 return new NetSchoolResponse<>(Result.SUCCESS_CODE, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
             }else{
-                log.info("获取我的课程信息 -- 降级:{}, ios", params);
-                ErrorResult errorResult = ErrorResult.create(10000010, "当前请求的人数过多，请在5分钟后重试", Lists.newArrayList());
-        throw new BizException(errorResult);
-    }
+                log.info("我的课程降级 -- IOS:{}", params);
+                return null;
+            }
         }
     }
 

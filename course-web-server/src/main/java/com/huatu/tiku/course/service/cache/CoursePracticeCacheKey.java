@@ -11,6 +11,16 @@ import com.huatu.tiku.course.bean.practice.UserCourseBo;
  * Created by lijun on 2019/2/27
  */
 public final class CoursePracticeCacheKey {
+	
+	/**
+	 * 统计hash中做对题数
+	 */
+	 public static String RCOUNT="rcount";
+	 
+	 /**
+	  * 统计hash中总用时
+	  */
+	 public static String TOTALTIME="totalTime";
 
     /**
      * 获取用户个人信息统计
@@ -99,4 +109,36 @@ public final class CoursePracticeCacheKey {
 	public static String roomAllUserSum(Long courseId) {
 		return "course:practice:roomAllUserSum:"+ courseId;
 	}
+
+    /**
+     * 获取课件下试题统计信息key
+     *
+     * @param coursewareId     课件ID
+     * @param questionId 试题信息
+     * @return 获取试题统计信息key
+     */
+    public static String questionCoursewareMetaKey(Long roomId,Long coursewareId, Long questionId) {
+        return "course:practice:courseware:questionMeta:" + roomId +":"+ questionId + ":" + coursewareId;
+    }
+    
+    /**
+     * 直播班级统计数据用户查看
+     * @param roomId
+     * @param coursewareId
+     * @param type 2直播 1录播
+     * @return
+     */
+    public static String roomIdCourseIdTypeMetaKey(Long roomId,Long coursewareId, Integer type) {
+        return "course:practice:courseware:roomIdCourseIdTypeMetaKey" + roomId +":"+ coursewareId + ":" + type;
+    }
+    
+    /**
+     * 直播班级统计人数
+     * @param roomId
+     * @return
+     */
+	public static String roomIdUserMetaKey(Long roomId, Long coursewareId, Integer type) {
+		return "course:practice:courseware:roomIdCourseIdTypeUserMetaKey" + roomId + ":" + coursewareId;
+	}
+
 }

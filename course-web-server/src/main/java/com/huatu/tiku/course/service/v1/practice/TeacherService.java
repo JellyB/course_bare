@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.service.v1.practice;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -43,4 +44,18 @@ public interface TeacherService {
      * @param questionId
      */
 	void stopAnswer(Long roomId, Long questionId);
+
+    /**
+     * 获取课件下试题的作答信息
+     * @param roomId
+     * @return
+     */
+    List<QuestionMetaBo> getCoursewareAnswerQuestionInfo(Long roomId);
+
+    /**
+     * 根据课件Id查询课件的随堂练习正确率
+     * @param coursewareId 课件Id
+     * @return
+     */
+    Integer getCourseRightRate(Long coursewareId,Long roomId);
 }

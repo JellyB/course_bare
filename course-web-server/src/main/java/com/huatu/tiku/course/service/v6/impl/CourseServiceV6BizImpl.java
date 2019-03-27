@@ -1,6 +1,8 @@
 package com.huatu.tiku.course.service.v6.impl;
 
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
@@ -12,8 +14,16 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import com.huatu.common.ErrorResult;
+import com.huatu.tiku.course.common.PracticeStatusEnum;
+import com.huatu.tiku.course.dao.manual.CoursePracticeQuestionInfoMapper;
+import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
+import com.huatu.tiku.course.service.v1.practice.PracticeUserMetaService;
+import com.huatu.tiku.entity.CourseLiveBackLog;
+import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -21,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisZSetCommands;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
@@ -30,35 +41,29 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.huatu.common.exception.BizException;
+import com.huatu.common.utils.reflect.BeanUtil;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.vo.PeriodTestListVO;
 import com.huatu.tiku.course.common.EstimateCourseRedisKey;
-import com.huatu.tiku.course.common.StudyTypeEnum;
-import com.huatu.tiku.course.common.YesOrNoStatus;
-import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
-import com.huatu.tiku.course.dao.manual.CourseKnowledgeMapper;
+import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
 import com.huatu.tiku.course.netschool.api.v6.LessonServiceV6;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
+import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.service.manager.CourseExercisesStatisticsManager;
-import com.huatu.tiku.course.service.manager.KnowledgeManager;
 import com.huatu.tiku.course.service.v6.CourseServiceV6Biz;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.DateUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
 import com.huatu.tiku.course.ztk.api.v4.paper.PeriodTestServiceV4;
-import com.huatu.tiku.entity.CourseExercisesProcessLog;
-import com.huatu.tiku.entity.CourseKnowledge;
-import com.huatu.tiku.entity.knowledge.Knowledge;
 import com.huatu.ztk.knowledge.bean.QuestionPointTree;
 import com.huatu.ztk.paper.bean.PracticeCard;
 import com.huatu.ztk.paper.bean.PracticeForCoursePaper;
 
 import lombok.extern.slf4j.Slf4j;
 import tk.mybatis.mapper.entity.Example;
-import tk.mybatis.mapper.weekend.WeekendSqls;
 
 
 /**
@@ -98,13 +103,10 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
     private UserCourseServiceV6 userCourseServiceV6;
 
     @Autowired
-    private CourseExercisesProcessLogMapper courseExercisesProcessLogMapper;
-
-    @Autowired
     private CourseExercisesStatisticsManager courseExercisesStatisticsManager;
 
     @Autowired
-    private CourseKnowledgeMapper courseKnowledgeMapper;
+    private CourseExercisesProcessLogManager courseExercisesProcessLogManager;
 
     @Autowired
     private PeriodTestServiceV4 periodTestServiceV4;
@@ -116,8 +118,13 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
     private LessonServiceV6 lessonService;
 
     @Autowired
-    private KnowledgeManager knowledgeManager;
+    private CourseLiveBackLogService courseLiveBackLogService;
 
+    @Autowired
+    private PracticeUserMetaService practiceUserMetaService;
+
+    @Autowired
+    private CoursePracticeQuestionInfoMapper coursePracticeQuestionInfoMapper;
 
     /**
      * 模考大赛解析课信息,多个id使用逗号分隔
@@ -187,7 +194,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             int startIndex = (page - 1) * size;
             int endIndex = page * size > all.size() ? all.size() : page * size;
             if (startIndex < 0 || startIndex >= endIndex) {
-                return NetSchoolResponse.DEFAULT;
+                return NetSchoolResponse.newInstance(initResultSet(page,size,startIndex,endIndex,all));
             }
             courseIds = all.subList(startIndex, endIndex)
                     .stream()
@@ -200,13 +207,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             Object data = netSchoolResponse.getData();
             if (data instanceof LinkedHashMap) {
                 sortClassById((LinkedHashMap) data, courseIds);
-                ((LinkedHashMap) data).put("current_page", page);
-                ((LinkedHashMap) data).put("last_page", page * size >= all.size() ? page : page + 1);
-                ((LinkedHashMap) data).put("per_page", size);
-                ((LinkedHashMap) data).put("from", startIndex);
-                ((LinkedHashMap) data).put("to", endIndex);
-                ((LinkedHashMap) data).put("total", all.size());
-
+                fillPageResult(page,size,startIndex,endIndex,all,(LinkedHashMap)data);
             }
             return netSchoolResponse;
         } catch (Exception e) {
@@ -215,7 +216,23 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             connection.close();
         }
 
-        return NetSchoolResponse.DEFAULT;
+        return NetSchoolResponse.newInstance(initResultSet(page,size,0,0,Lists.newArrayList()));
+    }
+
+    private LinkedHashMap initResultSet(int page, int size, int startIndex, int endIndex, List<RedisZSetCommands.Tuple> all) {
+        LinkedHashMap data = Maps.newLinkedHashMap();
+        data.put("data",Lists.newArrayList());
+        fillPageResult(page,size,startIndex,endIndex,all,data);
+        return data;
+    }
+
+    private void fillPageResult(int page, int size, int startIndex, int endIndex, List<RedisZSetCommands.Tuple> all, LinkedHashMap data) {
+        data.put("current_page", page);
+        data.put("last_page", page * size >= all.size() ? page : page + 1);
+        data.put("per_page", size);
+        data.put("from", startIndex);
+        data.put("to", endIndex);
+        data.put("total", all.size());
     }
 
     /**
@@ -288,41 +305,38 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 			PeriodTestListVO periodTestListVO = response.getData();
 			// key为paperid_syllabusId value 为试卷信息
 			Map<String, PeriodTestListVO.PeriodTestInfo> paperMap = Maps.newHashMap();
-			Map<Long, PeriodTestListVO.PeriodTestInfo> syllabusMap = Maps.newHashMap();
-			if(CollectionUtils.isEmpty(periodTestListVO.getList())){
-			    return null;
-            }
 			periodTestListVO.getList().forEach(courseInfo -> {
 				courseInfo.setUndoCount(courseInfo.getChild().size());
 				courseInfo.getChild().forEach(periodTestInfo -> {
-					log.info("接口unfinish_stage_exam_list调用php响应返回periodTestInfo:{}", periodTestInfo.toString());
+					//log.info("接口unfinish_stage_exam_list调用php响应返回periodTestInfo:{}", periodTestInfo.toString());
 					// 填充app端展示所需时间
 					periodTestInfo.setShowTime(
 							DateUtil.getSimpleDate(periodTestInfo.getStartTime(), periodTestInfo.getEndTime()));
 					periodTestInfo.setIsExpired(DateUtil.isExpired(periodTestInfo.getEndTime()));
-					periodTestInfo.setIsAlert(periodTestInfo.getAlreadyRead());
+					periodTestInfo.setIsAlert(periodTestInfo.getAlreadyRead() == 0 ? 1 : 0);
 					paperMap.put(periodTestInfo.getExamId() + "_" + periodTestInfo.getSyllabusId(), periodTestInfo);
-					syllabusMap.put(periodTestInfo.getSyllabusId(), periodTestInfo);
 				});
 			});
 			
 			Set<String> paperSyllabusSet = paperMap.keySet();
-			NetSchoolResponse<Map<String, Integer>> bathResponse = periodTestServiceV4.getPaperStatusBath(uid,
-					paperSyllabusSet);
-			if (ResponseUtil.isSuccess(bathResponse)) {
-				// key为paperid_syllabusId value 为试卷状态
-				Map<String, Integer> retMap = bathResponse.getData();
-				log.info("getPaperStatusBath ret is:{}", retMap.toString());
-				// 修改试卷状态
-				for (Entry<String, Integer> paperRet : retMap.entrySet()) {
-					paperMap.get(paperRet.getKey()).setStatus(paperRet.getValue());
+			if (!paperSyllabusSet.isEmpty()) {
+				NetSchoolResponse<Map<String, Integer>> bathResponse = periodTestServiceV4.getPaperStatusBath(uid,
+						paperSyllabusSet);
+				if (ResponseUtil.isSuccess(bathResponse)) {
+					// key为paperid_syllabusId value 为试卷状态
+					Map<String, Integer> retMap = bathResponse.getData();
+					log.info("getPaperStatusBath ret is:{}", retMap.toString());
+					// 修改试卷状态
+					for (Entry<String, Integer> paperRet : retMap.entrySet()) {
+						paperMap.get(paperRet.getKey()).setStatus(paperRet.getValue());
+					}
 				}
+				log.info("getpaper param is:{}", paperSyllabusSet.toString());
 			}
-			log.info("getpaper param is:{}", paperSyllabusSet.toString());
 			log.info("接口unfinish_stage_exam_list解析用时:{}", String.valueOf(stopwatchExplain.stop()));
 			return periodTestListVO;
 		}
-		return null;
+		return new PeriodTestListVO();
 	}
 
     /**
@@ -339,6 +353,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         SimpleDateFormat courseDateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm");
         NetSchoolResponse netSchoolResponse = practiceCardService.getAnswerCard(userSession.getToken(), terminal, cardId);
         if(null == netSchoolResponse.getData()){
+            log.error("课后作业答题卡信息不存在:{}", cardId);
             return new JSONObject();
         }
         Object response = ResponseUtil.build(netSchoolResponse);
@@ -349,7 +364,13 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
         PracticeCard practiceCard = JSONObject.parseObject(data.toJSONString(), PracticeCard.class);
         practiceCard.setPaper(practiceForCoursePaper);
+        if(!checkUserSubmitAnswerCard(userSession.getId(), practiceForCoursePaper.getCourseId(), practiceForCoursePaper.getCourseType())){
+            log.error("学员没有提交答题卡:userId:{}, courseWareId:{}, videoType:{}", userSession.getId(), practiceForCoursePaper.getCourseId(), practiceForCoursePaper.getCourseType());
+            ErrorResult errorResult = ErrorResult.create(10000103, "请先提交答题卡后查看报告！");
+            throw new BizException(errorResult);
+        }
         List<QuestionPointTree> points_ = Lists.newArrayList();
+        Map<String,Object> paperInfo = Maps.newHashMap();
 
         List<QuestionPointTree> level1Points = practiceCard.getPoints();
         level1Points.forEach(level1Item -> {
@@ -363,15 +384,32 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
                 });
             }
         });
-
+        paperInfo.put("modules", practiceCard.getPaper().getModules());
+        paperInfo.put("questions", practiceCard.getPaper().getQuestions());
+        data.put("paper", paperInfo);
         data.put("points", points_);
-        data.remove("paper");
         data.putAll(courseExercisesStatisticsManager.obtainCourseRankInfo(practiceCard));
         data.put("tcount", practiceForCoursePaper.getQcount());
         data.put("rcount", practiceCard.getRcount());
+
+        data.put("avgMyCost", practiceCard.getSpeed());
+
         Date date = new Date(practiceCard.getCreateTime() == 0 ? System.currentTimeMillis():practiceCard.getCreateTime());
         data.put("submitTimeInfo", courseDateFormat.format(date));
         return data;
+    }
+
+    /**
+     * 判断用户是否已经提交了课后作业答题卡信息
+     * @param userId
+     * @param courseWareId
+     * @param videoType
+     * @return
+     */
+    private boolean checkUserSubmitAnswerCard(long userId, long courseWareId, int videoType){
+        String existsKey = CourseCacheKey.getCourseWorkDealData(videoType, courseWareId);
+        HashOperations<String, String, String> existsHash = redisTemplate.opsForHash();
+        return existsHash.hasKey(existsKey, String.valueOf(userId));
     }
 
     /**
@@ -389,91 +427,313 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
      * @throws BizException
      */
     @Override
-    public Object learnReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, long courseWareId, int videoType, long exerciseCardId, int reportStatus, int terminal) throws BizException {
+    public Object learnReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, long courseWareId, int videoType, long exerciseCardId, long syllabusId, int terminal, String cv) throws BizException {
         Map<String,Object> result = Maps.newHashMap();
-
-        Map<String,Object> liveReport = Maps.newHashMap();//直播听课记录
-        Map<String,Object> classPractice = Maps.newHashMap();//随堂练习
-        Map<String,Object> courseWorkPractice = Maps.newHashMap();//课后作业报告
-        //知识点id展示后台配置的知识点信息
-        Map<String,Object> points = Maps.newHashMap();
-
-        //听课记录请求参数
-        Map<String,Object> studyReport = Maps.newHashMap();
-        studyReport.put("bjyRoomId", bjyRoomId);
-        studyReport.put("userName", userSession.getUname());
-        studyReport.put("classId", classId);
-        studyReport.put("netClassId", netClassId);
-        studyReport.put("lessonId", courseWareId);
-        studyReport.put("videoType", videoType);
-
         /**
-         * 处理听课记录
+         * 直播报告
          */
-        liveReport.put("learnTime", 0);
-        liveReport.put("gold", 0);
-        liveReport.put("learnPercent", 0);
-        liveReport.put("abovePercent", 0);
-        NetSchoolResponse netSchoolResponse = lessonService.studyReport(studyReport);
-        if(ResponseUtil.isSuccess(netSchoolResponse)){
-            LinkedHashMap<String,Object> data = (LinkedHashMap<String,Object>)netSchoolResponse.getData();
-            liveReport.put("learnTime", MapUtils.getInteger(data, "listenLength"));
-            liveReport.put("learnPercent", MapUtils.getInteger(data, "listenLength"));
-            liveReport.put("abovePercent", MapUtils.getInteger(data, "concentrationPercent"));
-        }
+        Map<String,Object> liveReport = Maps.newHashMap();
         /**
-         * 处理课后作业报告
+         * 随堂练习
          */
-        if(exerciseCardId > 0){
-            courseWorkPractice.putAll((Map<String, Object>)courseWorkReport(userSession, terminal, exerciseCardId));
-            courseWorkPractice.remove("ranks");
-        }
+        Map<String,Object> classPractice = Maps.newHashMap();
         /**
-         * 处理随堂随堂练习报告
+         * 课后作业
          */
-        if(reportStatus > 0){
-            NetSchoolResponse classReport = practiceCardService.getClassExerciseReport(courseWareId, videoType, userSession.getToken());
-            if(classReport != ResponseUtil.DEFAULT_PAGE_EMPTY && null != classReport){
-                LinkedHashMap linkedHashMap = (LinkedHashMap<String, Object>) classReport.getData();
-                classPractice.putAll(linkedHashMap);
+        Map<String,Object> courseWorkPractice = Maps.newHashMap();
+        /**
+         * 课后作业知识点
+         */
+        List<QuestionPointTree> courseWorkPracticePoints = Lists.newArrayList();
+        /**
+         * 随堂练习知识点
+         */
+        List<Map<String,Object>> classPracticePoints = Lists.newArrayList();
+
+        VideoTypeEnum videoTypeEnum = VideoTypeEnum.create(videoType);
+        //如果为录播回放，查看回放是否生成
+        boolean playBackAvailable = false;
+        if(videoTypeEnum == VideoTypeEnum.LIVE_PLAY_BACK){
+            CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(Long.valueOf(bjyRoomId), courseWareId);
+            if(null != courseLiveBackLog && null != courseLiveBackLog.getLiveCoursewareId()){
+                courseWareId = courseLiveBackLog.getLiveCoursewareId();
+                playBackAvailable = true;
             }
-        }else{
-            classPractice.putAll(Maps.newHashMap());
         }
+        /**
+         * 听课报告
+         */
+        dealLearnReportAboutLiveReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoTypeEnum, playBackAvailable, liveReport);
+        /**
+         * 随堂练习报告
+         */
+        dealLearnReportAboutWithClassReport(userSession, bjyRoomId, courseWareId, videoTypeEnum, playBackAvailable, classPractice, classPracticePoints);
+        /**
+         * 课后作业报告
+         */
+        dealLearnReportAboutCourseWork(userSession, classId, courseWareId, videoTypeEnum, exerciseCardId, syllabusId, terminal, playBackAvailable, courseWorkPractice, courseWorkPracticePoints);
+
         result.put("classPractice", classPractice);
         result.put("courseWorkPractice", courseWorkPractice);
         result.put("liveReport", liveReport);
-        result.put("points", dealLearnReportPoints(courseWareId, videoType));
+        result.put("points", dealLearnReportPoints(classPracticePoints, courseWorkPracticePoints));
+        result.put("teacherComment", "激励的话儿有很多，但还是自己的决心最有效。");
         return result;
+    }
+
+
+
+    /**
+     * 处理学习报告 - 听课记录
+     * @param userSession
+     * @param bjyRoomId
+     * @param classId
+     * @param netClassId
+     * @param courseWareId
+     * @param videoType
+     * @param liveReport
+     * @param playBackAvailable
+     */
+    private void dealLearnReportAboutLiveReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, final long courseWareId, final VideoTypeEnum videoType, final boolean playBackAvailable, Map<String, Object> liveReport) {
+
+
+        /**
+         * 处理听课记录，只有直播&回放有听课记录
+         */
+        if(videoType == VideoTypeEnum.LIVE || playBackAvailable){
+            Stopwatch stopwatch = Stopwatch.createStarted();
+            //听课记录请求参数
+            Map<String,Object> studyReport = Maps.newHashMap();
+            studyReport.put("bjyRoomId", bjyRoomId);
+            studyReport.put("userName", userSession.getUname());
+            studyReport.put("classId", classId);
+            studyReport.put("netClassId", netClassId);
+            studyReport.put("lessonId", courseWareId);
+            studyReport.put("videoType", VideoTypeEnum.LIVE.getVideoType());
+            NetSchoolResponse netSchoolResponse = lessonService.studyReport(studyReport);
+            if(ResponseUtil.isSuccess(netSchoolResponse)){
+                LinkedHashMap<String,Object> data = (LinkedHashMap<String,Object>)netSchoolResponse.getData();
+                liveReport.put("learnTime", MapUtils.getInteger(data, "listenLength"));
+                liveReport.put("learnPercent", MapUtils.getInteger(data, "listenPercent"));
+                liveReport.put("abovePercent", MapUtils.getInteger(data, "concentrationPercent"));
+                liveReport.put("teacherComment", MapUtils.getString(data, "msg"));
+                stopwatch.stop();
+                log.info("学习报告 - 直播学习时长 - 请求参数:{},耗时:{}", studyReport, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            }
+        }else{
+            return;
+        }
+    }
+
+    /**
+     * 随堂练习学习报告处理
+     * @param userSession
+     * @param bjyRoomId
+     * @param courseWareId
+     * @param videoType
+     * @param classPractice
+     * @param classPracticePoints
+     * @param playBackAvailable
+     */
+    private void dealLearnReportAboutWithClassReport(UserSession userSession, String bjyRoomId, final long courseWareId, final VideoTypeEnum videoType, final boolean playBackAvailable, Map<String, Object> classPractice, List<Map<String, Object>> classPracticePoints) {
+        /**
+         * 处理随堂随堂练习报告
+         * 如果直播，并且生成了随堂练习答题卡，返回答题卡信息
+         * 如果为录播，查询答题卡，返回答题卡信息
+         * 如果
+         */
+        //直播回放或直播处理逻辑
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        if(playBackAvailable || videoType == VideoTypeEnum.LIVE){
+           if(checkClassPracticeReportAvailable(bjyRoomId)){
+               NetSchoolResponse classReport = practiceCardService.getClassExerciseReport(courseWareId, VideoTypeEnum.LIVE.getVideoType(), userSession.getId());
+               /**
+                * 如果直播答题卡id存在
+                */
+               if(classReport != ResponseUtil.DEFAULT_PAGE_EMPTY && null != classReport && null != classReport.getData()){
+                   LinkedHashMap linkedHashMap = (LinkedHashMap<String, Object>) classReport.getData();
+                   if(MapUtils.getLong(linkedHashMap, "id") > 0) {
+                       classPractice.put("practiceStatus", PracticeStatusEnum.AVAILABLE.getCode());
+                       classPracticePoints.addAll((List<Map<String,Object>>) linkedHashMap.get("points"));
+                       classPractice.putAll(linkedHashMap);
+                       classPractice.putAll(practiceUserMetaService.getCountDateByRIdAndCId(Long.valueOf(bjyRoomId), courseWareId));
+                   }
+               }else{
+                   classPractice.put("practiceStatus", PracticeStatusEnum.MISSED_OR_UNFINISHED.getCode());
+               }
+           }else{
+               classPractice.put("practiceStatus", PracticeStatusEnum.NONE.getCode());
+           }
+        }else if(videoType == VideoTypeEnum.DOT_LIVE){
+            NetSchoolResponse classReport = practiceCardService.getClassExerciseReport(courseWareId, videoType.getVideoType(), userSession.getId());
+            if(classReport != ResponseUtil.DEFAULT_PAGE_EMPTY && null != classReport && null != classReport.getData()){
+                LinkedHashMap linkedHashMap = (LinkedHashMap<String, Object>) classReport.getData();
+                classPractice.putAll(linkedHashMap);
+                classPracticePoints.addAll((List<Map<String,Object>>) linkedHashMap.get("points"));
+                int wcount = MapUtils.getIntValue(linkedHashMap, "wcount");
+                int rcount = MapUtils.getIntValue(linkedHashMap, "rcount");
+                if((rcount + wcount) > 0){
+                    classPractice.put("practiceStatus", PracticeStatusEnum.AVAILABLE.getCode());
+                }else{
+                    classPractice.put("practiceStatus", PracticeStatusEnum.MISSED_OR_UNFINISHED.getCode());
+                }
+            }else{
+                classPractice.put("practiceStatus", PracticeStatusEnum.MISSED_OR_UNFINISHED.getCode());
+            }
+        }else{
+            classPractice.put("practiceStatus", PracticeStatusEnum.NONE.getCode());
+        }
+        log.info("学习报告 - 随堂练习 - 请求参数:{},{},{},{},{},耗时:{}", userSession.getId(), bjyRoomId, courseWareId, videoType.getVideoType(),playBackAvailable, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+    }
+
+    /**
+     * 查看此房间下是否出题
+     * @param bjyRoomId
+     * @return
+     */
+    private boolean checkClassPracticeReportAvailable(String bjyRoomId){
+        try{
+            Example example = new Example(CoursePracticeQuestionInfo.class);
+            List<Integer> bizStatus = Lists.newArrayList(2,3);
+            example.and()
+                    .andEqualTo("roomId", Long.valueOf(bjyRoomId))
+                    .andIn("bizStatus", bizStatus);
+            List<CoursePracticeQuestionInfo> list = coursePracticeQuestionInfoMapper.selectByExample(example);
+            return CollectionUtils.isEmpty(list) ? false : true;
+        }catch (Exception e){
+            log.error("随堂练习 - 老师是否放题异常:{}", e);
+            return false;
+        }
+    }
+    /**
+     * 处理学习报告 -- 课后作业
+     * @param userSession 用户信息
+     * @param classId 课程id
+     * @param courseWareId 课件
+     * @param videoType 课件类型
+     * @param exerciseCardId 课后作业答题卡
+     * @param syllabusId  大纲
+     * @param terminal 用户终端
+     * @param courseWorkPractice 课后作业报告信息
+     * @param courseWorkPracticePoints 课后作业知识点汇总信息
+     */
+    private void dealLearnReportAboutCourseWork(UserSession userSession, long classId, final long courseWareId, final VideoTypeEnum videoType, long exerciseCardId, long syllabusId, int terminal, final boolean playBackAvailable, Map<String, Object> courseWorkPractice, List<QuestionPointTree> courseWorkPracticePoints) {
+        /**
+         * 处理课后作业报告，如果用户主动提交了答题卡信息处理 practiceStatus 置为 1
+         * 否则提示学员去做题界面做题并提交答题卡
+         */
+        Stopwatch stopWatch = Stopwatch.createStarted();
+        boolean checkUserSubmitAnswerCard;
+        if(videoType == VideoTypeEnum.LIVE || playBackAvailable){
+            checkUserSubmitAnswerCard = checkUserSubmitAnswerCard(userSession.getId(), courseWareId, VideoTypeEnum.LIVE.getVideoType());
+        }else{
+            checkUserSubmitAnswerCard = checkUserSubmitAnswerCard(userSession.getId(), courseWareId, videoType.getVideoType());
+        }
+        if(checkUserSubmitAnswerCard && exerciseCardId > 0){
+            Map<String, Object> temp = (Map<String, Object>)courseWorkReport(userSession, terminal, exerciseCardId);
+            courseWorkPractice.put("answers", temp.get("answers"));
+            courseWorkPractice.put("avgCorrect", temp.get("avgCorrect"));
+            courseWorkPractice.put("avgMyCost", temp.get("avgMyCost"));
+            courseWorkPractice.put("avgTimeCost", temp.get("avgTimeCost"));
+            courseWorkPractice.put("corrects", temp.get("corrects"));
+            courseWorkPractice.put("doubts", temp.get("doubts"));
+            courseWorkPractice.put("id", MapUtils.getString(temp, "id"));
+            courseWorkPractice.put("paper", temp.get("paper"));
+            courseWorkPractice.put("rcount", temp.get("rcount"));
+            courseWorkPractice.put("practiceStatus", PracticeStatusEnum.AVAILABLE.getCode());
+            courseWorkPractice.put("submitTimeInfo", temp.get("submitTimeInfo"));
+            courseWorkPracticePoints.addAll((List<QuestionPointTree>) temp.getOrDefault("points", Lists.<QuestionPointTree>newArrayList()));
+        }else{
+            if(exerciseCardId > 0){
+                courseWorkPractice.put("id", String.valueOf(exerciseCardId));
+                courseWorkPractice.put("practiceStatus", PracticeStatusEnum.MISSED_OR_UNFINISHED.getCode());
+            }else{
+                courseWorkPractice.put("id", String.valueOf(exerciseCardId));
+                courseWorkPractice.put("practiceStatus", PracticeStatusEnum.NONE.getCode());
+            }
+        }
+        log.info("学习报告 - 课后作业 - 课后作业答题卡信息:{},{},{},{},{}, 耗时:{}", classId, syllabusId, videoType.getVideoType(), courseWareId, userSession.getId(), stopWatch.elapsed(TimeUnit.MILLISECONDS));
     }
 
     /**
      * 处理课件知识点id
-     * @param courseWareId
-     * @param videoType
+     * @param classPracticePoints 随堂练习知识点
+     * @param courseWorkPracticePoints 课后练习知识点
      * @return
      * @throws BizException
      */
-    private Map<Long, String> dealLearnReportPoints(long courseWareId, int videoType)throws BizException{
+    private List<QuestionPointTree> dealLearnReportPoints(List<Map<String,Object>> classPracticePoints, List<QuestionPointTree> courseWorkPracticePoints)throws BizException{
         try{
-            WeekendSqls<CourseKnowledge> weekendSqls = WeekendSqls.custom();
-            weekendSqls.andEqualTo(CourseKnowledge::getCourseId, courseWareId);
-            weekendSqls.andEqualTo(CourseKnowledge::getCourseType, videoType);
+            Map<Integer, QuestionPointTree> classPracticePointsMap  = classPracticePoints.stream()
+                    .collect(Collectors.toMap(
+                            item->{
+                                int id = MapUtils.getIntValue(item, "id");
+                                return id;
+                            },item->{
+                                QuestionPointTree questionPointTree = BeanUtil.fromMap(QuestionPointTree.class, item);
+                                return questionPointTree;
+                            }));
+            Map<Integer, QuestionPointTree> courseWorkPracticePointsMap  = courseWorkPracticePoints.stream().collect(Collectors.toMap(item-> item.getId(), item->item));
+            List<QuestionPointTree> pointTrees = Lists.newArrayList();
 
-            Example example = Example.builder(CourseKnowledge.class).where(weekendSqls).build();
-            List<CourseKnowledge> courseKnowledges = courseKnowledgeMapper.selectByExample(example);
-            List<Long> ids = courseKnowledges.stream().map(CourseKnowledge::getKnowledgeId).collect(Collectors.toList());
-            if(CollectionUtils.isEmpty(ids)){
-                return Maps.newHashMap();
+            List<Integer> commonPointIds = Lists.newArrayList();
+            if(CollectionUtils.isEmpty(classPracticePointsMap.keySet()) && CollectionUtils.isEmpty(courseWorkPracticePointsMap.keySet())){
+                return pointTrees;
+            }else if(CollectionUtils.isEmpty(classPracticePointsMap.keySet()) && CollectionUtils.isNotEmpty(courseWorkPracticePointsMap.keySet())){
+                return Lists.newArrayList(courseWorkPracticePointsMap.values());
+            }else if(CollectionUtils.isNotEmpty(classPracticePointsMap.keySet()) && CollectionUtils.isEmpty(courseWorkPracticePointsMap.keySet())){
+                return Lists.newArrayList(classPracticePointsMap.values());
+            }else{
+                Predicate<QuestionPointTree> predicate = current -> courseWorkPracticePointsMap.keySet().contains(current.getId());
+                classPracticePointsMap.keySet().forEach(sId -> {
+                    QuestionPointTree middelPoint = classPracticePointsMap.get(sId);
+                    if(predicate.test(middelPoint)){
+                        pointTrees.add(dealCommonPoints(middelPoint, courseWorkPracticePointsMap.get(sId)));
+                        commonPointIds.add(sId);
+                    }else{
+                        pointTrees.add(middelPoint);
+                    }
+                });
             }
-            List<Knowledge> knowledges = knowledgeManager.findBatch(ids);
-            if(CollectionUtils.isEmpty(knowledges)){
-                return Maps.newHashMap();
-            }
-            return knowledges.stream().collect(Collectors.toMap( i -> i.getId(), i -> i.getName()));
+            courseWorkPracticePointsMap.keySet().forEach(sId -> {
+                if(CollectionUtils.isNotEmpty(commonPointIds) && !commonPointIds.contains(sId)){
+                    pointTrees.add(courseWorkPracticePointsMap.get(sId));
+                }
+            });
+            return pointTrees;
         }catch (Exception e){
-            log.error("dealLearnReportPoints deal questionPoints caught an error!:{}", e);
-            return Maps.newHashMap();
+            log.error("处理随堂练习&课后练习汇总知识点异常:{}", e);
+            return Lists.newArrayList();
         }
+    }
+
+    /**
+     * 处理随堂练练习 & 课后作业汇总知识点
+     * @param middlePoint
+     * @param afterPoint
+     * @return
+     */
+    private QuestionPointTree dealCommonPoints(QuestionPointTree middlePoint, QuestionPointTree afterPoint){
+        QuestionPointTree total = new QuestionPointTree();
+        total.setQnum(middlePoint.getQnum() + afterPoint.getQnum());
+        total.setRnum(middlePoint.getRnum() + afterPoint.getRnum());
+        total.setWnum(middlePoint.getWnum() + afterPoint.getWnum());
+        total.setUnum(middlePoint.getUnum() + afterPoint.getUnum());
+        total.setTimes(middlePoint.getTimes() + afterPoint.getTimes());
+        total.setId(middlePoint.getId());
+        total.setName(middlePoint.getName());
+        total.setSpeed(total.getTimes() / total.getQnum());
+        int questionNum = total.getRnum() + total.getWnum();
+        /**
+         * 计算平均时间&正确率
+         */
+        int speed = total.getTimes() / questionNum;
+        double accuracy = 0;
+        if (questionNum > 0) {
+            accuracy = new BigDecimal(total.getRnum() * 100).divide(new BigDecimal(questionNum), 1, RoundingMode.HALF_UP).doubleValue();
+        }
+        total.setAccuracy(speed);
+        total.setAccuracy(accuracy);
+        return total;
     }
 }
