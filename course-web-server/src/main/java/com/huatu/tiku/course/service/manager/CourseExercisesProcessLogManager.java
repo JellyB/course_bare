@@ -349,7 +349,6 @@ public class CourseExercisesProcessLogManager {
      * @param answerCard
      * @throws BizException
      */
-    @Async
     public void submitCourseWorkAnswerCard(PracticeCard answerCard)throws BizException{
         Example example = new Example(CourseExercisesProcessLog.class);
         example.and()
