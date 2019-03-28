@@ -102,6 +102,13 @@ public class CourseExercisesProcessLogMapperTest extends BaseWebTest {
         }
     }
 
+    @Test
+    public void testCourseWorkListSingleUser(){
+        int userId = 235519519;
+        Object object = courseExercisesProcessLogManager.courseWorkList(userId, 1, 100);
+        log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>:{}", JSONObject.toJSONString(object));
+    }
+
     /**
      *
      */

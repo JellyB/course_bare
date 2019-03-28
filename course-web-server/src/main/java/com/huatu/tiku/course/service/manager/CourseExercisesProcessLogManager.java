@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import com.huatu.common.ErrorResult;
 import com.huatu.tiku.course.bean.vo.RecordProcess;
 import com.huatu.tiku.course.common.VideoTypeEnum;
+import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.entity.CourseLiveBackLog;
 import lombok.*;
@@ -393,7 +394,7 @@ public class CourseExercisesProcessLogManager {
         List<CourseWorkCourseVo> courseWorkCourseVos = Lists.newArrayList();
         Map<Long, DataInfo> answerCardMaps = Maps.newHashMap();
         List<HashMap<String, Object>> dataList = courseExercisesProcessLogMapper.getCoursePageInfo(userId, page, size);
-
+        log.info("查询数据库获取用户未完成课后练习数据列表: keySet:{}", dataList);
         Set<Long> allSyllabusIds = Sets.newHashSet();
         dataList.forEach(item -> {
             String ids = String.valueOf(item.get("syllabusIds"));
@@ -436,8 +437,15 @@ public class CourseExercisesProcessLogManager {
 
             dataList.forEach(item->{
                 CourseWorkCourseVo courseWorkCourseVo = new CourseWorkCourseVo();
-                courseWorkCourseVo.setCourseId(Long.valueOf(String.valueOf(item.get("courseId"))));
-                courseWorkCourseVo.setCourseTitle(syllabusWareInfoTable.get(COURSE_LABEL, courseWorkCourseVo.getCourseId()).getClassName());
+                long courseId = MapUtils.getLong(item, "courseId");
+                courseWorkCourseVo.setCourseId(courseId);
+                SyllabusWareInfo courseInfo = syllabusWareInfoTable.get(COURSE_LABEL, courseWorkCourseVo.getCourseId());
+                if(null == courseInfo){
+                    courseWorkCourseVo.setCourseTitle(StringUtils.EMPTY);
+                    log.error("根据大纲id获取大纲信息异常:课程id & 大纲 ids: {}", item);
+                }else{
+                    courseWorkCourseVo.setCourseTitle(courseInfo.getClassName());
+                }
                 String ids = String.valueOf(item.get("syllabusIds"));
                 Set<Long> temp = Arrays.stream(ids.split(",")).map(Long::valueOf).collect(Collectors.toSet());
                 if(CollectionUtils.isEmpty(temp)){
@@ -509,6 +517,9 @@ public class CourseExercisesProcessLogManager {
                 table.put(LESSON_LABEL, item, syllabusWareInfo);
                 table.put(COURSE_LABEL, syllabusWareInfo.getClassId(), syllabusWareInfo);
                 copy.remove(item);
+                if((syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE.getVideoType() || syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()) && StringUtils.isEmpty(syllabusWareInfo.getRoomId())){
+                    redisTemplate.delete(key);
+                }
             }
         });
         if(CollectionUtils.isNotEmpty(copy)){
