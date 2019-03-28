@@ -426,7 +426,11 @@ public class CourseExercisesProcessLogManager {
                 }
             })));
         }
-        Map<Long, CourseExercisesProcessLog> courseExercisesProcessLogMap = logList.stream().collect(Collectors.toMap(wareLog -> wareLog.getSyllabusId(), wareLog -> wareLog));
+
+        Map<Long, CourseExercisesProcessLog> courseExercisesProcessLogMap = Maps.newHashMap();
+        for (CourseExercisesProcessLog courseExercisesProcessLog : logList) {
+            courseExercisesProcessLogMap.put(courseExercisesProcessLog.getSyllabusId(), courseExercisesProcessLog);
+        }
 
         dataList.forEach(item->{
             CourseWorkCourseVo courseWorkCourseVo = new CourseWorkCourseVo();
