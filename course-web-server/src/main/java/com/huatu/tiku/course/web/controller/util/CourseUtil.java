@@ -437,7 +437,7 @@ public class CourseUtil {
                 log.error("处理大纲我的学习好高状态异常:{}, userId:{}",stringObjectMap, userId);
             }
         }
-        log.info("大纲列表 - 学习报告 - 请求参数params:{},userId:{}, 耗时:{}", response, userId,stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        log.info("大纲列表 - 学习报告 - userId:{}, 耗时:{}",userId, stopwatch.elapsed(TimeUnit.MILLISECONDS));
     }
 
     /**

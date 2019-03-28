@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.web.controller.v5;
 
+import com.google.common.base.Stopwatch;
 import com.huatu.common.SuccessMessage;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by lijun on 2018/6/25
@@ -172,12 +174,22 @@ public class CourseControllerV5 {
             @RequestParam(defaultValue = "20") int pageSize
     ) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
+        Stopwatch stopwatch = Stopwatch.createStarted();
         Object purchasesTimetable = courseServiceBiz.findPurchasesTimetable(userSession.getId(), map);
         //添加答题信息
+        log.info("pc端请求大纲售后数据耗时第一步耗时:{},size:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS) ,pageSize);
+        stopwatch.reset();
         courseUtil.addExercisesCardInfo((LinkedHashMap) purchasesTimetable, userSession.getId(), true);
+        log.info("pc端请求大纲售后数添加课后作业信息耗时:{},size:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS) ,pageSize);
+        stopwatch.reset();
         courseUtil.addPeriodTestInfo((LinkedHashMap) purchasesTimetable, userSession.getId());
+        log.info("pc端请求大纲售后数添加2020阶段测试耗时:{},size:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS) ,pageSize);
+        stopwatch.reset();
         courseUtil.addLearnReportInfoV2((LinkedHashMap) purchasesTimetable, userSession.getId());
+        log.info("pc端请求大纲售后数添加2020学习报告耗时:{},size:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS) ,pageSize);
+        stopwatch.reset();
         courseUtil.addLiveCardExercisesCardInfo((LinkedHashMap) purchasesTimetable, userSession.getId(), true);
+        log.info("pc端请求大纲售后数添加2020直播回放课后作业耗时:{},size:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS) ,pageSize);
         return purchasesTimetable;
     }
 

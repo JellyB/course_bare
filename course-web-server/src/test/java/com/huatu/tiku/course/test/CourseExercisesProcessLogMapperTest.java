@@ -1,6 +1,8 @@
 package com.huatu.tiku.course.test;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
@@ -8,19 +10,25 @@ import com.huatu.common.test.BaseWebTest;
 import com.huatu.tiku.course.bean.vo.LiveRecordInfo;
 import com.huatu.tiku.course.bean.vo.LiveRecordInfoWithUserInfo;
 import com.huatu.tiku.course.bean.vo.SyllabusWareInfo;
+import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.entity.CourseExercisesProcessLog;
+import com.huatu.ztk.paper.common.AnswerCardStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
+import tk.mybatis.mapper.entity.Example;
 
+import javax.persistence.Temporal;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 描述：
@@ -76,6 +84,22 @@ public class CourseExercisesProcessLogMapperTest extends BaseWebTest {
             }
         });
 
+    }
+
+
+    @Test
+    public void testCourseWorkList(){
+        List<Integer> list = Lists.newArrayList(AnswerCardStatus.CREATE, AnswerCardStatus.UNDONE);
+        Example example = new Example(CourseExercisesProcessLog.class);
+        example.and().andEqualTo("status", YesOrNoStatus.YES.getCode())
+                .andIn("bizStatus", list);
+
+        List<CourseExercisesProcessLog> workList = courseExercisesProcessLogMapper.selectByExample(example);
+        Set<Long> userIds = workList.stream().map(CourseExercisesProcessLog::getUserId).collect(Collectors.toSet());
+        for (Long userId : userIds) {
+            Object object = courseExercisesProcessLogManager.courseWorkList(userId, 1, 100);
+            log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>:{}", JSONObject.toJSONString(object));
+        }
     }
 
     /**
