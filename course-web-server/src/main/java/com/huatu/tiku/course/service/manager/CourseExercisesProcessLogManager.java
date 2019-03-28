@@ -411,7 +411,7 @@ public class CourseExercisesProcessLogManager {
                 .andIn("syllabusId", allSyllabusIds);
 
         List<CourseExercisesProcessLog> logList = courseExercisesProcessLogMapper.selectByExample(example);
-        String cardIds = logList.stream().map(CourseExercisesProcessLog::getCardId).map(String::valueOf).collect(Collectors.joining(","));
+        String cardIds = logList.stream().map(CourseExercisesProcessLog::getCardId).distinct().map(String::valueOf).collect(Collectors.joining(","));
         if(StringUtils.isNotBlank(cardIds)){
             Object practiceCardInfos = practiceCardService.getCourseExercisesCardInfoBatch(cardIds);
             List<HashMap<String, Object>> answerCardInfo = (List<HashMap<String, Object>>) ZTKResponseUtil.build(practiceCardInfos);

@@ -32,7 +32,7 @@ public class CourseExercisesProcessLogProvider {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(" SELECT");
         stringBuilder.append(" course_id as courseId,");
-        stringBuilder.append(" GROUP_CONCAT(syllabus_id) AS syllabusIds");
+        stringBuilder.append(" GROUP_CONCAT( distinct syllabus_id) AS syllabusIds");
         stringBuilder.append(" FROM");
         stringBuilder.append(" course_exercises_process_log");
         stringBuilder.append(" WHERE");
