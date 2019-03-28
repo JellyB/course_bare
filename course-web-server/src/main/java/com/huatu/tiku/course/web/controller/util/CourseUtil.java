@@ -398,6 +398,7 @@ public class CourseUtil {
      */
     public void addLearnReportInfoV2(LinkedHashMap response, int userId){
         StopWatch stopWatch = new StopWatch("learnReport - addLearnReportInfoV2");
+        stopWatch.start();
         List<Map<String, Object>> list = (List<Map<String, Object>>)response.get("list");
         if(CollectionUtils.isEmpty(list)){
             return;
