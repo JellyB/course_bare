@@ -12,6 +12,7 @@ import com.huatu.tiku.course.web.controller.util.CourseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -101,14 +102,30 @@ public class SyllabusControllerV6 {
             @RequestParam(defaultValue = "0", required = false) int parentNodeId
     ) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
+        StopWatch stopwatch = new StopWatch("app 端售后大纲请求时间统计");
+        stopwatch.start("buyAfterSyllabus");
         Object response = ResponseUtil.build(syllabusService.buyAfterSyllabus(map));
+        stopwatch.stop();
         //添加答题信息
+        stopwatch.start("addExercisesCardInfo");
         courseUtil.addExercisesCardInfo((LinkedHashMap) response, userSession.getId(), false);
+        stopwatch.stop();
+        stopwatch.start("buyAfterSyllabus - other data");
         if(versionControlService.checkLearnReportShow(terminal, cv)){
+            stopwatch.start("addPeriodTestInfo");
             courseUtil.addPeriodTestInfo((LinkedHashMap) response, userSession.getId());
+            stopwatch.stop();
+            stopwatch.start("addLearnReportInfoV2");
             courseUtil.addLearnReportInfoV2((LinkedHashMap) response, userSession.getId());
+            stopwatch.stop();
+            //添加答题信息
+            stopwatch.start("addLiveCardExercisesCardInfo");
             courseUtil.addLiveCardExercisesCardInfo((LinkedHashMap) response, userSession.getId(), false);
+            stopwatch.stop();
         }
+        stopwatch.stop();
+        //添加答题信息
+        log.info("pc 端请求课后作业超时时间统计, 耗时:{}", stopwatch.prettyPrint());
         return response;
     }
 
