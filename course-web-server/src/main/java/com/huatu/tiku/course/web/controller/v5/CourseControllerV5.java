@@ -1,6 +1,5 @@
 package com.huatu.tiku.course.web.controller.v5;
 
-import com.google.common.base.Stopwatch;
 import com.huatu.common.SuccessMessage;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
@@ -17,6 +16,7 @@ import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -163,6 +163,23 @@ public class CourseControllerV5 {
 
 
     /**
+     * 获取课程大纲-售后，1000条
+     */
+    @LocalMapParam(checkToken = true)
+    @GetMapping("/{classId}/purchasedClassSyllabusV2")
+    public Object purchasedClassSyllabusV2(
+            @Token UserSession userSession,
+            @RequestParam int parentId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int pageSize
+    ) {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        Object purchasesTimetable = courseServiceBiz.findPurchasesTimetable(userSession.getId(), map);
+        return purchasesTimetable;
+    }
+
+
+    /**
      * 获取课程大纲-售后
      */
     @LocalMapParam(checkToken = true)
@@ -174,22 +191,24 @@ public class CourseControllerV5 {
             @RequestParam(defaultValue = "20") int pageSize
     ) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
-        Stopwatch stopwatch = Stopwatch.createStarted();
+        StopWatch stopwatch = new StopWatch("pc 端请求课后作业超时时间统计");
+        stopwatch.start("findPurchasesTimetable");
         Object purchasesTimetable = courseServiceBiz.findPurchasesTimetable(userSession.getId(), map);
+        stopwatch.stop();
         //添加答题信息
-        log.info("pc端请求大纲售后数据耗时第一步耗时:{},size:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS) ,pageSize);
-        stopwatch.reset();
+        stopwatch.start("addExercisesCardInfo");
         courseUtil.addExercisesCardInfo((LinkedHashMap) purchasesTimetable, userSession.getId(), true);
-        log.info("pc端请求大纲售后数添加课后作业信息耗时:{},size:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS) ,pageSize);
-        stopwatch.reset();
+        stopwatch.stop();
+        stopwatch.start("addPeriodTestInfo");
         courseUtil.addPeriodTestInfo((LinkedHashMap) purchasesTimetable, userSession.getId());
-        log.info("pc端请求大纲售后数添加2020阶段测试耗时:{},size:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS) ,pageSize);
-        stopwatch.reset();
+        stopwatch.stop();
+        stopwatch.start("addLearnReportInfoV2");
         courseUtil.addLearnReportInfoV2((LinkedHashMap) purchasesTimetable, userSession.getId());
-        log.info("pc端请求大纲售后数添加2020学习报告耗时:{},size:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS) ,pageSize);
-        stopwatch.reset();
-        courseUtil.addLiveCardExercisesCardInfo((LinkedHashMap) purchasesTimetable, userSession.getId(), true);
-        log.info("pc端请求大纲售后数添加2020直播回放课后作业耗时:{},size:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS) ,pageSize);
+        stopwatch.stop();
+        stopwatch.start("addLiveCardExercisesCardInfo");
+        courseUtil.addLiveCardExercisesCardInfo((LinkedHashMap) purchasesTimetable, userSession.getId(), true);;
+        stopwatch.stop();
+        log.info("pc 端请求课后作业超时时间统计, 耗时:{}", stopwatch.prettyPrint());
         return purchasesTimetable;
     }
 

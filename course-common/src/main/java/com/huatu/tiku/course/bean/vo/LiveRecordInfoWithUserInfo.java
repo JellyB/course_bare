@@ -21,12 +21,16 @@ public class LiveRecordInfoWithUserInfo implements Serializable{
     private int userId;
     private int subject;
     private int terminal;
+    private String userName;
+    private String cv;
 
     @Builder
-    public LiveRecordInfoWithUserInfo(LiveRecordInfo liveRecordInfo, int userId, int subject, int terminal) {
+    public LiveRecordInfoWithUserInfo(LiveRecordInfo liveRecordInfo, int userId, int subject, int terminal, String userName, String cv) {
         this.liveRecordInfo = liveRecordInfo;
         this.userId = userId;
         this.subject = subject;
         this.terminal = terminal;
+        this.userName = userName;
+        this.cv = cv;
     }
 }

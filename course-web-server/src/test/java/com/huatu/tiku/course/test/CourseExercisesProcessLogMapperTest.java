@@ -12,6 +12,7 @@ import com.huatu.tiku.course.bean.vo.LiveRecordInfoWithUserInfo;
 import com.huatu.tiku.course.bean.vo.SyllabusWareInfo;
 import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
+import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.entity.CourseExercisesProcessLog;
@@ -100,6 +101,21 @@ public class CourseExercisesProcessLogMapperTest extends BaseWebTest {
             Object object = courseExercisesProcessLogManager.courseWorkList(userId, 1, 100);
             log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>:{}", JSONObject.toJSONString(object));
         }
+    }
+
+    @Test
+    public void testCourseWorkListSingleUser(){
+        int userId = 235519519;
+        Object object = courseExercisesProcessLogManager.courseWorkList(userId, 1, 100);
+        log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>:{}", JSONObject.toJSONString(object));
+    }
+
+    @Test
+    public void testRequestSingleSyllabusInfoWithCache(){
+        long syllabusId = 5476937L;
+        SyllabusWareInfo syllabusWareInfo = courseExercisesProcessLogManager.requestSingleSyllabusInfoWithCache(syllabusId);
+        log.error("syllabusWareInfo:{}", JSONObject.toJSONString(syllabusWareInfo));
+
     }
 
     /**
