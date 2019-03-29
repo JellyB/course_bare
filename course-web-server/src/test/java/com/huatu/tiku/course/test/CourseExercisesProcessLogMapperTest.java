@@ -25,6 +25,7 @@ import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.persistence.Temporal;
+import java.security.cert.CollectionCertStoreParameters;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -102,6 +103,43 @@ public class CourseExercisesProcessLogMapperTest extends BaseWebTest {
             log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>:{}", JSONObject.toJSONString(object));
         }
     }
+
+    @Test
+    public void correctData(){
+        List<Integer> list = Lists.newArrayList(AnswerCardStatus.CREATE, AnswerCardStatus.UNDONE);
+        Example example = new Example(CourseExercisesProcessLog.class);
+        example.and().andEqualTo("status", YesOrNoStatus.YES.getCode())
+                .andIn("bizStatus", list);
+
+        List<CourseExercisesProcessLog> workList = courseExercisesProcessLogMapper.selectByExample(example);
+        Set<Long> syllabusIds = workList.stream().map(CourseExercisesProcessLog::getSyllabusId).collect(Collectors.toSet());
+        Map<Long, SyllabusWareInfo> syllabusWareInfoMap = syllabusIds.stream().collect(Collectors.toMap(i -> i, i ->{
+            SyllabusWareInfo syllabusWareInfo = courseExercisesProcessLogManager.requestSingleSyllabusInfoWithCache(i);
+            return syllabusWareInfo;
+        }));
+        for (CourseExercisesProcessLog courseExercisesProcessLog : workList) {
+            long syllabusId = courseExercisesProcessLog.getSyllabusId();
+            if(!syllabusWareInfoMap.containsKey(syllabusId)){
+                log.error("大纲id查询不到:{}", syllabusId);
+                continue;
+            }
+            SyllabusWareInfo syllabusWareInfo = syllabusWareInfoMap.get(syllabusId);
+            if(syllabusWareInfo.getClassId() != courseExercisesProcessLog.getCourseId()
+                    || syllabusWareInfo.getVideoType() != courseExercisesProcessLog.getCourseType()
+                    || syllabusWareInfo.getCoursewareId() != courseExercisesProcessLog.getLessonId()){
+                log.error("数据库数据:课程:{},课件:{},类型:{}, 大纲数据:课程:{}, 课件:{}, 类型:{}",
+                        courseExercisesProcessLog.getCourseId(),
+                        courseExercisesProcessLog.getLessonId(),
+                        courseExercisesProcessLog.getCourseType(),
+                        syllabusWareInfo.getClassId(),
+                        syllabusWareInfo.getVideoType());
+            }
+
+        }
+    }
+
+
+
 
     @Test
     public void testCourseWorkListSingleUser(){

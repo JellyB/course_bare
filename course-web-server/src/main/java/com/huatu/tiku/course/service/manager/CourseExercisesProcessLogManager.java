@@ -8,16 +8,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.huatu.tiku.course.bean.vo.RecordProcess;
 import com.huatu.tiku.course.common.VideoTypeEnum;
+import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.entity.CourseLiveBackLog;
 import lombok.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -30,7 +33,6 @@ import org.springframework.stereotype.Component;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -60,6 +62,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StopWatch;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.swing.*;
+
 /**
  * 描述：
  *
@@ -88,6 +92,9 @@ public class CourseExercisesProcessLogManager {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @Autowired
     private UserCourseServiceV6 userCourseServiceV6;
@@ -376,8 +383,8 @@ public class CourseExercisesProcessLogManager {
         CourseExercisesProcessLog updateLog = new CourseExercisesProcessLog();
         updateLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
         updateLog.setBizStatus(answerCard.getStatus());
-        courseExercisesProcessLogMapper.updateByExampleSelective(updateLog, example);
         courseExercisesStatisticsManager.dealCourseExercisesStatistics(answerCard);
+        courseExercisesProcessLogMapper.updateByExampleSelective(updateLog, example);
     }
     /**
      * new courseExercisesProcessLog
@@ -571,7 +578,9 @@ public class CourseExercisesProcessLogManager {
         }
         ObjectMapper objectMapper = new ObjectMapper();
         List<LinkedHashMap<String, Object>> data = (List<LinkedHashMap<String, Object>>)netSchoolResponse.getData();
-
+        if(CollectionUtils.isEmpty(data)){
+            return null;
+        }
         SyllabusWareInfo syllabusWareInfo = objectMapper.convertValue(data.get(0), SyllabusWareInfo.class);
         valueOperations.set(key, JSONObject.toJSONString(syllabusWareInfo));
         redisTemplate.expire(key, 20, TimeUnit.MINUTES);
@@ -584,7 +593,8 @@ public class CourseExercisesProcessLogManager {
      * @throws BizException
      */
     private Table<String, Long, SyllabusWareInfo> requestSyllabusWareInfoPut2Cache(Set<Long> syllabusIds)throws BizException{
-        Stopwatch stopwatch = Stopwatch.createStarted();
+        StopWatch stopwatch = new StopWatch("requestSyllabusWareInfoPut2Cache");
+        stopwatch.start();
         Table<String, Long, SyllabusWareInfo> table = TreeBasedTable.create();
         try{
             String ids = Joiner.on(",").join(syllabusIds);
@@ -617,7 +627,8 @@ public class CourseExercisesProcessLogManager {
                     redisTemplate.expire(key, 20, TimeUnit.MINUTES);
                 });
             }
-            log.debug(">>>>>>>> 请求大纲ids耗费时间:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            stopwatch.stop();
+            log.debug(">>>>>>>> 请求大纲ids耗费时间:{}", stopwatch.prettyPrint());
             return table;
         }catch (Exception e) {
             log.error("request syllabusInfo error!:{}", e);
@@ -652,6 +663,77 @@ public class CourseExercisesProcessLogManager {
         }
         log.info("直播创建或更新课后作业答题卡:大纲id{}", syllabusId);
         createCourseWorkAnswerCardEntrance(syllabusWareInfo.getClassId(), syllabusWareInfo.getSyllabusId(), syllabusWareInfo.getVideoType(), syllabusWareInfo.getCoursewareId(), subject, terminal, cv, userId);
+    }
+
+    /**
+     *
+     * @param userId
+     * @param secret
+     * @return
+     */
+    public void dataCorrect(int userId, String secret){
+        List<Integer> list = Lists.newArrayList(AnswerCardStatus.CREATE, AnswerCardStatus.UNDONE);
+        Example example = new Example(CourseExercisesProcessLog.class);
+        example.and().andEqualTo("status", YesOrNoStatus.YES.getCode())
+                .andNotEqualTo("modifierId", userId)
+                .andIn("bizStatus", list);
+        List<CourseExercisesProcessLog> courseExercisesProcessLogs = courseExercisesProcessLogMapper.selectByExample(example);
+        log.info("dataCorrect:{}", courseExercisesProcessLogs.size());
+        for (CourseExercisesProcessLog courseExercisesProcessLog : courseExercisesProcessLogs) {
+            String message = userId + "_" + courseExercisesProcessLog.getId();
+            rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_EXERCISES_PROCESS_LOG_CORRECT_QUEUE, message);
+        }
+    }
+
+    /**
+     * 数据处理
+     * @param message
+     */
+    public void correct(String message){
+        AtomicInteger atomicInteger = new AtomicInteger(0);
+        log.info(">>>>>>>>> message:{}", message);
+        String [] data = message.split("_");
+        long id = Long.valueOf(data[1]);
+        long userId = Long.valueOf(data[0]);
+        try{
+            int courseType;
+            long lessonId;
+            CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogMapper.selectByPrimaryKey(id);
+            SyllabusWareInfo syllabusWareInfo = requestSingleSyllabusInfoWithCache(courseExercisesProcessLog.getSyllabusId());
+            if(null == syllabusWareInfo){
+                return;
+            }
+
+            /**
+             * 如果为直播回放，获取直播信息，处理
+             */
+            if(syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
+                String roomId = syllabusWareInfo.getRoomId();
+                CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(Long.valueOf(roomId), syllabusWareInfo.getCoursewareId());
+                if(null == courseLiveBackLog){
+                    return;
+                }
+                courseType = VideoTypeEnum.LIVE.getVideoType();
+                lessonId = courseLiveBackLog.getLiveCoursewareId();
+            }else{
+                courseType = syllabusWareInfo.getVideoType();
+                lessonId = syllabusWareInfo.getCoursewareId();
+            }
+            if(lessonId != courseExercisesProcessLog.getLessonId() || courseType != courseExercisesProcessLog.getCourseType()){
+                log.info("数据库数据:,课件:{},类型:{}, 大纲数据:课件:{}, 类型:{}", courseExercisesProcessLog.getLessonId(), courseExercisesProcessLog.getCourseType(),lessonId,courseType);
+                courseExercisesProcessLog.setCourseType(courseType);
+                courseExercisesProcessLog.setLessonId(lessonId);
+                courseExercisesProcessLog.setModifierId(userId);
+                int execute = courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
+                if(execute > 0){
+                    atomicInteger.incrementAndGet();
+                }
+            }
+            log.info("修正课后作业数据成功数:{}", atomicInteger.get());
+        }catch (Exception e){
+            e.printStackTrace();
+            log.error("修正课后作业数据失败:数据id:{},{}",id, e);
+        }
     }
 
 
