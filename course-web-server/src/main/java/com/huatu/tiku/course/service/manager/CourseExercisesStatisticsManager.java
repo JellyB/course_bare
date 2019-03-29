@@ -1,7 +1,6 @@
 package com.huatu.tiku.course.service.manager;
 
 import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.huatu.common.exception.BizException;
@@ -23,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import tk.mybatis.mapper.entity.Example;
 
@@ -50,10 +48,13 @@ public class CourseExercisesStatisticsManager {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    private static final int START = 0;
+    private static final int END = 9;
+    private static final int COUNT = 10;
+
     @Autowired
     private UserServiceV4 userService;
 
-    @Async
     public synchronized void dealCourseExercisesStatistics(PracticeCard answerCard) throws BizException{
         try{
             PracticeForCoursePaper practiceForCoursePaper = (PracticeForCoursePaper)answerCard.getPaper();
@@ -109,7 +110,7 @@ public class CourseExercisesStatisticsManager {
             rankInfoZset.add(rankInfoKey, String.valueOf(answerCard.getUserId()), score);
             existsHash.put(existsKey, String.valueOf(answerCard.getUserId()), JSONObject.toJSONString(userRankInfo));
         }catch (Exception e){
-            log.error("dealCourseExercisesStatistics caught an error!:{}", e);
+            log.error("处理课后作业统计信息异常!:{}", e);
         }
     }
 
@@ -128,13 +129,18 @@ public class CourseExercisesStatisticsManager {
         rankInfo.put("myRank", 0);
         rankInfo.put("ranks", Lists.newArrayList());
         log.debug("课后作业答题卡信息:{}", JSONObject.toJSONString(practiceCard));
-
         try {
             PracticeForCoursePaper practiceForCoursePaper = (PracticeForCoursePaper) practiceCard.getPaper();
+            if(null == practiceForCoursePaper){
+                return rankInfo;
+            }
+            final long courseId = practiceForCoursePaper.getCourseId();
+            final int courseType = practiceForCoursePaper.getCourseType();
+            final long userId = practiceCard.getUserId();
             Example example = new Example(CourseExercisesStatistics.class);
             example.and()
-                    .andEqualTo("courseId", practiceForCoursePaper.getCourseId())
-                    .andEqualTo("courseType", practiceForCoursePaper.getCourseType())
+                    .andEqualTo("courseId", courseId)
+                    .andEqualTo("courseType", courseType)
                     .andEqualTo("status", YesOrNoStatus.YES.getCode());
 
             CourseExercisesStatistics courseExercisesStatistics = courseExercisesStatisticsMapper.selectOneByExample(example);
@@ -143,12 +149,20 @@ public class CourseExercisesStatisticsManager {
             }
             rankInfo.put("avgTimeCost", courseExercisesStatistics.getCosts() / courseExercisesStatistics.getCounts());
             rankInfo.put("avgCorrect", courseExercisesStatistics.getCorrects() / courseExercisesStatistics.getCounts());
-            String rankKey = CourseCacheKey.getCourseWorkRankInfo(practiceForCoursePaper.getCourseType(), practiceForCoursePaper.getCourseId());
-            ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
+            String existsKey = CourseCacheKey.getCourseWorkDealData(courseType, courseId);
+            String rankKey = CourseCacheKey.getCourseWorkRankInfo(courseType, courseId);
+            if(!redisTemplate.hasKey(existsKey) || !redisTemplate.hasKey(rankKey)){
+                log.info("课后作业下用户第一个提交:courseType:{},courseId:{},userId:{}",courseType, courseId, userId);
+                this.dealCourseExercisesStatistics(practiceCard);
+            }
+
             HashOperations<String, String, String> existHash = redisTemplate.opsForHash();
-            String existsKey = CourseCacheKey.getCourseWorkDealData(practiceForCoursePaper.getCourseType(), practiceForCoursePaper.getCourseId());
+            ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
             long myRank = zSetOperations.rank(rankKey, String.valueOf(practiceCard.getUserId())) + 1;
-            Set<String> userIdRanks = zSetOperations.range(rankKey, 0, 9);
+            Set<String> userIdRanks = zSetOperations.range(rankKey, START, END);
+            if(CollectionUtils.isEmpty(userIdRanks)){
+                return rankInfo;
+            }
             List<UserRankInfo> userRankInfoArrayList = Lists.newArrayList();
             userRankInfoArrayList.addAll(userIdRanks.stream().map(item -> {
                 String value = existHash.get(existsKey, item);
@@ -157,26 +171,26 @@ public class CourseExercisesStatisticsManager {
             }).collect(Collectors.toList()));
 
             List<Long> userIds = userRankInfoArrayList.stream().map(UserRankInfo::getUid).collect(Collectors.toList());
-            if(!userIds.contains(practiceCard.getUserId())){
-                UserRankInfo userRankInfo = UserRankInfo
-                        .builder()
-                        .uid(practiceCard.getUserId())
-                        .submitTimeInfo(practiceCard.getCreateTime())
-                        .rcount(practiceCard.getRcount())
-                        .expendTime(Arrays.stream(practiceCard.getTimes()).sum())
-                        .build();
+            UserRankInfo userRankInfo = UserRankInfo
+                    .builder()
+                    .uid(userId)
+                    .submitTimeInfo(practiceCard.getCreateTime())
+                    .rcount(practiceCard.getRcount())
+                    .expendTime(Arrays.stream(practiceCard.getTimes()).sum())
+                    .build();
 
-                userRankInfoArrayList.add(userRankInfoArrayList.size() -1, userRankInfo);
+            if(!userIds.contains(userId)) {
+                if(userIds.size() < COUNT){
+                    userRankInfoArrayList.add(userRankInfo);
+                }else{
+                    userRankInfoArrayList.add(END, userRankInfo);
+                    userRankInfoArrayList = userRankInfoArrayList.subList(START, COUNT);
+                }
             }
 
-            if(CollectionUtils.isNotEmpty(userRankInfoArrayList)){
-                UserRankInfo top = userRankInfoArrayList.get(0);
-                rankInfo.put("maxCorrect", top.getRcount());
-                rankInfo.put("ranks", dealRanks(userRankInfoArrayList));
-            }else{
-                rankInfo.put("maxCorrect", 0);
-                rankInfo.put("ranks", Lists.newArrayList());
-            }
+            UserRankInfo top = userRankInfoArrayList.get(0);
+            rankInfo.put("maxCorrect", top.getRcount());
+            rankInfo.put("ranks", dealRanks(userRankInfoArrayList));
             rankInfo.put("myRank", myRank);
             return rankInfo;
         }catch (Exception e){
