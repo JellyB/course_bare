@@ -688,8 +688,8 @@ public class CourseExercisesProcessLogManager {
      */
     public void correct(String message){
         String [] data = message.split("_");
-        long id = Long.valueOf(data[0]);
-        long userId = Long.valueOf(data[1]);
+        long id = Long.valueOf(data[1]);
+        long userId = Long.valueOf(data[0]);
         try{
             CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogMapper.selectByPrimaryKey(id);
             SyllabusWareInfo syllabusWareInfo = requestSingleSyllabusInfoWithCache(courseExercisesProcessLog.getSyllabusId());
