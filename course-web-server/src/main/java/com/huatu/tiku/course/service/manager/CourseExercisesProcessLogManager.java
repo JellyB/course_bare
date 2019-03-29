@@ -376,8 +376,8 @@ public class CourseExercisesProcessLogManager {
         CourseExercisesProcessLog updateLog = new CourseExercisesProcessLog();
         updateLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
         updateLog.setBizStatus(answerCard.getStatus());
-        courseExercisesProcessLogMapper.updateByExampleSelective(updateLog, example);
         courseExercisesStatisticsManager.dealCourseExercisesStatistics(answerCard);
+        courseExercisesProcessLogMapper.updateByExampleSelective(updateLog, example);
     }
     /**
      * new courseExercisesProcessLog

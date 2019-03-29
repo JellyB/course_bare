@@ -36,7 +36,7 @@ public class CourseExercisesControllerV2 {
     public Object card(
             @Token UserSession userSession,
             @RequestHeader("terminal") Integer terminal,
-            @RequestHeader("cv") String cv,
+            @RequestHeader(value = "cv", required = false, defaultValue = "1.0") String cv,
             @PathVariable(value = "courseType") Integer courseType,
             @PathVariable(value = "coursewareId") Long coursewareId,
             @RequestParam(value = "courseId") Long courseId,

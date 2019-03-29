@@ -3,14 +3,19 @@ package com.huatu.tiku.course.service.v1.impl.practice;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v6.LessonServiceV6;
+import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.ResponseUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
@@ -34,6 +39,9 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 	@Autowired
 	private LessonServiceV6 lessonService;
 
+	@Autowired
+	private RedisTemplate redisTemplate;
+
 
 	public CourseLiveBackLogServiceImpl() {
 		super(CourseLiveBackLog.class);
@@ -42,13 +50,21 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 	@Override
 	public CourseLiveBackLog findByRoomIdAndLiveCoursewareId(Long roomId, Long coursewareId) {
 
+		String key = CourseCacheKey.findByRoomIdAndLiveCourseWareId(roomId, coursewareId);
+		ValueOperations<String,String> operations = redisTemplate.opsForValue();
+		if(redisTemplate.hasKey(key)){
+			String value = operations.get(key);
+			return JSONObject.parseObject(value,CourseLiveBackLog.class);
+		}
 		final WeekendSqls<CourseLiveBackLog> weekendSqls = WeekendSqls.<CourseLiveBackLog>custom()
 				.andEqualTo(CourseLiveBackLog::getRoomId, roomId)
 				.andEqualTo(CourseLiveBackLog::getLiveBackCoursewareId, coursewareId);
 		final Example example = Example.builder(CourseLiveBackLog.class).where(weekendSqls).build();
 		List<CourseLiveBackLog> courseLiveBackLogList = selectByExample(example);
 		if (CollectionUtils.isNotEmpty(courseLiveBackLogList)) {
-			return courseLiveBackLogList.get(0);
+			CourseLiveBackLog courseLiveBackLog = courseLiveBackLogList.get(0);
+			operations.set(key, JSONObject.toJSONString(courseLiveBackLog), 30, TimeUnit.MINUTES);
+			return courseLiveBackLog;
 		}else{
 			log.info("调用php获取直播回放对应的直播课件id:直播回放id:{},房间id:{}", coursewareId, roomId);
 			Map<String,Object> params = Maps.newHashMap();
@@ -68,6 +84,7 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 				courseLiveBackLog.setLiveBackCoursewareId(coursewareId);
 				courseLiveBackLog.setCreatorId(10L);
 				insert(courseLiveBackLog);
+				operations.set(key, JSONObject.toJSONString(courseLiveBackLog), 30, TimeUnit.MINUTES);
 				return courseLiveBackLog;
 			}
 		}
