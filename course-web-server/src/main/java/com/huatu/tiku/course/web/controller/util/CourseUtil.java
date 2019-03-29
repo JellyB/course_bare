@@ -285,7 +285,8 @@ public class CourseUtil {
             if(null == courseLiveBackLog){
                 continue;
             }
-            Stopwatch stopwatch = Stopwatch.createStarted();
+            StopWatch stopwatch = new StopWatch("addLiveCardExercisesCardInfo");
+            stopwatch.start();
             List<Map<String, Object>> listQuestionByCourseId = courseExercisesService.listQuestionByCourseId(VideoTypeEnum.LIVE.getVideoType(), courseLiveBackLog.getLiveCoursewareId());
             if (CollectionUtils.isEmpty(listQuestionByCourseId)) {
                continue;
@@ -309,6 +310,8 @@ public class CourseUtil {
                 }
                 detail.put("answerCard", answerCard);
             }
+            stopwatch.stop();
+            log.info("大纲列表处理直播回放课后作业答题卡耗时:{}", stopwatch.prettyPrint());
             log.info("学习报告 - 直播回放获取答题卡信息:userId:{},courseWareId:{}", userId, courseWareId);
         }
     }
