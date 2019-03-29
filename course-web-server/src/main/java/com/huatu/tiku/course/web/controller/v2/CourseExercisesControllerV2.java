@@ -4,6 +4,7 @@ import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.springboot.users.support.Token;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("exercises")
 @ApiVersion("v2")
+@Slf4j
 public class CourseExercisesControllerV2 {
 
 
@@ -34,13 +36,14 @@ public class CourseExercisesControllerV2 {
     public Object card(
             @Token UserSession userSession,
             @RequestHeader("terminal") Integer terminal,
+            @RequestHeader("cv") String cv,
             @PathVariable(value = "courseType") Integer courseType,
             @PathVariable(value = "coursewareId") Long coursewareId,
             @RequestParam(value = "courseId") Long courseId,
             @RequestParam(value = "syllabusId") Long syllabusId
 
     ) {
-        return courseExercisesProcessLogManager.createCourseWorkAnswerCardEntrance(courseId, syllabusId, courseType, coursewareId, userSession.getSubject(), terminal, userSession.getId());
+        return courseExercisesProcessLogManager.createCourseWorkAnswerCardEntrance(courseId, syllabusId, coursewareId, userSession.getSubject(), terminal, cv, userSession.getId());
     }
 }
 

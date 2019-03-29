@@ -40,10 +40,12 @@ public class ProcessReportServiceImpl implements ProcessReportService {
         int userId  = MapUtils.getIntValue(params, "userId");
         int subject = MapUtils.getIntValue(params, "subject");
         int terminal = MapUtils.getIntValue(params, "terminal");
+        String cv = MapUtils.getString(params, "cv");
 
         RecordProcess recordProcess = RecordProcess.builder()
                 .syllabusId(syllabusId)
                 .userName(userName)
+                .cv(cv)
                 .subject(subject)
                 .terminal(terminal)
                 .userId(userId)
