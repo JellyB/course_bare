@@ -10,9 +10,11 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.huatu.common.ErrorResult;
 import com.huatu.tiku.course.bean.vo.RecordProcess;
 import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
+import com.huatu.tiku.entity.CourseLiveBackLog;
 import lombok.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -56,6 +58,7 @@ import com.huatu.ztk.paper.bean.PracticeCard;
 import com.huatu.ztk.paper.common.AnswerCardStatus;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StopWatch;
 import tk.mybatis.mapper.entity.Example;
 
 /**
@@ -222,31 +225,7 @@ public class CourseExercisesProcessLogManager {
                 recordProcess.getUserId());
     }
 
-    /**
-     * 录播手动创建答题卡数据校验
-     * @param courseId
-     * @param syllabusId
-     * @param coursewareId
-     * @param subject
-     * @param terminal
-     * @param cv
-     * @param userId
-     * @return
-     * @throws BizException
-     */
-    public synchronized Object createCourseWorkAnswerCardEntrance(long courseId, long syllabusId, long coursewareId, int subject, int terminal, String cv, int userId) throws BizException{
-        SyllabusWareInfo syllabusWareInfo = requestSingleSyllabusInfoWithCache(syllabusId);
-        if(syllabusWareInfo.getClassId() != courseId || syllabusWareInfo.getCoursewareId() != coursewareId){
-            log.error("数据上报过数据与 php 大纲表数据不一致:courseId:{},coursewareId:{},syllabusId:{},userId:{}", courseId, coursewareId, syllabusId, userId);
-            return this.createCourseWorkAnswerCardEntrance(syllabusWareInfo.getClassId(),
-                    syllabusId,
-                    VideoTypeEnum.DOT_LIVE.getVideoType(),
-                    syllabusWareInfo.getCoursewareId(),
-                    subject, terminal, cv, userId);
-        }else{
-            return this.createCourseWorkAnswerCardEntrance(courseId, syllabusId, VideoTypeEnum.DOT_LIVE.getVideoType(), coursewareId, subject, terminal, cv, userId);
-        }
-    }
+
     /**
      * 创建课后作业答题卡前置逻辑入口
      * @param courseId
@@ -261,7 +240,18 @@ public class CourseExercisesProcessLogManager {
      * @throws BizException
      */
     public synchronized Object createCourseWorkAnswerCardEntrance(long courseId, long syllabusId, int courseType, long coursewareId, int subject, int terminal, String cv, int userId) throws BizException{
-        Stopwatch stopwatch = Stopwatch.createStarted();
+        StopWatch stopwatch = new StopWatch("手动创建录播或直播回放课后作业答题卡");
+        stopwatch.start();
+        if(courseType == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
+            SyllabusWareInfo syllabusWareInfo = requestSingleSyllabusInfoWithCache(syllabusId);
+            if(null == syllabusWareInfo || StringUtils.isEmpty(syllabusWareInfo.getRoomId())){
+                log.error("直播回放创建课后作业答题卡失败，查询不到百家云信息:{}", syllabusId);
+                return null;
+            }
+            CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(Long.valueOf(syllabusWareInfo.getRoomId()), syllabusWareInfo.getCoursewareId());
+            coursewareId = courseLiveBackLog.getLiveCoursewareId();
+            courseType = VideoTypeEnum.LIVE.getVideoType();
+        }
 
         List<Map<String, Object>> list = courseExercisesService.listQuestionByCourseId(courseType, coursewareId);
         if (CollectionUtils.isEmpty(list)) {
@@ -282,6 +272,8 @@ public class CourseExercisesProcessLogManager {
         result.computeIfPresent("id", (key, value) -> String.valueOf(value));
         createCourseWorkAnswerCard(userId, courseType, coursewareId, courseId, syllabusId, result);
         log.info("课后作业 - 创建课后答题卡请求参数:courseId:{},syllabusId:{},courseType:{},coursewareId:{},userId:{},耗时:{}", courseId, syllabusId, courseType, coursewareId,userId, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        stopwatch.stop();
+        log.info("手动创建录播或直播回放课后作业答题卡:{}", stopwatch.prettyPrint());
         return result;
     }
 
@@ -296,7 +288,6 @@ public class CourseExercisesProcessLogManager {
     public synchronized void createCourseWorkAnswerCard(int userId, Integer courseType, Long coursewareId, Long courseId, Long syllabusId, HashMap<String,Object> result){
         Long cardId = MapUtils.getLongValue(result, "id");
         int status = MapUtils.getIntValue(result, "status");
-        Map<String,Object> paper = (HashMap<String,Object>)result.get("paper");
 
         Example example = new Example(CourseExercisesProcessLog.class);
         example.and().andEqualTo("lessonId", coursewareId)
@@ -487,17 +478,21 @@ public class CourseExercisesProcessLogManager {
                         }).map(ware -> {
                             SyllabusWareInfo syllabusWareInfo = syllabusWareInfoTable.get(LESSON_LABEL, Long.valueOf(ware));
                             CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogMap.get(Long.valueOf(ware));
-                            CourseWorkWareVo courseWorkWareVo = CourseWorkWareVo
-                                    .builder()
-                                    .courseWareId(syllabusWareInfo.getCoursewareId())
-                                    .courseWareTitle(syllabusWareInfo.getCoursewareName())
-                                    .videoLength(syllabusWareInfo.getLength())
-                                    .serialNumber(syllabusWareInfo.getSerialNumber())
-                                    .answerCardId(courseExercisesProcessLog.getCardId())
-                                    .videoType(syllabusWareInfo.getVideoType())
-                                    .questionIds("")
-                                    .isAlert(courseExercisesProcessLog.getIsAlert())
-                                    .build();
+                            CourseWorkWareVo courseWorkWareVo = new CourseWorkWareVo();
+
+                            courseWorkWareVo.setCourseWareTitle(syllabusWareInfo.getCoursewareName());
+                            courseWorkWareVo.setVideoLength(syllabusWareInfo.getLength());
+                            courseWorkWareVo.setSerialNumber(syllabusWareInfo.getSerialNumber());
+                            courseWorkWareVo.setAnswerCardId(courseExercisesProcessLog.getCardId());
+                            if(syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
+                                courseWorkWareVo.setCourseWareId(courseExercisesProcessLog.getLessonId());
+                                courseWorkWareVo.setVideoType(courseExercisesProcessLog.getCourseType());
+                            }else{
+                                courseWorkWareVo.setCourseWareId(syllabusWareInfo.getCoursewareId());
+                                courseWorkWareVo.setVideoType(syllabusWareInfo.getVideoType());
+                            }
+                            courseWorkWareVo.setQuestionIds("");
+                            courseWorkWareVo.setIsAlert(courseExercisesProcessLog.getIsAlert());
                             if(answerCardMaps.containsKey(courseExercisesProcessLog.getCardId())){
                                 courseWorkWareVo.setAnswerCardInfo(answerCardMaps.get(courseExercisesProcessLog.getCardId()));
                             }else{
@@ -558,7 +553,7 @@ public class CourseExercisesProcessLogManager {
      * @return
      * @throws BizException
      */
-    private SyllabusWareInfo requestSingleSyllabusInfoWithCache(long syllabusId) throws BizException{
+     public  SyllabusWareInfo requestSingleSyllabusInfoWithCache(long syllabusId) throws BizException{
         ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
         String key = CourseCacheKey.getProcessLogSyllabusInfo(syllabusId);
         if(redisTemplate.hasKey(key)){
@@ -633,7 +628,7 @@ public class CourseExercisesProcessLogManager {
 
 
     /**
-     * 直播数据上报
+     * 直播数据上报处理，非直播不处理
      * @param subject
      * @param terminal
      * @param userId
@@ -652,6 +647,10 @@ public class CourseExercisesProcessLogManager {
          * 创建答题卡
          */
         SyllabusWareInfo syllabusWareInfo = table.get(LESSON_LABEL, syllabusId);
+        if(VideoTypeEnum.LIVE.getVideoType() != syllabusWareInfo.getVideoType()){
+            log.error("直播上报数据与大纲数据不一致:{}", JSONObject.toJSONString(syllabusWareInfo));
+            return;
+        }
         log.info("直播创建或更新课后作业答题卡:大纲id{}", syllabusId);
         createCourseWorkAnswerCardEntrance(syllabusWareInfo.getClassId(), syllabusWareInfo.getSyllabusId(), syllabusWareInfo.getVideoType(), syllabusWareInfo.getCoursewareId(), subject, terminal, cv, userId);
     }
