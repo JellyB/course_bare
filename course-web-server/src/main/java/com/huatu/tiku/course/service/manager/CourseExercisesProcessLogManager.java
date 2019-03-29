@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 import com.huatu.tiku.course.bean.vo.RecordProcess;
 import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
-import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.entity.CourseLiveBackLog;
 import lombok.*;
@@ -33,7 +32,6 @@ import org.springframework.stereotype.Component;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -62,6 +60,8 @@ import com.huatu.ztk.paper.common.AnswerCardStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StopWatch;
 import tk.mybatis.mapper.entity.Example;
+
+import javax.swing.*;
 
 /**
  * 描述：
@@ -691,24 +691,33 @@ public class CourseExercisesProcessLogManager {
         long id = Long.valueOf(data[1]);
         long userId = Long.valueOf(data[0]);
         try{
+            int courseType;
+            long lessonId;
             CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogMapper.selectByPrimaryKey(id);
             SyllabusWareInfo syllabusWareInfo = requestSingleSyllabusInfoWithCache(courseExercisesProcessLog.getSyllabusId());
             if(null == syllabusWareInfo){
                 return;
             }
-            if(syllabusWareInfo.getClassId() != courseExercisesProcessLog.getCourseId()
-                    || syllabusWareInfo.getVideoType() != courseExercisesProcessLog.getCourseType()
-                    || syllabusWareInfo.getCoursewareId() != courseExercisesProcessLog.getLessonId()){
-                log.error("数据库数据:课程:{},课件:{},类型:{}, 大纲数据:课程:{}, 课件:{}, 类型:{}",
-                        courseExercisesProcessLog.getCourseId(),
-                        courseExercisesProcessLog.getLessonId(),
-                        courseExercisesProcessLog.getCourseType(),
-                        syllabusWareInfo.getClassId(),
-                        syllabusWareInfo.getCoursewareId(),
-                        syllabusWareInfo.getVideoType());
-                courseExercisesProcessLog.setCourseId(syllabusWareInfo.getClassId());
-                courseExercisesProcessLog.setCourseType(syllabusWareInfo.getVideoType());
-                courseExercisesProcessLog.setLessonId(syllabusWareInfo.getCoursewareId());
+
+            /**
+             * 如果为直播回放，获取直播信息，处理
+             */
+            if(syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
+                String roomId = syllabusWareInfo.getRoomId();
+                CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(Long.valueOf(roomId), syllabusWareInfo.getCoursewareId());
+                if(null == courseExercisesProcessLog){
+                    return;
+                }
+                courseType = VideoTypeEnum.LIVE.getVideoType();
+                lessonId = courseLiveBackLog.getLiveCoursewareId();
+            }else{
+                courseType = syllabusWareInfo.getVideoType();
+                lessonId = syllabusWareInfo.getCoursewareId();
+            }
+            if(lessonId != courseExercisesProcessLog.getLessonId() || courseType != courseExercisesProcessLog.getCourseType()){
+                log.info("数据库数据:,课件:{},类型:{}, 大纲数据:课件:{}, 类型:{}", courseExercisesProcessLog.getLessonId(), courseExercisesProcessLog.getCourseType(),lessonId,courseType);
+                courseExercisesProcessLog.setCourseType(courseType);
+                courseExercisesProcessLog.setLessonId(lessonId);
                 courseExercisesProcessLog.setModifierId(userId);
                 courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
             }
