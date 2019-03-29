@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.huatu.common.ErrorResult;
 import com.huatu.tiku.course.bean.vo.RecordProcess;
 import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
@@ -271,7 +270,7 @@ public class CourseExercisesProcessLogManager {
         }
         result.computeIfPresent("id", (key, value) -> String.valueOf(value));
         createCourseWorkAnswerCard(userId, courseType, coursewareId, courseId, syllabusId, result);
-        log.info("课后作业 - 创建课后答题卡请求参数:courseId:{},syllabusId:{},courseType:{},coursewareId:{},userId:{},耗时:{}", courseId, syllabusId, courseType, coursewareId,userId, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        log.info("课后作业 - 创建课后答题卡请求参数:courseId:{},syllabusId:{},courseType:{},coursewareId:{},userId:{}", courseId, syllabusId, courseType, coursewareId, userId);
         stopwatch.stop();
         log.info("手动创建录播或直播回放课后作业答题卡:{}", stopwatch.prettyPrint());
         return result;
