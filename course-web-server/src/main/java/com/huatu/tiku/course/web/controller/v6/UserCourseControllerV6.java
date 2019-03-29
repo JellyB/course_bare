@@ -2,6 +2,7 @@ package com.huatu.tiku.course.web.controller.v6;
 
 import com.google.common.collect.Lists;
 import com.huatu.common.ErrorResult;
+import com.huatu.common.SuccessMessage;
 import com.huatu.common.exception.BizException;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
@@ -15,6 +16,7 @@ import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
 
+import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -137,6 +139,12 @@ public class UserCourseControllerV6 {
         return courseExercisesProcessLogManager.courseWorkList(userSession.getId(), page, size);
     }
 
+    @PostMapping
+    public Object dataCorrect(@Token UserSession userSession, @RequestHeader("secret") String secret){
+        courseExercisesProcessLogManager.dataCorrect(userSession.getId(), secret);
+        return SuccessMessage.create("操作成功！");
+
+    }
 
     /**
      * 阶段测试列表

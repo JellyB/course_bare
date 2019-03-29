@@ -12,12 +12,15 @@ import java.util.stream.Collectors;
 
 import com.huatu.tiku.course.bean.vo.RecordProcess;
 import com.huatu.tiku.course.common.VideoTypeEnum;
+import com.huatu.tiku.course.consts.RabbitMqConstants;
+import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.entity.CourseLiveBackLog;
 import lombok.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -88,6 +91,9 @@ public class CourseExercisesProcessLogManager {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @Autowired
     private UserCourseServiceV6 userCourseServiceV6;
@@ -584,7 +590,8 @@ public class CourseExercisesProcessLogManager {
      * @throws BizException
      */
     private Table<String, Long, SyllabusWareInfo> requestSyllabusWareInfoPut2Cache(Set<Long> syllabusIds)throws BizException{
-        Stopwatch stopwatch = Stopwatch.createStarted();
+        StopWatch stopwatch = new StopWatch("requestSyllabusWareInfoPut2Cache");
+        stopwatch.start();
         Table<String, Long, SyllabusWareInfo> table = TreeBasedTable.create();
         try{
             String ids = Joiner.on(",").join(syllabusIds);
@@ -617,7 +624,8 @@ public class CourseExercisesProcessLogManager {
                     redisTemplate.expire(key, 20, TimeUnit.MINUTES);
                 });
             }
-            log.debug(">>>>>>>> 请求大纲ids耗费时间:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            stopwatch.stop();
+            log.debug(">>>>>>>> 请求大纲ids耗费时间:{}", stopwatch.prettyPrint());
             return table;
         }catch (Exception e) {
             log.error("request syllabusInfo error!:{}", e);
@@ -652,6 +660,61 @@ public class CourseExercisesProcessLogManager {
         }
         log.info("直播创建或更新课后作业答题卡:大纲id{}", syllabusId);
         createCourseWorkAnswerCardEntrance(syllabusWareInfo.getClassId(), syllabusWareInfo.getSyllabusId(), syllabusWareInfo.getVideoType(), syllabusWareInfo.getCoursewareId(), subject, terminal, cv, userId);
+    }
+
+    /**
+     *
+     * @param userId
+     * @param secret
+     * @return
+     */
+    public void dataCorrect(int userId, String secret){
+        List<Integer> list = Lists.newArrayList(AnswerCardStatus.CREATE, AnswerCardStatus.UNDONE);
+        Example example = new Example(CourseExercisesProcessLog.class);
+        example.and().andEqualTo("status", YesOrNoStatus.YES.getCode())
+                .andNotEqualTo("modifierId", userId)
+                .andIn("bizStatus", list);
+        List<CourseExercisesProcessLog> courseExercisesProcessLogs = courseExercisesProcessLogMapper.selectByExample(example);
+        log.info("dataCorrect:{}", courseExercisesProcessLogs.size());
+        for (CourseExercisesProcessLog courseExercisesProcessLog : courseExercisesProcessLogs) {
+            String message = userId + "_" + courseExercisesProcessLog.getId();
+            rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_EXERCISES_PROCESS_LOG_CORRECT_QUEUE, message);
+        }
+    }
+
+    /**
+     * 数据处理
+     * @param message
+     */
+    public void correct(String message){
+        String [] data = message.split("_");
+        long id = Long.valueOf(data[0]);
+        long userId = Long.valueOf(data[1]);
+        try{
+            CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogMapper.selectByPrimaryKey(id);
+            SyllabusWareInfo syllabusWareInfo = requestSingleSyllabusInfoWithCache(courseExercisesProcessLog.getSyllabusId());
+            if(null == syllabusWareInfo){
+                return;
+            }
+            if(syllabusWareInfo.getClassId() != courseExercisesProcessLog.getCourseId()
+                    || syllabusWareInfo.getVideoType() != courseExercisesProcessLog.getCourseType()
+                    || syllabusWareInfo.getCoursewareId() != courseExercisesProcessLog.getLessonId()){
+                log.error("数据库数据:课程:{},课件:{},类型:{}, 大纲数据:课程:{}, 课件:{}, 类型:{}",
+                        courseExercisesProcessLog.getCourseId(),
+                        courseExercisesProcessLog.getLessonId(),
+                        courseExercisesProcessLog.getCourseType(),
+                        syllabusWareInfo.getClassId(),
+                        syllabusWareInfo.getCoursewareId(),
+                        syllabusWareInfo.getVideoType());
+                courseExercisesProcessLog.setCourseId(syllabusWareInfo.getClassId());
+                courseExercisesProcessLog.setCourseType(syllabusWareInfo.getVideoType());
+                courseExercisesProcessLog.setLessonId(syllabusWareInfo.getCoursewareId());
+                courseExercisesProcessLog.setModifierId(userId);
+                courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
+            }
+        }catch (Exception e){
+            log.error("修正课后作业数据失败:数据id:{},{}",id, e);
+        }
     }
 
 
