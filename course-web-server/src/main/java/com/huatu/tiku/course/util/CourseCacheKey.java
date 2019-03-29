@@ -61,6 +61,7 @@ public class CourseCacheKey {
      */
     private static final String COURSE_WORK_DEAL_DATA = "course_work_deal_v1$%s$%s";
     private static final String COURSE_WORK_RANK_INFO = "course_work_rank_info_v1$%s$%s";
+    private static final String COURSE_LIVE_BACK_LOG_INFO = "course_live_back_log_info_v1$%s$%s";
 
     /**
      * IOS 内侧版本信息
@@ -128,4 +129,14 @@ public class CourseCacheKey {
      * @return
      */
     public static String getCourseWorkRankInfo(Integer courseType, Long courseId){return String.format(COURSE_WORK_RANK_INFO, courseType, courseId);}
+
+    /**
+     * 查询直播回放的直播课件id
+     * @param roomId
+     * @param liveBackWareId
+     * @return
+     */
+    public static String findByRoomIdAndLiveCourseWareId(long roomId, long liveBackWareId){
+        return String.format(COURSE_LIVE_BACK_LOG_INFO, roomId, liveBackWareId);
+    }
 }
