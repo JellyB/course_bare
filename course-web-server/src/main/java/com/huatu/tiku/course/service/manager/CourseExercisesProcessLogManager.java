@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.huatu.tiku.course.bean.vo.RecordProcess;
@@ -577,7 +578,9 @@ public class CourseExercisesProcessLogManager {
         }
         ObjectMapper objectMapper = new ObjectMapper();
         List<LinkedHashMap<String, Object>> data = (List<LinkedHashMap<String, Object>>)netSchoolResponse.getData();
-
+        if(CollectionUtils.isEmpty(data)){
+            return null;
+        }
         SyllabusWareInfo syllabusWareInfo = objectMapper.convertValue(data.get(0), SyllabusWareInfo.class);
         valueOperations.set(key, JSONObject.toJSONString(syllabusWareInfo));
         redisTemplate.expire(key, 20, TimeUnit.MINUTES);
@@ -687,6 +690,8 @@ public class CourseExercisesProcessLogManager {
      * @param message
      */
     public void correct(String message){
+        AtomicInteger atomicInteger = new AtomicInteger(0);
+        log.info(">>>>>>>>> message:{}", message);
         String [] data = message.split("_");
         long id = Long.valueOf(data[1]);
         long userId = Long.valueOf(data[0]);
@@ -705,7 +710,7 @@ public class CourseExercisesProcessLogManager {
             if(syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
                 String roomId = syllabusWareInfo.getRoomId();
                 CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(Long.valueOf(roomId), syllabusWareInfo.getCoursewareId());
-                if(null == courseExercisesProcessLog){
+                if(null == courseLiveBackLog){
                     return;
                 }
                 courseType = VideoTypeEnum.LIVE.getVideoType();
@@ -719,9 +724,14 @@ public class CourseExercisesProcessLogManager {
                 courseExercisesProcessLog.setCourseType(courseType);
                 courseExercisesProcessLog.setLessonId(lessonId);
                 courseExercisesProcessLog.setModifierId(userId);
-                courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
+                int execute = courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
+                if(execute > 0){
+                    atomicInteger.incrementAndGet();
+                }
             }
+            log.info("修正课后作业数据成功数:{}", atomicInteger.get());
         }catch (Exception e){
+            e.printStackTrace();
             log.error("修正课后作业数据失败:数据id:{},{}",id, e);
         }
     }
