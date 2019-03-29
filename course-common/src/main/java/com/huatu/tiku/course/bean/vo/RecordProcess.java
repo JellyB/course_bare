@@ -21,14 +21,16 @@ public class RecordProcess {
     private String userName;
     private int userId;
     private int terminal;
+    private String cv;
     private int subject;
 
     @Builder
-    public RecordProcess(long syllabusId, String userName, int userId, int terminal, int subject) {
+    public RecordProcess(long syllabusId, String userName, int userId, int terminal, String cv, int subject) {
         this.syllabusId = syllabusId;
         this.userName = userName;
         this.userId = userId;
         this.terminal = terminal;
+        this.cv = cv;
         this.subject = subject;
     }
 }

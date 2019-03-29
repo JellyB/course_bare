@@ -2,6 +2,7 @@ package com.huatu.tiku.course.dao.provider;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.ztk.paper.common.AnswerCardStatus;
 
 import java.util.List;
@@ -31,7 +32,7 @@ public class CourseExercisesProcessLogProvider {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(" SELECT");
         stringBuilder.append(" course_id as courseId,");
-        stringBuilder.append(" GROUP_CONCAT(syllabus_id) AS syllabusIds");
+        stringBuilder.append(" GROUP_CONCAT( distinct syllabus_id) AS syllabusIds");
         stringBuilder.append(" FROM");
         stringBuilder.append(" course_exercises_process_log");
         stringBuilder.append(" WHERE");
@@ -39,6 +40,7 @@ public class CourseExercisesProcessLogProvider {
         stringBuilder.append(Joiner.on(",").join(list));
         stringBuilder.append(" )");
         stringBuilder.append(" AND user_id = ").append(userId);
+        stringBuilder.append(" AND status = ").append(YesOrNoStatus.YES.getCode());
         stringBuilder.append(" GROUP BY");
         stringBuilder.append(" course_id");
         stringBuilder.append(" ORDER BY");

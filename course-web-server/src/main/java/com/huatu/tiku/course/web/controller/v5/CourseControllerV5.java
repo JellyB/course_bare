@@ -16,10 +16,12 @@ import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by lijun on 2018/6/25
@@ -161,6 +163,23 @@ public class CourseControllerV5 {
 
 
     /**
+     * 获取课程大纲-售后，1000条
+     */
+    @LocalMapParam(checkToken = true)
+    @GetMapping("/{classId}/purchasedClassSyllabusV2")
+    public Object purchasedClassSyllabusV2(
+            @Token UserSession userSession,
+            @RequestParam int parentId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int pageSize
+    ) {
+        HashMap<String, Object> map = LocalMapParamHandler.get();
+        Object purchasesTimetable = courseServiceBiz.findPurchasesTimetable(userSession.getId(), map);
+        return purchasesTimetable;
+    }
+
+
+    /**
      * 获取课程大纲-售后
      */
     @LocalMapParam(checkToken = true)
@@ -172,12 +191,24 @@ public class CourseControllerV5 {
             @RequestParam(defaultValue = "20") int pageSize
     ) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
+        StopWatch stopwatch = new StopWatch("pc 端请求课后作业超时时间统计");
+        stopwatch.start("findPurchasesTimetable");
         Object purchasesTimetable = courseServiceBiz.findPurchasesTimetable(userSession.getId(), map);
+        stopwatch.stop();
         //添加答题信息
+        stopwatch.start("addExercisesCardInfo");
         courseUtil.addExercisesCardInfo((LinkedHashMap) purchasesTimetable, userSession.getId(), true);
+        stopwatch.stop();
+        stopwatch.start("addPeriodTestInfo");
         courseUtil.addPeriodTestInfo((LinkedHashMap) purchasesTimetable, userSession.getId());
+        stopwatch.stop();
+        stopwatch.start("addLearnReportInfoV2");
         courseUtil.addLearnReportInfoV2((LinkedHashMap) purchasesTimetable, userSession.getId());
-        courseUtil.addLiveCardExercisesCardInfo((LinkedHashMap) purchasesTimetable, userSession.getId(), true);
+        stopwatch.stop();
+        stopwatch.start("addLiveCardExercisesCardInfo");
+        courseUtil.addLiveCardExercisesCardInfo((LinkedHashMap) purchasesTimetable, userSession.getId(), true);;
+        stopwatch.stop();
+        log.info("pc 端请求课后作业超时时间统计, 耗时:{}", stopwatch.prettyPrint());
         return purchasesTimetable;
     }
 

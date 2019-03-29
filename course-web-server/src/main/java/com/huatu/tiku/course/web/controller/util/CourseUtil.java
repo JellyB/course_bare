@@ -29,6 +29,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StopWatch;
 import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
@@ -336,6 +337,8 @@ public class CourseUtil {
      */
     public void addPeriodTestInfo(LinkedHashMap response, int userId){
                 response.computeIfPresent("list", (key, value) -> {
+                        StopWatch stopWatch = new StopWatch("learnReport - addPeriodTestInfo");
+                        stopWatch.start("addPeriodTestInfo - paperIds");
                         Set<String> paperIds = ((List<Map>) value).stream()
                                 //videoType	1点播2直播3直播回放4阶段测试题
                                 .filter(map -> VideoTypeEnum.create(MapUtils.getIntValue(map, "videoType")) == VideoTypeEnum.PERIOD_TEST)
@@ -354,7 +357,8 @@ public class CourseUtil {
                         log.info("获取阶段测试完成情况：userId = {}, paperIds = {}", userId, paperIds);
                         NetSchoolResponse netSchoolResponse = PeriodTestService.getPaperStatusBath(userId, paperIds);
                         Map<String, Object> data = (Map<String, Object>) netSchoolResponse.getData();
-
+                        stopWatch.stop();
+                        log.info("addPeriodTestInfo - paperIds,耗时:{}", stopWatch.prettyPrint());
 			if (null != data && data.size() > 0) {
 				List<Map> mapList = ((List<Map>) value).stream().map(valueData -> {
 					StringBuilder stringBuilder = new StringBuilder();
@@ -393,7 +397,8 @@ public class CourseUtil {
      * @param userId
      */
     public void addLearnReportInfoV2(LinkedHashMap response, int userId){
-        Stopwatch stopwatch = Stopwatch.createStarted();
+        StopWatch stopWatch = new StopWatch("learnReport - addLearnReportInfoV2");
+        stopWatch.start();
         List<Map<String, Object>> list = (List<Map<String, Object>>)response.get("list");
         if(CollectionUtils.isEmpty(list)){
             return;
@@ -437,7 +442,8 @@ public class CourseUtil {
                 log.error("处理大纲我的学习好高状态异常:{}, userId:{}",stringObjectMap, userId);
             }
         }
-        log.info("大纲列表 - 学习报告 - 请求参数params:{},userId:{}, 耗时:{}", response, userId,stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        stopWatch.stop();
+        log.info("大纲列表 - 学习报告 - userId:{}, 耗时:{}",userId, stopWatch.prettyPrint());
     }
 
     /**
@@ -447,12 +453,16 @@ public class CourseUtil {
      * @throws BizException
      */
     private Map doLiveReport(Map<String, Object> stringObjectMap) throws BizException{
+        StopWatch stopWatch = new StopWatch("addLearnReportInfoV2 - live time");
+        stopWatch.start();
         Map<String, Object> result = Maps.newHashMap();
         int liveStatus = MapUtils.getIntValue(stringObjectMap, SyllabusInfo.LiveStatus);
         LiveStatusEnum liveStatusEnum = LiveStatusEnum.create(liveStatus);
         if(liveStatusEnum == LiveStatusEnum.FINISHED){
             result.put(SyllabusInfo.ReportStatus, YesOrNoStatus.YES.getCode());
         }
+        stopWatch.stop();
+        log.info("addLearnReportInfoV2 - doLiveReport, 耗时:{}", stopWatch.prettyPrint());
         return result;
     }
 
@@ -464,6 +474,8 @@ public class CourseUtil {
      * @throws BizException
      */
     private Map doLivePlayBack(long liveBackCoursewareId, String bjyRoomId) throws BizException{
+        StopWatch stopWatch = new StopWatch("addLearnReportInfoV2 - live - back time");
+        stopWatch.start();
         Map<String,Object> result = Maps.newHashMap();
         Example example = new Example(CourseLiveBackLog.class);
         example.and()
@@ -476,6 +488,8 @@ public class CourseUtil {
             }else{
                 result.put("reportStatus", YesOrNoStatus.YES.getCode());
             }
+            stopWatch.stop();
+            log.info("addLearnReportInfoV2 - doLivePlayBack, 耗时:{}", stopWatch.prettyPrint());
             return result;
         }catch (Exception e){
             result.put("reportStatus", YesOrNoStatus.NO.getCode());
@@ -490,7 +504,8 @@ public class CourseUtil {
      * @throws BizException
      */
     private Map doDotLive(long courseWareId, int userId) throws BizException{
-
+        StopWatch stopWatch = new StopWatch("addLearnReportInfoV2 - dot -live time");
+        stopWatch.start();
         Map<String,Object> result = Maps.newHashMap();
         result.put("reportStatus", YesOrNoStatus.NO.getCode());
         NetSchoolResponse netSchoolResponse = practiceCardServiceV1.getClassExerciseReport(courseWareId, VideoTypeEnum.DOT_LIVE.getVideoType(), userId);
@@ -501,6 +516,8 @@ public class CourseUtil {
                 return result;
             }
         }
+        stopWatch.stop();
+        log.info("addLearnReportInfoV2 - doDotLive, 耗时:{}", stopWatch.prettyPrint());
         return result;
     }
 }
