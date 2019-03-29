@@ -112,16 +112,9 @@ public class SyllabusControllerV6 {
         stopwatch.stop();
         stopwatch.start("buyAfterSyllabus - other data");
         if(versionControlService.checkLearnReportShow(terminal, cv)){
-            stopwatch.start("addPeriodTestInfo");
             courseUtil.addPeriodTestInfo((LinkedHashMap) response, userSession.getId());
-            stopwatch.stop();
-            stopwatch.start("addLearnReportInfoV2");
             courseUtil.addLearnReportInfoV2((LinkedHashMap) response, userSession.getId());
-            stopwatch.stop();
-            //添加答题信息
-            stopwatch.start("addLiveCardExercisesCardInfo");
             courseUtil.addLiveCardExercisesCardInfo((LinkedHashMap) response, userSession.getId(), false);
-            stopwatch.stop();
         }
         stopwatch.stop();
         //添加答题信息
