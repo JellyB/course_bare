@@ -139,7 +139,7 @@ public class UserCourseControllerV6 {
         return courseExercisesProcessLogManager.courseWorkList(userSession.getId(), page, size);
     }
 
-    @PostMapping
+    @PostMapping(value = "dataCorrect")
     public Object dataCorrect(@Token UserSession userSession, @RequestHeader("secret") String secret){
         courseExercisesProcessLogManager.dataCorrect(userSession.getId(), secret);
         return SuccessMessage.create("操作成功！");
