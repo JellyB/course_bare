@@ -246,6 +246,8 @@ public class CourseExercisesProcessLogManager {
      * @throws BizException
      */
     public synchronized Object createCourseWorkAnswerCardEntrance(long courseId, long syllabusId, int courseType, long coursewareId, int subject, int terminal, String cv, int userId) throws BizException{
+        log.info("请求创建课后作业答题卡参数信息:courseType:{},courseId:{},syllabusId:{},coursewareId:{},terminal:{},cv:{},userId:{}",
+                courseType, courseId, syllabusId, coursewareId, terminal, cv, userId);
         StopWatch stopwatch = new StopWatch("手动创建录播或直播回放课后作业答题卡");
         stopwatch.start();
         if(courseType == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
