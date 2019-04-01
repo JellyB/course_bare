@@ -162,7 +162,7 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 					List<Map<String, String>> userInfoList = (List<Map<String, String>>) response.getData();
 					String userName = userInfoList.get(0).get("name");
 					RewardMessage msg = RewardMessage.builder().gold(rcount * 2).uid(userCourse.getUserId())
-							.action(CoinType.COURSE_PRACTICE_RIGHT).experience(rcount * 2).bizId(roomId + userName)
+							.action(CoinType.COURSE_PRACTICE_RIGHT).experience(1).bizId(roomId + userName)
 							.uname(userName).timestamp(System.currentTimeMillis()).build();
 					log.info("随堂练用户id:{}赠送图币{},bizId为:{}", userCourse.getUserId(), rcount * 2, roomId + userName);
 					rabbitTemplate.convertAndSend("", RabbitConsts.QUEUE_REWARD_ACTION, msg);
