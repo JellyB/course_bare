@@ -255,8 +255,13 @@ public class CourseExercisesProcessLogManager {
                 return null;
             }
             CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(Long.valueOf(syllabusWareInfo.getRoomId()), syllabusWareInfo.getCoursewareId());
-            coursewareId = courseLiveBackLog.getLiveCoursewareId();
-            courseType = VideoTypeEnum.LIVE.getVideoType();
+            if(null == courseLiveBackLog){
+                log.error("直播回放数据查询不到roomId:{},课件id:{}",syllabusWareInfo.getRoomId(), syllabusWareInfo.getCoursewareId());
+                return null;
+            }else{
+                coursewareId = courseLiveBackLog.getLiveCoursewareId();
+                courseType = VideoTypeEnum.LIVE.getVideoType();
+            }
         }
 
         List<Map<String, Object>> list = courseExercisesService.listQuestionByCourseId(courseType, coursewareId);
