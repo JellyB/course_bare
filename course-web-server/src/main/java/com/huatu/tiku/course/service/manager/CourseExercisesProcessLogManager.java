@@ -8,15 +8,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.huatu.tiku.course.bean.vo.RecordProcess;
 import com.huatu.tiku.course.common.VideoTypeEnum;
+import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
+import com.huatu.tiku.entity.CourseLiveBackLog;
 import lombok.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -29,7 +33,6 @@ import org.springframework.stereotype.Component;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -56,7 +59,10 @@ import com.huatu.ztk.paper.bean.PracticeCard;
 import com.huatu.ztk.paper.common.AnswerCardStatus;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StopWatch;
 import tk.mybatis.mapper.entity.Example;
+
+import javax.swing.*;
 
 /**
  * 描述：
@@ -86,6 +92,9 @@ public class CourseExercisesProcessLogManager {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @Autowired
     private UserCourseServiceV6 userCourseServiceV6;
@@ -222,31 +231,7 @@ public class CourseExercisesProcessLogManager {
                 recordProcess.getUserId());
     }
 
-    /**
-     * 录播手动创建答题卡数据校验
-     * @param courseId
-     * @param syllabusId
-     * @param coursewareId
-     * @param subject
-     * @param terminal
-     * @param cv
-     * @param userId
-     * @return
-     * @throws BizException
-     */
-    public synchronized Object createCourseWorkAnswerCardEntrance(long courseId, long syllabusId, long coursewareId, int subject, int terminal, String cv, int userId) throws BizException{
-        SyllabusWareInfo syllabusWareInfo = requestSingleSyllabusInfoWithCache(syllabusId);
-        if(syllabusWareInfo.getClassId() != courseId || syllabusWareInfo.getCoursewareId() != coursewareId){
-            log.error("数据上报过数据与 php 大纲表数据不一致:courseId:{},coursewareId:{},syllabusId:{},userId:{}", courseId, coursewareId, syllabusId, userId);
-            return this.createCourseWorkAnswerCardEntrance(syllabusWareInfo.getClassId(),
-                    syllabusId,
-                    VideoTypeEnum.DOT_LIVE.getVideoType(),
-                    syllabusWareInfo.getCoursewareId(),
-                    subject, terminal, cv, userId);
-        }else{
-            return this.createCourseWorkAnswerCardEntrance(courseId, syllabusId, VideoTypeEnum.DOT_LIVE.getVideoType(), coursewareId, subject, terminal, cv, userId);
-        }
-    }
+
     /**
      * 创建课后作业答题卡前置逻辑入口
      * @param courseId
@@ -261,7 +246,25 @@ public class CourseExercisesProcessLogManager {
      * @throws BizException
      */
     public synchronized Object createCourseWorkAnswerCardEntrance(long courseId, long syllabusId, int courseType, long coursewareId, int subject, int terminal, String cv, int userId) throws BizException{
-        Stopwatch stopwatch = Stopwatch.createStarted();
+        log.info("请求创建课后作业答题卡参数信息:courseType:{},courseId:{},syllabusId:{},coursewareId:{},terminal:{},cv:{},userId:{}",
+                courseType, courseId, syllabusId, coursewareId, terminal, cv, userId);
+        StopWatch stopwatch = new StopWatch("手动创建录播或直播回放课后作业答题卡");
+        stopwatch.start();
+        if(courseType == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
+            SyllabusWareInfo syllabusWareInfo = requestSingleSyllabusInfoWithCache(syllabusId);
+            if(null == syllabusWareInfo || StringUtils.isEmpty(syllabusWareInfo.getRoomId())){
+                log.error("直播回放创建课后作业答题卡失败，查询不到百家云信息:{}", syllabusId);
+                return null;
+            }
+            CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(Long.valueOf(syllabusWareInfo.getRoomId()), syllabusWareInfo.getCoursewareId());
+            if(null == courseLiveBackLog){
+                log.error("直播回放数据查询不到roomId:{},课件id:{},终端信息:terminal:{},cv:{}",syllabusWareInfo.getRoomId(), syllabusWareInfo.getCoursewareId(),terminal, cv);
+                return null;
+            }else{
+                coursewareId = courseLiveBackLog.getLiveCoursewareId();
+                courseType = VideoTypeEnum.LIVE.getVideoType();
+            }
+        }
 
         List<Map<String, Object>> list = courseExercisesService.listQuestionByCourseId(courseType, coursewareId);
         if (CollectionUtils.isEmpty(list)) {
@@ -281,7 +284,9 @@ public class CourseExercisesProcessLogManager {
         }
         result.computeIfPresent("id", (key, value) -> String.valueOf(value));
         createCourseWorkAnswerCard(userId, courseType, coursewareId, courseId, syllabusId, result);
-        log.info("课后作业 - 创建课后答题卡请求参数:courseId:{},syllabusId:{},courseType:{},coursewareId:{},userId:{},耗时:{}", courseId, syllabusId, courseType, coursewareId,userId, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        log.info("课后作业 - 创建课后答题卡请求参数:courseId:{},syllabusId:{},courseType:{},coursewareId:{},userId:{}", courseId, syllabusId, courseType, coursewareId, userId);
+        stopwatch.stop();
+        log.info("手动创建录播或直播回放课后作业答题卡:{}", stopwatch.prettyPrint());
         return result;
     }
 
@@ -296,7 +301,6 @@ public class CourseExercisesProcessLogManager {
     public synchronized void createCourseWorkAnswerCard(int userId, Integer courseType, Long coursewareId, Long courseId, Long syllabusId, HashMap<String,Object> result){
         Long cardId = MapUtils.getLongValue(result, "id");
         int status = MapUtils.getIntValue(result, "status");
-        Map<String,Object> paper = (HashMap<String,Object>)result.get("paper");
 
         Example example = new Example(CourseExercisesProcessLog.class);
         example.and().andEqualTo("lessonId", coursewareId)
@@ -386,8 +390,8 @@ public class CourseExercisesProcessLogManager {
         CourseExercisesProcessLog updateLog = new CourseExercisesProcessLog();
         updateLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
         updateLog.setBizStatus(answerCard.getStatus());
-        courseExercisesProcessLogMapper.updateByExampleSelective(updateLog, example);
         courseExercisesStatisticsManager.dealCourseExercisesStatistics(answerCard);
+        courseExercisesProcessLogMapper.updateByExampleSelective(updateLog, example);
     }
     /**
      * new courseExercisesProcessLog
@@ -487,17 +491,21 @@ public class CourseExercisesProcessLogManager {
                         }).map(ware -> {
                             SyllabusWareInfo syllabusWareInfo = syllabusWareInfoTable.get(LESSON_LABEL, Long.valueOf(ware));
                             CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogMap.get(Long.valueOf(ware));
-                            CourseWorkWareVo courseWorkWareVo = CourseWorkWareVo
-                                    .builder()
-                                    .courseWareId(syllabusWareInfo.getCoursewareId())
-                                    .courseWareTitle(syllabusWareInfo.getCoursewareName())
-                                    .videoLength(syllabusWareInfo.getLength())
-                                    .serialNumber(syllabusWareInfo.getSerialNumber())
-                                    .answerCardId(courseExercisesProcessLog.getCardId())
-                                    .videoType(syllabusWareInfo.getVideoType())
-                                    .questionIds("")
-                                    .isAlert(courseExercisesProcessLog.getIsAlert())
-                                    .build();
+                            CourseWorkWareVo courseWorkWareVo = new CourseWorkWareVo();
+
+                            courseWorkWareVo.setCourseWareTitle(syllabusWareInfo.getCoursewareName());
+                            courseWorkWareVo.setVideoLength(syllabusWareInfo.getLength());
+                            courseWorkWareVo.setSerialNumber(syllabusWareInfo.getSerialNumber());
+                            courseWorkWareVo.setAnswerCardId(courseExercisesProcessLog.getCardId());
+                            if(syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
+                                courseWorkWareVo.setCourseWareId(courseExercisesProcessLog.getLessonId());
+                                courseWorkWareVo.setVideoType(courseExercisesProcessLog.getCourseType());
+                            }else{
+                                courseWorkWareVo.setCourseWareId(syllabusWareInfo.getCoursewareId());
+                                courseWorkWareVo.setVideoType(syllabusWareInfo.getVideoType());
+                            }
+                            courseWorkWareVo.setQuestionIds("");
+                            courseWorkWareVo.setIsAlert(courseExercisesProcessLog.getIsAlert());
                             if(answerCardMaps.containsKey(courseExercisesProcessLog.getCardId())){
                                 courseWorkWareVo.setAnswerCardInfo(answerCardMaps.get(courseExercisesProcessLog.getCardId()));
                             }else{
@@ -558,7 +566,7 @@ public class CourseExercisesProcessLogManager {
      * @return
      * @throws BizException
      */
-    private SyllabusWareInfo requestSingleSyllabusInfoWithCache(long syllabusId) throws BizException{
+     public  SyllabusWareInfo requestSingleSyllabusInfoWithCache(long syllabusId) throws BizException{
         ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
         String key = CourseCacheKey.getProcessLogSyllabusInfo(syllabusId);
         if(redisTemplate.hasKey(key)){
@@ -577,7 +585,9 @@ public class CourseExercisesProcessLogManager {
         }
         ObjectMapper objectMapper = new ObjectMapper();
         List<LinkedHashMap<String, Object>> data = (List<LinkedHashMap<String, Object>>)netSchoolResponse.getData();
-
+        if(CollectionUtils.isEmpty(data)){
+            return null;
+        }
         SyllabusWareInfo syllabusWareInfo = objectMapper.convertValue(data.get(0), SyllabusWareInfo.class);
         valueOperations.set(key, JSONObject.toJSONString(syllabusWareInfo));
         redisTemplate.expire(key, 20, TimeUnit.MINUTES);
@@ -590,7 +600,8 @@ public class CourseExercisesProcessLogManager {
      * @throws BizException
      */
     private Table<String, Long, SyllabusWareInfo> requestSyllabusWareInfoPut2Cache(Set<Long> syllabusIds)throws BizException{
-        Stopwatch stopwatch = Stopwatch.createStarted();
+        StopWatch stopwatch = new StopWatch("requestSyllabusWareInfoPut2Cache");
+        stopwatch.start();
         Table<String, Long, SyllabusWareInfo> table = TreeBasedTable.create();
         try{
             String ids = Joiner.on(",").join(syllabusIds);
@@ -623,7 +634,8 @@ public class CourseExercisesProcessLogManager {
                     redisTemplate.expire(key, 20, TimeUnit.MINUTES);
                 });
             }
-            log.debug(">>>>>>>> 请求大纲ids耗费时间:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            stopwatch.stop();
+            log.debug(">>>>>>>> 请求大纲ids耗费时间:{}", stopwatch.prettyPrint());
             return table;
         }catch (Exception e) {
             log.error("request syllabusInfo error!:{}", e);
@@ -633,7 +645,7 @@ public class CourseExercisesProcessLogManager {
 
 
     /**
-     * 直播数据上报
+     * 直播数据上报处理，非直播不处理
      * @param subject
      * @param terminal
      * @param userId
@@ -652,8 +664,83 @@ public class CourseExercisesProcessLogManager {
          * 创建答题卡
          */
         SyllabusWareInfo syllabusWareInfo = table.get(LESSON_LABEL, syllabusId);
+        if(VideoTypeEnum.LIVE.getVideoType() != syllabusWareInfo.getVideoType()){
+            log.error("直播上报数据与大纲数据不一致:{}", JSONObject.toJSONString(syllabusWareInfo));
+            return;
+        }
         log.info("直播创建或更新课后作业答题卡:大纲id{}", syllabusId);
         createCourseWorkAnswerCardEntrance(syllabusWareInfo.getClassId(), syllabusWareInfo.getSyllabusId(), syllabusWareInfo.getVideoType(), syllabusWareInfo.getCoursewareId(), subject, terminal, cv, userId);
+    }
+
+    /**
+     *
+     * @param userId
+     * @param secret
+     * @return
+     */
+    public void dataCorrect(int userId, String secret){
+        List<Integer> list = Lists.newArrayList(AnswerCardStatus.CREATE, AnswerCardStatus.UNDONE);
+        Example example = new Example(CourseExercisesProcessLog.class);
+        example.and().andEqualTo("status", YesOrNoStatus.YES.getCode())
+                .andNotEqualTo("modifierId", userId)
+                .andIn("bizStatus", list);
+        List<CourseExercisesProcessLog> courseExercisesProcessLogs = courseExercisesProcessLogMapper.selectByExample(example);
+        log.info("dataCorrect:{}", courseExercisesProcessLogs.size());
+        for (CourseExercisesProcessLog courseExercisesProcessLog : courseExercisesProcessLogs) {
+            String message = userId + "_" + courseExercisesProcessLog.getId();
+            rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_EXERCISES_PROCESS_LOG_CORRECT_QUEUE, message);
+        }
+    }
+
+    /**
+     * 数据处理
+     * @param message
+     */
+    public void correct(String message){
+        AtomicInteger atomicInteger = new AtomicInteger(0);
+        log.info(">>>>>>>>> message:{}", message);
+        String [] data = message.split("_");
+        long id = Long.valueOf(data[1]);
+        long userId = Long.valueOf(data[0]);
+        try{
+            int courseType;
+            long lessonId;
+            CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogMapper.selectByPrimaryKey(id);
+            SyllabusWareInfo syllabusWareInfo = requestSingleSyllabusInfoWithCache(courseExercisesProcessLog.getSyllabusId());
+            if(null == syllabusWareInfo){
+                return;
+            }
+
+            /**
+             * 如果为直播回放，获取直播信息，处理
+             */
+            if(syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
+                String roomId = syllabusWareInfo.getRoomId();
+                CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(Long.valueOf(roomId), syllabusWareInfo.getCoursewareId());
+                if(null == courseLiveBackLog){
+                    return;
+                }
+                courseType = VideoTypeEnum.LIVE.getVideoType();
+                lessonId = courseLiveBackLog.getLiveCoursewareId();
+            }else{
+                courseType = syllabusWareInfo.getVideoType();
+                lessonId = syllabusWareInfo.getCoursewareId();
+            }
+            if(lessonId != courseExercisesProcessLog.getLessonId() || courseType != courseExercisesProcessLog.getCourseType()){
+                log.info("数据库数据:,课件:{},类型:{}, 大纲数据:课件:{}, 类型:{}", courseExercisesProcessLog.getLessonId(), courseExercisesProcessLog.getCourseType(),lessonId,courseType);
+                courseExercisesProcessLog.setCourseType(courseType);
+                courseExercisesProcessLog.setLessonId(lessonId);
+                courseExercisesProcessLog.setModifierId(userId);
+                int execute = courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
+                if(execute > 0){
+                    atomicInteger.incrementAndGet();
+                }
+            }
+            log.info("修正课后作业数据成功数:{}", atomicInteger.get());
+        }catch (Exception e){
+            e.printStackTrace();
+            log.error("修正课后作业数据失败:数据id:{},{}",id, e);
+        }
     }
 
 

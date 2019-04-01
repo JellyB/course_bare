@@ -1,6 +1,5 @@
 package com.huatu.tiku.course.web.controller.v3;
 
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import com.huatu.common.SuccessMessage;
@@ -156,8 +155,6 @@ public class OrderControllerV3 {
         log.warn("6$${}$${}$${}$${}$${}$${}$${}$${}$${}$${}", addressid, rid, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal, fromuser, tjCode, FreeCardID);
         Object result = null;
         try {
-            NetSchoolResponse netSchoolResponse = promoteCoreServiceV3.createOrder(RequestUtil.encrypt(params));
-            log.info(">>>:{}", JSONObject.toJSONString(netSchoolResponse));
             result = ResponseUtil.build(promoteCoreServiceV3.createOrder(RequestUtil.encrypt(params)), true);
         } finally {
             //释放

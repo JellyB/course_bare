@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 /**
- * 描述：录播创建课后作业答题卡逻辑
+ * 描述：创建 & 没有听过直播的直播回放 创建课后作业答题卡逻辑
  *
  * @author biguodong
  * Create time 2019-03-08 5:14 PM
@@ -36,14 +36,14 @@ public class CourseExercisesControllerV2 {
     public Object card(
             @Token UserSession userSession,
             @RequestHeader("terminal") Integer terminal,
-            @RequestHeader("cv") String cv,
+            @RequestHeader(value = "cv", required = false, defaultValue = "1.0") String cv,
             @PathVariable(value = "courseType") Integer courseType,
             @PathVariable(value = "coursewareId") Long coursewareId,
             @RequestParam(value = "courseId") Long courseId,
             @RequestParam(value = "syllabusId") Long syllabusId
 
     ) {
-        return courseExercisesProcessLogManager.createCourseWorkAnswerCardEntrance(courseId, syllabusId, coursewareId, userSession.getSubject(), terminal, cv, userSession.getId());
+        return courseExercisesProcessLogManager.createCourseWorkAnswerCardEntrance(courseId, syllabusId, courseType, coursewareId, userSession.getSubject(), terminal, cv, userSession.getId());
     }
 }
 

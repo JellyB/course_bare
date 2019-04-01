@@ -118,4 +118,12 @@ public class RabbitMqConfig {
         return new Queue(RabbitMqConstants.COURSE_LIVE_REPORT_LOG);
     }
 
+    /**
+     * 课后作业数据修复队列
+     * @return
+     */
+    @Bean
+    public Queue courseWorkCorrect(){
+        return new Queue(RabbitMqConstants.COURSE_EXERCISES_PROCESS_LOG_CORRECT_QUEUE);
+    }
 }
