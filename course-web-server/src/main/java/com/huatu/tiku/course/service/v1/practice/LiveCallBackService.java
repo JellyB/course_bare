@@ -10,19 +10,21 @@ import java.util.concurrent.ExecutionException;
  */
 public interface LiveCallBackService {
 
-    /**
-     * 直播生成回放- 回调
-     *
-     * @param roomId             房间ID
-     * @param liveCallbackBoList 课件信息
-     */
-    void liveCallBackAllInfo(Long roomId, List<LiveCallbackBo> liveCallbackBoList) throws ExecutionException, InterruptedException;
+	/**
+	 * 直播生成回放- 回调
+	 *
+	 * @param roomId             房间ID
+	 * @param liveCallbackBoList 课件信息
+	 */
+	void liveCallBackAllInfo(Long roomId, List<LiveCallbackBo> liveCallbackBoList)
+			throws ExecutionException, InterruptedException;
 
-    /**
-     * 班级下班回调
-     * @param roomId 房间id
-     * @param op 上课:start 下课:end
-     */
-	void saveLiveInfo(Long roomId, String op);
+	/**
+	 * 班级下班回调
+	 * 
+	 * @param roomId 房间id
+	 * @param op     上课:start 下课:end
+	 */
+	void saveLiveInfo(Long roomId, String op, String op_time, String qid, Integer timestamp, String sign);
 
 }
