@@ -256,7 +256,7 @@ public class CourseExercisesProcessLogManager {
             }
             CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(Long.valueOf(syllabusWareInfo.getRoomId()), syllabusWareInfo.getCoursewareId());
             if(null == courseLiveBackLog){
-                log.error("直播回放数据查询不到roomId:{},课件id:{}",syllabusWareInfo.getRoomId(), syllabusWareInfo.getCoursewareId());
+                log.error("直播回放数据查询不到roomId:{},课件id:{},终端信息:terminal:{},cv:{}",syllabusWareInfo.getRoomId(), syllabusWareInfo.getCoursewareId(),terminal, cv);
                 return null;
             }else{
                 coursewareId = courseLiveBackLog.getLiveCoursewareId();
