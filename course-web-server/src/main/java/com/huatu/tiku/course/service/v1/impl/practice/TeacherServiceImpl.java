@@ -235,7 +235,7 @@ public class TeacherServiceImpl implements TeacherService {
                     if (baseQuestionInfoOptional.isPresent()) {
                         BeanUtils.copyProperties(baseQuestionInfoOptional.get(), teacherQuestionBo);
                         //如果是默认值则修改为null
-						if (teacherQuestionBo.getPptIndex() == 9999) {
+						if (teacherQuestionBo.getPptIndex() != null & teacherQuestionBo.getPptIndex() == 9999) {
 							teacherQuestionBo.setPptIndex(null);
 						}
                     }
