@@ -234,10 +234,6 @@ public class TeacherServiceImpl implements TeacherService {
                             .findAny();
                     if (baseQuestionInfoOptional.isPresent()) {
                         BeanUtils.copyProperties(baseQuestionInfoOptional.get(), teacherQuestionBo);
-                        //如果是默认值则修改为null
-						if (teacherQuestionBo.getPptIndex() != null && teacherQuestionBo.getPptIndex() == 9999) {
-							teacherQuestionBo.setPptIndex(null);
-						}
                     }
                     Optional<CoursePracticeQuestionInfo> practiceQuestionInfoOptional = coursePracticeQuestionInfoList.stream()
                             .filter(coursePracticeQuestionInfo -> coursePracticeQuestionInfo.getQuestionId().equals(courseBreakpointQuestion.getQuestionId().intValue()))
@@ -265,7 +261,13 @@ public class TeacherServiceImpl implements TeacherService {
 						// 设置的练习时间
 						teacherQuestionBo.setPracticeTime(coursePracticeQuestionInfo.getPracticeTime());
 					}
-                    teacherQuestionBo.setPptIndex(courseBreakpointQuestion.getPptIndex());
+					// 如果是默认值则修改为null
+					if (courseBreakpointQuestion.getPptIndex() != null
+							&& courseBreakpointQuestion.getPptIndex() == 9999) {
+						teacherQuestionBo.setPptIndex(null);
+					} else {
+						teacherQuestionBo.setPptIndex(courseBreakpointQuestion.getPptIndex());
+					}
                     return teacherQuestionBo;
                 })
                 .collect(Collectors.toList());
