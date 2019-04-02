@@ -234,6 +234,10 @@ public class TeacherServiceImpl implements TeacherService {
                             .findAny();
                     if (baseQuestionInfoOptional.isPresent()) {
                         BeanUtils.copyProperties(baseQuestionInfoOptional.get(), teacherQuestionBo);
+                        //如果是默认值则修改为null
+						if (teacherQuestionBo.getPptIndex() == 9999) {
+							teacherQuestionBo.setPptIndex(null);
+						}
                     }
                     Optional<CoursePracticeQuestionInfo> practiceQuestionInfoOptional = coursePracticeQuestionInfoList.stream()
                             .filter(coursePracticeQuestionInfo -> coursePracticeQuestionInfo.getQuestionId().equals(courseBreakpointQuestion.getQuestionId().intValue()))
