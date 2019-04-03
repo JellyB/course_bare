@@ -1,32 +1,33 @@
 package com.huatu.tiku.course.test;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.huatu.common.test.BaseWebTest;
+import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.vo.LiveRecordInfo;
 import com.huatu.tiku.course.bean.vo.LiveRecordInfoWithUserInfo;
 import com.huatu.tiku.course.bean.vo.SyllabusWareInfo;
 import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
-import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
+import com.huatu.tiku.course.service.manager.CourseExercisesStatisticsManager;
 import com.huatu.tiku.course.service.v1.CourseExercisesService;
+import com.huatu.tiku.course.util.ResponseUtil;
+import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
 import com.huatu.tiku.entity.CourseExercisesProcessLog;
+import com.huatu.ztk.paper.bean.PracticeCard;
+import com.huatu.ztk.paper.bean.PracticeForCoursePaper;
 import com.huatu.ztk.paper.common.AnswerCardStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import tk.mybatis.mapper.entity.Example;
 
-import javax.persistence.Temporal;
-import java.security.cert.CollectionCertStoreParameters;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,6 +55,12 @@ public class CourseExercisesProcessLogMapperTest extends BaseWebTest {
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    private PracticeCardServiceV1 practiceCardService;
+
+    @Autowired
+    private CourseExercisesStatisticsManager courseExercisesStatisticsManager;
 
 
 
@@ -168,6 +175,38 @@ public class CourseExercisesProcessLogMapperTest extends BaseWebTest {
         SyllabusWareInfo syllabusWareInfo = courseExercisesProcessLogManager.requestSingleSyllabusInfoWithCache(syllabusId);
         log.error("syllabusWareInfo:{}", JSONObject.toJSONString(syllabusWareInfo));
 
+    }
+
+    /**
+     * 处理课后作业统计信息
+     */
+    @Test
+    public void testDealQuestionStatistic(){
+        String token = "c8a751bca2754f73be2ac5b55eb1bde6";
+        long cardId = 872385456975301694L;
+        NetSchoolResponse netSchoolResponse = practiceCardService.getAnswerCard(token, 1, cardId);
+        if(null == netSchoolResponse.getData()){
+            log.error("课后作业答题卡信息不存在:{}", cardId);
+        }
+        Object response = ResponseUtil.build(netSchoolResponse);
+        JSONObject data = new JSONObject((LinkedHashMap<String, Object>) response);
+
+        JSONObject paper = data.getJSONObject("paper");
+        PracticeForCoursePaper practiceForCoursePaper = JSONObject.parseObject(paper.toJSONString(), PracticeForCoursePaper.class);
+
+        PracticeCard practiceCard = JSONObject.parseObject(data.toJSONString(), PracticeCard.class);
+        practiceCard.setPaper(practiceForCoursePaper);
+        courseExercisesStatisticsManager.dealCourseExercisesStatistics(practiceCard);
+    }
+
+    /**
+     * 课后作业统计信息详情
+     */
+    @Test
+    public void testDealQuestionStatisticDetail(){
+        long statisticsTableId = 41;
+        Object object = courseExercisesStatisticsManager.statisticsDetail(statisticsTableId);
+        log.info("课后作业统计信息详情:{}", JSONObject.toJSONString(object));
     }
 
     /**

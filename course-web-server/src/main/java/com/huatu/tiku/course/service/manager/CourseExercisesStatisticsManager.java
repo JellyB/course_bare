@@ -86,9 +86,9 @@ public class CourseExercisesStatisticsManager {
             /**
              * 如果用户已经提交过不处理
              */
-            if(existsHash.hasKey(existsKey, String.valueOf(answerCard.getUserId()))){
+            /*if(existsHash.hasKey(existsKey, String.valueOf(answerCard.getUserId()))){
                 return;
-            }
+            }*/
             Example example = new Example(CourseExercisesStatistics.class);
             example.and()
                     .andEqualTo("courseId", practiceForCoursePaper.getCourseId())
@@ -194,7 +194,7 @@ public class CourseExercisesStatisticsManager {
                 .andEqualTo("questionId", questionId)
                 .andEqualTo("status", YesOrNoStatus.YES.getCode());
         CourseExercisesQuestionsStatistics questionsStatistics = questionsStatisticsMapper.selectOneByExample(example);
-        return questionsStatistics == null;
+        return questionsStatistics != null;
     }
 
     /**
@@ -205,7 +205,7 @@ public class CourseExercisesStatisticsManager {
 *    * @param answer 用户答案
      */
     private synchronized Long updateQuestionStatisticsCount(long statisticsTableId, long questionId, String answer, Integer correct){
-        if(Integer.valueOf(answer) == 0){
+        if(Integer.valueOf(answer) == 0 || correct == 0){
             return null;
         }
         /**
@@ -221,7 +221,7 @@ public class CourseExercisesStatisticsManager {
          * 统计每道题做对次数
          */
         CourseExercisesQuestionsStatistics newData = new CourseExercisesQuestionsStatistics();
-        newData.setCount(origin.getCount() + 1);
+        newData.setCounts(origin.getCounts() + 1);
         newData.setId(origin.getId());
         if(correct == 1){
             newData.setCorrects(origin.getCorrects() + 1);
@@ -241,12 +241,18 @@ public class CourseExercisesStatisticsManager {
         if(null == statisticsQuestionId){
             return;
         }
+        /**
+         * 多选题处理
+         */
         if (StringUtils.isNotBlank(userAnswer) && userAnswer.toCharArray().length > 1) {
             Stream.of(userAnswer.toCharArray()).forEach(item ->{
                 int choice = Integer.parseInt(item + "");
                 updateChoiceStatisticsCount(statisticsQuestionId, choice);
             });
         } else {
+            /**
+             * 单选题处理
+             */
             updateChoiceStatisticsCount(statisticsQuestionId, Integer.valueOf(userAnswer));
         }
     }
@@ -257,16 +263,22 @@ public class CourseExercisesStatisticsManager {
      * @param userAnswer
      */
     private synchronized void updateChoiceStatisticsCount(Long statisticsQuestionId, Integer userAnswer){
+        if(null == statisticsQuestionId || null == userAnswer){
+            return;
+        }
         Example example = new Example(CourseExercisesChoicesStatistics.class);
         example.and()
-                .andEqualTo("statisticsId", statisticsQuestionId)
+                .andEqualTo("questionId", statisticsQuestionId)
                 .andEqualTo("choice", userAnswer)
                 .andEqualTo("status", YesOrNoStatus.YES.getCode());
 
         CourseExercisesChoicesStatistics origin = choicesStatisticsMapper.selectOneByExample(example);
-
+        if(null == origin){
+            log.error("试题选项信息查询不到:statisticsQuestionId:{},userAnswer:{}", statisticsQuestionId, userAnswer);
+            return;
+        }
         CourseExercisesChoicesStatistics update = new CourseExercisesChoicesStatistics();
-        update.setCount(origin.getCount() + 1);
+        update.setCounts(origin.getCounts() + 1);
         update.setGmtModify(new Timestamp(System.currentTimeMillis()));
         update.setId(origin.getId());
         choicesStatisticsMapper.updateByPrimaryKeySelective(update);
@@ -283,21 +295,25 @@ public class CourseExercisesStatisticsManager {
     private void createQuestionsStatistics(long statisticsId, long questionId, int choiceSize){
         CourseExercisesQuestionsStatistics questionsStatistics = new CourseExercisesQuestionsStatistics();
         questionsStatistics.setCorrects(0);
-        questionsStatistics.setCount(0);
+        questionsStatistics.setCounts(0);
+        questionsStatistics.setStatus(YesOrNoStatus.YES.getCode());
         questionsStatistics.setStatisticsId(statisticsId);
         questionsStatistics.setQuestionId(questionId);
         questionsStatistics.setGmtCreate(new Timestamp(System.currentTimeMillis()));
         questionsStatistics.setGmtModify(new Timestamp(System.currentTimeMillis()));
         questionsStatisticsMapper.insertSelective(questionsStatistics);
-
+        if(choiceSize <= 0){
+            return;
+        }
         for (int choice = 1; choice <= choiceSize; choice ++){
             CourseExercisesChoicesStatistics courseExercisesChoicesStatistics = new CourseExercisesChoicesStatistics();
             courseExercisesChoicesStatistics.setQuestionId(questionsStatistics.getId());
             courseExercisesChoicesStatistics.setChoice(choice);
-            courseExercisesChoicesStatistics.setCount(0);
+            courseExercisesChoicesStatistics.setCounts(0);
             courseExercisesChoicesStatistics.setStatus(YesOrNoStatus.YES.getCode());
             courseExercisesChoicesStatistics.setGmtCreate(new Timestamp(System.currentTimeMillis()));
             courseExercisesChoicesStatistics.setGmtModify(new Timestamp(System.currentTimeMillis()));
+            choicesStatisticsMapper.insertSelective(courseExercisesChoicesStatistics);
         }
     }
 
@@ -364,8 +380,9 @@ public class CourseExercisesStatisticsManager {
         Map<Long, QuestionInfo> baseQuestionInfoMap = baseQuestionInfoList.stream().collect(Collectors.toMap(i -> i.getId(), i -> i));
 
         baseQuestionInfoList.forEach(item-> {
-            QuestionInfo questionInfo = baseQuestionInfoMap.get(item);
-            CourseExercisesQuestionsStatistics questionsStatistics = questionsStatisticsMap.get(item);
+            Long questionId = item.getId();
+            QuestionInfo questionInfo = baseQuestionInfoMap.get(questionId);
+            CourseExercisesQuestionsStatistics questionsStatistics = questionsStatisticsMap.get(questionId);
             QuestionInfoWithStatistics questionInfoWithStatistics = constructorQuestionStatistics(questionInfo, questionsStatistics);
             result.add(questionInfoWithStatistics);
         });
@@ -384,10 +401,10 @@ public class CourseExercisesStatisticsManager {
             log.error("获取试题统计信息数据为空:questionInfo:{}, questionsStatistics:{}",JSONObject.toJSONString(questionInfo), JSONObject.toJSONString(questionsStatistics));
             return questionInfoWithStatistics;
         }
-        double correctRate = ((double) questionsStatistics.getCorrects() / questionsStatistics.getCount()) * 100;
+        double correctRate = ((double) questionsStatistics.getCorrects() / questionsStatistics.getCounts()) * 100;
         correctRate = new BigDecimal(correctRate).setScale(1,  BigDecimal.ROUND_HALF_UP).doubleValue();
         questionInfoWithStatistics.setQuestionInfo(questionInfo);
-        questionInfoWithStatistics.setCount(questionsStatistics.getCount());
+        questionInfoWithStatistics.setCount(questionsStatistics.getCounts());
         questionInfoWithStatistics.setCorrectRate(correctRate);
         List<Double> choiceRate = constructorChoiceStatistics(questionsStatistics.getId());
         questionInfoWithStatistics.setChoiceRate(choiceRate);
@@ -412,12 +429,12 @@ public class CourseExercisesStatisticsManager {
         if(CollectionUtils.isEmpty(choicesStatistics)){
             return list;
         }
-        int sum = choicesStatistics.stream().mapToInt(CourseExercisesChoicesStatistics::getCount).sum();
+        int sum = choicesStatistics.stream().mapToInt(CourseExercisesChoicesStatistics::getCounts).sum();
         if(sum == 0){
             return list;
         }
         choicesStatistics.forEach(choice ->{
-            double choiceRate = ((double) choice.getCount() / sum) * 100;
+            double choiceRate = ((double) choice.getCounts() / sum) * 100;
             choiceRate = new BigDecimal(choiceRate).setScale(1,  BigDecimal.ROUND_HALF_UP).doubleValue();
             list.add(choiceRate);
         });
