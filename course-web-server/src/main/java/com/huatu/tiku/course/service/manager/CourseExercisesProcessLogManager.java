@@ -743,7 +743,7 @@ public class CourseExercisesProcessLogManager {
 
 
     @Degrade(key = "correctData", name = "课后作业数据纠正")
-    private void correctData(AtomicInteger atomicInteger, long userId, int courseType, long lessonId, CourseExercisesProcessLog courseExercisesProcessLog) {
+    public void correctData(AtomicInteger atomicInteger, long userId, int courseType, long lessonId, CourseExercisesProcessLog courseExercisesProcessLog) {
         log.info("数据库数据:,课件:{},类型:{}, 大纲数据:课件:{}, 类型:{}", courseExercisesProcessLog.getLessonId(), courseExercisesProcessLog.getCourseType(),lessonId,courseType);
         atomicInteger.incrementAndGet();
     }
@@ -756,7 +756,7 @@ public class CourseExercisesProcessLogManager {
      * @param lessonId
      * @param courseExercisesProcessLog
      */
-    private void correctDataDegrade(AtomicInteger atomicInteger, long userId, int courseType, long lessonId, CourseExercisesProcessLog courseExercisesProcessLog) {
+    public void correctDataDegrade(AtomicInteger atomicInteger, long userId, int courseType, long lessonId, CourseExercisesProcessLog courseExercisesProcessLog) {
         log.info("数据库数据:,课件:{},类型:{}, 大纲数据:课件:{}, 类型:{}", courseExercisesProcessLog.getLessonId(), courseExercisesProcessLog.getCourseType(),lessonId,courseType);
         courseExercisesProcessLog.setCourseType(courseType);
         courseExercisesProcessLog.setLessonId(lessonId);
