@@ -11,6 +11,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.google.common.base.Stopwatch;
+import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.bean.vo.RecordProcess;
 import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
@@ -697,6 +699,8 @@ public class CourseExercisesProcessLogManager {
      * @param message
      */
     public void correct(String message){
+        StopWatch stopwatch = new StopWatch("课后作业数据纠正");
+        stopwatch.start();
         AtomicInteger atomicInteger = new AtomicInteger(0);
         log.info(">>>>>>>>> message:{}", message);
         String [] data = message.split("_");
@@ -727,19 +731,39 @@ public class CourseExercisesProcessLogManager {
                 lessonId = syllabusWareInfo.getCoursewareId();
             }
             if(lessonId != courseExercisesProcessLog.getLessonId() || courseType != courseExercisesProcessLog.getCourseType()){
-                log.info("数据库数据:,课件:{},类型:{}, 大纲数据:课件:{}, 类型:{}", courseExercisesProcessLog.getLessonId(), courseExercisesProcessLog.getCourseType(),lessonId,courseType);
-                courseExercisesProcessLog.setCourseType(courseType);
-                courseExercisesProcessLog.setLessonId(lessonId);
-                courseExercisesProcessLog.setModifierId(userId);
-                int execute = courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
-                if(execute > 0){
-                    atomicInteger.incrementAndGet();
-                }
+                correctData(atomicInteger, userId, courseType, lessonId, courseExercisesProcessLog);
             }
-            log.info("修正课后作业数据成功数:{}", atomicInteger.get());
+            stopwatch.stop();
+            log.info("修正课后作业数据成功数:{},耗时:", atomicInteger.get(), stopwatch.prettyPrint());
         }catch (Exception e){
             e.printStackTrace();
             log.error("修正课后作业数据失败:数据id:{},{}",id, e);
+        }
+    }
+
+
+    @Degrade(key = "correctData", name = "课后作业数据纠正")
+    private void correctData(AtomicInteger atomicInteger, long userId, int courseType, long lessonId, CourseExercisesProcessLog courseExercisesProcessLog) {
+        log.info("数据库数据:,课件:{},类型:{}, 大纲数据:课件:{}, 类型:{}", courseExercisesProcessLog.getLessonId(), courseExercisesProcessLog.getCourseType(),lessonId,courseType);
+        atomicInteger.incrementAndGet();
+    }
+
+    /**
+     * 数据纠正执行
+     * @param atomicInteger
+     * @param userId
+     * @param courseType
+     * @param lessonId
+     * @param courseExercisesProcessLog
+     */
+    private void correctDataDegrade(AtomicInteger atomicInteger, long userId, int courseType, long lessonId, CourseExercisesProcessLog courseExercisesProcessLog) {
+        log.info("数据库数据:,课件:{},类型:{}, 大纲数据:课件:{}, 类型:{}", courseExercisesProcessLog.getLessonId(), courseExercisesProcessLog.getCourseType(),lessonId,courseType);
+        courseExercisesProcessLog.setCourseType(courseType);
+        courseExercisesProcessLog.setLessonId(lessonId);
+        courseExercisesProcessLog.setModifierId(userId);
+        int execute = courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
+        if(execute > 0){
+            atomicInteger.incrementAndGet();
         }
     }
 
