@@ -3,10 +3,14 @@ package com.huatu.tiku.course.web.controller.v2;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
+import com.huatu.tiku.course.service.manager.CourseExercisesStatisticsManager;
 import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -27,6 +31,10 @@ public class CourseExercisesControllerV2 {
 
     @Autowired
     private CourseExercisesProcessLogManager courseExercisesProcessLogManager;
+
+
+    @Autowired
+    private CourseExercisesStatisticsManager courseExercisesStatisticsManager;
     /**
      * 创建课后训练答题卡
      *
@@ -44,6 +52,27 @@ public class CourseExercisesControllerV2 {
 
     ) {
         return courseExercisesProcessLogManager.createCourseWorkAnswerCardEntrance(courseId, syllabusId, courseType, coursewareId, userSession.getSubject(), terminal, cv, userSession.getId());
+    }
+
+
+    /**
+     * 课后作业统计信息
+     * @param params
+     * @return
+     */
+    @PostMapping(value = "/statistics")
+    public Object statistics(@RequestBody List<Map<String,Object>> params){
+        return courseExercisesStatisticsManager.statistics(params);
+    }
+
+    /**
+     * 每次课后作业的详细统计信息
+     * @param id
+     * @return
+     */
+    @GetMapping(value = "/statistics/{id}")
+    public Object statisticsDetail(@PathVariable(value = "id") long id){
+        return courseExercisesStatisticsManager.statisticsDetail(id);
     }
 }
 

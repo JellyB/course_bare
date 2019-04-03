@@ -5,10 +5,17 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.bean.practice.QuestionInfo;
+import com.huatu.tiku.course.bean.practice.QuestionInfoWithStatistics;
 import com.huatu.tiku.course.common.YesOrNoStatus;
+import com.huatu.tiku.course.dao.manual.CourseExercisesQuestionsStatisticsMapper;
+import com.huatu.tiku.course.dao.manual.CourseExercisesChoicesStatisticsMapper;
 import com.huatu.tiku.course.dao.manual.CourseExercisesStatisticsMapper;
+import com.huatu.tiku.course.service.v1.practice.QuestionInfoService;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.ztk.api.v4.user.UserServiceV4;
+import com.huatu.tiku.entity.CourseExercisesChoicesStatistics;
+import com.huatu.tiku.entity.CourseExercisesQuestionsStatistics;
 import com.huatu.tiku.entity.CourseExercisesStatistics;
 import com.huatu.ztk.paper.bean.PracticeCard;
 import com.huatu.ztk.paper.bean.PracticeForCoursePaper;
@@ -18,6 +25,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -26,10 +35,12 @@ import org.springframework.stereotype.Component;
 import tk.mybatis.mapper.entity.Example;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 描述：
@@ -44,6 +55,15 @@ public class CourseExercisesStatisticsManager {
 
     @Autowired
     private CourseExercisesStatisticsMapper courseExercisesStatisticsMapper;
+
+    @Autowired
+    private CourseExercisesQuestionsStatisticsMapper questionsStatisticsMapper;
+
+    @Autowired
+    private CourseExercisesChoicesStatisticsMapper choicesStatisticsMapper;
+
+    @Autowired
+    private QuestionInfoService questionInfoService;
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -82,6 +102,7 @@ public class CourseExercisesStatisticsManager {
                 courseExercisesStatistics.setCorrects(answerCard.getRcount());
                 courseExercisesStatistics.setCosts(answerCard.getExpendTime());
                 courseExercisesStatistics.setCounts(1);
+                courseExercisesStatistics.setQuestionCount( practiceForCoursePaper.getQcount());
                 courseExercisesStatistics.setCourseType(practiceForCoursePaper.getCourseType());
                 courseExercisesStatistics.setCourseId(practiceForCoursePaper.getCourseId());
                 courseExercisesStatistics.setGmtModify(new Timestamp(System.currentTimeMillis()));
@@ -109,9 +130,298 @@ public class CourseExercisesStatisticsManager {
 
             rankInfoZset.add(rankInfoKey, String.valueOf(answerCard.getUserId()), score);
             existsHash.put(existsKey, String.valueOf(answerCard.getUserId()), JSONObject.toJSONString(userRankInfo));
+
+            dealCourseExercisesDetailStatistics(courseExercisesStatistics.getId(), answerCard);
         }catch (Exception e){
             log.error("处理课后作业统计信息异常!:{}", e);
         }
+    }
+
+
+
+    /**
+     * 统计选项的统计信息
+     * @param id
+     * @param answerCard
+     * @throws BizException
+     */
+    private void dealCourseExercisesDetailStatistics(long id, PracticeCard answerCard)throws BizException{
+        PracticeForCoursePaper practiceForCoursePaper = (PracticeForCoursePaper)answerCard.getPaper();
+        List<Integer> questionIds = practiceForCoursePaper.getQuestions();
+
+        List<QuestionInfo> baseQuestionInfoList = questionInfoService.getBaseQuestionInfo(questionIds.stream().map(Long::new).collect(Collectors.toList()));
+        if (CollectionUtils.isEmpty(baseQuestionInfoList)) {
+            return;
+        }
+        for (QuestionInfo item : baseQuestionInfoList){
+            Long questionId = item.getId();
+            if (!checkQuestionsStatisticsExist(id, questionId)) {
+                createQuestionsStatistics(id, questionId, item.getChoiceList().size());
+            }
+            List<Integer> userQuestions = practiceForCoursePaper.getQuestions();
+            List<String> userAnswers = Arrays.stream(answerCard.getAnswers()).collect(Collectors.toList());
+            List<Integer> userCorrects = Arrays.stream(answerCard.getCorrects()).boxed().collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(userQuestions) || CollectionUtils.isEmpty(userAnswers) || CollectionUtils.isEmpty(userCorrects)) {
+                log.error("试题统计数据不合法:userQuestions:{},userAnswers:{},userCorrects:{}", userQuestions.size(), userAnswers.size(), userCorrects.size());
+                continue;
+            }
+            try{
+                int index = userQuestions.indexOf(questionId.intValue());
+                String userAnswer = userAnswers.get(index);
+
+                Long statisticsQuestionId = updateQuestionStatisticsCount(id, questionId, userAnswers.get(index), userCorrects.get(index));
+                updateChoiceStatisticsCount(statisticsQuestionId, userAnswer);
+            }catch (Exception e){
+                log.error("课后作业试题统计数据异常:{}", e);
+                continue;
+            }
+        }
+    }
+
+
+    /**
+     * 检查课后练习单题数据是否存在
+     * 存在返回 true
+     * 不存在返回 false
+     * @param statisticsId
+     * @param questionId
+     * @return
+     */
+    private boolean checkQuestionsStatisticsExist(long statisticsId, long questionId){
+        Example example = new Example(CourseExercisesQuestionsStatistics.class);
+        example.and()
+                .andEqualTo("statisticsId", statisticsId)
+                .andEqualTo("questionId", questionId)
+                .andEqualTo("status", YesOrNoStatus.YES.getCode());
+        CourseExercisesQuestionsStatistics questionsStatistics = questionsStatisticsMapper.selectOneByExample(example);
+        return questionsStatistics == null;
+    }
+
+    /**
+     * 更新每道题的答题状态
+     * @param statisticsTableId 统计主表id
+     * @param questionId 试题id
+     * @param correct 是否正确
+*    * @param answer 用户答案
+     */
+    private synchronized Long updateQuestionStatisticsCount(long statisticsTableId, long questionId, String answer, Integer correct){
+        if(Integer.valueOf(answer) == 0){
+            return null;
+        }
+        /**
+         * 统计试题做题次数
+         */
+        Example example = new Example(CourseExercisesQuestionsStatistics.class);
+        example.and()
+                .andEqualTo("statisticsId", statisticsTableId)
+                .andEqualTo("questionId", questionId)
+                .andEqualTo("status", YesOrNoStatus.YES.getCode());
+        CourseExercisesQuestionsStatistics origin = questionsStatisticsMapper.selectOneByExample(example);
+        /**
+         * 统计每道题做对次数
+         */
+        CourseExercisesQuestionsStatistics newData = new CourseExercisesQuestionsStatistics();
+        newData.setCount(origin.getCount() + 1);
+        newData.setId(origin.getId());
+        if(correct == 1){
+            newData.setCorrects(origin.getCorrects() + 1);
+        }
+        questionsStatisticsMapper.updateByPrimaryKeySelective(newData);
+        return origin.getId();
+    }
+
+
+    /**
+     * 更新当前试题答案选择次数
+     * @param statisticsQuestionId 课后作业试题统计表 id
+     * @param userAnswer 用户答案
+     * @throws BizException
+     */
+    private synchronized void updateChoiceStatisticsCount(Long statisticsQuestionId, String userAnswer)throws BizException{
+        if(null == statisticsQuestionId){
+            return;
+        }
+        if (StringUtils.isNotBlank(userAnswer) && userAnswer.toCharArray().length > 1) {
+            Stream.of(userAnswer.toCharArray()).forEach(item ->{
+                int choice = Integer.parseInt(item + "");
+                updateChoiceStatisticsCount(statisticsQuestionId, choice);
+            });
+        } else {
+            updateChoiceStatisticsCount(statisticsQuestionId, Integer.valueOf(userAnswer));
+        }
+    }
+
+    /**
+     * 每道题的更新次数
+     * @param statisticsQuestionId
+     * @param userAnswer
+     */
+    private synchronized void updateChoiceStatisticsCount(Long statisticsQuestionId, Integer userAnswer){
+        Example example = new Example(CourseExercisesChoicesStatistics.class);
+        example.and()
+                .andEqualTo("statisticsId", statisticsQuestionId)
+                .andEqualTo("choice", userAnswer)
+                .andEqualTo("status", YesOrNoStatus.YES.getCode());
+
+        CourseExercisesChoicesStatistics origin = choicesStatisticsMapper.selectOneByExample(example);
+
+        CourseExercisesChoicesStatistics update = new CourseExercisesChoicesStatistics();
+        update.setCount(origin.getCount() + 1);
+        update.setGmtModify(new Timestamp(System.currentTimeMillis()));
+        update.setId(origin.getId());
+        choicesStatisticsMapper.updateByPrimaryKeySelective(update);
+    }
+
+
+
+    /**
+     * 创建课后 每道题 & 每道题选项统计的信息
+     * @param statisticsId
+     * @param questionId
+     * @param choiceSize
+     */
+    private void createQuestionsStatistics(long statisticsId, long questionId, int choiceSize){
+        CourseExercisesQuestionsStatistics questionsStatistics = new CourseExercisesQuestionsStatistics();
+        questionsStatistics.setCorrects(0);
+        questionsStatistics.setCount(0);
+        questionsStatistics.setStatisticsId(statisticsId);
+        questionsStatistics.setQuestionId(questionId);
+        questionsStatistics.setGmtCreate(new Timestamp(System.currentTimeMillis()));
+        questionsStatistics.setGmtModify(new Timestamp(System.currentTimeMillis()));
+        questionsStatisticsMapper.insertSelective(questionsStatistics);
+
+        for (int choice = 1; choice <= choiceSize; choice ++){
+            CourseExercisesChoicesStatistics courseExercisesChoicesStatistics = new CourseExercisesChoicesStatistics();
+            courseExercisesChoicesStatistics.setQuestionId(questionsStatistics.getId());
+            courseExercisesChoicesStatistics.setChoice(choice);
+            courseExercisesChoicesStatistics.setCount(0);
+            courseExercisesChoicesStatistics.setStatus(YesOrNoStatus.YES.getCode());
+            courseExercisesChoicesStatistics.setGmtCreate(new Timestamp(System.currentTimeMillis()));
+            courseExercisesChoicesStatistics.setGmtModify(new Timestamp(System.currentTimeMillis()));
+        }
+    }
+
+    /**
+     * 课后作业的统计信息
+     * @param params
+     * @return
+     * @throws BizException
+     */
+    public Object statistics(List<Map<String,Object>> params) throws BizException{
+        List<Map> result = Lists.newArrayList();
+        if(CollectionUtils.isEmpty(params)){
+            return result;
+        }
+        for (Map<String, Object> param : params) {
+            int courseType = MapUtils.getIntValue(param, "courseType");
+            long courseId = MapUtils.getLongValue(param, "courseId");
+            // todo 如果是直播回放 - 处理为直播
+            Example example = new Example(CourseExercisesStatistics.class);
+            example.and().andEqualTo("courseType", courseType)
+                    .andEqualTo("courseId", courseId)
+                    .andEqualTo("status", YesOrNoStatus.YES.getCode());
+            CourseExercisesStatistics statistics = courseExercisesStatisticsMapper.selectOneByExample(example);
+            if(null == statistics){
+                continue;
+            }
+            double correctCate = ((double) statistics.getCorrects() / (statistics.getCounts() * statistics.getQuestionCount())) * 100;
+            correctCate = new BigDecimal(correctCate).setScale(1,  BigDecimal.ROUND_HALF_UP).doubleValue();
+            param.put("count", statistics.getCounts());
+            param.put("percent", correctCate);
+            param.put("id", statistics.getId());
+            result.add(param);
+        }
+       return result;
+    }
+
+    /**
+     * 课后作业的详细统计信息
+     * @param statisticsTableId 统计主表 id
+     * @return
+     * @throws BizException
+     */
+    public Object statisticsDetail(long statisticsTableId)throws BizException{
+        List<QuestionInfoWithStatistics> result = Lists.newArrayList();
+        Example example = new Example(CourseExercisesQuestionsStatistics.class);
+        example.and().andEqualTo("statisticsId", statisticsTableId)
+                .andEqualTo("status", YesOrNoStatus.YES.getCode());
+        /**
+         * 试题id <-> 试题计信息
+         */
+        List<CourseExercisesQuestionsStatistics> questionsStatisticsList = questionsStatisticsMapper.selectByExample(example);
+        if(CollectionUtils.isEmpty(questionsStatisticsList)){
+            return result;
+        }
+        Map<Long, CourseExercisesQuestionsStatistics> questionsStatisticsMap = questionsStatisticsList.stream().collect(Collectors.toMap(i -> i.getQuestionId(), i -> i));
+
+        /**
+         * 试题id <-> 试题原生信息
+         */
+        List<QuestionInfo> baseQuestionInfoList = questionInfoService.getBaseQuestionInfo(Lists.newArrayList(questionsStatisticsMap.keySet()));
+        if(CollectionUtils.isEmpty(baseQuestionInfoList)){
+            return result;
+        }
+        Map<Long, QuestionInfo> baseQuestionInfoMap = baseQuestionInfoList.stream().collect(Collectors.toMap(i -> i.getId(), i -> i));
+
+        baseQuestionInfoList.forEach(item-> {
+            QuestionInfo questionInfo = baseQuestionInfoMap.get(item);
+            CourseExercisesQuestionsStatistics questionsStatistics = questionsStatisticsMap.get(item);
+            QuestionInfoWithStatistics questionInfoWithStatistics = constructorQuestionStatistics(questionInfo, questionsStatistics);
+            result.add(questionInfoWithStatistics);
+        });
+        return result;
+    }
+
+    /**
+     * 试题统计信息详情构建
+     * @param questionInfo
+     * @param questionsStatistics
+     * @return
+     */
+    private QuestionInfoWithStatistics constructorQuestionStatistics(QuestionInfo questionInfo, CourseExercisesQuestionsStatistics questionsStatistics){
+        QuestionInfoWithStatistics questionInfoWithStatistics = new QuestionInfoWithStatistics();
+        if(null == questionInfo || null == questionsStatistics){
+            log.error("获取试题统计信息数据为空:questionInfo:{}, questionsStatistics:{}",JSONObject.toJSONString(questionInfo), JSONObject.toJSONString(questionsStatistics));
+            return questionInfoWithStatistics;
+        }
+        double correctRate = ((double) questionsStatistics.getCorrects() / questionsStatistics.getCount()) * 100;
+        correctRate = new BigDecimal(correctRate).setScale(1,  BigDecimal.ROUND_HALF_UP).doubleValue();
+        questionInfoWithStatistics.setQuestionInfo(questionInfo);
+        questionInfoWithStatistics.setCount(questionsStatistics.getCount());
+        questionInfoWithStatistics.setCorrectRate(correctRate);
+        List<Double> choiceRate = constructorChoiceStatistics(questionsStatistics.getId());
+        questionInfoWithStatistics.setChoiceRate(choiceRate);
+        return questionInfoWithStatistics;
+
+    }
+
+    /**
+     * 试题选项统计信息详情构建
+     * @param questionTableId
+     * @return
+     */
+    private List<Double> constructorChoiceStatistics(Long questionTableId){
+        List<Double> list = Lists.newArrayList();
+        Example example = new Example(CourseExercisesChoicesStatistics.class);
+        example.and()
+                .andEqualTo("questionId", questionTableId)
+                .andEqualTo("status", YesOrNoStatus.YES.getCode());
+        example.orderBy("choice").asc();
+
+        List<CourseExercisesChoicesStatistics> choicesStatistics = choicesStatisticsMapper.selectByExample(example);
+        if(CollectionUtils.isEmpty(choicesStatistics)){
+            return list;
+        }
+        int sum = choicesStatistics.stream().mapToInt(CourseExercisesChoicesStatistics::getCount).sum();
+        if(sum == 0){
+            return list;
+        }
+        choicesStatistics.forEach(choice ->{
+            double choiceRate = ((double) choice.getCount() / sum) * 100;
+            choiceRate = new BigDecimal(choiceRate).setScale(1,  BigDecimal.ROUND_HALF_UP).doubleValue();
+            list.add(choiceRate);
+        });
+        return list;
     }
 
 

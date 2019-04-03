@@ -15,6 +15,7 @@ import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
+import com.huatu.tiku.course.service.v1.CourseExercisesService;
 import com.huatu.tiku.entity.CourseExercisesProcessLog;
 import com.huatu.ztk.paper.common.AnswerCardStatus;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +48,9 @@ public class CourseExercisesProcessLogMapperTest extends BaseWebTest {
 
     @Autowired
     private CourseExercisesProcessLogManager courseExercisesProcessLogManager;
+
+    @Autowired
+    private CourseExercisesService courseExercisesService;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -138,6 +142,16 @@ public class CourseExercisesProcessLogMapperTest extends BaseWebTest {
         }
     }
 
+    /**
+     * 查询课后作业习题信息
+     */
+    @Test
+    public void listQuestionByCourseIdTest(){
+        int courseType = 1;
+        long courseWareId = 937995l;
+        List<Map<String, Object>> result = courseExercisesService.listQuestionByCourseId(courseType, courseWareId);
+        log.info("课后练习试题信息:{}", JSONObject.toJSONString(result));
+    }
 
 
 
