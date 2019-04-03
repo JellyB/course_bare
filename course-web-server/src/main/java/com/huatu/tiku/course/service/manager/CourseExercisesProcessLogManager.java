@@ -8,10 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import com.google.common.base.Stopwatch;
 import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.bean.vo.RecordProcess;
 import com.huatu.tiku.course.common.VideoTypeEnum;
@@ -26,6 +24,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.scheduling.annotation.Async;
@@ -63,8 +62,6 @@ import com.huatu.ztk.paper.common.AnswerCardStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StopWatch;
 import tk.mybatis.mapper.entity.Example;
-
-import javax.swing.*;
 
 /**
  * 描述：
@@ -109,6 +106,8 @@ public class CourseExercisesProcessLogManager {
     private static final String COURSE_LABEL = "course";
 
     private static final long PERIOD_TIME = 30 * 1000;
+
+    private static final String CORRECT_DATA_KEY = "data_correct_2019";
 
     /**
      * 获取类型未读量
@@ -699,10 +698,7 @@ public class CourseExercisesProcessLogManager {
      * @param message
      */
     public void correct(String message){
-        StopWatch stopwatch = new StopWatch("课后作业数据纠正");
-        stopwatch.start();
-        AtomicInteger atomicInteger = new AtomicInteger(0);
-        log.info(">>>>>>>>> message:{}", message);
+        log.info(">>>>>>>>> current deal message:{}", message);
         String [] data = message.split("_");
         long id = Long.valueOf(data[1]);
         long userId = Long.valueOf(data[0]);
@@ -731,10 +727,8 @@ public class CourseExercisesProcessLogManager {
                 lessonId = syllabusWareInfo.getCoursewareId();
             }
             if(lessonId != courseExercisesProcessLog.getLessonId() || courseType != courseExercisesProcessLog.getCourseType()){
-                correctData(atomicInteger, userId, courseType, lessonId, courseExercisesProcessLog);
+                correctData(userId, courseType, lessonId, courseExercisesProcessLog);
             }
-            stopwatch.stop();
-            log.info("修正课后作业数据成功数:{},耗时:", atomicInteger.get(), stopwatch.prettyPrint());
         }catch (Exception e){
             e.printStackTrace();
             log.error("修正课后作业数据失败:数据id:{},{}",id, e);
@@ -743,27 +737,28 @@ public class CourseExercisesProcessLogManager {
 
 
     @Degrade(key = "correctData", name = "课后作业数据纠正")
-    public void correctData(AtomicInteger atomicInteger, long userId, int courseType, long lessonId, CourseExercisesProcessLog courseExercisesProcessLog) {
+    public void correctData(long userId, int courseType, long lessonId, CourseExercisesProcessLog courseExercisesProcessLog) {
+        SetOperations<String, String> setOperations = redisTemplate.opsForSet();
+        StringBuffer stringBuffer = new StringBuffer(String.valueOf(userId)).append(String.valueOf(courseExercisesProcessLog.getSyllabusId()));
+        setOperations.add(CORRECT_DATA_KEY, stringBuffer.toString());
         log.info("数据库数据:,课件:{},类型:{}, 大纲数据:课件:{}, 类型:{}", courseExercisesProcessLog.getLessonId(), courseExercisesProcessLog.getCourseType(),lessonId,courseType);
-        atomicInteger.incrementAndGet();
+
     }
 
     /**
      * 数据纠正执行
-     * @param atomicInteger
      * @param userId
      * @param courseType
      * @param lessonId
      * @param courseExercisesProcessLog
      */
-    public void correctDataDegrade(AtomicInteger atomicInteger, long userId, int courseType, long lessonId, CourseExercisesProcessLog courseExercisesProcessLog) {
-        log.info("数据库数据:,课件:{},类型:{}, 大纲数据:课件:{}, 类型:{}", courseExercisesProcessLog.getLessonId(), courseExercisesProcessLog.getCourseType(),lessonId,courseType);
+    public void correctDataDegrade(long userId, int courseType, long lessonId, CourseExercisesProcessLog courseExercisesProcessLog) {
         courseExercisesProcessLog.setCourseType(courseType);
         courseExercisesProcessLog.setLessonId(lessonId);
         courseExercisesProcessLog.setModifierId(userId);
         int execute = courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
         if(execute > 0){
-            atomicInteger.incrementAndGet();
+            log.info("数据库数据:,课件:{},类型:{}, 大纲数据:课件:{}, 类型:{}", courseExercisesProcessLog.getLessonId(), courseExercisesProcessLog.getCourseType(), lessonId, courseType);
         }
     }
 
