@@ -47,18 +47,18 @@ public class ExamServiceImpl implements ExamService {
         param.put("page", page);
         param.put("pageSize", pageSize);
 
-     /*   String articleListKey = articleListKey(type, page, pageSize, category);
+        String articleListKey = articleListKey(type, page, pageSize, category);
         log.info("articleListKey是:{},category是:{}", articleListKey, category);
         HashOperations hashOperations = redisTemplate.opsForHash();
         Object article = hashOperations.get(articleListKey, category + "");
         if (null != article) {
             return article;
-        }*/
+        }
         NetSchoolResponse article1List = examNetSchoolService.getArticleList(param);
-       /* if (article1List.getData() != null) {
+        if (article1List.getData() != null) {
             hashOperations.put(articleListKey, category + "", article1List.getData());
-            redisTemplate.expire(articleListKey, 5, TimeUnit.MINUTES);
-        }*/
+            redisTemplate.expire(articleListKey, 1, TimeUnit.MINUTES);
+        }
         return article1List.getData();
     }
 
@@ -71,18 +71,7 @@ public class ExamServiceImpl implements ExamService {
     public Object detail(int id) {
         HashMap params = new HashMap();
         params.put("id", id);
-        HashOperations hashOperations = redisTemplate.opsForHash();
-        String articleDetailKey = articleDetail(id);
-        log.info("articleDetailKey是:{}", articleDetailKey);
-        Object articleDetail = hashOperations.get(articleDetailKey, String.valueOf(id));
-        if (null != articleDetail) {
-            return articleDetail;
-        }
         NetSchoolResponse detailResponse = examNetSchoolService.detail(params);
-        if (detailResponse.getData() != null) {
-            hashOperations.put(articleDetailKey, String.valueOf(id), detailResponse.getData());
-            redisTemplate.expire(articleDetailKey, 5, TimeUnit.MINUTES);
-        }
         return detailResponse.getData();
     }
 
@@ -113,12 +102,6 @@ public class ExamServiceImpl implements ExamService {
      */
     public NetSchoolResponse like(HashMap map) {
         NetSchoolResponse like = examNetSchoolService.like(map);
-        //清除文章详情缓存
-        int id = (int) map.get("id");
-        HashOperations hashOperations = redisTemplate.opsForHash();
-        hashOperations.delete(articleDetail(id), String.valueOf(id));
-        //文章列表清除缓存
-
         return like;
     }
 
@@ -143,7 +126,6 @@ public class ExamServiceImpl implements ExamService {
                 .append("detail").append(":")
                 .append(aid).toString();
     }
-
 
 }
 
