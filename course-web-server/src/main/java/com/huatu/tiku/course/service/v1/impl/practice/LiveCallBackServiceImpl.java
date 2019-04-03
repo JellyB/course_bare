@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.service.v1.impl.practice;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -12,9 +13,12 @@ import com.huatu.tiku.course.bean.practice.LiveCallbackBo;
 import com.huatu.tiku.course.bean.practice.PracticeRoomRankUserBo;
 import com.huatu.tiku.course.bean.practice.QuestionMetaBo;
 import com.huatu.tiku.course.common.LiveCallBackTypeEnum;
+import com.huatu.tiku.course.common.YesOrNoStatus;
+import com.huatu.tiku.course.dao.manual.BjyCallbackLogMapper;
 import com.huatu.tiku.course.dao.manual.CourseLiveBackLogMapper;
 import com.huatu.tiku.course.service.v1.practice.LiveCallBackService;
 import com.huatu.tiku.course.service.v1.practice.TeacherService;
+import com.huatu.tiku.entity.BjyCallbackLog;
 import com.huatu.tiku.entity.CourseLiveBackLog;
 import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
 
@@ -38,6 +42,8 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
 	private final CoursePracticeQuestionInfoServiceImpl coursePracticeQuestionInfoServiceImpl;
 
 	private final CourseLiveBackLogMapper courseLiveBackLogMapper;
+	
+	private final BjyCallbackLogMapper bjyCallbackLogMapper;
 
 	@Override
 	@Async
@@ -107,8 +113,12 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
 	 */
 	@Override
 	@Async
-	public void saveLiveInfo(Long roomId, String op) {
-
+	public void saveLiveInfo(Long roomId, String op, String opTime, String qid, Integer timestamp, String sign) {
+		BjyCallbackLog callback = BjyCallbackLog.builder().roomId(roomId).op(op).opTime(opTime).qid(qid).sign(sign)
+				.timestamp(timestamp).build();
+		callback.setGmtCreate(new Timestamp(System.currentTimeMillis()));
+		callback.setStatus(YesOrNoStatus.YES.getCode());
+		bjyCallbackLogMapper.insertSelective(callback);
 		if (LiveCallBackTypeEnum.END.getKey().equals(op)) {
 			// 根据房间id查询学员答题信息
 			List<Integer> questionIds = coursePracticeQuestionInfoServiceImpl.getQuestionsInfoByRoomId(roomId);

@@ -80,7 +80,7 @@ public class CourseBreakpointQuestionServiceImpl extends BaseServiceHelperImpl<C
         WeekendSqls<CourseBreakpointQuestion> sql = WeekendSqls.custom();
         sql.andIn(CourseBreakpointQuestion::getBreakpointId, list);
         Example example = Example.builder(CourseBreakpointQuestion.class)
-                .where(sql).orderByAsc("pptIndex")
+				.where(sql).orderByAsc("pptIndex", "sort")
                 .build();
         List<CourseBreakpointQuestion> questions = selectByExample(example);
         return questions;

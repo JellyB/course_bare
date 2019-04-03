@@ -155,20 +155,41 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 					CourseType.LIVE.getCode(), userCourse.getCourseId(), qids, answers, corrects, times);
 			log.info("随堂练用户id:{} courseId:{}生成答题卡", userCourse.getUserId(), userCourse.getCourseId());
 			// 赠送图币
-			if (rcount > 0) {
+			if (rcount > 0 && checkHasGiveCoin(roomId, userCourse.getUserId())) {
 				NetSchoolResponse response = userServiceV4
 						.getUserLevelBatch(Arrays.asList(userCourse.getUserId().toString()));
 				if (ResponseUtil.isSuccess(response)) {
 					List<Map<String, String>> userInfoList = (List<Map<String, String>>) response.getData();
 					String userName = userInfoList.get(0).get("name");
 					RewardMessage msg = RewardMessage.builder().gold(rcount * 2).uid(userCourse.getUserId())
-							.action(CoinType.COURSE_PRACTICE_RIGHT).experience(rcount * 2).bizId(roomId + userName)
+							.action(CoinType.COURSE_PRACTICE_RIGHT).experience(1).bizId(roomId + userName)
 							.uname(userName).timestamp(System.currentTimeMillis()).build();
+					log.info("随堂练用户id:{}赠送图币{},bizId为:{}", userCourse.getUserId(), rcount * 2, roomId + userName);
 					rabbitTemplate.convertAndSend("", RabbitConsts.QUEUE_REWARD_ACTION, msg);
 				}
 			}
 
 		}
 
+	}
+	
+	/**
+	 * 是否送过图币
+	 * @param roomId
+	 * @param userName
+	 * @return
+	 */
+	private boolean checkHasGiveCoin(Long roomId, Integer userId) {
+		final SetOperations<String, String> setOperations = redisTemplate.opsForSet();
+		String key = CoursePracticeCacheKey.GIVECOINKEY;
+		if (setOperations.isMember(key, roomId + userId + "")) {
+			log.info("随堂练用户id:{}roomId为:{}已经送过图币", userId, roomId);
+			return false;
+		} else {
+			setOperations.add(key, roomId + userId + "");
+			redisTemplate.expire(key, CoursePracticeCacheKey.getDefaultKeyTTL(),
+					CoursePracticeCacheKey.getDefaultTimeUnit());
+			return true;
+		}
 	}
 }

@@ -21,6 +21,11 @@ public final class CoursePracticeCacheKey {
 	  * 统计hash中总用时
 	  */
 	 public static String TOTALTIME="totalTime";
+	 
+	 /**
+	  * 已经送过金币的学员
+	  */
+	 public static String GIVECOINKEY="course:practice:coin:key";
 
     /**
      * 获取用户个人信息统计

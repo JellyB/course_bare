@@ -28,4 +28,9 @@ public class RabbitMqConstants {
      */
     public static final String COURSE_LIVE_REPORT_LOG = "course_live_report_log";
 
+    /**
+     * 课后作业数据处理队列
+     */
+    public static final String COURSE_EXERCISES_PROCESS_LOG_CORRECT_QUEUE = "course_exercises_process_log_correct";
+
 }

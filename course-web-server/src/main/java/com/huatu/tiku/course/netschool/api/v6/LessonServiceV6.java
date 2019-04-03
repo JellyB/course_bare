@@ -63,6 +63,12 @@ public interface LessonServiceV6 {
     NetSchoolResponse studyReport(@RequestParam Map<String, Object> params);
 
 
-
+    /**
+     * 通过roomI的, 直播回放课件id，查找直播课件id
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/v5/c/lesson/live_ids")
+    NetSchoolResponse obtainLiveWareId(@RequestParam Map<String, Object> params);
 
 }

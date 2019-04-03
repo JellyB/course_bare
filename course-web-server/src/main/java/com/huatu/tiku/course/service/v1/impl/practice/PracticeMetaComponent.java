@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.service.v1.impl.practice;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -214,6 +215,8 @@ public class PracticeMetaComponent {
 				}).findFirst();
 		if (correctInfo.isPresent()) {
 			correctCate = ((double) correctInfo.get().getValue() / totalCount) * 100;
+			//保留位数
+			correctCate = new BigDecimal(correctCate).setScale(2,  BigDecimal.ROUND_HALF_UP).doubleValue();
 		}
 		// 矫正最终的正确率，保证单选题的时候 选项选择率和正确率一致
 		if (questionInfo.getAnswer().length() == 1 && Integer.valueOf(questionInfo.getAnswer()) < answerCountNum.length

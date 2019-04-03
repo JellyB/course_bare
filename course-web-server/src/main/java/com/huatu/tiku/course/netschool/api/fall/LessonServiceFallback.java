@@ -73,4 +73,15 @@ public class LessonServiceFallback implements LessonServiceV6 {
     public NetSchoolResponse studyReport(Map<String, Object> params) {
         return NetSchoolResponse.DEFAULT_ERROR;
     }
+
+    /**
+     * 通过roomI的, 直播回放课件id，查找直播课件id
+     *
+     * @param params
+     * @return
+     */
+    @Override
+    public NetSchoolResponse obtainLiveWareId(Map<String, Object> params) {
+        return NetSchoolResponse.DEFAULT_ERROR;
+    }
 }
