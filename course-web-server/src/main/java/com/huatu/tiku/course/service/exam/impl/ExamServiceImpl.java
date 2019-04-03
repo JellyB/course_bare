@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.service.exam.impl;
 
 
+import com.google.common.base.Stopwatch;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.common.ArticleTypeListEnum;
 import com.huatu.tiku.course.netschool.api.ExamNetSchoolService;
@@ -69,9 +70,11 @@ public class ExamServiceImpl implements ExamService {
      * @return
      */
     public Object detail(int id) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         HashMap params = new HashMap();
         params.put("id", id);
         NetSchoolResponse detailResponse = examNetSchoolService.detail(params);
+        log.info("备考精华详情文章ID是:{},耗时:{}", id, String.valueOf(stopwatch.stop()));
         return detailResponse.getData();
     }
 
