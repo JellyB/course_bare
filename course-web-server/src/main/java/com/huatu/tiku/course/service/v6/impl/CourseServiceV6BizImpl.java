@@ -4,18 +4,12 @@ package com.huatu.tiku.course.service.v6.impl;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.huatu.common.ErrorResult;
 import com.huatu.common.consts.TerminalType;
@@ -400,6 +394,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         data.putAll(courseExercisesStatisticsManager.obtainCourseRankInfo(practiceCard));
         data.put("tcount", practiceForCoursePaper.getQcount());
         data.put("rcount", practiceCard.getRcount());
+        data.put("wcount", practiceCard.getWcount());
+        data.put("ucount", practiceCard.getUcount());
+        data.put("timesTotal", Arrays.stream(practiceCard.getTimes()).sum());
 
         data.put("avgMyCost", practiceCard.getSpeed());
 
@@ -649,6 +646,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             courseWorkPractice.put("id", MapUtils.getString(temp, "id"));
             courseWorkPractice.put("paper", temp.get("paper"));
             courseWorkPractice.put("rcount", temp.get("rcount"));
+            courseWorkPractice.put("wcount", temp.get("wcount"));
+            courseWorkPractice.put("ucount", temp.get("ucount"));
+            courseWorkPractice.put("timesTotal", temp.get("timesTotal"));
             courseWorkPractice.put("practiceStatus", PracticeStatusEnum.AVAILABLE.getCode());
             courseWorkPractice.put("submitTimeInfo", temp.get("submitTimeInfo"));
             courseWorkPracticePoints.addAll((List<QuestionPointTree>) temp.getOrDefault("points", Lists.<QuestionPointTree>newArrayList()));
