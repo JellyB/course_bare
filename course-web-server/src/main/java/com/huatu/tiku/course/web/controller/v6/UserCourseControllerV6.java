@@ -139,12 +139,25 @@ public class UserCourseControllerV6 {
         return courseExercisesProcessLogManager.courseWorkList(userSession.getId(), page, size);
     }
 
+    /**
+     * 数据纠正
+     * @param userSession
+     * @param secret
+     * @return
+     */
     @PostMapping(value = "dataCorrect")
     public Object dataCorrect(@Token UserSession userSession, @RequestHeader("secret") String secret){
         courseExercisesProcessLogManager.dataCorrect(userSession.getId(), secret);
         return SuccessMessage.create("操作成功！");
-
     }
+
+    @PostMapping(value = "dataCorrect/switch")
+    public Object dataCorrectSwitch(@Token UserSession userSession, @RequestHeader("switch") String str){
+        courseExercisesProcessLogManager.dataCorrectSwitch(userSession.getId(), str);
+        return SuccessMessage.create("操作成功！");
+    }
+
+
 
     /**
      * 阶段测试列表

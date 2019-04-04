@@ -695,6 +695,21 @@ public class CourseExercisesProcessLogManager {
     }
 
     /**
+     * 数据纠正开关
+     * @param userId
+     * @param str
+     */
+    public void dataCorrectSwitch(int userId, String str){
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        if(str.equals(CORRECT_DATA_SWITCH_ON)){
+            valueOperations.set(CORRECT_DATA_SWITCH, CORRECT_DATA_SWITCH_ON);
+        }else{
+            valueOperations.set(CORRECT_DATA_SWITCH, String.valueOf(userId).concat(CORRECT_DATA_SWITCH_ON));
+        }
+
+    }
+
+    /**
      * 数据处理
      * @param message
      */
@@ -732,7 +747,7 @@ public class CourseExercisesProcessLogManager {
             StringBuffer stringBuffer = new StringBuffer(String.valueOf(userId)).append(String.valueOf(courseExercisesProcessLog.getSyllabusId()));
             if(lessonId != courseExercisesProcessLog.getLessonId() || courseType != courseExercisesProcessLog.getCourseType()){
                 if(redisTemplate.hasKey(CORRECT_DATA_SWITCH) && keySwitch.get(CORRECT_DATA_SWITCH).equals(CORRECT_DATA_SWITCH_ON)){
-                    keyExist.pop(stringBuffer.toString());
+                    keyExist.remove(CORRECT_DATA_KEY, stringBuffer.toString());
                     courseExercisesProcessLog.setCourseType(courseType);
                     courseExercisesProcessLog.setLessonId(lessonId);
                     courseExercisesProcessLog.setModifierId(userId);
