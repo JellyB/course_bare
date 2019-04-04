@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.bean.vo.RecordProcess;
 import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
@@ -108,6 +107,8 @@ public class CourseExercisesProcessLogManager {
     private static final long PERIOD_TIME = 30 * 1000;
 
     private static final String CORRECT_DATA_KEY = "data_correct_2019";
+    private static final String CORRECT_DATA_SWITCH = "data_correct_2019_switch";
+    private static final String CORRECT_DATA_SWITCH_ON = "on";
 
     /**
      * 获取类型未读量
@@ -699,6 +700,8 @@ public class CourseExercisesProcessLogManager {
      */
     public void correct(String message){
         log.info(">>>>>>>>> current deal message:{}", message);
+        ValueOperations<String, String> keySwitch = redisTemplate.opsForValue();
+        SetOperations<String, String> keyExist = redisTemplate.opsForSet();
         String [] data = message.split("_");
         long id = Long.valueOf(data[1]);
         long userId = Long.valueOf(data[0]);
@@ -726,39 +729,25 @@ public class CourseExercisesProcessLogManager {
                 courseType = syllabusWareInfo.getVideoType();
                 lessonId = syllabusWareInfo.getCoursewareId();
             }
+            StringBuffer stringBuffer = new StringBuffer(String.valueOf(userId)).append(String.valueOf(courseExercisesProcessLog.getSyllabusId()));
             if(lessonId != courseExercisesProcessLog.getLessonId() || courseType != courseExercisesProcessLog.getCourseType()){
-                correctData(userId, courseType, lessonId, courseExercisesProcessLog);
+                if(redisTemplate.hasKey(CORRECT_DATA_SWITCH) && keySwitch.get(CORRECT_DATA_SWITCH).equals(CORRECT_DATA_SWITCH_ON)){
+                    keyExist.pop(stringBuffer.toString());
+                    courseExercisesProcessLog.setCourseType(courseType);
+                    courseExercisesProcessLog.setLessonId(lessonId);
+                    courseExercisesProcessLog.setModifierId(userId);
+                    int execute = courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
+                    if(execute > 0){
+                        log.info("成功更新数据:,课件:{},类型:{}, 大纲数据:课件:{}, 类型:{}", courseExercisesProcessLog.getLessonId(), courseExercisesProcessLog.getCourseType(), lessonId, courseType);
+                    }
+                }else{
+                    keyExist.add(CORRECT_DATA_KEY, stringBuffer.toString());
+                    log.info("暂存缓存数据:,课件:{},类型:{}, 大纲数据:课件:{}, 类型:{}", courseExercisesProcessLog.getLessonId(), courseExercisesProcessLog.getCourseType(),lessonId,courseType);
+                }
             }
         }catch (Exception e){
             e.printStackTrace();
             log.error("修正课后作业数据失败:数据id:{},{}",id, e);
-        }
-    }
-
-
-    @Degrade(key = "correctData", name = "课后作业数据纠正")
-    public void correctData(long userId, int courseType, long lessonId, CourseExercisesProcessLog courseExercisesProcessLog) {
-        SetOperations<String, String> setOperations = redisTemplate.opsForSet();
-        StringBuffer stringBuffer = new StringBuffer(String.valueOf(userId)).append(String.valueOf(courseExercisesProcessLog.getSyllabusId()));
-        setOperations.add(CORRECT_DATA_KEY, stringBuffer.toString());
-        log.info("数据库数据:,课件:{},类型:{}, 大纲数据:课件:{}, 类型:{}", courseExercisesProcessLog.getLessonId(), courseExercisesProcessLog.getCourseType(),lessonId,courseType);
-
-    }
-
-    /**
-     * 数据纠正执行
-     * @param userId
-     * @param courseType
-     * @param lessonId
-     * @param courseExercisesProcessLog
-     */
-    public void correctDataDegrade(long userId, int courseType, long lessonId, CourseExercisesProcessLog courseExercisesProcessLog) {
-        courseExercisesProcessLog.setCourseType(courseType);
-        courseExercisesProcessLog.setLessonId(lessonId);
-        courseExercisesProcessLog.setModifierId(userId);
-        int execute = courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
-        if(execute > 0){
-            log.info("数据库数据:,课件:{},类型:{}, 大纲数据:课件:{}, 类型:{}", courseExercisesProcessLog.getLessonId(), courseExercisesProcessLog.getCourseType(), lessonId, courseType);
         }
     }
 
