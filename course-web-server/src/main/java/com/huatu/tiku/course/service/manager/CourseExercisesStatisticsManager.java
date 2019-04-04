@@ -86,9 +86,9 @@ public class CourseExercisesStatisticsManager {
             /**
              * 如果用户已经提交过不处理
              */
-            /*if(existsHash.hasKey(existsKey, String.valueOf(answerCard.getUserId()))){
+            if(existsHash.hasKey(existsKey, String.valueOf(answerCard.getUserId()))){
                 return;
-            }*/
+            }
             Example example = new Example(CourseExercisesStatistics.class);
             example.and()
                     .andEqualTo("courseId", practiceForCoursePaper.getCourseId())
