@@ -72,10 +72,10 @@ public class CoursewarePracticeQuestionInfoServiceImpl extends BaseServiceHelper
         //获取房间下的已作答试题
         List<String> roomPracticedQuestion =    practiceMetaComponent.getRoomPracticedQuestion(roomId);
         for(int i=0;i<coursewareIds.size();i++){
-            Long id=coursewareIds.get(i).longValue();
+            Long courseId=coursewareIds.get(i).longValue();
             List<QuestionMetaBo> questionMetaBos=Lists.newArrayList();
             roomPracticedQuestion.forEach(questionId -> {
-                QuestionMetaBo questionMetaBo = practiceMetaComponent.getCourseQuestionMetaBo( roomId,id,Long.parseLong(questionId));
+                QuestionMetaBo questionMetaBo = practiceMetaComponent.getCourseQuestionMetaBo( roomId,courseId,Long.parseLong(questionId));
                 List<QuestionInfo> baseQuestionInfoList = questionInfoService.getBaseQuestionInfo(Lists.newArrayList(Long.valueOf(questionId)));
                 if(questionMetaBo.getAvgTime()==null){
                     questionMetaBo.setAvgTime(0);
@@ -99,7 +99,7 @@ public class CoursewarePracticeQuestionInfoServiceImpl extends BaseServiceHelper
 
             String meta = JSONObject.toJSONString(questionMetaBos);
             coursewarePracticeQuestionInfo.setMeta(meta);
-            coursewarePracticeQuestionInfo.setCoursewareId(id);
+            coursewarePracticeQuestionInfo.setCoursewareId(courseId);
             coursewarePracticeQuestionInfo.setRoomId(roomId);
             save(coursewarePracticeQuestionInfo);
         }
