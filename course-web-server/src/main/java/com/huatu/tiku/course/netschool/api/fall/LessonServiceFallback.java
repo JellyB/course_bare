@@ -84,4 +84,16 @@ public class LessonServiceFallback implements LessonServiceV6 {
     public NetSchoolResponse obtainLiveWareId(Map<String, Object> params) {
         return NetSchoolResponse.DEFAULT_ERROR;
     }
+
+
+    /**
+     * 检查课件是否收藏
+     *
+     * @param prams
+     * @return
+     */
+    @Override
+    public NetSchoolResponse isCollection(Map<String, Object> prams) {
+        return NetSchoolResponse.DEFAULT_ERROR;
+    }
 }

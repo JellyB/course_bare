@@ -105,5 +105,22 @@ public class LessonControllerV6 {
         return ResponseUtil.build(netSchoolResponse);
     }
 
-
+    /**
+     * 检查课件是否收藏
+     * @param userSession 用户session
+     * @param terminal terminal
+     * @param cv 版本号
+     * @param syllabusId 大纲id
+     * @return
+     */
+    @LocalMapParam
+    @GetMapping(value = "/isCollection")
+    public Object isCollected(@Token UserSession userSession,
+                              @RequestHeader(value = "terminal") int terminal,
+                              @RequestHeader(value = "cv") String cv,
+                              @RequestParam(value = "syllabusId") int syllabusId){
+        Map<String,Object> params = LocalMapParamHandler.get();
+        NetSchoolResponse netSchoolResponse = lessonService.isCollection(params);
+        return ResponseUtil.build(netSchoolResponse);
+    }
 }

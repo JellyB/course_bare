@@ -55,6 +55,14 @@ public interface LessonServiceV6 {
     NetSchoolResponse collectionCancel(@RequestParam Map<String, Object> params);
 
     /**
+     * 检查课件是否收藏
+     * @param prams
+     * @return
+     */
+    @GetMapping(value = "/v5/c/lesson/is_collection")
+    NetSchoolResponse isCollection(@RequestParam Map<String, Object> prams);
+
+    /**
      * 我的学习时长
      * @param params 请求参数a
      * @return
