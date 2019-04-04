@@ -149,4 +149,30 @@ public class CommonControllerV4 {
         }};
         return ResponseUtil.build(commonServiceV4.getUserProtocolInfo(params));
     }
+
+    /**
+     * 上课token
+     * @param terminal
+     * @param userSession
+     * @param coursewareId
+     * @param netClassId
+     * @param videoType
+     * @return
+     */
+    @GetMapping(value = "/class/token")
+    public Object classToken(
+            @RequestHeader(value = "terminal") int terminal,
+            @Token UserSession userSession,
+            @RequestParam(value = "coursewareId") long coursewareId,
+            @RequestParam(value = "netClassId") long netClassId,
+            @RequestParam(value = "videoType") int videoType){
+        final HashMap<String, Object> params = new HashMap<String, Object>() {{
+            put("terminal", terminal);
+            put("coursewareId", coursewareId);
+            put("netClassId", netClassId);
+            put("videoType", videoType);
+            put("userName", userSession.getUname());
+        }};
+        return ResponseUtil.build(commonServiceV4.classToken(params));
+    }
 }

@@ -56,4 +56,13 @@ public interface CommonServiceV4 {
      */
     @PostMapping("lumenapi/v4/common/protocol/user_protocol_info")
     NetSchoolResponse userProtocolInfo(@RequestParam Map<String, Object> params);
+
+
+    /**
+     * 课件播放
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "lumenapi/v4/common/class/class_token")
+    NetSchoolResponse classToken(@RequestParam Map<String,Object> params);
 }
