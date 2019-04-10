@@ -101,7 +101,7 @@ public class LessonControllerV6 {
     public Object collectionCancel( @Token UserSession userSession,
                                  @RequestHeader(value = "terminal") int terminal,
                                  @RequestHeader(value = "cv") String cv,
-                                 @RequestParam(value = "syllabusId") int syllabusId){
+                                 @RequestParam(value = "syllabusId") String syllabusId){
         Map<String,Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = lessonService.collectionCancel(params);
         return ResponseUtil.build(netSchoolResponse);
