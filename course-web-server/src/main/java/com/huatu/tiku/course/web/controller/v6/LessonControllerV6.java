@@ -58,7 +58,9 @@ public class LessonControllerV6 {
     @GetMapping(value = "collection")
     public Object collectionList(@Token UserSession userSession,
                                  @RequestHeader(value = "terminal") int terminal,
-                                 @RequestHeader(value = "cv") String cv){
+                                 @RequestHeader(value = "cv") String cv,
+                                 @RequestParam(value = "page", defaultValue = "0") int page,
+                                 @RequestParam(value = "pageSize", defaultValue = "20") int pageSize){
         Map<String,Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = lessonService.collections(params);
         return ResponseUtil.build(netSchoolResponse);
