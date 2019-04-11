@@ -438,7 +438,7 @@ public class PracticeMetaComponent {
 		}
 
 		return QuestionMetaBo.builder().id(questionInfo.getId()).answer(questionInfo.getAnswer())
-				.avgTime(totalTime / totalCount).count(totalCount).percents(answerCountNum).correctCate(correctCate)
+				.avgTime(totalTime / totalCount).count(totalCount).percents(answerCountNum).correctCate(correctCate).type(questionInfo.getType())
 				.build();
 	}
 

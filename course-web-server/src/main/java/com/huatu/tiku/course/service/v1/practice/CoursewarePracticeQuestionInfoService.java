@@ -2,9 +2,8 @@ package com.huatu.tiku.course.service.v1.practice;
 
 import com.huatu.tiku.course.bean.vo.CoursewarePracticeQuestionVo;
 import com.huatu.tiku.entity.CoursewarePracticeQuestionInfo;
-import service.BaseServiceHelper;
 
-import java.util.List;
+import service.BaseServiceHelper;
 
 /**
  * @author shanjigang
@@ -14,7 +13,7 @@ public interface CoursewarePracticeQuestionInfoService extends BaseServiceHelper
     /**
      * 根据 roomId coursewareId 列表查询
      */
-    List<CoursewarePracticeQuestionVo> listByCoursewareIdAndQuestionIds(Long roomId, Long coursewareId);
+    CoursewarePracticeQuestionVo findByCoursewareIdAndRoomId(Long roomId, Long coursewareId);
 
     /**
      * 生成课件下试题作答信息
