@@ -13,6 +13,7 @@ import com.huatu.tiku.course.common.NetSchoolConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cglib.beans.ImmutableBean;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -34,6 +35,24 @@ public class ResponseUtil {
     public static Object build(NetSchoolResponse response) {
         return build(response,false);
     }
+
+    public static Map<String, Object> DEFAULT_PHP_PAGE =  ImmutableMap.<String, Object>builder()
+            .put("from", 1)
+            .put("to", 10)
+            .put("per_page", 10)
+            .put("data", Lists.newArrayList())
+            .put("total", 0)
+            .put("next_page_url", "")
+            .put("current_page", 1)
+            .put("last_page", 1)
+            .put("path", "")
+            .put("prev_page_url", "")
+            .build();
+
+    /**
+     * php 请求默认 page response 对象
+     */
+    public static final NetSchoolResponse DEFAULT_PHP_PAGE_RESPONSE = (NetSchoolResponse)ImmutableBean.create(new NetSchoolResponse(Result.SUCCESS_CODE, "", DEFAULT_PHP_PAGE));
 
 
     /**
