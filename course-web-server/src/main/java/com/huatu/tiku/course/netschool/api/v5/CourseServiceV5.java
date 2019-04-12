@@ -2,7 +2,13 @@ package com.huatu.tiku.course.netschool.api.v5;
 
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v5.configuration.CourseServiceV5Config;
+import com.huatu.tiku.course.util.ResponseUtil;
+import com.netflix.hystrix.HystrixCommand;
+import feign.hystrix.Fallback;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -173,4 +179,307 @@ public interface CourseServiceV5 {
      */
     @GetMapping(value = "/v4/common/class/class_sensors")
     NetSchoolResponse classSensors(@RequestParam("classId") int classIds);
+
+    /**
+     * fallback 处理
+     */
+    @Slf4j
+    @Component
+    class CourseServiceV5FallbackFactory implements Fallback<CourseServiceV5>{
+        @Override
+        public CourseServiceV5 create(Throwable throwable, HystrixCommand command) {
+            return new CourseServiceV5(){
+                /**
+                 * 获取录播课程合集
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse recordClassList(Map<String, Object> params) {
+                    log.error("course service v5 recordClassList fallback,params: {}, fall back reason: ",params, throwable);
+                    return ResponseUtil.DEFAULT_PHP_PAGE_RESPONSE;
+                }
+
+                /**
+                 * 获取直播课程合集
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse liveClassList(Map<String, Object> params) {
+                    log.error("course service v5 liveClassList fallback,params: {}, fall back reason: ",params, throwable);
+                    return ResponseUtil.DEFAULT_PHP_PAGE_RESPONSE;
+                }
+
+                /**
+                 * 获取面库课程合集
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse icClassList(Map<String, Object> params) {
+                    log.error("course service v5 icClassList fallback,params: {}, fall back reason: ",params, throwable);
+                    return ResponseUtil.DEFAULT_PHP_PAGE_RESPONSE;
+                }
+
+                /**
+                 * 课程播放接口
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse getCommonUserPlay(Map<String, Object> params) {
+                    log.error("course service v5 getCommonUserPlay fallback,params: {}, fall back reason: ",params, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 课程大纲-售前
+                 * TODO: v3 Service 中有降级代码，但未被启用。
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse findTimetable(Map<String, Object> params) {
+                    log.error("course service v5 findTimetable fallback,params: {}, fall back reason: ",params, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 课程大纲-售后
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse findPurchasesTimetable(Map<String, Object> params) {
+                    log.error("course service v5 findPurchasesTimetable fallback,params: {}, fall back reason: ",params, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 查询课程详情 - 录播
+                 * 该接口在V5 之前有大量的业务处理。
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse getClassDetailNotLive(Map<String, Object> params) {
+                    log.error("course service v5 getClassDetailNotLive fallback,params: {}, fall back reason: ",params, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 查询课程详情 - 直播
+                 * 该接口在V5 之前有大量的业务处理。
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse getClassDetailLive(Map<String, Object> params) {
+                    log.error("course service v5 getClassDetailLive fallback,params: {}, fall back reason: ",params, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 获取课程介绍
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse getCourseIntroduction(Map<String, Object> params) {
+                    log.error("course service v5 getCourseIntroduction fallback,params: {}, fall back reason: ",params, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 获取所有老师介绍
+                 *
+                 * @param teacherId
+                 */
+                @Override
+                public NetSchoolResponse getCourseTeacherInfo(int teacherId) {
+                    log.error("course service v5 getCourseTeacherInfo fallback,params: {}, fall back reason: ",teacherId, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 获取课程说明
+                 * 获取 html 页面
+                 *
+                 * @param classId
+                 * @param terminal
+                 */
+                @Override
+                public String getClassExt(int classId, int terminal) {
+                    log.error("course service v5 getClassExt fallback,params: {}, {}, fall back reason: ",classId, terminal, throwable);
+                    return StringUtils.EMPTY;
+                }
+
+                /**
+                 * 删除课程
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse deleteCourse(Map<String, Object> params) {
+                    log.error("course service v5 deleteCourse fallback,params: {}, fall back reason: ",params, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 彻底删除回收站课程
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse deleteDeepCourse(Map<String, Object> params) {
+                    log.error("course service v5 deleteDeepCourse fallback,params: {}, fall back reason: ",params, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 取消删除
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse cancelDeleteCourse(Map<String, Object> params) {
+                    log.error("course service v5 cancelDeleteCourse fallback,params: {}, fall back reason: ",params, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 置顶课程
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse postTopCourse(Map<String, Object> params) {
+                    log.error("course service v5 postTopCourse fallback,params: {}, fall back reason: ",params, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 删除置顶课程
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse deleteTopCourse(Map<String, Object> params) {
+                    log.error("course service v5 deleteTopCourse fallback,params: {}, fall back reason: ",params, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * qq群、课程学习总进度
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse qqGroupSchedule(Map<String, Object> params) {
+                    log.error("course service v5 qqGroupSchedule fallback,params: {}, fall back reason: ",params, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 获取最后一次学习课程 - IC
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse lastStudyCourse(Map<String, Object> params) {
+                    log.error("course service v5 lastStudyCourse fallback,params: {}, fall back reason: ",params, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 已够课程列表 - IC
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse userCourseList(Map<String, Object> params) {
+                    log.error("course service v5 userCourseList fallback,params: {}, fall back reason: ",params, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 根据课程id 批量获取数据
+                 *
+                 * @param classIds
+                 */
+                @Override
+                public NetSchoolResponse courseInfoList(String classIds) {
+                    log.error("course service v5 courseInfoList fallback,params: {}, fall back reason: ",classIds, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 获取横屏课程信息
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse chooseCourseWare(Map<String, Object> params) {
+                    log.error("course service v5 chooseCourseWare fallback,params: {}, fall back reason: ",params, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 继续学习
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse lastPlayLesson(Map<String, Object> params) {
+                    log.error("course service v5 lastPlayLesson fallback,params: {}, fall back reason: ",params, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 讲义
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse handouts(Map<String, Object> params) {
+                    log.error("course service v5 handouts fallback,params: {}, fall back reason: ",params, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 课程详情活动促销
+                 *
+                 * @param classIds
+                 */
+                @Override
+                public NetSchoolResponse appClassActivityDetails(int classIds) {
+                    log.error("course service v5 appClassActivityDetails fallback,params: {}, fall back reason: ",classIds, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 试听列表
+                 *
+                 * @param params
+                 */
+                @Override
+                public NetSchoolResponse classAuditionList(Map<String, Object> params) {
+                    log.error("course service v5 classAuditionList fallback,params: {}, fall back reason: ",params, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 获取课程埋点数据
+                 *
+                 * @param classIds
+                 */
+                @Override
+                public NetSchoolResponse classSensors(int classIds) {
+                    log.error("course service v5 classSensors fallback,params: {}, fall back reason: ",classIds, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+            };
+        }
+    }
 }
