@@ -118,7 +118,7 @@ public class SyllabusControllerV6 {
         }
         stopwatch.stop();
         //添加答题信息
-        log.info("pc 端请求课后作业超时时间统计, 耗时:{}", stopwatch.prettyPrint());
+        log.info("app 端请求课后作业超时时间统计, 耗时:{}", stopwatch.prettyPrint());
         return response;
     }
 
