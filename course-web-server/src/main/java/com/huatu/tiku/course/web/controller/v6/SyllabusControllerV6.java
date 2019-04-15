@@ -110,13 +110,14 @@ public class SyllabusControllerV6 {
         stopwatch.start("addExercisesCardInfo");
         courseUtil.addExercisesCardInfo((LinkedHashMap) response, userSession.getId(), false);
         stopwatch.stop();
-        stopwatch.start("buyAfterSyllabus - other data");
         if(versionControlService.checkLearnReportShow(terminal, cv)){
+            stopwatch.start("buyAfterSyllabus - 阶段测试-学习报告-课后练习状态汇总");
             courseUtil.addPeriodTestInfo((LinkedHashMap) response, userSession.getId());
             courseUtil.addLearnReportInfoV2((LinkedHashMap) response, userSession.getId());
             courseUtil.addLiveCardExercisesCardInfo((LinkedHashMap) response, userSession.getId(), false);
+            stopwatch.stop();
         }
-        stopwatch.stop();
+
         //添加答题信息
         log.info("app 端请求课后作业超时时间统计, 耗时:{}", stopwatch.prettyPrint());
         return response;

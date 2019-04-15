@@ -339,9 +339,9 @@ public class CourseUtil {
      * @param userId
      */
     public void addPeriodTestInfo(LinkedHashMap response, int userId){
+                StopWatch stopWatch = new StopWatch("courseUtil - addPeriodTestInfo");
+                stopWatch.start();
                 response.computeIfPresent("list", (key, value) -> {
-                        StopWatch stopWatch = new StopWatch("learnReport - addPeriodTestInfo");
-                        stopWatch.start("addPeriodTestInfo - paperIds");
                         Set<String> paperIds = ((List<Map>) value).stream()
                                 //videoType	1点播2直播3直播回放4阶段测试题
                                 .filter(map -> VideoTypeEnum.create(MapUtils.getIntValue(map, "videoType")) == VideoTypeEnum.PERIOD_TEST)
@@ -360,8 +360,6 @@ public class CourseUtil {
                         log.info("获取阶段测试完成情况：userId = {}, paperIds = {}", userId, paperIds);
                         NetSchoolResponse netSchoolResponse = PeriodTestService.getPaperStatusBath(userId, paperIds);
                         Map<String, Object> data = (Map<String, Object>) netSchoolResponse.getData();
-                        stopWatch.stop();
-                        log.info("addPeriodTestInfo - paperIds,耗时:{}", stopWatch.prettyPrint());
 			if (null != data && data.size() > 0) {
 				List<Map> mapList = ((List<Map>) value).stream().map(valueData -> {
 					StringBuilder stringBuilder = new StringBuilder();
@@ -390,6 +388,8 @@ public class CourseUtil {
                         }
                     }
             );
+        stopWatch.stop();
+        log.info("courseUtil addPeriodTestInfo uerId:{}, 耗时:{}", userId, stopWatch.prettyPrint());
     }
 
 
@@ -400,7 +400,7 @@ public class CourseUtil {
      * @param userId
      */
     public void addLearnReportInfoV2(LinkedHashMap response, int userId){
-        StopWatch stopWatch = new StopWatch("learnReport - addLearnReportInfoV2");
+        StopWatch stopWatch = new StopWatch("courseUtil - addLearnReportInfoV2");
         stopWatch.start();
         List<Map<String, Object>> list = (List<Map<String, Object>>)response.get("list");
         if(CollectionUtils.isEmpty(list)){
@@ -446,7 +446,7 @@ public class CourseUtil {
             }
         }
         stopWatch.stop();
-        log.info("大纲列表 - 学习报告 - userId:{}, 耗时:{}",userId, stopWatch.prettyPrint());
+        log.info("courseUtil - addLearnReportInfoV2 - userId:{}, 耗时:{}",userId, stopWatch.prettyPrint());
     }
 
     /**
@@ -456,7 +456,7 @@ public class CourseUtil {
      * @throws BizException
      */
     private Map doLiveReport(Map<String, Object> stringObjectMap) throws BizException{
-        StopWatch stopWatch = new StopWatch("addLearnReportInfoV2 - live time");
+        StopWatch stopWatch = new StopWatch("addLearnReportInfoV2 - doLiveReport");
         stopWatch.start();
         Map<String, Object> result = Maps.newHashMap();
         int liveStatus = MapUtils.getIntValue(stringObjectMap, SyllabusInfo.LiveStatus);
@@ -477,7 +477,7 @@ public class CourseUtil {
      * @throws BizException
      */
     private Map doLivePlayBack(long liveBackCoursewareId, String bjyRoomId) throws BizException{
-        StopWatch stopWatch = new StopWatch("addLearnReportInfoV2 - live - back time");
+        StopWatch stopWatch = new StopWatch("addLearnReportInfoV2 - doLivePlayBack");
         stopWatch.start();
         Map<String,Object> result = Maps.newHashMap();
         Example example = new Example(CourseLiveBackLog.class);
@@ -507,7 +507,7 @@ public class CourseUtil {
      * @throws BizException
      */
     private Map doDotLive(long courseWareId, int userId) throws BizException{
-        StopWatch stopWatch = new StopWatch("addLearnReportInfoV2 - dot -live time");
+        StopWatch stopWatch = new StopWatch("addLearnReportInfoV2 - doDotLive");
         stopWatch.start();
         Map<String,Object> result = Maps.newHashMap();
         result.put("reportStatus", YesOrNoStatus.NO.getCode());
