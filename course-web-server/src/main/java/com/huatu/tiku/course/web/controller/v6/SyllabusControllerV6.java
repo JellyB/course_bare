@@ -111,11 +111,16 @@ public class SyllabusControllerV6 {
         courseUtil.addExercisesCardInfo((LinkedHashMap) response, userSession.getId(), false);
         stopwatch.stop();
         if(versionControlService.checkLearnReportShow(terminal, cv)){
-            stopwatch.start("buyAfterSyllabus - 阶段测试-学习报告-课后练习状态汇总");
+            stopwatch.start("buyAfterSyllabus - addPeriodTestInfo 1");
             courseUtil.addPeriodTestInfo((LinkedHashMap) response, userSession.getId());
+            stopwatch.stop();
+            stopwatch.start("buyAfterSyllabus - addLearnReportInfoV2 2");
             courseUtil.addLearnReportInfoV2((LinkedHashMap) response, userSession.getId());
+            stopwatch.stop();
+            stopwatch.start("buyAfterSyllabus - addLiveCardExercisesCardInfo 3");
             courseUtil.addLiveCardExercisesCardInfo((LinkedHashMap) response, userSession.getId(), false);
             stopwatch.stop();
+            log.info("buyAfterSyllabus - 阶段测试-学习报告-课后练习状态统计耗时汇总:{}", stopwatch.prettyPrint());
         }
 
         //添加答题信息

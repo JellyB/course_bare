@@ -256,6 +256,8 @@ public class CourseUtil {
      * @param need2Str
      */
     public void addLiveCardExercisesCardInfo(LinkedHashMap response, long userId, boolean need2Str){
+        StopWatch stopWatch = new StopWatch("courseUtil - addLiveCardExercisesCardInfo");
+        stopWatch.start();
         List<Map<String,Object>> list = (List<Map<String,Object>>) response.get("list");
         Map<Object, Object> defaultMap = HashMapBuilder.newBuilder()
                 .put("status", 0)
@@ -285,11 +287,9 @@ public class CourseUtil {
             if(null == courseLiveBackLog){
                 continue;
             }
-            StopWatch stopwatch = new StopWatch("addLiveCardExercisesCardInfo");
-            stopwatch.start();
             List<Map<String, Object>> listQuestionByCourseId = courseExercisesService.listQuestionByCourseId(VideoTypeEnum.LIVE.getVideoType(), courseLiveBackLog.getLiveCoursewareId());
             if (CollectionUtils.isEmpty(listQuestionByCourseId)) {
-               continue;
+                continue;
             }
             detail.put(SyllabusInfo.AfterCourseNum, listQuestionByCourseId.size());
             HashMap<String,Object> params = Maps.newHashMap();
@@ -310,10 +310,10 @@ public class CourseUtil {
                 }
                 detail.put("answerCard", answerCard);
             }
-            stopwatch.stop();
-            log.info("大纲列表处理直播回放课后作业答题卡耗时:{}", stopwatch.prettyPrint());
             log.info("学习报告 - 直播回放获取答题卡信息:userId:{},courseWareId:{}", userId, courseWareId);
         }
+        stopWatch.stop();
+        log.info("courseUtil - addLiveCardExercisesCardInfo - userId:{}, 耗时:{}",userId, stopWatch.prettyPrint());
     }
 
 
