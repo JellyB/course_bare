@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.huatu.common.ErrorResult;
 import com.huatu.common.Result;
 import com.huatu.common.SuccessMessage;
@@ -49,11 +50,24 @@ public class ResponseUtil {
             .put("prev_page_url", "")
             .build();
 
+
+    public static Map<String,Object> DEFAULT_PHP_SIMPLE_PAGE = ImmutableMap.<String, Object>builder()
+                    .put("data", Lists.newArrayList())
+                    .put("current_page", 1)
+                    .put("last_page", 1)
+                    .put("next", 0)
+                    .put("total", 0)
+                    .build();
+
     /**
      * php 请求默认 page response 对象
      */
     public static final NetSchoolResponse DEFAULT_PHP_PAGE_RESPONSE = (NetSchoolResponse)ImmutableBean.create(new NetSchoolResponse(Result.SUCCESS_CODE, "", DEFAULT_PHP_PAGE));
 
+    /**
+     * php 请求默认 simple page response 对象
+     */
+    public static final NetSchoolResponse DEFAULT_PHP_SIMPLE_PAGE_RESPONSE = (NetSchoolResponse) ImmutableBean.create(new NetSchoolResponse(Result.SUCCESS_CODE, "", DEFAULT_PHP_SIMPLE_PAGE));
 
     /**
      * 查看日志不存在非json的响应，碰到再进行调整
