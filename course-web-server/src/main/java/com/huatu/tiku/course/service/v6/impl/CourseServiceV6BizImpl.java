@@ -89,6 +89,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
     private static final String RESPONSE_CLASS_ID = "classId";
 
     private static final String RESPONSE_CLASS_IDS = "classIds";
+    private static final String PAGE_SIZE = "pageSize";
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -200,6 +201,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
                     .collect(Collectors.joining(","));
             Map<String, Object> params = Maps.newHashMap();
             params.put(RESPONSE_CLASS_IDS, courseIds);
+            params.put(PAGE_SIZE, size);
             NetSchoolResponse netSchoolResponse = courseService.analysisClassList(params);
             Object data = netSchoolResponse.getData();
             if (data instanceof LinkedHashMap) {
