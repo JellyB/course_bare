@@ -650,6 +650,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             courseWorkPractice.put("rcount", temp.get("rcount"));
             courseWorkPractice.put("wcount", temp.get("wcount"));
             courseWorkPractice.put("ucount", temp.get("ucount"));
+            courseWorkPractice.put("tcount", temp.get("tcount"));
             courseWorkPractice.put("timesTotal", temp.get("timesTotal"));
             courseWorkPractice.put("practiceStatus", PracticeStatusEnum.AVAILABLE.getCode());
             courseWorkPractice.put("submitTimeInfo", temp.get("submitTimeInfo"));
