@@ -9,23 +9,21 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.huatu.common.ErrorResult;
 import com.huatu.common.consts.TerminalType;
-import com.huatu.tiku.common.AppVersionEnum;
 import com.huatu.tiku.course.common.PracticeStatusEnum;
 import com.huatu.tiku.course.dao.manual.CoursePracticeQuestionInfoMapper;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.course.service.v1.practice.PracticeUserMetaService;
 import com.huatu.tiku.entity.CourseLiveBackLog;
 import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
+import com.huatu.ztk.paper.common.AnswerCardStatus;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisZSetCommands;
 import org.springframework.data.redis.core.HashOperations;
@@ -364,9 +362,11 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         PracticeCard practiceCard = JSONObject.parseObject(data.toJSONString(), PracticeCard.class);
         practiceCard.setPaper(practiceForCoursePaper);
         if(!checkUserSubmitAnswerCard(userSession.getId(), practiceForCoursePaper.getCourseId(), practiceForCoursePaper.getCourseType())){
+            if(practiceCard.getStatus() == AnswerCardStatus.FINISH){
+                courseExercisesProcessLogManager.submitCourseWorkAnswerCard(practiceCard);
+            }
             if(terminal == TerminalType.PC){
                 Stopwatch stopwatch = Stopwatch.createStarted();
-                courseExercisesProcessLogManager.submitCourseWorkAnswerCard(practiceCard);
                 log.info("如果为pc端查看课后作业，入库并重新计算一次统计信息,耗时:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
             }else{
                 log.error("学员没有提交答题卡:userId:{}, courseWareId:{}, videoType:{}", userSession.getId(), practiceForCoursePaper.getCourseId(), practiceForCoursePaper.getCourseType());
@@ -650,6 +650,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             courseWorkPractice.put("rcount", temp.get("rcount"));
             courseWorkPractice.put("wcount", temp.get("wcount"));
             courseWorkPractice.put("ucount", temp.get("ucount"));
+            courseWorkPractice.put("tcount", temp.get("tcount"));
             courseWorkPractice.put("timesTotal", temp.get("timesTotal"));
             courseWorkPractice.put("practiceStatus", PracticeStatusEnum.AVAILABLE.getCode());
             courseWorkPractice.put("submitTimeInfo", temp.get("submitTimeInfo"));

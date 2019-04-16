@@ -12,7 +12,6 @@ import lombok.Getter;
 @Getter
 public enum ArticleTypeListEnum {
 
-
     HOT(1, 1, "热门"),
     SHI_ZHENG_HOT(2, 2, "时政热点"),
     ANSWER_SKILL(3, 3, "解题技巧"),
