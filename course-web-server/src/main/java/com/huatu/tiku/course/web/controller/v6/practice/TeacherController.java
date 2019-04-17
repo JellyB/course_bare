@@ -2,6 +2,7 @@ package com.huatu.tiku.course.web.controller.v6.practice;
 
 import com.huatu.common.SuccessMessage;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
+import com.huatu.tiku.course.service.v1.practice.CoursewarePracticeQuestionInfoService;
 import com.huatu.tiku.course.service.v1.practice.TeacherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,8 @@ import java.util.concurrent.ExecutionException;
 public class TeacherController {
 
     private final TeacherService teacherService;
+    
+    private final CoursewarePracticeQuestionInfoService coursewarePracticeQuestionInfoService;
 
     /**
      * 根据 roomId 获取试题详情
@@ -97,5 +100,18 @@ public class TeacherController {
             @PathVariable Long roomId,
             @PathVariable Long coursewareId) {
         return teacherService.getCourseRightRate(coursewareId, roomId);
+    }
+    
+    /**
+     * 蓝色后台获取直播随堂练统计数据
+     * @param roomId
+     * @param coursewareId
+     * @return
+     */
+    @GetMapping("{roomId}/{coursewareId}/getCoursePracticeData")
+    public Object getCoursePracticeData(
+            @PathVariable Long roomId,
+            @PathVariable Long coursewareId) {
+        return coursewarePracticeQuestionInfoService.findByCoursewareIdAndRoomId(roomId, coursewareId);
     }
 }
