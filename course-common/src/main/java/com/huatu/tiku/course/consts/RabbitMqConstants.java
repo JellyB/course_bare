@@ -32,5 +32,10 @@ public class RabbitMqConstants {
      * 课后作业数据处理队列
      */
     public static final String COURSE_EXERCISES_PROCESS_LOG_CORRECT_QUEUE = "course_exercises_process_log_correct";
+    
+    /**
+     * 随堂练信息持久化
+     */
+    public static final String COURSE_PRACTICE_SAVE_DB_QUEUE = "course_practice_save_db_queue";
 
 }

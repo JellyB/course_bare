@@ -126,4 +126,13 @@ public class RabbitMqConfig {
     public Queue courseWorkCorrect(){
         return new Queue(RabbitMqConstants.COURSE_EXERCISES_PROCESS_LOG_CORRECT_QUEUE);
     }
+    
+    /**
+     * 随堂练信息持久化
+     * @return
+     */
+    @Bean
+    public Queue coursePractice2Db(){
+        return new Queue(RabbitMqConstants.COURSE_PRACTICE_SAVE_DB_QUEUE);
+    }
 }
