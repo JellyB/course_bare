@@ -92,8 +92,8 @@ hystrix:
   threadpool: 
     default:
       coreSize: 12 #默认10
-     # maxQueueSize: 1200
-     # queueSizeRejectionThreshold: 1000
+      maxQueueSize: 120
+      queueSizeRejectionThreshold: 100
   command:
     default:
       circuitBreaker: 
