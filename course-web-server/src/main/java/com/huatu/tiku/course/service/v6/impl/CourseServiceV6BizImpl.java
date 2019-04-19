@@ -801,7 +801,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         NetSchoolResponse response = FallbackCacheHolder.get(key);
         if(!ResponseUtil.isHardSuccess(response)){
             log.warn("obtain obtainCourseList degrade data not exist in fallbackHolder...");
-            return new NetSchoolResponse(Result.SUCCESS_CODE, "", Lists.newArrayList());
+            return ResponseUtil.build(new NetSchoolResponse(Result.SUCCESS_CODE, "", Lists.newArrayList()));
         }
         return ResponseUtil.build(response);
     }
