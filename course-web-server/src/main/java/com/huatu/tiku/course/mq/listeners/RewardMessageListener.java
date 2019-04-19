@@ -86,7 +86,8 @@ public class RewardMessageListener implements ChannelAwareMessageListener{
 
             String sign = SignUtil.getPaySign(params, NetSchoolConfig.API_KEY);
             params.put("sign",sign);
-
+            //添加金币
+            log.info("用户:{} 添加金币, 请求参数:{}",rewardMessage.getUname(), RequestUtil.encryptParams(params));
             NetSchoolResponse response = goldChargeService.chargeGold(RequestUtil.encryptParams(params));
 
             if(ResponseUtil.isSuccess(response)){
