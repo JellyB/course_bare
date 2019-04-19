@@ -50,8 +50,7 @@ public class CourseControllerV6 {
     @GetMapping(value = "list")
     public Object obtainCourseList(@RequestParam(value = "cateId") String cateId) {
         Map<String, Object> params = LocalMapParamHandler.get();
-        NetSchoolResponse netSchoolResponse = courseService.obtainCourseList(params);
-        return ResponseUtil.build(netSchoolResponse);
+        return courseServiceV6Biz.obtainCourseList(params);
     }
 
 

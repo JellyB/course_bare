@@ -70,4 +70,14 @@ public interface CourseServiceV6Biz {
      */
     Object learnReport(UserSession userSession, String bjyRoomId, long classId, long netClassId, long courseWareId, int videoType, long exerciseCardId, long syllabusId, int terminal, String cv)throws BizException;
 
+
+    /**
+     * 我的课程列表
+     * @param params
+     * @return
+     * @throws BizException
+     */
+    Object obtainCourseList(Map<String, Object> params)throws BizException;
+
+
 }

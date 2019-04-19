@@ -11,9 +11,13 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.huatu.common.ErrorResult;
+import com.huatu.common.Result;
 import com.huatu.common.consts.TerminalType;
+import com.huatu.common.utils.web.RequestUtil;
+import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.common.PracticeStatusEnum;
 import com.huatu.tiku.course.dao.manual.CoursePracticeQuestionInfoMapper;
+import com.huatu.tiku.course.netschool.api.fall.FallbackCacheHolder;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.course.service.v1.practice.PracticeUserMetaService;
 import com.huatu.tiku.entity.CourseLiveBackLog;
@@ -88,6 +92,8 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
     private static final String RESPONSE_CLASS_IDS = "classIds";
     private static final String PAGE_SIZE = "pageSize";
+
+    private static final String COURSE_LIST_FALLBACKCACHEHOLDER = "_course_list_static_data_v6";
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -747,5 +753,56 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         total.setAccuracy(speed);
         total.setAccuracy(accuracy);
         return total;
+    }
+
+    /**
+     * 我的课程列表
+     *
+     * @param params
+     * @return
+     * @throws BizException
+     */
+    @Override
+    @Degrade(key = "obtainCourseListV6", name = "课程列表v6")
+    public Object obtainCourseList(Map<String, Object> params) throws BizException {
+        if(params.containsKey("userName")){
+            params.remove("userName");
+        }
+        log.info("obtainCourseList degrade params:{}", params);
+        NetSchoolResponse netSchoolResponse = courseService.obtainCourseList(params);
+        if(null != netSchoolResponse && null !=  netSchoolResponse.getData() && ResponseUtil.isHardSuccess(netSchoolResponse)){
+            this.setCourseList2FallbackCacheHolder(params, netSchoolResponse);
+        }
+        return ResponseUtil.build(netSchoolResponse);
+    }
+
+    /**
+     * data fallbackCacheHolder
+     * @param params
+     * @param response
+     */
+    private void setCourseList2FallbackCacheHolder(Map<String, Object> params, NetSchoolResponse response){
+        String key = COURSE_LIST_FALLBACKCACHEHOLDER + RequestUtil.getParamSign(params);
+        FallbackCacheHolder.put(key, response);
+    }
+
+    /**
+     * 课程接口degrade 处理
+     * @param params
+     * @return
+     * @throws BizException
+     */
+    public Object obtainCourseListDegrade(Map<String, Object> params) throws BizException {
+        log.warn("response from degrade obtainCourseList");
+        if(params.containsKey("userName")){
+            params.remove("userName");
+        }
+        String key = COURSE_LIST_FALLBACKCACHEHOLDER + RequestUtil.getParamSign(params);
+        NetSchoolResponse response = FallbackCacheHolder.get(key);
+        if(!ResponseUtil.isHardSuccess(response)){
+            log.warn("obtain obtainCourseList degrade data not exist in fallbackHolder...");
+            return new NetSchoolResponse(Result.SUCCESS_CODE, "", Lists.newArrayList());
+        }
+        return response;
     }
 }
