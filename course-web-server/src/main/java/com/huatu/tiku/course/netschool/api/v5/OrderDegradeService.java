@@ -23,13 +23,12 @@ public class OrderDegradeService {
     @Autowired
     private OrderServiceV5 orderService;
 
-
     /**
      * 查询我的订单列表 - ZTK
      * @param params
      * @return
      */
-    @Degrade(key="userOrderListZTKV5", name = "我的")
+    @Degrade(key="userOrderListV5", name = "我的订单v5")
     public NetSchoolResponse userOrderListZTK(HashMap<String, Object> params){
         return orderService.userOrderListZTK(params);
     }
