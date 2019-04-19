@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.service.v1.impl.practice;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -99,10 +100,23 @@ public class CoursewarePracticeQuestionInfoServiceImpl extends BaseServiceHelper
             CoursewarePracticeQuestionInfo coursewarePracticeQuestionInfo=new CoursewarePracticeQuestionInfo();
 
             String meta = JSONObject.toJSONString(questionMetaBos);
-            coursewarePracticeQuestionInfo.setMeta(meta);
-            coursewarePracticeQuestionInfo.setCoursewareId(courseId);
-            coursewarePracticeQuestionInfo.setRoomId(roomId);
-            save(coursewarePracticeQuestionInfo);
+           
+            
+            WeekendSqls<CoursewarePracticeQuestionInfo> weekendSqls = WeekendSqls.<CoursewarePracticeQuestionInfo>custom()
+    				.andEqualTo(CoursewarePracticeQuestionInfo::getRoomId, roomId)
+    				.andEqualTo(CoursewarePracticeQuestionInfo::getCoursewareId, courseId);
+    		Example example = Example.builder(CoursewarePracticeQuestionInfo.class).where(weekendSqls).build();
+    		List<CoursewarePracticeQuestionInfo> list = selectByExample(example);
+    		if(CollectionUtils.isNotEmpty(list)) {
+    			coursewarePracticeQuestionInfo = list.get(0);
+    			coursewarePracticeQuestionInfo.setGmtModify(new Timestamp(System.currentTimeMillis()));
+    		}else {
+    			coursewarePracticeQuestionInfo.setCoursewareId(courseId);
+    			coursewarePracticeQuestionInfo.setRoomId(roomId);
+    		}
+    		coursewarePracticeQuestionInfo.setMeta(meta);
+    		save(coursewarePracticeQuestionInfo);
+    			
         }
 
     }

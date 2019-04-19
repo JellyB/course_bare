@@ -104,7 +104,7 @@ public class CourseExercisesProcessLogManager {
 
     private static final String COURSE_LABEL = "course";
 
-    private static final long PERIOD_TIME = 30 * 1000;
+    private static final long PERIOD_TIME = 60 * 1000;
 
     private static final String CORRECT_DATA_KEY = "data_correct_2019";
     private static final String CORRECT_DATA_SWITCH = "data_correct_2019_switch";
@@ -285,7 +285,12 @@ public class CourseExercisesProcessLogManager {
             return null;
         }
         result.computeIfPresent("id", (key, value) -> String.valueOf(value));
-        createCourseWorkAnswerCard(userId, courseType, coursewareId, courseId, syllabusId, result);
+        try{
+            createCourseWorkAnswerCard(userId, courseType, coursewareId, courseId, syllabusId, result);
+        }catch (IllegalArgumentException e){
+            log.error("IllegalArgumentException:{}, terminal:{}, cv:{}", syllabusId, terminal, cv);
+            return null;
+        }
         log.info("课后作业 - 创建课后答题卡请求参数:courseId:{},syllabusId:{},courseType:{},coursewareId:{},userId:{}", courseId, syllabusId, courseType, coursewareId, userId);
         stopwatch.stop();
         log.info("手动创建录播或直播回放课后作业答题卡:{}", stopwatch.prettyPrint());
@@ -304,6 +309,9 @@ public class CourseExercisesProcessLogManager {
         Long cardId = MapUtils.getLongValue(result, "id");
         int status = MapUtils.getIntValue(result, "status");
 
+        if(null == syllabusId || syllabusId.longValue() == 0){
+            throw new IllegalArgumentException("大纲id数据不对");
+        }
         Example example = new Example(CourseExercisesProcessLog.class);
         example.and().andEqualTo("lessonId", coursewareId)
                 .andEqualTo("courseType", courseType)
@@ -347,6 +355,9 @@ public class CourseExercisesProcessLogManager {
      * @param syllabusId
      */
     public void putIntoDealList(Long syllabusId){
+        if(syllabusId.longValue() == 0){
+            return;
+        }
         String key = CourseCacheKey.getProcessLogSyllabusDealList();
         ZSetOperations<String, String> dealList = redisTemplate.opsForZSet();
         dealList.add(key, String.valueOf(syllabusId), System.currentTimeMillis());
@@ -366,6 +377,17 @@ public class CourseExercisesProcessLogManager {
             return;
         }
         log.debug("deal syllabusInfo list:{}", syllabusIds);
+        Set<Long> filter = Sets.newHashSet();
+        for (Long syllabusId : syllabusIds) {
+            if(syllabusId == 0){
+                log.info("filter syllabus id is zero");
+                filter.add(syllabusId);
+            }
+        }
+        syllabusIds.removeAll(filter);
+        if(CollectionUtils.isEmpty(syllabusIds)){
+            return;
+        }
         Table<String, Long, SyllabusWareInfo> table = dealSyllabusInfo(syllabusIds);
         syllabusIds.forEach(item -> {
             Map<Long, SyllabusWareInfo> maps = table.row(LESSON_LABEL);
@@ -544,6 +566,9 @@ public class CourseExercisesProcessLogManager {
         }
         ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
         syllabusIds.forEach(item -> {
+            if(item.longValue() == 0){
+                return;
+            }
             String key = CourseCacheKey.getProcessLogSyllabusInfo(item);
             if(redisTemplate.hasKey(key)){
                 String value = valueOperations.get(key);

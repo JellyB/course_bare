@@ -254,7 +254,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>2.2.0.M1</version>
                 <configuration>
-                    <finalName>${server_name}</finalName>
+                	<finalName>${server_name}</finalName>
                     <layout>ZIP</layout>
                     <embeddedLaunchScriptProperties>
                         <!--默认的就可以-->

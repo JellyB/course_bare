@@ -21,6 +21,7 @@ import com.huatu.tiku.course.bean.practice.PracticeUserQuestionMetaInfoBo;
 import com.huatu.tiku.course.bean.practice.UserCourseBo;
 import com.huatu.tiku.course.common.CoinType;
 import com.huatu.tiku.course.common.CoursePracticeQuestionInfoEnum;
+import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.service.cache.CoursePracticeCacheKey;
 import com.huatu.tiku.course.service.v1.practice.CoursePracticeQuestionInfoService;
 import com.huatu.tiku.course.util.ResponseUtil;
@@ -170,6 +171,8 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 			}
 
 		}
+		//持久化信息
+		rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_PRACTICE_SAVE_DB_QUEUE, roomId);
 
 	}
 	

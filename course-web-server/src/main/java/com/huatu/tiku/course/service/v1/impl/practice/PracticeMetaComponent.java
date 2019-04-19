@@ -308,7 +308,7 @@ public class PracticeMetaComponent {
 		//构建总答题题数和作答人数
 		buildRoomRightQuestionSum(courseId, courseId,correct);
 		//创建课件中试题作答情况 答案 用时
-		//buildCourseQuestionMeta(roomId,courseId, questionId, answer, time);
+		buildCourseQuestionMeta(roomId,courseId, questionId, answer, time);
 	}
 
 	/**
