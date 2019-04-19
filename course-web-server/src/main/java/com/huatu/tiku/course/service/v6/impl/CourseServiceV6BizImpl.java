@@ -768,7 +768,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         if(params.containsKey("userName")){
             params.remove("userName");
         }
-        log.info("obtainCourseList degrade params:{}", params);
+        log.info("obtainCourseList normal params:{}", params);
         NetSchoolResponse netSchoolResponse = courseService.obtainCourseList(params);
         if(null != netSchoolResponse && null !=  netSchoolResponse.getData() && ResponseUtil.isHardSuccess(netSchoolResponse)){
             this.setCourseList2FallbackCacheHolder(params, netSchoolResponse);
@@ -793,7 +793,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
      * @throws BizException
      */
     public Object obtainCourseListDegrade(Map<String, Object> params) throws BizException {
-        log.warn("response from degrade obtainCourseList");
+        log.warn("obtainCourseList degrade params:{}", params);
         if(params.containsKey("userName")){
             params.remove("userName");
         }
