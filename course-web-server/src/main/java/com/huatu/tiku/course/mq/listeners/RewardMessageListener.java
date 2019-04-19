@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.mq.listeners;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import com.huatu.common.utils.encrypt.SignUtil;
@@ -94,7 +95,7 @@ public class RewardMessageListener implements ChannelAwareMessageListener{
                 rewardBizService.addRewardAction(rewardActionService.get(rewardMessage.getAction()),rewardMessage.getUid(),rewardMessage.getBizId());
                 channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
             }else{
-                log.error("消息处理失败,响应信息是{}", JSON.toJSONString(response));
+                log.error("消息处理失败,响应信息是{},请求参数是:{}", JSON.toJSONString(response), JSONObject.toJSONString(rewardMessage));
                 throw new IllegalStateException("对方处理失败");
             }
 
