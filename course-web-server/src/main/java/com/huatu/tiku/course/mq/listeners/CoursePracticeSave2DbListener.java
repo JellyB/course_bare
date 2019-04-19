@@ -13,7 +13,7 @@ import com.huatu.ztk.paper.vo.PeriodTestSubmitlPayload;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 随堂练数据持久化监听
+ * 直播随堂练数据持久化监听
  * 
  * @author zhangchong
  *
