@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.mq.listeners;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import com.huatu.common.utils.encrypt.SignUtil;
@@ -86,14 +87,15 @@ public class RewardMessageListener implements ChannelAwareMessageListener{
 
             String sign = SignUtil.getPaySign(params, NetSchoolConfig.API_KEY);
             params.put("sign",sign);
-
+            //添加金币
+            log.info("用户:{} 添加金币, 请求参数:{}",rewardMessage.getUname(), RequestUtil.encryptParams(params));
             NetSchoolResponse response = goldChargeService.chargeGold(RequestUtil.encryptParams(params));
 
             if(ResponseUtil.isSuccess(response)){
                 rewardBizService.addRewardAction(rewardActionService.get(rewardMessage.getAction()),rewardMessage.getUid(),rewardMessage.getBizId());
                 channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
             }else{
-                log.error("消息处理失败,响应信息是{}", JSON.toJSONString(response));
+                log.error("消息处理失败,响应信息是{},请求参数是:{}", JSON.toJSONString(response), JSONObject.toJSONString(rewardMessage));
                 throw new IllegalStateException("对方处理失败");
             }
 
