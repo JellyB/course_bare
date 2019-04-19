@@ -91,9 +91,9 @@ feign:
 hystrix:
   threadpool: 
     default:
-      coreSize: 10 #默认10
-      maxQueueSize: 1200
-      queueSizeRejectionThreshold: 1000
+      coreSize: 12 #默认10
+     # maxQueueSize: 1200
+     # queueSizeRejectionThreshold: 1000
   command:
     default:
       circuitBreaker: 
