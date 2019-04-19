@@ -803,6 +803,6 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             log.warn("obtain obtainCourseList degrade data not exist in fallbackHolder...");
             return new NetSchoolResponse(Result.SUCCESS_CODE, "", Lists.newArrayList());
         }
-        return response;
+        return ResponseUtil.build(response);
     }
 }
