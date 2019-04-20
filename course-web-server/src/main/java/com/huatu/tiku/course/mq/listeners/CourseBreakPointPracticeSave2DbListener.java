@@ -24,8 +24,8 @@ public class CourseBreakPointPracticeSave2DbListener {
 	@RabbitListener(queues=RabbitMqConstants.COURSE_BREAKPOINT_PRACTICE_SAVE_DB_QUEUE)
 	public void onMessage(String message) {
 		log.error("录播随堂练监听收到消息:{}", message);
-		List<CourseBreakPointPracticeDto> payloadList = JSONObject.parseArray(message, CourseBreakPointPracticeDto.class);
-		log.error("录播随堂练list:{}", payloadList);
+		//List<CourseBreakPointPracticeDto> payloadList = JSONObject.parseArray(message, CourseBreakPointPracticeDto.class);
+		//log.error("录播随堂练list:{}", payloadList);
 	}
 
 }

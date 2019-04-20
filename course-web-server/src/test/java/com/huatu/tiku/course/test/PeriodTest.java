@@ -13,6 +13,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.huatu.common.exception.BizException;
 import com.huatu.common.test.BaseWebTest;
@@ -21,6 +22,7 @@ import com.huatu.tiku.common.bean.reward.RewardMessage;
 import com.huatu.tiku.common.consts.RabbitConsts;
 import com.huatu.tiku.course.bean.practice.PracticeUserQuestionMetaInfoBo;
 import com.huatu.tiku.course.common.CoinType;
+import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.dao.manual.CourseLiveBackLogMapper;
 import com.huatu.tiku.course.service.cache.CoursePracticeCacheKey;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
@@ -149,9 +151,12 @@ public class PeriodTest extends BaseWebTest {
 	}
 	
 	@Test
-	public void testsuitanglian() {
-		Map<String, Integer> countDateByRIdAndCId = practiceUserMetaService.getCountDateByRIdAndCId(19032445485676L, 37465L);
-		System.out.println(countDateByRIdAndCId.toString());
+	public void testMq() {
+		Map map = Maps.newHashMap();
+		map.put("questionId", 111);
+		List list = Lists.newArrayList();
+		list.add(map);
+		rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_BREAKPOINT_PRACTICE_SAVE_DB_QUEUE, list);
 	}
 
 }

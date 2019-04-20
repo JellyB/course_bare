@@ -12,7 +12,6 @@ import com.huatu.common.test.BaseWebTest;
 
 import lombok.extern.slf4j.Slf4j;
 
-
 @Slf4j
 public class EstimateDataTest extends BaseWebTest {
 
@@ -36,10 +35,10 @@ public class EstimateDataTest extends BaseWebTest {
 			Map<String, Object> itemData = (Map<String, Object>) forObjectData.get("data");
 			Integer count = (Integer) itemData.get("participants");
 			total += count;
-			log.error("地区:{},参加人数:{}", areaNames, count);
+			log.error("试卷id:{},地区:{},参加人数:{}", paperId, areaNames, count);
 
 		}
-		log.error("共参加人数:{}", total);
+		log.error("共{}场估分,参加人数:{}", list.size(), total);
 	}
 
 }
