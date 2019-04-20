@@ -1,12 +1,8 @@
 package com.huatu.tiku.course.mq.listeners;
 
-import java.util.List;
-
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
-import com.alibaba.fastjson.JSONObject;
-import com.huatu.tiku.course.bean.CourseBreakPointPracticeDto;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
 
 import lombok.extern.slf4j.Slf4j;
