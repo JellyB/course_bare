@@ -414,33 +414,13 @@ public class CourseUtil {
                     stringObjectMap.put(SyllabusInfo.ReportStatus, YesOrNoStatus.UN_DEFINED.getCode());
                     continue;
                 }
-                VideoTypeEnum videoTypeEnum = VideoTypeEnum.create(MapUtils.getIntValue(stringObjectMap, SyllabusInfo.VideoType));
+                int videoType = MapUtils.getIntValue(stringObjectMap, SyllabusInfo.VideoType);
                 long courseWareId = MapUtils.getLong(stringObjectMap, SyllabusInfo.CourseWareId);
                 String bjyRoomId = MapUtils.getString(stringObjectMap, SyllabusInfo.BjyRoomId);
-                switch (videoTypeEnum){
-                    case LIVE:
-                        Map live = doLiveReport(stringObjectMap);
-                        stringObjectMap.putAll(live);
-                        break;
-                    case LIVE_PLAY_BACK:
-                        Map playBack = doLivePlayBack(courseWareId, bjyRoomId);
-                        stringObjectMap.putAll(playBack);
-                        break;
-                    case DOT_LIVE:
-                        int studyReport = MapUtils.getIntValue(stringObjectMap, SyllabusInfo.StudyReport);
-                        YesOrNoStatus studyReportEnum = YesOrNoStatus.create(studyReport);
-                        if(studyReportEnum == YesOrNoStatus.NO){
-                            stringObjectMap.put(SyllabusInfo.ReportStatus, YesOrNoStatus.UN_DEFINED.getCode());
-                            continue;
-                        }
-                        Map dotLive = doDotLive(courseWareId, userId);
-                        stringObjectMap.putAll(dotLive);
-                        break;
-                    default:
-                        Map defaultMap = Maps.newHashMap();
-                        defaultMap.put(SyllabusInfo.ReportStatus, YesOrNoStatus.NO.getCode());
-                        stringObjectMap.putAll(defaultMap);
-                }
+                int liveStatus = MapUtils.getIntValue(stringObjectMap, SyllabusInfo.LiveStatus);
+                int studyReport = MapUtils.getIntValue(stringObjectMap, SyllabusInfo.StudyReport);
+                Map<String,Object> branchMap = dealLearnReportBranchInfo(videoType, courseWareId, bjyRoomId, userId, liveStatus, studyReport);
+                stringObjectMap.putAll(branchMap);
             }catch (Exception e){
                 log.error("处理大纲我的学习好高状态异常:{}, userId:{}",stringObjectMap, userId);
             }
@@ -449,17 +429,50 @@ public class CourseUtil {
         log.info("courseUtil - addLearnReportInfoV2 - userId:{}, 耗时:{}",userId, stopWatch.prettyPrint());
     }
 
+
+    /**
+     * 三条分支更新 学习报告
+     * @param videoType
+     * @param courseWareId
+     * @param bjyRoomId
+     * @param userId
+     * @param liveStatus
+     * @param studyReport
+     * @return
+     */
+    public Map<String,Object> dealLearnReportBranchInfo(int videoType, long courseWareId, String bjyRoomId, int userId, int liveStatus, int studyReport){
+        Map<String, Object> branchMap = Maps.newHashMap();
+        branchMap.put(SyllabusInfo.ReportStatus, YesOrNoStatus.UN_DEFINED.getCode());
+        VideoTypeEnum videoTypeEnum = VideoTypeEnum.create(videoType);
+        switch (videoTypeEnum){
+            case LIVE:
+                branchMap.putAll(doLiveReport(liveStatus));
+                break;
+            case LIVE_PLAY_BACK:
+                branchMap.putAll(doLivePlayBack(courseWareId, bjyRoomId));
+                break;
+            case DOT_LIVE:
+                YesOrNoStatus studyReportEnum = YesOrNoStatus.create(studyReport);
+                if(studyReportEnum == YesOrNoStatus.YES){
+                    Map dotLive = doDotLive(courseWareId, userId);
+                    branchMap.putAll(dotLive);
+                }
+                break;
+            default:
+                branchMap.put(SyllabusInfo.ReportStatus, YesOrNoStatus.UN_DEFINED.getCode());
+        }
+        return branchMap;
+    }
     /**
      * 直播报告处理
-     * @param stringObjectMap
+     * @param liveStatus
      * @return
      * @throws BizException
      */
-    private Map doLiveReport(Map<String, Object> stringObjectMap) throws BizException{
+    private Map<String, Object> doLiveReport(int liveStatus) throws BizException{
         StopWatch stopWatch = new StopWatch("addLearnReportInfoV2 - doLiveReport");
         stopWatch.start();
         Map<String, Object> result = Maps.newHashMap();
-        int liveStatus = MapUtils.getIntValue(stringObjectMap, SyllabusInfo.LiveStatus);
         LiveStatusEnum liveStatusEnum = LiveStatusEnum.create(liveStatus);
         if(liveStatusEnum == LiveStatusEnum.FINISHED){
             result.put(SyllabusInfo.ReportStatus, YesOrNoStatus.YES.getCode());
@@ -476,9 +489,8 @@ public class CourseUtil {
      * @return
      * @throws BizException
      */
-    private Map doLivePlayBack(long liveBackCoursewareId, String bjyRoomId) throws BizException{
+    private Map<String, Object> doLivePlayBack(long liveBackCoursewareId, String bjyRoomId) throws BizException{
         StopWatch stopWatch = new StopWatch("addLearnReportInfoV2 - doLivePlayBack");
-        stopWatch.start();
         Map<String,Object> result = Maps.newHashMap();
         Example example = new Example(CourseLiveBackLog.class);
         example.and()
@@ -487,9 +499,9 @@ public class CourseUtil {
         try{
             CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(Long.valueOf(bjyRoomId), liveBackCoursewareId);
             if(null == courseLiveBackLog){
-                result.put("reportStatus", YesOrNoStatus.NO.getCode());
+                result.put(SyllabusInfo.ReportStatus, YesOrNoStatus.NO.getCode());
             }else{
-                result.put("reportStatus", YesOrNoStatus.YES.getCode());
+                result.put(SyllabusInfo.ReportStatus, YesOrNoStatus.YES.getCode());
             }
             stopWatch.stop();
             log.info("addLearnReportInfoV2 - doLivePlayBack, 耗时:{}", stopWatch.prettyPrint());

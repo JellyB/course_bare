@@ -14,6 +14,7 @@ import com.huatu.tiku.course.service.v6.CourseServiceV6Biz;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
+import com.huatu.tiku.course.web.controller.util.CourseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
 
 import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
@@ -48,6 +49,9 @@ public class UserCourseControllerV6 {
 
     @Autowired
     private CourseExercisesProcessLogManager courseExercisesProcessLogManager;
+
+    @Autowired
+    private CourseUtil courseUtil;
 
 
     /**
@@ -223,6 +227,32 @@ public class UserCourseControllerV6 {
         return courseServiceV6Biz.learnReport(userSession, bjyRoomId, classId, netClassId, courseWareId, videoType, exerciseCardId, syllabusId, terminal, cv);
 
     }
+
+    /**
+     * 学习报告刷新
+     * @param userSession
+     * @param terminal
+     * @param cv
+     * @param bjyRoomId
+     * @param courseWareId
+     * @param videoType
+     * @param liveStatus
+     * @param studyReport
+     * @return
+     */
+    @GetMapping(value = "/learnReport/{videoType}/{coursewareId}")
+    public Object learnReportFresh (@Token UserSession userSession,
+                              @RequestHeader(value = "terminal") int terminal,
+                              @RequestHeader(value = "cv", defaultValue = "1.0") String cv,
+                              @PathVariable(value = "videoType") int videoType,
+                              @PathVariable(value = "coursewareId") long courseWareId,
+                              @RequestParam(value = "bjyRoomId", defaultValue = "") String bjyRoomId,
+                              @RequestParam(value = "liveStatus", defaultValue = "0") int liveStatus,
+                              @RequestParam(value = "studyReport", defaultValue = "0") int studyReport){
+
+        return courseUtil.dealLearnReportBranchInfo(videoType, courseWareId, bjyRoomId, userSession.getId(), liveStatus, studyReport);
+    }
+
 
 
 

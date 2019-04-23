@@ -2,6 +2,7 @@ package com.huatu.tiku.course.test;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.huatu.common.test.BaseWebTest;
@@ -21,16 +22,15 @@ import com.huatu.tiku.entity.CourseExercisesProcessLog;
 import com.huatu.ztk.paper.bean.PracticeCard;
 import com.huatu.ztk.paper.bean.PracticeForCoursePaper;
 import com.huatu.ztk.paper.common.AnswerCardStatus;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import tk.mybatis.mapper.entity.Example;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.Serializable;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -229,6 +229,37 @@ public class CourseExercisesProcessLogMapperTest extends BaseWebTest {
                     .userId(234934290)
                     .liveRecordInfo(liveRecordInfo).build();
             rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_LIVE_REPORT_LOG, JSONObject.toJSONString(liveRecordInfoWithUserId));
+        }
+    }
+
+
+    @Test
+    public void test(){
+        Random random = new Random();
+        for(;;){
+            Map<String,Object> map = Maps.newHashMap();
+            map.put(String.valueOf(random.nextInt(100)), random.nextInt(100));
+            map.put(String.valueOf(random.nextInt(100)), random.nextInt(100));
+            map.put(String.valueOf(random.nextInt(100)), random.nextInt(100));
+            map.put(String.valueOf(random.nextInt(100)), random.nextInt(100));
+            List<Map<String,Object>> sendDataList = Lists.newArrayList();
+            sendDataList.add(map);
+            DataInfo dataInfo = DataInfo.builder().data(sendDataList).build();
+            rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_BREAKPOINT_PRACTICE_SAVE_DB_QUEUE, JSONObject.toJSONString(dataInfo));
+        }
+
+    }
+
+    @Data
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    static class DataInfo implements Serializable{
+        private List<Map<String,Object>> data;
+
+        @Builder
+        public DataInfo(List<Map<String, Object>> data) {
+            this.data = data;
         }
     }
 }

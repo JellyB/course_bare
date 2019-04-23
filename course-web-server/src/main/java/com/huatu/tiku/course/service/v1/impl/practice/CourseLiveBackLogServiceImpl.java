@@ -54,6 +54,7 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 		ValueOperations<String,String> operations = redisTemplate.opsForValue();
 		if(redisTemplate.hasKey(key)){
 			String value = operations.get(key);
+			log.info("get live courseWareId from redis:roomId:{}, coursewareId:{}", roomId, coursewareId);
 			return JSONObject.parseObject(value,CourseLiveBackLog.class);
 		}
 		final WeekendSqls<CourseLiveBackLog> weekendSqls = WeekendSqls.<CourseLiveBackLog>custom()
@@ -64,6 +65,7 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 		if (CollectionUtils.isNotEmpty(courseLiveBackLogList)) {
 			CourseLiveBackLog courseLiveBackLog = courseLiveBackLogList.get(0);
 			operations.set(key, JSONObject.toJSONString(courseLiveBackLog), 30, TimeUnit.MINUTES);
+			log.info("get live courseWareId from mysql:roomId:{}, coursewareId:{}", roomId, coursewareId);
 			return courseLiveBackLog;
 		}else{
 			log.info("调用php获取直播回放对应的直播课件id:直播回放id:{},房间id:{}", coursewareId, roomId);
@@ -85,6 +87,7 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 				courseLiveBackLog.setCreatorId(10L);
 				insert(courseLiveBackLog);
 				operations.set(key, JSONObject.toJSONString(courseLiveBackLog), 30, TimeUnit.MINUTES);
+				log.info("get live courseWareId from remote by rest:roomId:{}, coursewareId:{}", roomId, coursewareId);
 				return courseLiveBackLog;
 			}
 		}
