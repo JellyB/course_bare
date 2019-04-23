@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.web.controller;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.huatu.common.ErrorResult;
 import com.huatu.common.Result;
@@ -32,8 +33,8 @@ import java.util.Map;
 @RestController
 @RequestMapping(value = "v1/courses")
 public class CourseControllerV1 {
-    public static final String IOS_NEW_VERSION = "2.3.4";
-    public static final String ANDROID_NEW_VERSION = "2.3.3";
+    public static final String IOS_NEW_VERSION = "2.4.8";
+    public static final String ANDROID_NEW_VERSION = "2.4.9";
 
     @Autowired
     private SydwCourseServiceV1 sydwCourseService;
@@ -91,7 +92,11 @@ public class CourseControllerV1 {
         } else if (newVersion && StringUtils.isNoneBlank(shortTitle)) {
             return ResponseUtil.build(courseService.collectionDetail(params));
         } else{
-            return ResponseUtil.build(courseService.totalList(params));
+            //return ResponseUtil.build(courseService.totalList(params));
+            Map<String,Object> data = Maps.newHashMap();
+            data.put("result", Lists.newArrayList());
+            data.put("next", 0);
+            return ResponseUtil.build(new NetSchoolResponse(Result.SUCCESS_CODE, "", data));
         }
     }
 
@@ -349,7 +354,10 @@ public class CourseControllerV1 {
         if(isNewVersion(catgory,terminal, cv)){
             return userCoursesService.myListNew(params);
         } else{
-            return userCoursesService.myList(params);
+            //return userCoursesService.myList(params);
+            Map<String,Object> data = Maps.newHashMap();
+            data.put("result", Lists.newArrayList());
+            return new NetSchoolResponse(Result.SUCCESS_CODE, "", data);
         }
     }
 
