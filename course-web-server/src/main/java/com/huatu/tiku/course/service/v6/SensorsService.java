@@ -42,15 +42,16 @@ public class SensorsService {
 		try {
 			log.info("reportCoursePracticeData start");
 			Integer uid = practiceData.getUserId();
-			NetSchoolResponse response = userServiceV4.getUserLevelBatch(Arrays.asList(uid.toString()));
+			NetSchoolResponse response = userServiceV4.getUserLevelBatch(Arrays.asList(uid + ""));
 			if (ResponseUtil.isSuccess(response)) {
 				List<Map<String, String>> userInfoList = (List<Map<String, String>>) response.getData();
 				String ucId = userInfoList.get(0).get("ucenterId");
+				log.info("reportCoursePracticeData ucId is:{},uid is:{}", ucId, uid);
 				Map<String, Object> properties = Maps.newHashMap();
-				//properties.put("couse_id", value);
-				//properties.put("course_title", value);
+				// properties.put("couse_id", value);
+				// properties.put("course_title", value);
 				properties.put("class_id", practiceData.getCoursewareId());
-				//properties.put("class_title", value);
+				// properties.put("class_title", value);
 				properties.put("correct_number", practiceData.getRcount());
 				properties.put("exercise_done", practiceData.getDocount());
 				properties.put("exercise_duration", practiceData.getTimes());
@@ -59,6 +60,7 @@ public class SensorsService {
 					properties.put("is_finish", true);
 				}
 				properties.put("exercise_number", practiceData.getQcount());
+				log.info("reportCoursePracticeData properties:{}", properties);
 				sensorsAnalytics.track(ucId, true, SensorsEventEnum.COURSE_PRACTICE_COMMIT_ANSWER_SUCCEED.getCode(),
 						properties);
 			}
