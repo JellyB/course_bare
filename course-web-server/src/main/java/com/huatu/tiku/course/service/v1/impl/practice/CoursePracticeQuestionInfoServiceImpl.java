@@ -175,7 +175,7 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 			// 神策上报
 			CoursePracticeReportSensorsVo reportInfo = CoursePracticeReportSensorsVo.builder().roomId(roomId)
 					.coursewareId(userCourse.getCourseId()).rcount(rcount).docount(answerCount)
-					.qcount(questionIds.size()).times(totalTime).build();
+					.qcount(questionIds.size()).times(totalTime).userId(userCourse.getUserId()).build();
 			rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_PRACTICE_REPORT_SENSORS_QUEUE, reportInfo);
 
 		}

@@ -29,6 +29,8 @@ public class CoursePracticeReportSensorsVo {
 	private Integer qcount;
 	//总用时
 	private Integer times;
-	private Boolean isFinsh;
+	private Boolean isFinish;
+	
+	private Integer userId;
 
 }
