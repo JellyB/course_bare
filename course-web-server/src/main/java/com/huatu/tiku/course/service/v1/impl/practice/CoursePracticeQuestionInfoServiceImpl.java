@@ -13,6 +13,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.huatu.tiku.common.CourseQuestionTypeEnum.CourseType;
 import com.huatu.tiku.common.bean.reward.RewardMessage;
 import com.huatu.tiku.common.consts.RabbitConsts;
@@ -176,7 +177,8 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 			CoursePracticeReportSensorsVo reportInfo = CoursePracticeReportSensorsVo.builder().roomId(roomId)
 					.coursewareId(userCourse.getCourseId()).rcount(rcount).docount(answerCount)
 					.qcount(questionIds.size()).times(totalTime).userId(userCourse.getUserId()).build();
-			rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_PRACTICE_REPORT_SENSORS_QUEUE, reportInfo);
+			rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_PRACTICE_REPORT_SENSORS_QUEUE,
+					JSONObject.toJSONString(reportInfo));
 
 		}
 		// 持久化信息
