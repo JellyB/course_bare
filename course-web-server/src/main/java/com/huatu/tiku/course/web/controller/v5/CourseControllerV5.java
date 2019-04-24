@@ -175,6 +175,7 @@ public class CourseControllerV5 {
     ) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         Object purchasesTimetable = courseServiceBiz.findPurchasesTimetable(userSession.getId(), map);
+        courseUtil.addPeriodTestInfo((LinkedHashMap) purchasesTimetable, userSession.getId());
         return purchasesTimetable;
     }
 
