@@ -37,113 +37,128 @@ import com.huatu.tiku.course.mq.listeners.RewardMessageListener;
 @EnableApolloConfig(NAMESPACE_TIKU_RABBIT)
 @Configuration
 public class RabbitMqConfig {
-    @Bean
-    public Jackson2JsonMessageConverter jackson2JsonMessageConverter(@Autowired ObjectMapper objectMapper) {
-        return new Jackson2JsonMessageConverter(objectMapper);
-    }
+	@Bean
+	public Jackson2JsonMessageConverter jackson2JsonMessageConverter(@Autowired ObjectMapper objectMapper) {
+		return new Jackson2JsonMessageConverter(objectMapper);
+	}
 
-    /**
-     * queue声明
-     *
-     * @return
-     */
-    @Bean
-    public Queue sendFreeCourseQueue() {
-        return new Queue(QUEUE_SEND_FREE_COURSE);
-    }
+	/**
+	 * queue声明
+	 *
+	 * @return
+	 */
+	@Bean
+	public Queue sendFreeCourseQueue() {
+		return new Queue(QUEUE_SEND_FREE_COURSE);
+	}
 
-    @Bean
-    public Queue userNickUpdateQueue() {
-        return new Queue(QUEUE_USER_NICK_UPDATE);
-    }
+	@Bean
+	public Queue userNickUpdateQueue() {
+		return new Queue(QUEUE_USER_NICK_UPDATE);
+	}
 
+	@Bean
+	public Queue rewardActionQueue() {
+		Map<String, Object> arguments = Maps.newHashMap();
+		arguments.put(ARG_DLX, DLX_DEFAULT);
+		arguments.put(ARG_DLK, DLK_DEFAULT);
+		Queue rewardActionQueue = new Queue(QUEUE_REWARD_ACTION, true, false, false, arguments);
+		return rewardActionQueue;
+	}
 
-    @Bean
-    public Queue rewardActionQueue() {
-        Map<String, Object> arguments = Maps.newHashMap();
-        arguments.put(ARG_DLX, DLX_DEFAULT);
-        arguments.put(ARG_DLK, DLK_DEFAULT);
-        Queue rewardActionQueue = new Queue(QUEUE_REWARD_ACTION, true, false, false, arguments);
-        return rewardActionQueue;
-    }
+	@Bean
+	public SimpleMessageListenerContainer rewardMessageListenerContainer(@Autowired ConnectionFactory connectionFactory,
+			@Autowired(required = false) @Qualifier("coreThreadPool") ThreadPoolTaskExecutor threadPoolTaskExecutor,
+			@Autowired RewardMessageListener rewardMessageListener, @Autowired AmqpAdmin amqpAdmin) {
+		SimpleMessageListenerContainer manualRabbitContainer = new SimpleMessageListenerContainer();
+		manualRabbitContainer.setQueueNames(QUEUE_REWARD_ACTION);
+		manualRabbitContainer.setConnectionFactory(connectionFactory);
+		if (amqpAdmin instanceof RabbitAdmin) {
+			manualRabbitContainer.setRabbitAdmin((RabbitAdmin) amqpAdmin);
+		}
+		if (threadPoolTaskExecutor != null) {
+			manualRabbitContainer.setTaskExecutor(threadPoolTaskExecutor);
+		}
+		manualRabbitContainer.setAcknowledgeMode(AcknowledgeMode.MANUAL);
+		manualRabbitContainer.setConcurrentConsumers(threadPoolTaskExecutor.getCorePoolSize() / 4);
+		manualRabbitContainer.setMaxConcurrentConsumers(threadPoolTaskExecutor.getCorePoolSize() / 4);
+		manualRabbitContainer.setMessageListener(rewardMessageListener);
+		return manualRabbitContainer;
+	}
 
+	@Bean
+	public Queue courseWorkSubmitCardInfo() {
+		return new Queue(RabbitMqConstants.COURSE_WORK_SUBMIT_CARD_INFO);
+	}
 
-    @Bean
-    public SimpleMessageListenerContainer rewardMessageListenerContainer(@Autowired ConnectionFactory connectionFactory,
-                                                                         @Autowired(required = false) @Qualifier("coreThreadPool") ThreadPoolTaskExecutor threadPoolTaskExecutor,
-                                                                         @Autowired RewardMessageListener rewardMessageListener,
-                                                                         @Autowired AmqpAdmin amqpAdmin) {
-        SimpleMessageListenerContainer manualRabbitContainer = new SimpleMessageListenerContainer();
-        manualRabbitContainer.setQueueNames(QUEUE_REWARD_ACTION);
-        manualRabbitContainer.setConnectionFactory(connectionFactory);
-        if (amqpAdmin instanceof RabbitAdmin) {
-            manualRabbitContainer.setRabbitAdmin((RabbitAdmin) amqpAdmin);
-        }
-        if (threadPoolTaskExecutor != null) {
-            manualRabbitContainer.setTaskExecutor(threadPoolTaskExecutor);
-        }
-        manualRabbitContainer.setAcknowledgeMode(AcknowledgeMode.MANUAL);
-        manualRabbitContainer.setConcurrentConsumers(threadPoolTaskExecutor.getCorePoolSize() / 4);
-        manualRabbitContainer.setMaxConcurrentConsumers(threadPoolTaskExecutor.getCorePoolSize() / 4);
-        manualRabbitContainer.setMessageListener(rewardMessageListener);
-        return manualRabbitContainer;
-    }
+	/**
+	 * 直播回放处理queue
+	 * 
+	 * @return
+	 */
+	@Bean
+	public Queue playBackDealInfo() {
+		return new Queue(RabbitMqConstants.PLAY_BACK_DEAL_INFO);
+	}
 
-    @Bean
-    public Queue courseWorkSubmitCardInfo(){
-        return new Queue(RabbitMqConstants.COURSE_WORK_SUBMIT_CARD_INFO);
-    }
+	/**
+	 * 阶段测试提交答题卡队列
+	 * 
+	 * @return
+	 */
+	@Bean
+	public Queue periodTestSubmitCardInfo() {
+		return new Queue(RabbitMqConstants.PERIOD_TEST_SUBMIT_CARD_INFO);
+	}
 
-    /**
-     * 直播回放处理queue
-     * @return
-     */
-    @Bean
-    public Queue playBackDealInfo(){ return new Queue(RabbitMqConstants.PLAY_BACK_DEAL_INFO); }
-    /**
-     * 阶段测试提交答题卡队列
-     * @return
-     */
-    @Bean
-    public Queue periodTestSubmitCardInfo(){
-        return new Queue(RabbitMqConstants.PERIOD_TEST_SUBMIT_CARD_INFO);
-    }
+	/**
+	 * 直播上报队列
+	 * 
+	 * @return
+	 */
+	@Bean
+	public Queue courseLiveReportLive() {
+		return new Queue(RabbitMqConstants.COURSE_LIVE_REPORT_LOG);
+	}
 
-    /**
-     * 直播上报队列
-     * @return
-     */
-    @Bean
-    public Queue courseLiveReportLive(){
-        return new Queue(RabbitMqConstants.COURSE_LIVE_REPORT_LOG);
-    }
+	/**
+	 * 课后作业数据修复队列
+	 * 
+	 * @return
+	 */
+	@Bean
+	public Queue courseWorkCorrect() {
+		return new Queue(RabbitMqConstants.COURSE_EXERCISES_PROCESS_LOG_CORRECT_QUEUE);
+	}
 
-    /**
-     * 课后作业数据修复队列
-     * @return
-     */
-    @Bean
-    public Queue courseWorkCorrect(){
-        return new Queue(RabbitMqConstants.COURSE_EXERCISES_PROCESS_LOG_CORRECT_QUEUE);
-    }
-    
-    /**
-     * 直播随堂练信息持久化
-     * @return
-     */
-    @Bean
-    public Queue coursePractice2Db(){
-        return new Queue(RabbitMqConstants.COURSE_PRACTICE_SAVE_DB_QUEUE);
-    }
-    
-    /**
-     * 录播随堂练信息持久化
-     * @return
-     */
-    @Bean
-    public Queue CourseBreakPointPracticeSave2Db(){
-        return new Queue(RabbitMqConstants.COURSE_BREAKPOINT_PRACTICE_SAVE_DB_QUEUE);
-    }
-    
-    
+	/**
+	 * 直播随堂练信息持久化
+	 * 
+	 * @return
+	 */
+	@Bean
+	public Queue coursePractice2Db() {
+		return new Queue(RabbitMqConstants.COURSE_PRACTICE_SAVE_DB_QUEUE);
+	}
+
+	/**
+	 * 录播随堂练信息持久化
+	 * 
+	 * @return
+	 */
+	@Bean
+	public Queue CourseBreakPointPracticeSave2Db() {
+		return new Queue(RabbitMqConstants.COURSE_BREAKPOINT_PRACTICE_SAVE_DB_QUEUE);
+	}
+
+	/**
+	 * 直播随堂练上报到神策
+	 * 
+	 * @return
+	 */
+	@Bean
+	public Queue CoursePracticeReportSensors() {
+		return new Queue(RabbitMqConstants.COURSE_PRACTICE_REPORT_SENSORS_QUEUE);
+	}
+
 }

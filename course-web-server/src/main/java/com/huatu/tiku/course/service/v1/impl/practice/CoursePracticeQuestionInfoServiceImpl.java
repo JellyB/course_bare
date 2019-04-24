@@ -19,6 +19,7 @@ import com.huatu.tiku.common.consts.RabbitConsts;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.practice.PracticeUserQuestionMetaInfoBo;
 import com.huatu.tiku.course.bean.practice.UserCourseBo;
+import com.huatu.tiku.course.bean.vo.CoursePracticeReportSensorsVo;
 import com.huatu.tiku.course.common.CoinType;
 import com.huatu.tiku.course.common.CoursePracticeQuestionInfoEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
@@ -89,19 +90,19 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 	}
 
 	@Override
-	public void generateAnswerCardInfo(List<Integer> questionIds, List<String> courseUserStrs,Long roomId) {
+	public void generateAnswerCardInfo(List<Integer> questionIds, List<String> courseUserStrs, Long roomId) {
 		HashOperations<String, String, PracticeUserQuestionMetaInfoBo> opsForHash = redisTemplate.opsForHash();
-		//存储统计信息
+		// 存储统计信息
 		HashOperations<String, String, Integer> metaOpsForHash = redisTemplate.opsForHash();
 		final SetOperations<String, Integer> setOperations = redisTemplate.opsForSet();
-		
+
 		// 遍历所有的key
 		for (String courseUserKey : courseUserStrs) {
-			//总做对题数
-			Integer totalRcount=0;
-			//总用时
-			Integer totalTime=0;
-			Integer answerCount=0;
+			// 总做对题数
+			Integer totalRcount = 0;
+			// 总用时
+			Integer totalTime = 0;
+			Integer answerCount = 0;
 			// 根据key查出对应的答题信息
 			Map<String, PracticeUserQuestionMetaInfoBo> map = opsForHash.entries(courseUserKey);
 			Integer rcount = 0;
@@ -119,7 +120,7 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 						answers[i] = question.getAnswer();
 						corrects[i] = question.getCorrect();
 						times[i] = question.getTime();
-						//累计总用时
+						// 累计总用时
 						totalTime += question.getTime();
 						answerCount++;
 						isAnswer = true;
@@ -138,19 +139,21 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 			}
 			UserCourseBo userCourse = CoursePracticeCacheKey.getUserAndCourseByUserMetaKey(courseUserKey);
 			String qids = StringUtils.join(questionIds, ",");
-			//存储该房间下统计信息
-			String key = CoursePracticeCacheKey.roomIdUserMetaKey(roomId,userCourse.getCourseId(), 2);
-			setOperations.add(key,userCourse.getUserId());
+			// 存储该房间下统计信息
+			String key = CoursePracticeCacheKey.roomIdUserMetaKey(roomId, userCourse.getCourseId(), 2);
+			setOperations.add(key, userCourse.getUserId());
 			String metaKey = CoursePracticeCacheKey.roomIdCourseIdTypeMetaKey(roomId, userCourse.getCourseId(), 2);
 			Map<String, Integer> metaEntries = metaOpsForHash.entries(metaKey);
 			Integer oldRcount = metaEntries.get(CoursePracticeCacheKey.RCOUNT);
 			Integer oldTotal = metaEntries.get(CoursePracticeCacheKey.TOTALTIME);
-			if(answerCount == 0) {
+			if (answerCount == 0) {
 				answerCount = 1;
 			}
-			metaOpsForHash.put(metaKey,CoursePracticeCacheKey.RCOUNT, (oldRcount == null ? totalRcount : totalRcount + oldRcount));
-			
-			metaOpsForHash.put(metaKey,CoursePracticeCacheKey.TOTALTIME, (oldTotal == null ? (totalTime / answerCount) : (totalTime / answerCount) + oldTotal));
+			metaOpsForHash.put(metaKey, CoursePracticeCacheKey.RCOUNT,
+					(oldRcount == null ? totalRcount : totalRcount + oldRcount));
+
+			metaOpsForHash.put(metaKey, CoursePracticeCacheKey.TOTALTIME,
+					(oldTotal == null ? (totalTime / answerCount) : (totalTime / answerCount) + oldTotal));
 			// 直播课type为2
 			practiceCardServiceV1.createAndSaveAnswerCoursePracticeCard(userCourse.getUserId(), "随堂练习-直播课",
 					CourseType.LIVE.getCode(), userCourse.getCourseId(), qids, answers, corrects, times);
@@ -169,15 +172,21 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 					rabbitTemplate.convertAndSend("", RabbitConsts.QUEUE_REWARD_ACTION, msg);
 				}
 			}
+			// 神策上报
+			CoursePracticeReportSensorsVo reportInfo = CoursePracticeReportSensorsVo.builder().roomId(roomId)
+					.coursewareId(userCourse.getCourseId()).rcount(rcount).docount(answerCount)
+					.qcount(questionIds.size()).times(totalTime).build();
+			rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_PRACTICE_REPORT_SENSORS_QUEUE, reportInfo);
 
 		}
-		//持久化信息
+		// 持久化信息
 		rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_PRACTICE_SAVE_DB_QUEUE, roomId);
 
 	}
-	
+
 	/**
 	 * 是否送过图币
+	 * 
 	 * @param roomId
 	 * @param userName
 	 * @return

@@ -39,6 +39,11 @@ public class RabbitMqConstants {
     public static final String COURSE_PRACTICE_SAVE_DB_QUEUE = "course_practice_save_db_queue";
     
     /**
+     * 直播随堂练上报到神策
+     */
+    public static final String COURSE_PRACTICE_REPORT_SENSORS_QUEUE = "course_practice_report_sensors_queue";
+    
+    /**
      * 录播随堂练信息持久化
      */
     public static final String COURSE_BREAKPOINT_PRACTICE_SAVE_DB_QUEUE = "course_breakpoint_practice_save_db_queue";
