@@ -63,6 +63,7 @@ public class SensorsService {
 				log.info("reportCoursePracticeData properties:{}", properties);
 				sensorsAnalytics.track(ucId, true, SensorsEventEnum.COURSE_PRACTICE_COMMIT_ANSWER_SUCCEED.getCode(),
 						properties);
+				sensorsAnalytics.flush();
 			}
 		} catch (Exception e) {
 			log.error("reportCoursePracticeData error:{}", e);

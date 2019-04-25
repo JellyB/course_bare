@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * 直播随堂练上报神策vo
@@ -17,6 +18,7 @@ import lombok.Setter;
 @Getter
 @Builder
 @AllArgsConstructor
+@ToString
 public class CoursePracticeReportSensorsVo {
 	private Long roomId;
 	private Long coursewareId;

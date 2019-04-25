@@ -28,7 +28,7 @@ public class CoursePracticeReportSensorsListener {
 	public void onMessage(String message) {
 		log.error("直播随堂练上报监听收到消息:{}", message);
 		CoursePracticeReportSensorsVo payload = JSONObject.parseObject(message, CoursePracticeReportSensorsVo.class);
-		log.error("直播随堂练上报监听解析消息:{}", payload);
+		log.error("直播随堂练上报监听解析消息:{}", payload.toString());
 		sensorsService.reportCoursePracticeData(payload);
 	}
 
