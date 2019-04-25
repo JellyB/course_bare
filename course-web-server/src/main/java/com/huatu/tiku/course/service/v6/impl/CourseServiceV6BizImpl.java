@@ -815,7 +815,10 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
     }
 
 
-
+    /**
+     * 秒杀课程数据降级 - filter 处理
+     * @param response
+     */
     private void filterStartTime(List<LinkedHashMap> response){
         if(CollectionUtils.isEmpty(response)){
             return;
@@ -847,11 +850,12 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
                 if(!classId.equals(instance.getClassId())){
                     continue;
                 }
-                long startTimeStop = MapUtils.getLong(detailInfo, "startTimeStamp");
+                long startTimeStamp = MapUtils.getLong(detailInfo, "startTimeStamp");
                 long stopTimeStamp = MapUtils.getLong(detailInfo, "stopTimeStamp");
-                if(startTimeStop > (System.currentTimeMillis() / 1000)){
-                    long saleStart = startTimeStop - (System.currentTimeMillis() / 1000);
-                    long saleEnd = stopTimeStamp  - startTimeStop;
+                if(startTimeStamp > (System.currentTimeMillis() / 1000)){
+                    log.info("------------> current time:{}, start time:{}", (System.currentTimeMillis() / 1000),  startTimeStamp);
+                    long saleStart = startTimeStamp - (System.currentTimeMillis() / 1000);
+                    long saleEnd = stopTimeStamp  - startTimeStamp;
                     detailInfo.put("saleStart", saleStart);
                     detailInfo.put("saleEnd", saleEnd);
                     detailInfo.put("limit", instance.getLimit());
