@@ -378,6 +378,7 @@ public interface CourseServiceV5 {
                 @Override
                 public NetSchoolResponse qqGroupSchedule(Map<String, Object> params) {
                     log.error("course service v5 qqGroupSchedule fallback,params: {}, fall back reason: ",params, throwable);
+                    // todo 不报错处理
                     return NetSchoolResponse.DEFAULT;
                 }
 

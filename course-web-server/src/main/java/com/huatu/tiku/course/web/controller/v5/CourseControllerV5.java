@@ -6,6 +6,7 @@ import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.AreaConstants;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.netschool.api.v5.CourseDegradeServiceV5;
 import com.huatu.tiku.course.netschool.api.v5.CourseServiceV5;
 import com.huatu.tiku.course.service.v5.CourseServiceV5Biz;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
@@ -40,6 +41,9 @@ public class CourseControllerV5 {
 
     @Autowired
     private CourseUtil courseUtil;
+
+    @Autowired
+    private CourseDegradeServiceV5 courseDegradeService;
 
     /**
      * 查询录播列表
@@ -345,7 +349,7 @@ public class CourseControllerV5 {
     @GetMapping(value = "{classId}/getQqGroupSchedule")
     public Object getQqGroupSchedule() {
         HashMap<String, Object> map = LocalMapParamHandler.get();
-        return ResponseUtil.build(courseService.qqGroupSchedule(map));
+        return courseDegradeService.qqGroupSchedule(map);
     }
 
     /**
@@ -368,7 +372,7 @@ public class CourseControllerV5 {
     @GetMapping(value = "/{netClassId}/lastPlayLesson")
     public Object lastPlayLesson() {
         HashMap<String, Object> map = LocalMapParamHandler.get();
-        return ResponseUtil.build(courseService.lastPlayLesson(map));
+        return courseDegradeService.lastPlayLesson(map);
     }
 
     /**
