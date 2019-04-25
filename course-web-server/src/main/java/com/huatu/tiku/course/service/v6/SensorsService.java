@@ -45,7 +45,7 @@ public class SensorsService {
 			NetSchoolResponse response = userServiceV4.getUserLevelBatch(Arrays.asList(uid + ""));
 			if (ResponseUtil.isSuccess(response)) {
 				List<Map<String, String>> userInfoList = (List<Map<String, String>>) response.getData();
-				String ucId = userInfoList.get(0).get("ucenterId");
+				String ucId = userInfoList.get(0).get("mobile");
 				log.info("reportCoursePracticeData ucId is:{},uid is:{}", ucId, uid);
 				Map<String, Object> properties = Maps.newHashMap();
 				// properties.put("couse_id", value);

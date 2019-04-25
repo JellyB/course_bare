@@ -22,14 +22,14 @@ public class CoursePracticeReportSensorsVo {
 	private Long coursewareId;
 	private Long questionId;
 	//做对题目数
-	private Integer rcount;
+	private int rcount;
 	//已经做题目数
-	private Integer docount;
+	private int docount;
 	//总题数
-	private Integer qcount;
+	private int qcount;
 	//总用时
-	private Integer times;
-	private Boolean isFinish;
+	private int times;
+	private boolean isFinish;
 	
 	private Integer userId;
 
