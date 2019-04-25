@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.bean.vo.RecordProcess;
 import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
@@ -115,6 +116,7 @@ public class CourseExercisesProcessLogManager {
      * @param userId
      * @return
      */
+    @Degrade(key = "unFinishNumV6", name = "学习面板 - 未读数")
     public Map<String, Integer> getCountByType(long userId,String userName) throws BizException{
         List<Integer> list = Lists.newArrayList(AnswerCardStatus.CREATE, AnswerCardStatus.UNDONE);
         Map<String, Integer> result = Maps.newHashMap();
@@ -139,6 +141,20 @@ public class CourseExercisesProcessLogManager {
 		} else {
 			result.put(StudyTypeEnum.PERIOD_TEST.getKey(), 0);
 		}
+        return result;
+    }
+
+    /**
+     * 学习面板 - 降级处理
+     * @param userId
+     * @param userName
+     * @return
+     * @throws BizException
+     */
+    public Map<String, Integer> getCountByTypeDegrade(long userId,String userName) throws BizException{
+        Map<String, Integer> result = Maps.newHashMap();
+        result.put(StudyTypeEnum.COURSE_WORK.getKey(), 0);
+        result.put(StudyTypeEnum.PERIOD_TEST.getKey(), 0);
         return result;
     }
 
