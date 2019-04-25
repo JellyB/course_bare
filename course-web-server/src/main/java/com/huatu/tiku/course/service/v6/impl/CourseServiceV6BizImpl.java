@@ -28,6 +28,7 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisZSetCommands;
 import org.springframework.data.redis.core.HashOperations;
@@ -127,6 +128,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
     @Autowired
     private CoursePracticeQuestionInfoMapper coursePracticeQuestionInfoMapper;
+
+    @Value("${course.secKill.course.Id}")
+    private String courseSecKill;
 
     /**
      * 模考大赛解析课信息,多个id使用逗号分隔
@@ -788,6 +792,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
     /**
      * 课程接口degrade 处理
+     * 获取课程 startTime & stopTime
      * @param params
      * @return
      * @throws BizException
@@ -803,6 +808,41 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             log.warn("obtain obtainCourseList degrade data not exist in fallbackHolder...");
             return ResponseUtil.build(new NetSchoolResponse(Result.SUCCESS_CODE, "", Lists.newArrayList()));
         }
-        return ResponseUtil.build(response);
+
+        Object object =  ResponseUtil.build(response);
+        log.info("过滤秒杀课....");
+        filterStartTime((LinkedHashMap) object);
+        return object;
+    }
+
+
+
+    private void filterStartTime(LinkedHashMap response){
+        List<Map<String, Object>> firsList = (List<Map<String, Object>>)response.get("data");
+        if(CollectionUtils.isEmpty(firsList)){
+            return;
+        }
+        for(Map<String, Object> firstData : firsList){
+            List<Map<String, Object>> secondList = (List<Map<String, Object>>)firstData.get("data");
+            if(CollectionUtils.isEmpty(secondList)){
+                return;
+            }
+            for(Map<String, Object> secondData : secondList){
+                String classId = MapUtils.getString(secondData, "classId");
+                if(!classId.equals(courseSecKill)){
+                    return;
+                }
+                long startTimeStop = MapUtils.getLong(secondData, "startTimeStamp");
+                if(startTimeStop * 1000 > System.currentTimeMillis()){
+                    long saleStart = System.currentTimeMillis() / 1000 - startTimeStop;
+                    long saleEnd = System.currentTimeMillis() / 1000 - startTimeStop;
+                    secondData.put("saleStart", String.valueOf(saleStart));
+                    secondData.put("saleEnd", String.valueOf(saleEnd));
+                }else{
+                    secondData.put("saleStart", "0");
+                    secondData.put("saleEnd", "0");
+                }
+            }
+        }
     }
 }
