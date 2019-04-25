@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.web.controller.v6;
 
+import com.huatu.common.SuccessMessage;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
@@ -164,5 +165,18 @@ public class CourseControllerV6 {
                              @RequestParam(value = "endTime",defaultValue = Long.MAX_VALUE+"") long endTime) {
         NetSchoolResponse netSchoolResponse = courseServiceV6Biz.analysisClassList(subject,page,size,startTime,endTime);
         return ResponseUtil.build(netSchoolResponse);
+    }
+
+    /**
+     * 添加秒杀课
+     * @param classId
+     * @param limit
+     * @return
+     */
+    @PostMapping(value = "/addSecKill")
+    public Object addSecKillInfo(@RequestParam(value = "classId") String  classId,
+                                 @RequestParam(value = "limit") int limit){
+        courseServiceV6Biz.addSecKillInfo(classId, limit);
+        return SuccessMessage.create("ok");
     }
 }

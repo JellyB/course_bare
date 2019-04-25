@@ -79,5 +79,11 @@ public interface CourseServiceV6Biz {
      */
     Object obtainCourseList(Map<String, Object> params)throws BizException;
 
-
+    /**
+     * 秒杀课
+     * @param classId
+     * @param limit
+     * @throws BizException
+     */
+    Object addSecKillInfo(String classId, int limit) throws BizException;
 }

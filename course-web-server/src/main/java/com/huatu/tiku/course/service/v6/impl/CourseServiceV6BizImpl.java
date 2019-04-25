@@ -12,10 +12,12 @@ import java.util.stream.Collectors;
 
 import com.huatu.common.ErrorResult;
 import com.huatu.common.Result;
+import com.huatu.common.SuccessMessage;
 import com.huatu.common.consts.TerminalType;
 import com.huatu.common.utils.web.RequestUtil;
 import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.common.PracticeStatusEnum;
+import com.huatu.tiku.course.common.SecKillCourseInfo;
 import com.huatu.tiku.course.dao.manual.CoursePracticeQuestionInfoMapper;
 import com.huatu.tiku.course.netschool.api.fall.FallbackCacheHolder;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
@@ -23,12 +25,12 @@ import com.huatu.tiku.course.service.v1.practice.PracticeUserMetaService;
 import com.huatu.tiku.entity.CourseLiveBackLog;
 import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
 import com.huatu.ztk.paper.common.AnswerCardStatus;
+import lombok.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisZSetCommands;
 import org.springframework.data.redis.core.HashOperations;
@@ -128,9 +130,6 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
     @Autowired
     private CoursePracticeQuestionInfoMapper coursePracticeQuestionInfoMapper;
-
-    @Value("${course.secKill.course.Id}")
-    private String courseSecKill;
 
     /**
      * 模考大赛解析课信息,多个id使用逗号分隔
@@ -811,38 +810,70 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
         Object object =  ResponseUtil.build(response);
         log.info("过滤秒杀课....");
-        filterStartTime((LinkedHashMap) object);
+        filterStartTime((List<LinkedHashMap>) object);
         return object;
     }
 
 
 
-    private void filterStartTime(LinkedHashMap response){
-        List<Map<String, Object>> firsList = (List<Map<String, Object>>)response.get("data");
-        if(CollectionUtils.isEmpty(firsList)){
+    private void filterStartTime(List<LinkedHashMap> response){
+        if(CollectionUtils.isEmpty(response)){
             return;
         }
-        for(Map<String, Object> firstData : firsList){
-            List<Map<String, Object>> secondList = (List<Map<String, Object>>)firstData.get("data");
-            if(CollectionUtils.isEmpty(secondList)){
-                return;
+        SecKillCourseInfo instance = SecKillCourseInfo.getInstance();
+        for(LinkedHashMap<String, Object> currentCateInfo : response){
+            if(!currentCateInfo.containsKey("data")){
+                continue;
             }
-            for(Map<String, Object> secondData : secondList){
-                String classId = MapUtils.getString(secondData, "classId");
-                if(!classId.equals(courseSecKill)){
-                    return;
+            List<LinkedHashMap<String, Object>> detailList = (List<LinkedHashMap<String, Object>>)currentCateInfo.get("data");
+            if(CollectionUtils.isEmpty(detailList)){
+                continue;
+            }
+
+            for(LinkedHashMap<String, Object> detailInfo : detailList){
+                if(!detailInfo.containsKey("classId")){
+                    log.error("课程信息异常:{}", detailInfo);
+                    continue;
                 }
-                long startTimeStop = MapUtils.getLong(secondData, "startTimeStamp");
+                String classId = MapUtils.getString(detailInfo, "classId");
+                if(null == instance || StringUtils.isEmpty(instance.getClassId())){
+                    continue;
+                }
+                if(!classId.equals(instance.getClassId())){
+                    continue;
+                }
+                long startTimeStop = MapUtils.getLong(detailInfo, "startTimeStamp");
                 if(startTimeStop * 1000 > System.currentTimeMillis()){
                     long saleStart = System.currentTimeMillis() / 1000 - startTimeStop;
                     long saleEnd = System.currentTimeMillis() / 1000 - startTimeStop;
-                    secondData.put("saleStart", String.valueOf(saleStart));
-                    secondData.put("saleEnd", String.valueOf(saleEnd));
+                    detailInfo.put("saleStart", String.valueOf(saleStart));
+                    detailInfo.put("saleEnd", String.valueOf(saleEnd));
+                    detailInfo.put("limit", instance.getLimit());
+                    log.info("startTimeStop:{}, currentTimeMillis:{}, saleStart:{}, saleEnd:{}", startTimeStop, System.currentTimeMillis(), saleStart, saleEnd);
                 }else{
-                    secondData.put("saleStart", "0");
-                    secondData.put("saleEnd", "0");
+                    detailInfo.put("saleStart", "0");
+                    detailInfo.put("saleEnd", "0");
                 }
             }
         }
+    }
+
+    /**
+     * 添加秒杀课信息
+     * @param classId
+     * @param limit
+     * @return
+     * @throws BizException
+     */
+    @Override
+    public Object addSecKillInfo(String classId, int limit) throws BizException {
+        SecKillCourseInfo instance  = SecKillCourseInfo.getInstance();
+        if(null == instance){
+            return SuccessMessage.create("对象不存在");
+        }
+        instance.setClassId(classId);
+        instance.setLimit(limit);
+        log.info("更新秒杀课信息 --- classId:{}, limit:{}", classId, limit);
+        return SuccessMessage.create("ok");
     }
 }
