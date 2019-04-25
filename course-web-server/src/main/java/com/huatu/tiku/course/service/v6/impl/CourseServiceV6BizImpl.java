@@ -831,8 +831,13 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             }
 
             for(LinkedHashMap<String, Object> detailInfo : detailList){
+                //合集课不处理
+                if(MapUtils.getBoolean(detailInfo, "isCollect")){
+                    log.info("合集课程不支持 ms 不予处理:{}", detailInfo);
+                    continue;
+                }
                 if(!detailInfo.containsKey("classId")){
-                    log.error("课程信息异常:{}", detailInfo);
+                    log.error("ms 课程信息参数异常:{}", detailInfo);
                     continue;
                 }
                 String classId = MapUtils.getString(detailInfo, "classId");
@@ -843,17 +848,19 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
                     continue;
                 }
                 long startTimeStop = MapUtils.getLong(detailInfo, "startTimeStamp");
-                if(startTimeStop * 1000 > System.currentTimeMillis()){
-                    long saleStart = System.currentTimeMillis() / 1000 - startTimeStop;
-                    long saleEnd = System.currentTimeMillis() / 1000 - startTimeStop;
-                    detailInfo.put("saleStart", String.valueOf(saleStart));
-                    detailInfo.put("saleEnd", String.valueOf(saleEnd));
+                long stopTimeStamp = MapUtils.getLong(detailInfo, "stopTimeStamp");
+                if(startTimeStop > (System.currentTimeMillis() / 1000)){
+                    long saleStart = startTimeStop - (System.currentTimeMillis() / 1000);
+                    long saleEnd = stopTimeStamp  - startTimeStop;
+                    detailInfo.put("saleStart", saleStart);
+                    detailInfo.put("saleEnd", saleEnd);
                     detailInfo.put("limit", instance.getLimit());
-                    log.info("startTimeStop:{}, currentTimeMillis:{}, saleStart:{}, saleEnd:{}", startTimeStop, System.currentTimeMillis(), saleStart, saleEnd);
                 }else{
-                    detailInfo.put("saleStart", "0");
-                    detailInfo.put("saleEnd", "0");
+                    detailInfo.put("saleStart", 0);
+                    detailInfo.put("saleEnd", stopTimeStamp - (System.currentTimeMillis() / 1000));
+                    detailInfo.put("limit", instance.getLimit());
                 }
+                log.info("处理后的 data info:{}", detailInfo);
             }
         }
     }
