@@ -7,8 +7,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.huatu.tiku.course.bean.vo.CoursePracticeReportSensorsVo;
 import com.huatu.tiku.course.netschool.api.TestService;
 import com.huatu.tiku.course.netschool.api.v5.RedPackageServiceV6;
+import com.huatu.tiku.course.service.v6.SensorsService;
 
 /**
  * 
@@ -24,6 +26,9 @@ public class TestController {
 	
 	@Autowired
 	private RedPackageServiceV6 redPackageServiceV6;
+	
+	@Autowired
+	private SensorsService sensorsService;
 
 	/**
 	 * 
@@ -55,5 +60,11 @@ public class TestController {
 		return ret;
 	}
 	
+	@RequestMapping(value = "/report", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, method = RequestMethod.GET)
+	public Object report() {
+		CoursePracticeReportSensorsVo vo = CoursePracticeReportSensorsVo.builder().userId(233982024).coursewareId(1L).qcount(1).rcount(1).build();
+		sensorsService.reportCoursePracticeData(vo);
+		return "ok";
+	}
 	
 }
