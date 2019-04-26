@@ -30,10 +30,10 @@ public class CourseDegradeServiceV5 {
     @Autowired
     private CourseServiceV5 courseService;
 
-    @Value("course.secKill.qqGroupInfo")
+    @Value("${course.secKill.qqGroupInfo}")
     private String qqGroupInfo;
 
-    @Value("course.secKill.lastPlayInfo")
+    @Value("${course.secKill.lastPlayInfo}")
     private String lastPlayInfo;
 
 
