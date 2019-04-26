@@ -368,7 +368,7 @@ public class CourseControllerV5 {
     /**
      * 继续学习
      */
-    @LocalMapParam
+    @LocalMapParam(checkToken = true)
     @GetMapping(value = "/{netClassId}/lastPlayLesson")
     public Object lastPlayLesson() {
         HashMap<String, Object> map = LocalMapParamHandler.get();

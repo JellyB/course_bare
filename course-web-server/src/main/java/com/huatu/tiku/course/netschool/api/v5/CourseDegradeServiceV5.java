@@ -27,13 +27,14 @@ import java.util.HashMap;
 public class CourseDegradeServiceV5 {
 
     private static final String ClassId = "classId";
+    private static final String NetClassId = "netClassId";
     @Autowired
     private CourseServiceV5 courseService;
 
-    @Value("course.secKill.qqGroupInfo")
+    @Value("${course.secKill.qqGroupInfo}")
     private String qqGroupInfo;
 
-    @Value("course.secKill.lastPlayInfo")
+    @Value("${course.secKill.lastPlayInfo}")
     private String lastPlayInfo;
 
 
@@ -88,10 +89,9 @@ public class CourseDegradeServiceV5 {
      * @param params
      * @return
      */
-    @Degrade(key = "lastPlayLessonV5", name = "继续学习")
     public Object lastPlayLessonDegrade(HashMap<String, Object> params){
         SecKillCourseInfo instance = SecKillCourseInfo.getInstance();
-        String classId = MapUtils.getString(params, ClassId);
+        String classId = MapUtils.getString(params, NetClassId);
         //如果降级中命中秒杀课
         if(instance.getClassId().equals(classId)){
             try{
