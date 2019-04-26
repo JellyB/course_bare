@@ -173,14 +173,13 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 					rabbitTemplate.convertAndSend("", RabbitConsts.QUEUE_REWARD_ACTION, msg);
 				}
 			}
-			// 神策上报
-			CoursePracticeReportSensorsVo reportInfo = CoursePracticeReportSensorsVo.builder().roomId(roomId)
-					.coursewareId(userCourse.getCourseId()).rcount(rcount).docount(answerCount)
-					.qcount(questionIds.size()).times(totalTime).userId(userCourse.getUserId()).build();
-			rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_PRACTICE_REPORT_SENSORS_QUEUE,
-					JSONObject.toJSONString(reportInfo));
 
 		}
+		// 神策上报
+//		CoursePracticeReportSensorsVo reportInfo = CoursePracticeReportSensorsVo.builder().roomId(roomId).qcount(questionIds.size()).build();
+//		rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_PRACTICE_REPORT_SENSORS_QUEUE,
+//				JSONObject.toJSONString(reportInfo));
+
 		// 持久化信息
 		rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_PRACTICE_SAVE_DB_QUEUE, roomId);
 

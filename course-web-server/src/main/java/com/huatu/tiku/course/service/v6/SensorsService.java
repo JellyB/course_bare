@@ -41,30 +41,32 @@ public class SensorsService {
 	public void reportCoursePracticeData(CoursePracticeReportSensorsVo practiceData) {
 		try {
 			log.info("reportCoursePracticeData start");
-			Integer uid = practiceData.getUserId();
-			NetSchoolResponse response = userServiceV4.getUserLevelBatch(Arrays.asList(uid + ""));
-			if (ResponseUtil.isSuccess(response)) {
-				List<Map<String, String>> userInfoList = (List<Map<String, String>>) response.getData();
-				String ucId = userInfoList.get(0).get("mobile");
-				log.info("reportCoursePracticeData ucId is:{},uid is:{}", ucId, uid);
+			//Integer uid = practiceData.getUserId();
+			//NetSchoolResponse response = userServiceV4.getUserLevelBatch(Arrays.asList(uid + ""));
+			//if (ResponseUtil.isSuccess(response)) {
+				//List<Map<String, String>> userInfoList = (List<Map<String, String>>) response.getData();
+				//String ucId = userInfoList.get(0).get("mobile");
+				//log.info("reportCoursePracticeData ucId is:{},uid is:{}", ucId, uid);
 				Map<String, Object> properties = Maps.newHashMap();
 				// properties.put("couse_id", value);
 				// properties.put("course_title", value);
 				properties.put("class_id", practiceData.getCoursewareId());
 				// properties.put("class_title", value);
-				properties.put("correct_number", practiceData.getRcount());
-				properties.put("exercise_done", practiceData.getDocount());
-				properties.put("exercise_duration", practiceData.getTimes());
-				properties.put("is_finish", false);
-				if (practiceData.getDocount() == practiceData.getQcount()) {
-					properties.put("is_finish", true);
-				}
+				//properties.put("correct_number", practiceData.getRcount());
+				//properties.put("exercise_done", practiceData.getDocount());
+				//properties.put("exercise_duration", practiceData.getTimes());
+				//properties.put("is_finish", false);
+//				if (practiceData.getDocount() == practiceData.getQcount()) {
+//					properties.put("is_finish", true);
+//				}
+				//获取课件名称
+				
 				properties.put("exercise_number", practiceData.getQcount());
 				log.info("reportCoursePracticeData properties:{}", properties);
-				sensorsAnalytics.track(ucId, true, SensorsEventEnum.COURSE_PRACTICE_COMMIT_ANSWER_SUCCEED.getCode(),
+				sensorsAnalytics.track("9999", false, SensorsEventEnum.COURSE_PRACTICE_QUESTION_INFO.getCode(),
 						properties);
 				sensorsAnalytics.flush();
-			}
+			//}
 		} catch (Exception e) {
 			log.error("reportCoursePracticeData error:{}", e);
 		}
