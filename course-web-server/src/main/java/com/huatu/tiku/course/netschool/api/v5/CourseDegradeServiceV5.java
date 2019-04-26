@@ -89,7 +89,6 @@ public class CourseDegradeServiceV5 {
      * @param params
      * @return
      */
-    @Degrade(key = "lastPlayLessonV5", name = "继续学习")
     public Object lastPlayLessonDegrade(HashMap<String, Object> params){
         SecKillCourseInfo instance = SecKillCourseInfo.getInstance();
         String classId = MapUtils.getString(params, NetClassId);
