@@ -93,7 +93,9 @@ public class CourseExercisesStatisticsManager {
             example.and()
                     .andEqualTo("courseId", practiceForCoursePaper.getCourseId())
                     .andEqualTo("courseType", practiceForCoursePaper.getCourseType())
-                    .andEqualTo("status", YesOrNoStatus.YES.getCode());
+                    .andEqualTo("status", YesOrNoStatus.YES.getCode())
+                    //默认为0 课后作业
+            		.andEqualTo("type", YesOrNoStatus.NO.getCode());
             CourseExercisesStatistics courseExercisesStatistics = courseExercisesStatisticsMapper.selectOneByExample(example);
 
             if(null == courseExercisesStatistics){
@@ -107,6 +109,7 @@ public class CourseExercisesStatisticsManager {
                 courseExercisesStatistics.setCourseId(practiceForCoursePaper.getCourseId());
                 courseExercisesStatistics.setGmtModify(new Timestamp(System.currentTimeMillis()));
                 courseExercisesStatistics.setGmtCreate(new Timestamp(System.currentTimeMillis()));
+                courseExercisesStatistics.setType(YesOrNoStatus.NO.getCode());
                 courseExercisesStatisticsMapper.insertSelective(courseExercisesStatistics);
             }else{
                 CourseExercisesStatistics update = new CourseExercisesStatistics();

@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.service.v1;
 
+import com.huatu.tiku.course.bean.CourseBreakPointPracticeDto;
 import com.huatu.tiku.entity.CourseBreakpointQuestion;
 import service.BaseServiceHelper;
 
@@ -25,5 +26,11 @@ public interface CourseBreakpointQuestionService extends BaseServiceHelper<Cours
      * @return
      */
     List<CourseBreakpointQuestion> listQuestionIdByBreakpointIdList(List<Long> list);
+    
+    /**
+     * 持久化录播随堂练
+     * @param payload
+     */
+    void saveCourseBreakpointPracticeInfo(List<CourseBreakPointPracticeDto> payload);
 
 }
