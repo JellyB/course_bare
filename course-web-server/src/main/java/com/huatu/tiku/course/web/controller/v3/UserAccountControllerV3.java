@@ -5,18 +5,14 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.huatu.tiku.course.netschool.api.v3.UserAccountServiceV3;
 import com.huatu.tiku.course.service.VersionService;
-import com.huatu.tiku.course.service.v1.VersionControlService;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.springboot.users.support.Token;
-import org.apache.commons.collections.MapUtils;
-import org.omg.CORBA.OBJECT_NOT_EXIST;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -25,6 +21,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/v3/account")
+@Slf4j
 public class UserAccountControllerV3 {
     @Autowired
     private UserAccountServiceV3 userAccountServiceV3;
@@ -122,15 +119,30 @@ public class UserAccountControllerV3 {
 
         Object object = ResponseUtil.build(userAccountServiceV3.findAccountRecortds(RequestUtil.encrypt(params)),true);
         if(versionService.isIosAudit(terminal, cv) && type == 2){
-            JSONObject data = (JSONObject) object;
-            JSONArray consumes = (JSONArray) data.get("consumeRes");
-            for(int i = 0; i < consumes.size(); i ++){
-                JSONObject current = (JSONObject)consumes.get(i);
-                String moneyReceipt = current.getString("MoneyReceipt");
-                if(moneyReceipt.indexOf(" ") > 0){
-                    moneyReceipt = moneyReceipt.split(" ")[1];
-                    current.put("MoneyReceipt", moneyReceipt);
+            try{
+                if(!(object instanceof JSONObject)){
+                    return object;
                 }
+                JSONObject data = (JSONObject) object;
+                if(!data.containsKey("consumeRes")){
+                    return object;
+                }
+                JSONArray consumes = (JSONArray) data.get("consumeRes");
+                for(int i = 0; i < consumes.size(); i ++){
+                    JSONObject current = (JSONObject)consumes.get(i);
+                    if(!current.containsKey("MoneyReceipt")){
+                       continue;
+                    }
+                    String moneyReceipt = current.getString("MoneyReceipt");
+                    if(moneyReceipt.indexOf(" ") > 0){
+                        moneyReceipt = moneyReceipt.split(" ")[1];
+                        current.put("MoneyReceipt", moneyReceipt);
+                    }
+                }
+                return object;
+            }catch (Exception e){
+                log.error("versionService.isIosAudit 异常");
+                return object;
             }
         }
         return object;
