@@ -121,7 +121,7 @@ public class UserAccountControllerV3 {
         params.put("page",page);
 
         Object object = ResponseUtil.build(userAccountServiceV3.findAccountRecortds(RequestUtil.encrypt(params)),true);
-        if(versionService.isIosAudit(terminal, cv)){
+        if(versionService.isIosAudit(terminal, cv) && type == 2){
             JSONObject data = (JSONObject) object;
             JSONArray consumes = (JSONArray) data.get("consumeRes");
             for(int i = 0; i < consumes.size(); i ++){
