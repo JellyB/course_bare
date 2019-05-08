@@ -1,11 +1,15 @@
 package com.huatu.tiku.course.web.controller.v3;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.huatu.tiku.course.netschool.api.v3.UserAccountServiceV3;
+import com.huatu.tiku.course.service.VersionService;
 import com.huatu.tiku.course.util.RequestUtil;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.springboot.users.support.Token;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,9 +21,13 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/v3/account")
+@Slf4j
 public class UserAccountControllerV3 {
     @Autowired
     private UserAccountServiceV3 userAccountServiceV3;
+
+    @Autowired
+    private VersionService versionService;
 
     /**
      * 我的代金券列表
@@ -100,15 +108,44 @@ public class UserAccountControllerV3 {
             @RequestParam int type,
             @RequestParam int page,
             @Token UserSession userSession,
-            @RequestHeader("cv") String terminal
+            @RequestHeader(value = "terminal") Integer terminal,
+            @RequestHeader(value = "cv") String cv
     ) {
         Map<String,Object> params = Maps.newHashMap();
         params.put("action",type == 1 ? 2:3);//
         params.put("username",userSession.getUname());
-        params.put("cv",terminal);
+        params.put("cv",cv);
         params.put("page",page);
 
-        return ResponseUtil.build(userAccountServiceV3.findAccountRecortds(RequestUtil.encrypt(params)),true);
+        Object object = ResponseUtil.build(userAccountServiceV3.findAccountRecortds(RequestUtil.encrypt(params)),true);
+        if(versionService.isIosAudit(terminal, cv) && type == 2){
+            try{
+                if(!(object instanceof JSONObject)){
+                    return object;
+                }
+                JSONObject data = (JSONObject) object;
+                if(!data.containsKey("consumeRes")){
+                    return object;
+                }
+                JSONArray consumes = (JSONArray) data.get("consumeRes");
+                for(int i = 0; i < consumes.size(); i ++){
+                    JSONObject current = (JSONObject)consumes.get(i);
+                    if(!current.containsKey("MoneyReceipt")){
+                       continue;
+                    }
+                    String moneyReceipt = current.getString("MoneyReceipt");
+                    if(moneyReceipt.indexOf(" ") > 0){
+                        moneyReceipt = moneyReceipt.split(" ")[1];
+                        current.put("MoneyReceipt", moneyReceipt);
+                    }
+                }
+                return object;
+            }catch (Exception e){
+                log.error("versionService.isIosAudit 异常");
+                return object;
+            }
+        }
+        return object;
     }
 
 
