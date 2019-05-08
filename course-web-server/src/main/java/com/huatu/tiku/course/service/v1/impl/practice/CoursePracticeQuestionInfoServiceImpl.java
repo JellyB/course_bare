@@ -1,8 +1,11 @@
 package com.huatu.tiku.course.service.v1.impl.practice;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -11,16 +14,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.fastjson.JSONObject;
+import com.huatu.common.utils.date.DateUtil;
 import com.huatu.tiku.common.CourseQuestionTypeEnum.CourseType;
 import com.huatu.tiku.common.bean.reward.RewardMessage;
 import com.huatu.tiku.common.consts.RabbitConsts;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.practice.PracticeUserQuestionMetaInfoBo;
 import com.huatu.tiku.course.bean.practice.UserCourseBo;
-import com.huatu.tiku.course.bean.vo.CoursePracticeReportSensorsVo;
 import com.huatu.tiku.course.common.CoinType;
 import com.huatu.tiku.course.common.CoursePracticeQuestionInfoEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
@@ -60,6 +63,9 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 
 	@Autowired
 	private UserServiceV4 userServiceV4;
+
+	// 赠送金币限制最多答题次数
+	private int MAXCOINCOUNT = 10;
 
 	@Override
 	public List<CoursePracticeQuestionInfo> listByRoomIdAndQuestionId(Long roomId, List<Long> questionIdList) {
@@ -160,16 +166,18 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 					CourseType.LIVE.getCode(), userCourse.getCourseId(), qids, answers, corrects, times);
 			log.info("随堂练用户id:{} courseId:{}生成答题卡", userCourse.getUserId(), userCourse.getCourseId());
 			// 赠送图币
-			if (rcount > 0 && checkHasGiveCoin(roomId, userCourse.getUserId())) {
+			if (rcount > 0) {
+				// 单次或者每天最多赠送10题
+				int finalCount = getHasGiveCoin(roomId, userCourse.getUserId(), rcount);
 				NetSchoolResponse response = userServiceV4
 						.getUserLevelBatch(Arrays.asList(userCourse.getUserId().toString()));
 				if (ResponseUtil.isSuccess(response)) {
 					List<Map<String, String>> userInfoList = (List<Map<String, String>>) response.getData();
 					String userName = userInfoList.get(0).get("name");
-					RewardMessage msg = RewardMessage.builder().gold(rcount * 2).uid(userCourse.getUserId())
+					RewardMessage msg = RewardMessage.builder().gold(finalCount * 2).uid(userCourse.getUserId())
 							.action(CoinType.COURSE_PRACTICE_RIGHT).experience(1).bizId(roomId + userName)
 							.uname(userName).timestamp(System.currentTimeMillis()).build();
-					log.info("随堂练用户id:{}赠送图币{},bizId为:{}", userCourse.getUserId(), rcount * 2, roomId + userName);
+					log.info("随堂练用户id:{}赠送图币{},bizId为:{}", userCourse.getUserId(), finalCount * 2, roomId + userName);
 					rabbitTemplate.convertAndSend("", RabbitConsts.QUEUE_REWARD_ACTION, msg);
 				}
 			}
@@ -186,23 +194,37 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 	}
 
 	/**
-	 * 是否送过图币
+	 * 获取应送图币数&&每天限额20个
 	 * 
 	 * @param roomId
 	 * @param userName
+	 * @param count
 	 * @return
 	 */
-	private boolean checkHasGiveCoin(Long roomId, Integer userId) {
+	private int getHasGiveCoin(Long roomId, Integer userId, Integer count) {
 		final SetOperations<String, String> setOperations = redisTemplate.opsForSet();
+		final ValueOperations<String, Integer> opsForValue = redisTemplate.opsForValue();
 		String key = CoursePracticeCacheKey.GIVECOINKEY;
+		String userDailyKey = CoursePracticeCacheKey.getCoinDailyKey(userId);
+		Integer hasGiveCount = Optional.ofNullable(opsForValue.get(userDailyKey)).orElse(0);
 		if (setOperations.isMember(key, roomId + userId + "")) {
 			log.info("随堂练用户id:{}roomId为:{}已经送过图币", userId, roomId);
-			return false;
+			return 0;
+		} else if (hasGiveCount >= MAXCOINCOUNT) {
+			// 超出限额
+			log.info("随堂练用户id:{}roomId为:{}超出每日送金币限额", userId, roomId);
+			return 0;
 		} else {
 			setOperations.add(key, roomId + userId + "");
 			redisTemplate.expire(key, CoursePracticeCacheKey.getDefaultKeyTTL(),
 					CoursePracticeCacheKey.getDefaultTimeUnit());
-			return true;
+			// 最大增加金币数
+			int maxGiveCount = MAXCOINCOUNT - hasGiveCount;
+			int rcount = maxGiveCount < count ? maxGiveCount : count;
+			opsForValue.increment(userDailyKey, rcount);
+			Date current = DateUtil.getEndDateOfCurrentDay();
+			redisTemplate.expire(userDailyKey, current.getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+			return rcount;
 		}
 	}
 }
