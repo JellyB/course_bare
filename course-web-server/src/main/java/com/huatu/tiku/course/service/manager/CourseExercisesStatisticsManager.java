@@ -38,6 +38,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -75,7 +77,12 @@ public class CourseExercisesStatisticsManager {
     @Autowired
     private UserServiceV4 userService;
 
-    public synchronized void dealCourseExercisesStatistics(PracticeCard answerCard) throws BizException{
+    /**
+     * 用户提交课后作业处理统计信息
+     * @param answerCard
+     * @throws BizException
+     */
+    public synchronized void dealCourseExercisesStatistics(final PracticeCard answerCard) throws BizException{
         try{
             PracticeForCoursePaper practiceForCoursePaper = (PracticeForCoursePaper)answerCard.getPaper();
             String existsKey = CourseCacheKey.getCourseWorkDealData(practiceForCoursePaper.getCourseType(), practiceForCoursePaper.getCourseId());
@@ -89,13 +96,29 @@ public class CourseExercisesStatisticsManager {
             if(existsHash.hasKey(existsKey, String.valueOf(answerCard.getUserId()))){
                 return;
             }
+
+            // 优先处理用户排名信息
+            int times = Arrays.stream(answerCard.getTimes()).sum();
+            long score = (practiceForCoursePaper.getQcount() - answerCard.getRcount()) * 100000 + times;
+
+            UserRankInfo userRankInfo = UserRankInfo.builder()
+                    .uid(answerCard.getUserId())
+                    .rcount(answerCard.getRcount())
+                    .expendTime(times)
+                    .submitTimeInfo(System.currentTimeMillis())
+                    .build();
+
+            rankInfoZset.add(rankInfoKey, String.valueOf(answerCard.getUserId()), score);
+            existsHash.put(existsKey, String.valueOf(answerCard.getUserId()), JSONObject.toJSONString(userRankInfo));
+
+            //更新课后作业统计数据
             Example example = new Example(CourseExercisesStatistics.class);
             example.and()
                     .andEqualTo("courseId", practiceForCoursePaper.getCourseId())
                     .andEqualTo("courseType", practiceForCoursePaper.getCourseType())
                     .andEqualTo("status", YesOrNoStatus.YES.getCode())
                     //默认为0 课后作业
-            		.andEqualTo("type", YesOrNoStatus.NO.getCode());
+                    .andEqualTo("type", YesOrNoStatus.NO.getCode());
             CourseExercisesStatistics courseExercisesStatistics = courseExercisesStatisticsMapper.selectOneByExample(example);
 
             if(null == courseExercisesStatistics){
@@ -121,20 +144,11 @@ public class CourseExercisesStatisticsManager {
                 courseExercisesStatisticsMapper.updateByPrimaryKeySelective(update);
             }
 
-            int times = Arrays.stream(answerCard.getTimes()).sum();
-            long score = (practiceForCoursePaper.getQcount() - answerCard.getRcount()) * 100000 + times;
-
-            UserRankInfo userRankInfo = UserRankInfo.builder()
-                    .uid(answerCard.getUserId())
-                    .rcount(answerCard.getRcount())
-                    .expendTime(times)
-                    .submitTimeInfo(System.currentTimeMillis())
-                    .build();
-
-            rankInfoZset.add(rankInfoKey, String.valueOf(answerCard.getUserId()), score);
-            existsHash.put(existsKey, String.valueOf(answerCard.getUserId()), JSONObject.toJSONString(userRankInfo));
-
-            dealCourseExercisesDetailStatistics(courseExercisesStatistics.getId(), answerCard);
+            // 异步处理详细统计信息
+            ExecutorService executorService = Executors.newSingleThreadExecutor();
+            final CourseExercisesStatistics detailStatistics = courseExercisesStatistics;
+            executorService.execute(() -> dealCourseExercisesDetailStatistics(detailStatistics.getId(), answerCard));
+            executorService.shutdown();
         }catch (Exception e){
             log.error("处理课后作业统计信息异常!:{}", e);
         }
@@ -488,7 +502,14 @@ public class CourseExercisesStatisticsManager {
 
             HashOperations<String, String, String> existHash = redisTemplate.opsForHash();
             ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
-            long myRank = zSetOperations.rank(rankKey, String.valueOf(practiceCard.getUserId())) + 1;
+            long myRank;
+            try{
+                myRank = zSetOperations.rank(rankKey, String.valueOf(practiceCard.getUserId())) + 1;
+            }catch (Exception e){
+                myRank = 0L;
+                log.error("课后作业统计排名异常 rankKey:{}, value:{}", rankKey, practiceCard.getUserId());
+            }
+
             Set<String> userIdRanks = zSetOperations.range(rankKey, START, END);
             if(CollectionUtils.isEmpty(userIdRanks)){
                 return rankInfo;
