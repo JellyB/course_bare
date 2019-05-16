@@ -7,6 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -420,7 +422,14 @@ public class CourseExercisesProcessLogManager {
      * @param answerCard
      * @throws BizException
      */
-    public void submitCourseWorkAnswerCard(PracticeCard answerCard)throws BizException{
+    public void submitCourseWorkAnswerCard(final PracticeCard answerCard)throws BizException{
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        //异步处理统计信息
+        executorService.execute(() -> {
+            courseExercisesStatisticsManager.dealCourseExercisesStatistics(answerCard);
+        });
+        executorService.shutdown();
+        //更新 mysql 答题卡数据状态
         Example example = new Example(CourseExercisesProcessLog.class);
         example.and()
                 .andEqualTo("status", YesOrNoStatus.YES.getCode())
@@ -430,7 +439,6 @@ public class CourseExercisesProcessLogManager {
         CourseExercisesProcessLog updateLog = new CourseExercisesProcessLog();
         updateLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
         updateLog.setBizStatus(answerCard.getStatus());
-        courseExercisesStatisticsManager.dealCourseExercisesStatistics(answerCard);
         courseExercisesProcessLogMapper.updateByExampleSelective(updateLog, example);
     }
     /**
