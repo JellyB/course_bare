@@ -21,6 +21,8 @@ public class CourseBreakPointPracticeDto {
 	private Integer correct;
 	private Integer courseWareId;
 	private Integer time;
+	
+	private String answer;
 
 	private Long userId;
 
