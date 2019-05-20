@@ -48,4 +48,9 @@ public class RabbitMqConstants {
      */
     public static final String COURSE_BREAKPOINT_PRACTICE_SAVE_DB_QUEUE = "course_breakpoint_practice_save_db_queue";
 
+    /**
+     * 课后作业处理队列
+     */
+    public static final String COURSE_WORK_REPORT_USERS_DEAL_QUEUE = "course_work_report_users_queue";
+
 }
