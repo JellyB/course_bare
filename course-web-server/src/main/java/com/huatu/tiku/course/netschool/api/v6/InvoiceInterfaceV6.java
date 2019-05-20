@@ -12,12 +12,12 @@ import com.netflix.hystrix.HystrixCommand;
 import feign.hystrix.Fallback;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+
 
 @FeignClient(value = "o-course-service", path = "/lumenapi", fallbackFactory = InvoiceInterfaceV6.InvoiceInterfaceV6FallBack.class)
 public interface InvoiceInterfaceV6 {
@@ -28,8 +28,8 @@ public interface InvoiceInterfaceV6 {
      * @param params
      * @return
      */
-    @PostMapping(value = "/write_invoice")
-    NetSchoolResponse writeInvoice(@RequestParam Map<String, Object> params);
+    @PostMapping(value = "/v5/c/invoice/write_invoice", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    NetSchoolResponse writeInvoice(@RequestBody Map<String, Object> params);
 
 
     /**
@@ -37,7 +37,7 @@ public interface InvoiceInterfaceV6 {
      * @param params
      * @return
      */
-    @GetMapping(value = "invoice_detail")
+    @GetMapping(value = "/v5/c/invoice/invoice_detail")
     NetSchoolResponse InvoiceDetail(@RequestParam Map<String, Object> params);
 
 
@@ -46,7 +46,7 @@ public interface InvoiceInterfaceV6 {
      * @param params
      * @return
      */
-    @PostMapping(value = "send_invoice_to_email")
+    @PostMapping(value = "/v5/c/invoice/send_invoice_to_email", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     NetSchoolResponse SendInvoice2Email(@RequestParam Map<String, Object> params);
 
 
