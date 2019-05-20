@@ -2,7 +2,6 @@ package com.huatu.tiku.course.netschool.api.v7;
 
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.fall.SyllabusServiceFallback;
-import javafx.scene.chart.ValueAxis;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,4 +25,12 @@ public interface SyllabusServiceV7 {
      */
     @GetMapping(value = "/v5/c/syllabus/courseware_info")
     NetSchoolResponse courseWareInfo(@RequestParam Map<String, Object> params);
+
+    /**
+     * 根据课件id & 课件类型 获取大纲课程信息
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/v5/c/class/syllabus_id_class_id_by_courseware_id")
+    NetSchoolResponse obtainSyllabusIdByCourseWareId(@RequestParam Map<String, Object> params);
 }
