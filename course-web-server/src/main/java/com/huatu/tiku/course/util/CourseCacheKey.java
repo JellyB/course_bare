@@ -62,6 +62,15 @@ public class CourseCacheKey {
     private static final String COURSE_WORK_DEAL_DATA = "course_work_deal_v1$%s$%s";
     private static final String COURSE_WORK_RANK_INFO = "course_work_rank_info_v1$%s$%s";
     private static final String COURSE_LIVE_BACK_LOG_INFO = "course_live_back_log_info_v1$%s$%s";
+    /**
+     * 等待处理的课后作业redis key
+     */
+    public static final String COURSE_WORK_REPORT_USERS_TOB_PROCESSED = "course_work_report_users_2bProcessed";
+    /**
+     * 已经处理完后的课后作业 redis key
+     */
+    public static final String COURSE_WORK_REPORT_USERS_ALREADY_PROCESSED = "course_work_report_users_already_processed";
+
 
     /**
      * IOS 内侧版本信息
