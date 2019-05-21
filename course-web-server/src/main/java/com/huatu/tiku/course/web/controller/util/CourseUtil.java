@@ -7,27 +7,36 @@ import com.google.common.collect.Maps;
 import com.huatu.common.exception.BizException;
 import com.huatu.common.spring.event.EventPublisher;
 import com.huatu.common.utils.collection.HashMapBuilder;
+import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.common.LiveStatusEnum;
 import com.huatu.tiku.course.common.TypeEnum;
 import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.common.YesOrNoStatus;
+import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.hbase.api.v1.VideoServiceV1;
+import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.service.v1.CourseExercisesService;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
+import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.course.util.ZTKResponseUtil;
 import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
 import com.huatu.tiku.course.ztk.api.v4.paper.PeriodTestServiceV4;
+import com.huatu.tiku.entity.CourseExercisesProcessLog;
 import com.huatu.tiku.entity.CourseLiveBackLog;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
 import com.huatu.tiku.springboot.basic.reward.event.RewardActionEvent;
+import com.sun.org.apache.xerces.internal.xs.datatypes.ObjectList;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 import tk.mybatis.mapper.entity.Example;
@@ -62,6 +71,15 @@ public class CourseUtil {
 
     @Autowired
     private CourseExercisesService courseExercisesService;
+
+    @Autowired
+    private CourseExercisesProcessLogManager courseExercisesProcessLogManager;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     /**
      * 添加课程播放的时间-用以每日任务处理
@@ -250,7 +268,7 @@ public class CourseUtil {
     }
 
     /**
-     * 课程大纲-售后-添加课后答题结果信息
+     * 课程大纲-售后-添加课后答题结果信息 - 处理直播回放课后作业信息
      * @param response
      * @param userId
      * @param need2Str
@@ -259,21 +277,13 @@ public class CourseUtil {
         StopWatch stopWatch = new StopWatch("courseUtil - addLiveCardExercisesCardInfo");
         stopWatch.start();
         List<Map<String,Object>> list = (List<Map<String,Object>>) response.get("list");
-        Map<Object, Object> defaultMap = HashMapBuilder.newBuilder()
-                .put("status", 0)
-                .put("rcount", 0)
-                .put("wcount", 0)
-                .put("ucount", 0)
-                .put("id", need2Str ? "0" : 0)
-                .build();
-
-        /**
-         * 查询直播回放的直播课件信息
-         */
-        for(Map<String,Object> detail : list){
-            int type = MapUtils.getIntValue(detail, SyllabusInfo.Type);
-            int videoType = MapUtils.getIntValue(detail, SyllabusInfo.VideoType);
-            int courseWareId = MapUtils.getIntValue(detail, SyllabusInfo.CourseWareId);
+        //遍历数据 -> 查询直播回放的直播课件信息 存储当前遍历数据索引 index 和 答题卡 id
+        TreeMap<Integer, Long> answerCardTree = Maps.newTreeMap();
+        for(int i = 0; i < list.size(); i ++){
+            Map<String,Object> currentMap = list.get(i);
+            int type = MapUtils.getIntValue(currentMap, SyllabusInfo.Type);
+            int videoType = MapUtils.getIntValue(currentMap, SyllabusInfo.VideoType);
+            Long courseWareId = MapUtils.getLong(currentMap, SyllabusInfo.CourseWareId);
             TypeEnum typeEnum = TypeEnum.create(type);
             VideoTypeEnum videoTypeEnum = VideoTypeEnum.create(videoType);
             if(typeEnum != TypeEnum.COURSE_WARE){
@@ -282,38 +292,45 @@ public class CourseUtil {
             if(videoTypeEnum != VideoTypeEnum.LIVE_PLAY_BACK){
                 continue;
             }
-            long bjyRoomId = MapUtils.getLongValue(detail, SyllabusInfo.BjyRoomId);
-            CourseLiveBackLog courseLiveBackLog = checkLiveBackWithCourseWork(bjyRoomId, courseWareId);
+            long bjyRoomId = MapUtils.getLongValue(currentMap, SyllabusInfo.BjyRoomId);
+            CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(bjyRoomId, courseWareId);
             if(null == courseLiveBackLog){
                 continue;
             }
-            List<Map<String, Object>> listQuestionByCourseId = courseExercisesService.listQuestionByCourseId(VideoTypeEnum.LIVE.getVideoType(), courseLiveBackLog.getLiveCoursewareId());
-            if (CollectionUtils.isEmpty(listQuestionByCourseId)) {
+            //如果是直播回放 -> 查询直播回放的课后练习数据信息
+            Optional<CourseExercisesProcessLog> optionalCourseExercisesProcessLog = courseExercisesProcessLogManager.getCourseExercisesProcessLogByTypeAndWareId(userId, VideoTypeEnum.LIVE.getVideoType(), courseLiveBackLog.getLiveCoursewareId());
+            if(!optionalCourseExercisesProcessLog.isPresent()){
                 continue;
             }
-            detail.put(SyllabusInfo.AfterCourseNum, listQuestionByCourseId.size());
-            HashMap<String,Object> params = Maps.newHashMap();
-            params.put(SyllabusInfo.PaperCourseType, VideoTypeEnum.LIVE.getVideoType());
-            params.put(SyllabusInfo.PaperCourseId, courseLiveBackLog.getLiveCoursewareId());
-            Object courseExercisesCardInfo = practiceCardServiceV1.getCourseExercisesCardInfo(userId, Lists.newArrayList(params));
-            Object build = ZTKResponseUtil.build(courseExercisesCardInfo);
-            List<Map> courseExercisesCards = (List<Map>) build;
-            if(CollectionUtils.isEmpty(courseExercisesCards)){
-                detail.put("answerCard", defaultMap);
-                continue;
-            }else{
-                Map<String,Object> answerCard = courseExercisesCards.get(0);
-                answerCard.remove("courseId");
-                answerCard.remove("courseType");
-                if(need2Str){
-                    answerCard.computeIfPresent("id", (mapK, mapV) -> String.valueOf(mapV));
-                }
-                detail.put("answerCard", answerCard);
-            }
-            log.info("学习报告 - 直播回放获取答题卡信息:userId:{},courseWareId:{}", userId, courseWareId);
+            answerCardTree.put(i, optionalCourseExercisesProcessLog.get().getCardId());
         }
-        stopWatch.stop();
-        log.info("courseUtil - addLiveCardExercisesCardInfo - userId:{}, 耗时:{}",userId, stopWatch.prettyPrint());
+        if(answerCardTree.isEmpty()){
+            return;
+        }
+        try{
+            String answerCardIds = answerCardTree.values().stream().map(Object::toString).collect(Collectors.joining(","));
+            Object courseExercisesCardInfo = practiceCardServiceV1.getCourseExercisesCardInfoBatch(answerCardIds);
+            Object build = ZTKResponseUtil.build(courseExercisesCardInfo);
+            List<Map<String,Object>> courseExercisesCards = (List<Map<String,Object>>) build;
+            if(CollectionUtils.isEmpty(courseExercisesCards)){
+                return;
+            }
+            log.debug("addLiveCardExercisesCardInfo -> getCourseExercisesCardInfoBatch: cardIds:{}, result.size",answerCardIds, courseExercisesCards.size());
+            Map<Long, Integer> convertTreeMap = answerCardTree.keySet().stream().collect(Collectors.toMap(i -> answerCardTree.get(i),i -> i));
+            for(Map<String, Object> currentMap : courseExercisesCards){
+                Long answerCardId = MapUtils.getLong(currentMap, "id");
+                int index = convertTreeMap.get(answerCardId);
+                Map<String,Object> detail = list.get(index);
+                if(need2Str){
+                    detail.computeIfPresent("id", (mapK, mapV) -> String.valueOf(mapV));
+                }
+                detail.put("answerCard", detail);
+            }
+            stopWatch.stop();
+            log.info("courseUtil - addLiveCardExercisesCardInfo - userId:{}, 耗时:{}",userId, stopWatch.prettyPrint());
+        }catch (Exception e){
+            log.error("addLiveCardExercisesCardInfo caught an error!");
+        }
     }
 
 
@@ -323,13 +340,14 @@ public class CourseUtil {
      * @param liveBackCoursewareId
      * @return
      */
-    private CourseLiveBackLog checkLiveBackWithCourseWork(long bjyRoomId, long liveBackCoursewareId){
+    @Deprecated
+    private Optional<CourseLiveBackLog> checkLiveBackWithCourseWork(long bjyRoomId, long liveBackCoursewareId){
         Example example = new Example(CourseLiveBackLog.class);
         example.and()
                 .andEqualTo("roomId", bjyRoomId)
                 .andEqualTo("liveBackCoursewareId", liveBackCoursewareId);
         CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(bjyRoomId, liveBackCoursewareId);
-        return courseLiveBackLog;
+        return Optional.of(courseLiveBackLog);
     }
 
 
@@ -514,6 +532,7 @@ public class CourseUtil {
 
     /**
      * 录播逻辑处理
+     * 获取答题卡 id --> 调用 paper 获取答题卡信息
      * @param courseWareId
      * @return
      * @throws BizException
@@ -534,5 +553,22 @@ public class CourseUtil {
         stopWatch.stop();
         log.info("addLearnReportInfoV2 - doDotLive, 耗时:{}", stopWatch.prettyPrint());
         return result;
+    }
+
+    /**
+     * 课后作业待处理的 userId
+     * @param userId
+     */
+    public synchronized void dealCourseWorkReport2BProcessed(int userId){
+        String userIdStr = String.valueOf(userId);
+        SetOperations<String,String> setOperations = redisTemplate.opsForSet();
+        //如果用户已经存在当前等待处理的set中不处理
+        if(setOperations.isMember(CourseCacheKey.COURSE_WORK_REPORT_USERS_TOB_PROCESSED, userIdStr)){
+            return;
+        }else{
+            setOperations.add(CourseCacheKey.COURSE_WORK_REPORT_USERS_TOB_PROCESSED, userIdStr);
+            log.debug("deal userId:{} into rabbit mq", userIdStr);
+            rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_WORK_REPORT_USERS_DEAL_QUEUE, userIdStr);
+        }
     }
 }

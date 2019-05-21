@@ -1,12 +1,7 @@
 package com.huatu.tiku.course.service.manager;
 
 import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -18,6 +13,7 @@ import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.entity.CourseLiveBackLog;
+import io.jsonwebtoken.lang.Collections;
 import lombok.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -304,7 +300,7 @@ public class CourseExercisesProcessLogManager {
         }
         result.computeIfPresent("id", (key, value) -> String.valueOf(value));
         try{
-            createCourseWorkAnswerCard(userId, courseType, coursewareId, courseId, syllabusId, result);
+            createCourseWorkAnswerCard(userId, courseType, coursewareId, courseId, syllabusId, result, true);
         }catch (IllegalArgumentException e){
             log.error("IllegalArgumentException:{}, terminal:{}, cv:{}", syllabusId, terminal, cv);
             return null;
@@ -322,8 +318,10 @@ public class CourseExercisesProcessLogManager {
      * @param courseId
      * @param syllabusId
      * @param result
+     * @param isAlert
+     * @param userId
      */
-    public synchronized void createCourseWorkAnswerCard(int userId, Integer courseType, Long coursewareId, Long courseId, Long syllabusId, HashMap<String,Object> result){
+    public synchronized void createCourseWorkAnswerCard(int userId, Integer courseType, Long coursewareId, Long courseId, Long syllabusId, HashMap<String,Object> result, boolean isAlert){
         Long cardId = MapUtils.getLongValue(result, "id");
         int status = MapUtils.getIntValue(result, "status");
 
@@ -345,7 +343,7 @@ public class CourseExercisesProcessLogManager {
              * 新增数据
              */
 
-            CourseExercisesProcessLog newLog = newLog();
+            CourseExercisesProcessLog newLog = newLog(userId, isAlert);
             newLog.setCourseType(courseType);
             newLog.setSyllabusId(syllabusId);
             newLog.setUserId(Long.valueOf(userId));
@@ -445,15 +443,15 @@ public class CourseExercisesProcessLogManager {
      * new courseExercisesProcessLog
      * @return
      */
-    private static CourseExercisesProcessLog newLog(){
+    private static CourseExercisesProcessLog newLog(int userId, boolean isAlert){
         CourseExercisesProcessLog courseExercisesProcessLog = new CourseExercisesProcessLog();
-        courseExercisesProcessLog.setIsAlert(YesOrNoStatus.YES.getCode());
+        courseExercisesProcessLog.setIsAlert(isAlert ? YesOrNoStatus.YES.getCode() : YesOrNoStatus.NO.getCode());
         courseExercisesProcessLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
         courseExercisesProcessLog.setGmtCreate(new Timestamp(System.currentTimeMillis()));
         courseExercisesProcessLog.setDataType(StudyTypeEnum.COURSE_WORK.getOrder());
         courseExercisesProcessLog.setStatus(YesOrNoStatus.YES.getCode());
-        courseExercisesProcessLog.setCreatorId(0L);
-        courseExercisesProcessLog.setModifierId(0L);
+        courseExercisesProcessLog.setCreatorId(isAlert ? 0L : userId);
+        courseExercisesProcessLog.setModifierId(isAlert ? 0L : userId);
         return courseExercisesProcessLog;
     }
 
@@ -832,6 +830,114 @@ public class CourseExercisesProcessLogManager {
 		NetSchoolResponse response = userCourseServiceV6.readPeriod(params);
 		log.info("用户{}已读阶段测试大纲id为{} 返回结果:{}", uname, syllabusId, response.getData());
 	}
+
+    /**
+     * 数据迁移处理逻辑
+     * @param message
+     */
+	public void dealCourseWorkReportUsers(String message){
+	    int userId = Integer.parseInt(message);
+	    String userIdStr = String.valueOf(userId);
+	    String toBProcessed = CourseCacheKey.COURSE_WORK_REPORT_USERS_TOB_PROCESSED;
+	    String alreadyProcessed = CourseCacheKey.COURSE_WORK_REPORT_USERS_ALREADY_PROCESSED;
+	    SetOperations<String, String> toBProcessedOperations = redisTemplate.opsForSet();
+	    SetOperations<String, String> alreadyProcessedOperations = redisTemplate.opsForSet();
+        //如果待处理队列中存在 userId -> 处理
+	    if(toBProcessedOperations.isMember(toBProcessed, userIdStr)){
+            Object courseExercisesCardInfo = practiceCardService.getCourseExercisesAllCardInfo(userId);
+            if(courseExercisesCardInfo == ResponseUtil.DEFAULT_PAGE_EMPTY){
+                log.error("obtain current user's course works failed! userId:{}", userId);
+            }else{
+                try{
+                    Object build = ZTKResponseUtil.build(courseExercisesCardInfo);
+                    List<Map> courseExercisesCards = (List<Map>) build;
+                    dealCourseExercisesCards(userId, courseExercisesCards);
+                    //处理完毕加入已经处理 set 中
+                    alreadyProcessedOperations.add(alreadyProcessed, userIdStr);
+                }catch (Exception e){
+                    log.error("deal course exercises caught an exception:{}", e);
+                }
+            }
+        }else{
+            log.info("2b processed userIds not contains current userId:{}", userIdStr);
+        }
+    }
+
+    /**
+     * 遍历获取到的数据
+     * @param courseExercisesCards
+     */
+    private void dealCourseExercisesCards(int userId, List<Map> courseExercisesCards){
+	    for(Map<String,Object> current : courseExercisesCards){
+	        try{
+                int courseType = MapUtils.getInteger(current, "courseType");
+                Long courseWareId = MapUtils.getLong(current, "courseId");
+                Long cardId = MapUtils.getLong(current, "id");
+                int status = MapUtils.getInteger(current, "status");
+                Map<String,Object> params = Maps.newHashMap();
+                params.put("coursewareId", courseWareId);
+                params.put("coursewareType", courseType);
+                NetSchoolResponse netSchoolResponse = syllabusService.obtainSyllabusIdByCourseWareId(params);
+                if(netSchoolResponse != NetSchoolResponse.DEFAULT){
+                    List<Map<String,Object>> syllabusDataInfo = (List<Map<String,Object>>)netSchoolResponse.getData();
+                    if(!Collections.isEmpty(syllabusDataInfo)){
+                        //处理入库 mysql
+                        dealCourseWorkDataIntoMySQL(userId, courseType, cardId, status, courseWareId, syllabusDataInfo);
+                    }
+                }
+            }catch (Exception e){
+	            log.error("dealCourseExercisesCards caught an exception:{}", e);
+	            throw new IllegalArgumentException("遍历数据请求 php 并入库异常");
+            }
+        }
+    }
+
+    /**
+     * 根据 courseType && courseId 获取课后作业信息
+     * @param userId
+     * @param courseType
+     * @param courseWareId
+     * @return
+     */
+    public Optional<CourseExercisesProcessLog> getCourseExercisesProcessLogByTypeAndWareId(long userId, int courseType, long courseWareId) {
+        Example example = new Example(CourseExercisesProcessLog.class);
+        example.and()
+                .andEqualTo("userId", userId)
+                .andEqualTo("lessonId", courseWareId)
+                .andEqualTo("courseType", courseType)
+                .andEqualTo("status", YesOrNoStatus.YES.getCode());
+
+        example.orderBy("gmtCreate").desc();
+        List<CourseExercisesProcessLog> list = courseExercisesProcessLogMapper.selectByExample(example);
+        if(CollectionUtils.isNotEmpty(list)){
+            return Optional.of(list.get(0));
+        }else{
+            return Optional.ofNullable(null);
+        }
+    }
+
+    /**
+     * 处理数据入库 mySql
+     * @param courseType
+     * @param courseWareId
+     * @param syllabusDataInfo
+     */
+    private void dealCourseWorkDataIntoMySQL(int userId, int courseType, Long cardId, int status, Long courseWareId, List<Map<String,Object>> syllabusDataInfo){
+        HashMap<String, Object> params = Maps.newHashMap();
+        params.put("id", cardId);
+        params.put("status", status);
+        for(Map<String, Object> current : syllabusDataInfo){
+            try{
+                Long courseId = MapUtils.getLong(current, "classId");
+                Long syllabusId = MapUtils.getLong(current, "syllabusId");
+                createCourseWorkAnswerCard(userId, courseType, courseWareId, courseId, syllabusId, params,false);
+                log.debug("处理课后作业入库----> userId:{},courseType:{},courseWareId:{},courseId:{},syllabusId:{},params:{}", userId, courseType, courseWareId, courseId, syllabusId, params);
+            }catch (Exception e){
+                log.error("处理课后作业入库 mysql 异常 userId:{},courseType:{},cardId:{},status:{},courseWareId:{},syllabusDataInfo:{}", userId, courseType, cardId, status, courseWareId, syllabusDataInfo);
+                throw new IllegalArgumentException("处理课后作业入库 mysql 异常");
+            }
+        }
+    }
 
 	@NoArgsConstructor
     @Getter
