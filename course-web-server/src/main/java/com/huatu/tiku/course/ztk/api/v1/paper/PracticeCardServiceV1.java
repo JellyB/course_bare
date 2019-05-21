@@ -2,7 +2,6 @@ package com.huatu.tiku.course.ztk.api.v1.paper;
 
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.ztk.api.fail.paper.PracticeCardServiceV1Fallback;
-import com.huatu.ztk.commons.exception.BizException;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,6 +53,13 @@ public interface PracticeCardServiceV1 {
     );
 
     /**
+     * 查询指定用户所有答题卡信息
+     */
+    @PostMapping(value = "/v2/practices/{userId}/getCourseExercisesAllCardInfo")
+    Object getCourseExercisesAllCardInfo(
+            @RequestHeader("userId") long userId);
+
+    /**
      * 批量查询课后作业答题卡
      * @param ids
      * @return
@@ -92,14 +98,14 @@ public interface PracticeCardServiceV1 {
 
     /**
      * 直播随堂练创建答题卡并保存答案信息
-     * @param terminal
-     * @param subject
      * @param uid
      * @param name
      * @param courseType
      * @param courseId
-     * @param questionId
-     * @param questionInfoList
+     * @param questionIds
+     * @param answers
+     * @param corrects
+     * @param times
      * @return
      */
     @PostMapping(value = "/v2/practices/createAndSaveAnswerCoursePracticeCard")

@@ -92,4 +92,14 @@ public class PracticeCardServiceV1Fallback implements PracticeCardServiceV1 {
 	public NetSchoolResponse getClassExerciseReport(long courseId, int playType, int userId) {
 		return ResponseUtil.DEFAULT_PAGE_EMPTY;
 	}
+
+	/**
+	 * 查询指定用户所有答题卡信息
+	 *
+	 * @param userId
+	 */
+	@Override
+	public Object getCourseExercisesAllCardInfo(long userId) {
+		return ResponseUtil.DEFAULT_PAGE_EMPTY;
+	}
 }

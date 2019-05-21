@@ -28,4 +28,15 @@ public class SyllabusServiceFallback implements SyllabusServiceV7{
     public NetSchoolResponse courseWareInfo(Map<String, Object> params) {
         return NetSchoolResponse.DEFAULT;
     }
+
+    /**
+     * 根据课件id & 课件类型 获取大纲课程信息
+     *
+     * @param params
+     * @return
+     */
+    @Override
+    public NetSchoolResponse obtainSyllabusIdByCourseWareId(Map<String, Object> params) {
+        return NetSchoolResponse.DEFAULT;
+    }
 }
