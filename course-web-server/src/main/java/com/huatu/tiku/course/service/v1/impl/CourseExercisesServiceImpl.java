@@ -32,7 +32,7 @@ public class CourseExercisesServiceImpl extends BaseServiceHelperImpl<CourseExer
     }
 
     @Autowired
-    private QuestionServiceV1 questionService;
+    private QuestionServiceV1 questionServiceV1;
 
     @Autowired
     private CacheUtil cacheUtil;
@@ -62,7 +62,7 @@ public class CourseExercisesServiceImpl extends BaseServiceHelperImpl<CourseExer
                     .map(CourseExercisesQuestion::getQuestionId)
                     .map(String::valueOf)
                     .collect(Collectors.joining(","));
-            Object listQuestionByIds = questionService.listQuestionByIds(questionIds);
+            Object listQuestionByIds = questionServiceV1.listQuestionByIds(questionIds);
             List<Map<String, Object>> result = (List<Map<String, Object>>) ZTKResponseUtil.build(listQuestionByIds);
             log.info("获取课后习题-试题详情 ===》{}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
             return result;
