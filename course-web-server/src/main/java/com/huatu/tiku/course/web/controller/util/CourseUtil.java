@@ -558,12 +558,12 @@ public class CourseUtil {
      */
     public synchronized void dealCourseWorkReport2BProcessed(int userId){
         String userIdStr = String.valueOf(userId);
-        SetOperations<String,String> setOperations = redisTemplate.opsForSet();
+        String alreadyProcessed = CourseCacheKey.COURSE_WORK_REPORT_USERS_ALREADY_PROCESSED;
+        SetOperations<String, String> alreadyProcessedOperations = redisTemplate.opsForSet();
         //如果用户已经存在当前等待处理的set中不处理
-        if(setOperations.isMember(CourseCacheKey.COURSE_WORK_REPORT_USERS_TOB_PROCESSED, userIdStr)){
-            return;
+        if(alreadyProcessedOperations.isMember(alreadyProcessed, userIdStr)){
+            log.info("already processed userId:{}", userIdStr);
         }else{
-            setOperations.add(CourseCacheKey.COURSE_WORK_REPORT_USERS_TOB_PROCESSED, userIdStr);
             log.debug("deal userId:{} into rabbit mq", userIdStr);
             rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_WORK_REPORT_USERS_DEAL_QUEUE, userIdStr);
         }

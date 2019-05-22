@@ -838,28 +838,29 @@ public class CourseExercisesProcessLogManager {
 	public void dealCourseWorkReportUsers(String message){
 	    int userId = Integer.parseInt(message);
 	    String userIdStr = String.valueOf(userId);
-	    String toBProcessed = CourseCacheKey.COURSE_WORK_REPORT_USERS_TOB_PROCESSED;
 	    String alreadyProcessed = CourseCacheKey.COURSE_WORK_REPORT_USERS_ALREADY_PROCESSED;
-	    SetOperations<String, String> toBProcessedOperations = redisTemplate.opsForSet();
 	    SetOperations<String, String> alreadyProcessedOperations = redisTemplate.opsForSet();
-        //如果待处理队列中存在 userId -> 处理
-	    if(toBProcessedOperations.isMember(toBProcessed, userIdStr)){
-            Object courseExercisesCardInfo = practiceCardService.getCourseExercisesAllCardInfo(userId);
-            if(courseExercisesCardInfo == ResponseUtil.DEFAULT_PAGE_EMPTY){
-                log.error("obtain current user's course works failed! userId:{}", userId);
-            }else{
-                try{
-                    Object build = ZTKResponseUtil.build(courseExercisesCardInfo);
-                    List<Map> courseExercisesCards = (List<Map>) build;
-                    dealCourseExercisesCards(userId, courseExercisesCards);
-                    //处理完毕加入已经处理 set 中
-                    alreadyProcessedOperations.add(alreadyProcessed, userIdStr);
-                }catch (Exception e){
-                    log.error("deal course exercises caught an exception:{}", e);
-                }
-            }
+        //如果处理完队列中存在 userId -> 不做处理返回
+        Object courseExercisesCardInfo = practiceCardService.getCourseExercisesAllCardInfo(userId);
+        if(courseExercisesCardInfo == ResponseUtil.DEFAULT_PAGE_EMPTY){
+            log.error("obtain current user's course works failed! userId:{}", userId);
         }else{
-            log.info("2b processed userIds not contains current userId:{}", userIdStr);
+            try{
+                Object build = ZTKResponseUtil.build(courseExercisesCardInfo);
+                List<Map> courseExercisesCards = (List<Map>) build;
+                if(CollectionUtils.isEmpty(courseExercisesCards)){
+                    log.info("current user's course work size is 0 :userId:{}", userIdStr);
+                }else{
+                    synchronized (this){
+                        dealCourseExercisesCards(userId, courseExercisesCards);
+                        //处理完毕加入已经处理 set 中
+                        alreadyProcessedOperations.add(alreadyProcessed, userIdStr);
+                    }
+                }
+            }catch (Exception e){
+                alreadyProcessedOperations.remove(alreadyProcessed, userIdStr);
+                log.error("deal course exercises caught an exception:{}", e);
+            }
         }
     }
 
