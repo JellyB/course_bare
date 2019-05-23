@@ -294,6 +294,12 @@ public class CourseUtil {
             if(null == courseLiveBackLog){
                 continue;
             }
+            //课后作业数目处理
+            List<Map<String, Object>> listQuestionByCourseId = courseExercisesService.listQuestionByCourseId(VideoTypeEnum.LIVE.getVideoType(), courseLiveBackLog.getLiveCoursewareId());
+            if (CollectionUtils.isEmpty(listQuestionByCourseId)) {
+                continue;
+            }
+            currentMap.put(SyllabusInfo.AfterCourseNum, listQuestionByCourseId.size());
             //如果是直播回放 -> 查询直播回放的课后练习数据信息
             Optional<CourseExercisesProcessLog> optionalCourseExercisesProcessLog = courseExercisesProcessLogManager.getCourseExercisesProcessLogByTypeAndWareId(userId, VideoTypeEnum.LIVE.getVideoType(), courseLiveBackLog.getLiveCoursewareId());
             if(!optionalCourseExercisesProcessLog.isPresent()){
@@ -314,14 +320,14 @@ public class CourseUtil {
             }
             log.debug("addLiveCardExercisesCardInfo -> getCourseExercisesCardInfoBatch: cardIds:{}, result.size",answerCardIds, courseExercisesCards.size());
             Map<Long, Integer> convertTreeMap = answerCardTree.keySet().stream().collect(Collectors.toMap(i -> answerCardTree.get(i),i -> i));
-            for(Map<String, Object> currentMap : courseExercisesCards){
-                Long answerCardId = MapUtils.getLong(currentMap, "id");
+            for(Map<String, Object> cardMap : courseExercisesCards){
+                Long answerCardId = MapUtils.getLong(cardMap, "id");
                 int index = convertTreeMap.get(answerCardId);
                 Map<String,Object> detail = list.get(index);
                 if(need2Str){
                     detail.computeIfPresent("id", (mapK, mapV) -> String.valueOf(mapV));
                 }
-                detail.put("answerCard", detail);
+                detail.put("answerCard", cardMap);
             }
             stopWatch.stop();
             log.info("courseUtil - addLiveCardExercisesCardInfo - userId:{}, 耗时:{}",userId, stopWatch.prettyPrint());
