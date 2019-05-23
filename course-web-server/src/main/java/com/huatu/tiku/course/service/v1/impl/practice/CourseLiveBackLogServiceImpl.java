@@ -3,6 +3,7 @@ package com.huatu.tiku.course.service.v1.impl.practice;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.*;
 
 import com.alibaba.fastjson.JSONObject;
@@ -23,6 +24,7 @@ import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.entity.CourseLiveBackLog;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StopWatch;
 import service.impl.BaseServiceHelperImpl;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.weekend.WeekendSqls;
@@ -56,15 +58,7 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 	public CourseLiveBackLog findByRoomIdAndLiveCoursewareId(final Long roomId, final Long coursewareId) {
 		final ValueOperations<String,String> operations = redisTemplate.opsForValue();
 		String key = CourseCacheKey.findByRoomIdAndLiveCourseWareId(roomId, coursewareId);
-		Callable<CourseLiveBackLog> redisTask = () -> {
-			if(redisTemplate.hasKey(key)){
-				String value = operations.get(key);
-				log.info("get live courseWareId from redis:roomId:{}, courseWareId:{}", roomId, coursewareId);
-				return JSONObject.parseObject(value,CourseLiveBackLog.class);
-			}else{
-				return null;
-			}
-		};
+		final CountDownLatch countDownLatch = new CountDownLatch(1);
 
 		Runnable phpTask = () -> {
 			//线程异步获取 courseLiveBackLog 信息，并入库 & 写入redis
@@ -92,6 +86,21 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 			});
 		};
 
+		Callable<CourseLiveBackLog> redisTask = () -> {
+			try {
+				if(redisTemplate.hasKey(key)){
+					String value = operations.get(key);
+					log.info("get live courseWareId from redis:roomId:{}, courseWareId:{}", roomId, coursewareId);
+					CourseLiveBackLog courseLiveBackLog = JSONObject.parseObject(value,CourseLiveBackLog.class);
+					return courseLiveBackLog;
+				}else{
+					return null;
+				}
+			}finally{
+				countDownLatch.countDown();
+			}
+		};
+
 		Callable<CourseLiveBackLog> mysqlTask = () -> {
 			final WeekendSqls<CourseLiveBackLog> courseLiveBackLogWeekendSql = WeekendSqls.<CourseLiveBackLog>custom()
 					.andEqualTo(CourseLiveBackLog::getRoomId, roomId)
@@ -99,28 +108,38 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 			final Example example = Example.builder(CourseLiveBackLog.class).where(courseLiveBackLogWeekendSql).build();
 			List<CourseLiveBackLog> courseLiveBackLogList = selectByExample(example);
 
-			if (CollectionUtils.isNotEmpty(courseLiveBackLogList)) {
-				CourseLiveBackLog courseLiveBackLog = courseLiveBackLogList.get(0);
-				operations.set(key, JSONObject.toJSONString(courseLiveBackLog), 30, TimeUnit.MINUTES);
-				log.info("get live courseWareId from mysql:roomId:{}, courseWareId:{}", roomId, coursewareId);
-				return courseLiveBackLog;
-			}else{
-				executorService.execute(phpTask);
-				return null;
+			try{
+				if (CollectionUtils.isNotEmpty(courseLiveBackLogList)) {
+					CourseLiveBackLog courseLiveBackLog = courseLiveBackLogList.get(0);
+					operations.set(key, JSONObject.toJSONString(courseLiveBackLog), 30, TimeUnit.MINUTES);
+					log.info("get live courseWareId from mysql:roomId:{}, courseWareId:{}", roomId, coursewareId);
+					return courseLiveBackLog;
+				}else{
+					executorService.execute(phpTask);
+					return null;
+				}
+			}finally {
+				countDownLatch.countDown();
 			}
 		};
 
 		Future<CourseLiveBackLog> redisFuture = executorService.submit(redisTask);
 		Future<CourseLiveBackLog> mysqlFuture = executorService.submit(mysqlTask);
+
 		try{
+			countDownLatch.await();
 			if(redisFuture.isDone() || mysqlFuture.isDone()){
 				if(redisFuture.isDone()){
+					log.debug("findByRoomIdAndLiveCourseWareId redis result:{}", redisFuture.get());
 					return redisFuture.get();
 				}else if(mysqlFuture.isDone()){
+					log.debug("findByRoomIdAndLiveCourseWareId mysql result:{}", mysqlFuture.get());
 					return mysqlFuture.get();
 				}else{
 					return null;
 				}
+			}else{
+				log.error("redis & mysql task both is unDone");
 			}
 		}catch (Exception e){
 			log.error("get future task result failed!");
