@@ -59,19 +59,19 @@ public interface InvoiceInterfaceV6 {
             return new InvoiceInterfaceV6() {
                 @Override
                 public NetSchoolResponse writeInvoice(Map<String, Object> params) {
-                    log.error("invoice service v6 write fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("invoice service v6 write fallback,params: {}, fall back reason: {} ",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
                 @Override
                 public NetSchoolResponse InvoiceDetail(Map<String, Object> params) {
-                    log.error("invoice service v6 invoice detail fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("invoice service v6 invoice detail fallback,params: {}, fall back reason: {} ",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
                 @Override
                 public NetSchoolResponse SendInvoice2Email(Map<String, Object> params) {
-                    log.error("invoice service v6 send invoice 2 email fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("invoice service v6 send invoice 2 email fallback,params: {}, fall back reason: {} ",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
             };
