@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Created by lijun on 2018/6/22
  */
-@FeignClient(value = "ztk-service", fallback = PracticeCardServiceV1Fallback.class, path = "/p")
+@FeignClient(value = "ztk-service", fallbackFactory = PracticeCardServiceV1Fallback.class, path = "/p")
 public interface PracticeCardServiceV1 {
 
     /**

@@ -7,16 +7,19 @@ import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.practice.QuestionInfo;
 import com.huatu.tiku.course.bean.practice.QuestionInfoWithStatistics;
+import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.dao.manual.CourseExercisesQuestionsStatisticsMapper;
 import com.huatu.tiku.course.dao.manual.CourseExercisesChoicesStatisticsMapper;
 import com.huatu.tiku.course.dao.manual.CourseExercisesStatisticsMapper;
+import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.course.service.v1.practice.QuestionInfoService;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.ztk.api.v4.user.UserServiceV4;
 import com.huatu.tiku.entity.CourseExercisesChoicesStatistics;
 import com.huatu.tiku.entity.CourseExercisesQuestionsStatistics;
 import com.huatu.tiku.entity.CourseExercisesStatistics;
+import com.huatu.tiku.entity.CourseLiveBackLog;
 import com.huatu.ztk.paper.bean.PracticeCard;
 import com.huatu.ztk.paper.bean.PracticeForCoursePaper;
 import lombok.Builder;
@@ -63,6 +66,9 @@ public class CourseExercisesStatisticsManager {
 
     @Autowired
     private CourseExercisesChoicesStatisticsMapper choicesStatisticsMapper;
+
+    @Autowired
+    private CourseLiveBackLogService courseLiveBackLogService;
 
     @Autowired
     private QuestionInfoService questionInfoService;
@@ -341,6 +347,12 @@ public class CourseExercisesStatisticsManager {
      * @throws BizException
      */
     public Object statistics(List<Map<String,Object>> params) throws BizException{
+        Map<String, Object> defaultResult = Maps.newHashMap();
+
+        defaultResult.put("count", 0);
+        defaultResult.put("percent", new BigDecimal(0d).setScale(1,  BigDecimal.ROUND_HALF_UP).doubleValue());
+        defaultResult.put("id", 0L);
+
         List<Map> result = Lists.newArrayList();
         if(CollectionUtils.isEmpty(params)){
             return result;
@@ -348,21 +360,42 @@ public class CourseExercisesStatisticsManager {
         for (Map<String, Object> param : params) {
             int courseType = MapUtils.getIntValue(param, "courseType");
             long courseId = MapUtils.getLongValue(param, "courseId");
-            // todo 如果是直播回放 - 处理为直播
+            VideoTypeEnum courseTypeEnum = VideoTypeEnum.create(courseType);
+            if(courseTypeEnum == VideoTypeEnum.LIVE_PLAY_BACK){
+                Long bjyRoomId = MapUtils.getLong(param,"bjyRoomId");
+                if(null == bjyRoomId || bjyRoomId.longValue() == 0){
+                    param.putAll(defaultResult);
+                    result.add(param);
+                    continue;
+                }else{
+                    CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(bjyRoomId, courseId);
+                    if(null == courseLiveBackLog){
+                        param.putAll(defaultResult);
+                        result.add(param);
+                        continue;
+                    }else{
+                        courseId = courseLiveBackLog.getLiveCoursewareId();
+                        courseType = VideoTypeEnum.LIVE.getVideoType();
+                    }
+                }
+            }
             Example example = new Example(CourseExercisesStatistics.class);
             example.and().andEqualTo("courseType", courseType)
                     .andEqualTo("courseId", courseId)
                     .andEqualTo("status", YesOrNoStatus.YES.getCode());
             CourseExercisesStatistics statistics = courseExercisesStatisticsMapper.selectOneByExample(example);
             if(null == statistics){
+                param.putAll(defaultResult);
+                result.add(param);
                 continue;
+            }else{
+                double correctCate = ((double) statistics.getCorrects() / (statistics.getCounts() * statistics.getQuestionCount())) * 100;
+                correctCate = new BigDecimal(correctCate).setScale(1,  BigDecimal.ROUND_HALF_UP).doubleValue();
+                param.put("count", statistics.getCounts());
+                param.put("percent", correctCate);
+                param.put("id", statistics.getId());
+                result.add(param);
             }
-            double correctCate = ((double) statistics.getCorrects() / (statistics.getCounts() * statistics.getQuestionCount())) * 100;
-            correctCate = new BigDecimal(correctCate).setScale(1,  BigDecimal.ROUND_HALF_UP).doubleValue();
-            param.put("count", statistics.getCounts());
-            param.put("percent", correctCate);
-            param.put("id", statistics.getId());
-            result.add(param);
         }
        return result;
     }
