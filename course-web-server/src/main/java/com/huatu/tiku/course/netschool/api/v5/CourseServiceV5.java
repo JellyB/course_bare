@@ -17,7 +17,7 @@ import java.util.Map;
  * 课程相关
  * Created by lijun on 2018/6/25
  */
-@FeignClient(value = "o-course-service", path = "/lumenapi", configuration = CourseServiceV5Config.class)
+@FeignClient(value = "o-course-service", path = "/lumenapi", configuration = CourseServiceV5Config.class, fallbackFactory = CourseServiceV5.CourseServiceV5FallbackFactory.class)
 public interface CourseServiceV5 {
 
     /**
@@ -196,7 +196,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse recordClassList(Map<String, Object> params) {
-                    log.error("course service v5 recordClassList fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 recordClassList fallback,params: {}, fall back reason: {} ",params, throwable);
                     return ResponseUtil.DEFAULT_PHP_PAGE_RESPONSE;
                 }
 
@@ -207,7 +207,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse liveClassList(Map<String, Object> params) {
-                    log.error("course service v5 liveClassList fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 liveClassList fallback,params: {}, fall back reason: {} ",params, throwable);
                     return ResponseUtil.DEFAULT_PHP_PAGE_RESPONSE;
                 }
 
@@ -218,7 +218,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse icClassList(Map<String, Object> params) {
-                    log.error("course service v5 icClassList fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 icClassList fallback,params: {}, fall back reason: {} ",params, throwable);
                     return ResponseUtil.DEFAULT_PHP_PAGE_RESPONSE;
                 }
 
@@ -229,7 +229,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse getCommonUserPlay(Map<String, Object> params) {
-                    log.error("course service v5 getCommonUserPlay fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 getCommonUserPlay fallback,params: {}, fall back reason: {} ",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -241,7 +241,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse findTimetable(Map<String, Object> params) {
-                    log.error("course service v5 findTimetable fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 findTimetable fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -252,7 +252,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse findPurchasesTimetable(Map<String, Object> params) {
-                    log.error("course service v5 findPurchasesTimetable fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 findPurchasesTimetable fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -264,7 +264,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse getClassDetailNotLive(Map<String, Object> params) {
-                    log.error("course service v5 getClassDetailNotLive fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 getClassDetailNotLive fallback,params: {}, fall back reason: {} ",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -276,7 +276,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse getClassDetailLive(Map<String, Object> params) {
-                    log.error("course service v5 getClassDetailLive fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 getClassDetailLive fallback,params: {}, fall back reason: {} ",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -287,7 +287,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse getCourseIntroduction(Map<String, Object> params) {
-                    log.error("course service v5 getCourseIntroduction fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 getCourseIntroduction fallback,params: {}, fall back reason: {} ",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -298,7 +298,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse getCourseTeacherInfo(int teacherId) {
-                    log.error("course service v5 getCourseTeacherInfo fallback,params: {}, fall back reason: ",teacherId, throwable);
+                    log.error("course service v5 getCourseTeacherInfo fallback,params: {}, fall back reason: {} ",teacherId, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -311,7 +311,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public String getClassExt(int classId, int terminal) {
-                    log.error("course service v5 getClassExt fallback,params: {}, {}, fall back reason: ",classId, terminal, throwable);
+                    log.error("course service v5 getClassExt fallback,params: {}, {}, fall back reason: {} ",classId, terminal, throwable);
                     return StringUtils.EMPTY;
                 }
 
@@ -322,7 +322,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse deleteCourse(Map<String, Object> params) {
-                    log.error("course service v5 deleteCourse fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 deleteCourse fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -333,7 +333,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse deleteDeepCourse(Map<String, Object> params) {
-                    log.error("course service v5 deleteDeepCourse fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 deleteDeepCourse fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -344,7 +344,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse cancelDeleteCourse(Map<String, Object> params) {
-                    log.error("course service v5 cancelDeleteCourse fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 cancelDeleteCourse fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -355,7 +355,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse postTopCourse(Map<String, Object> params) {
-                    log.error("course service v5 postTopCourse fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 postTopCourse fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -366,7 +366,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse deleteTopCourse(Map<String, Object> params) {
-                    log.error("course service v5 deleteTopCourse fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 deleteTopCourse fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -377,7 +377,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse qqGroupSchedule(Map<String, Object> params) {
-                    log.error("course service v5 qqGroupSchedule fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 qqGroupSchedule fallback,params: {}, fall back reason: {}",params, throwable);
                     // todo 不报错处理
                     return NetSchoolResponse.DEFAULT;
                 }
@@ -389,7 +389,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse lastStudyCourse(Map<String, Object> params) {
-                    log.error("course service v5 lastStudyCourse fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 lastStudyCourse fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -400,7 +400,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse userCourseList(Map<String, Object> params) {
-                    log.error("course service v5 userCourseList fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 userCourseList fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -411,7 +411,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse courseInfoList(String classIds) {
-                    log.error("course service v5 courseInfoList fallback,params: {}, fall back reason: ",classIds, throwable);
+                    log.error("course service v5 courseInfoList fallback,params: {}, fall back reason: {}",classIds, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -422,7 +422,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse chooseCourseWare(Map<String, Object> params) {
-                    log.error("course service v5 chooseCourseWare fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 chooseCourseWare fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -433,7 +433,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse lastPlayLesson(Map<String, Object> params) {
-                    log.error("course service v5 lastPlayLesson fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 lastPlayLesson fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -444,7 +444,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse handouts(Map<String, Object> params) {
-                    log.error("course service v5 handouts fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 handouts fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -455,7 +455,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse appClassActivityDetails(int classIds) {
-                    log.error("course service v5 appClassActivityDetails fallback,params: {}, fall back reason: ",classIds, throwable);
+                    log.error("course service v5 appClassActivityDetails fallback,params: {}, fall back reason: {}",classIds, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -466,7 +466,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse classAuditionList(Map<String, Object> params) {
-                    log.error("course service v5 classAuditionList fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("course service v5 classAuditionList fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -477,7 +477,7 @@ public interface CourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse classSensors(int classIds) {
-                    log.error("course service v5 classSensors fallback,params: {}, fall back reason: ",classIds, throwable);
+                    log.error("course service v5 classSensors fallback,params: {}, fall back reason: {}",classIds, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
             };
