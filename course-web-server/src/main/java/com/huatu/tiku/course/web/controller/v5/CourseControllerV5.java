@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.web.controller.v5;
 
 import com.huatu.common.SuccessMessage;
+import com.huatu.common.exception.BizException;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.AreaConstants;
@@ -139,7 +140,7 @@ public class CourseControllerV5 {
             @RequestParam int parentId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int pageSize
-    ) {
+    ) throws BizException{
         //return courseServiceBiz.findTimetable(classId, parentId, page, pageSize);
         HashMap<String, Object> map = LocalMapParamHandler.get();
         //添加答题信息
@@ -195,7 +196,7 @@ public class CourseControllerV5 {
             @RequestParam int parentId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int pageSize
-    ) {
+    ) throws BizException{
         HashMap<String, Object> map = LocalMapParamHandler.get();
         StopWatch stopwatch = new StopWatch("pc 端请求课后作业超时时间统计");
         stopwatch.start("findPurchasesTimetable");
@@ -269,7 +270,7 @@ public class CourseControllerV5 {
     @GetMapping("/{classId}/getCourseIntroduction")
     public Object getCourseIntroduction(
             @RequestParam(defaultValue = "0") String collageActivityId
-    ) {
+    ) throws BizException{
         HashMap<String, Object> map = LocalMapParamHandler.get();
         return ResponseUtil.build(courseService.getCourseIntroduction(map));
     }
@@ -278,7 +279,7 @@ public class CourseControllerV5 {
      * 课程所有老师介绍
      */
     @GetMapping("/{classId}/getCourseTeacherInfo")
-    public Object getCourseTeacherInfo(@PathVariable("classId") int classId) {
+    public Object getCourseTeacherInfo(@PathVariable("classId") int classId) throws BizException{
         return ResponseUtil.build(courseService.getCourseTeacherInfo(classId));
     }
 
@@ -349,7 +350,7 @@ public class CourseControllerV5 {
      */
     @LocalMapParam(checkToken = true)
     @GetMapping(value = "{classId}/getQqGroupSchedule")
-    public Object getQqGroupSchedule() {
+    public Object getQqGroupSchedule() throws BizException {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         return courseDegradeService.qqGroupSchedule(map);
     }
@@ -362,7 +363,7 @@ public class CourseControllerV5 {
     public Object getChooseCourseWare(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize
-    ) {
+    ) throws BizException {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         return ResponseUtil.build(courseService.chooseCourseWare(map));
     }
@@ -372,7 +373,7 @@ public class CourseControllerV5 {
      */
     @LocalMapParam(checkToken = true)
     @GetMapping(value = "/{netClassId}/lastPlayLesson")
-    public Object lastPlayLesson() {
+    public Object lastPlayLesson() throws BizException{
         HashMap<String, Object> map = LocalMapParamHandler.get();
         return courseDegradeService.lastPlayLesson(map);
     }
@@ -391,7 +392,7 @@ public class CourseControllerV5 {
      * 获取课程促销详情
      */
     @GetMapping("{classId}/appClassActivityDetails")
-    public Object appClassActivityDetails(@PathVariable int classId) {
+    public Object appClassActivityDetails(@PathVariable int classId) throws BizException{
         return courseServiceBiz.appClassActivityDetails(classId);
     }
 
@@ -400,7 +401,7 @@ public class CourseControllerV5 {
      */
     @LocalMapParam(checkToken = true)
     @GetMapping("/{netClassId}/classAuditionList")
-    public Object classAuditionList(@PathVariable int netClassId) {
+    public Object classAuditionList(@PathVariable int netClassId) throws BizException{
         HashMap<String, Object> map = LocalMapParamHandler.get();
         return ResponseUtil.build(courseService.classAuditionList(map));
     }
@@ -409,7 +410,7 @@ public class CourseControllerV5 {
      * 课程埋点数据
      */
     @GetMapping("/{netClassId}/classSensors")
-    public Object classSensors(@PathVariable int netClassId) {
+    public Object classSensors(@PathVariable int netClassId) throws BizException {
         return ResponseUtil.build(courseService.classSensors(netClassId));
     }
 

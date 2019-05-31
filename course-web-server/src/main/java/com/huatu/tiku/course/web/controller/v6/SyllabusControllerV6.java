@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.web.controller.v6;
 
+import com.huatu.common.exception.BizException;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
@@ -72,7 +73,7 @@ public class SyllabusControllerV6 {
     public Object syllabusTeachers(@RequestHeader(value = "terminal") int terminal,
                                    @PathVariable(value = "netClassId") int netClassId,
                                    @RequestParam(defaultValue = "0") int classNodeId,
-                                   @RequestParam(defaultValue = "0") int stageNodeId) {
+                                   @RequestParam(defaultValue = "0") int stageNodeId) throws BizException{
         HashMap<String, Object> map = LocalMapParamHandler.get();
         return ResponseUtil.build(syllabusService.syllabusTeachers(map));
     }
@@ -142,7 +143,7 @@ public class SyllabusControllerV6 {
             @RequestParam(defaultValue = "0") int onlyTrial,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int pageSize
-    ) {
+    ) throws BizException {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         //添加答题信息
         Object timeTable = ResponseUtil.build(syllabusService.classSyllabus(map));
