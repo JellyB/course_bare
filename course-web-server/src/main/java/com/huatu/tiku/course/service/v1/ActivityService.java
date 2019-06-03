@@ -11,5 +11,5 @@ public interface ActivityService {
 	 * 618活动签到送图币
 	 * @param uname
 	 */
-	void signGiveCoin(String uname);
+	int signGiveCoin(String uname);
 }

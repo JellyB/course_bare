@@ -16,6 +16,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.huatu.tiku.common.bean.reward.RewardMessage;
 import com.huatu.tiku.common.consts.RabbitConsts;
+import com.huatu.tiku.course.common.ActivityStatusEnum;
 import com.huatu.tiku.course.service.v1.ActivityService;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
 
@@ -48,7 +49,7 @@ public class ActivityServiceImpl implements ActivityService {
 			});
 
 	@Override
-	public void signGiveCoin(String uname) {
+	public int signGiveCoin(String uname) {
 
 		try {
 			JSONObject configObject = configObjectCache.get("618");
@@ -64,13 +65,18 @@ public class ActivityServiceImpl implements ActivityService {
 					rabbitTemplate.convertAndSend("", RabbitConsts.QUEUE_REWARD_ACTION, msg);
 					setOperations.add(currentKey, uname);
 					redisTemplate.expire(currentKey, 7, TimeUnit.DAYS);
+					return ActivityStatusEnum.SUCCESS.getCode();
 				} else {
 					log.info("618活动用户uname:{}已经赠送过图币{},bizId为:{}", uname, coin, currentKey);
+					return ActivityStatusEnum.SIGNED.getCode();
+
 				}
 			}
+			return ActivityStatusEnum.END.getCode();
 		} catch (Exception e) {
 			log.error("signGiveCoin error:{}", e);
 		}
+		return ActivityStatusEnum.ERROR.getCode();
 	}
 
 }
