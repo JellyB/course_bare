@@ -12,4 +12,11 @@ public interface ActivityService {
 	 * @param uname
 	 */
 	int signGiveCoin(String uname);
+
+	/**
+	 * 签到记录
+	 * @param uname
+	 * @return
+	 */
+	Object signList(String uname);
 }

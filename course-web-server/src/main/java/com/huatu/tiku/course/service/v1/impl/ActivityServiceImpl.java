@@ -1,6 +1,9 @@
 package com.huatu.tiku.course.service.v1.impl;
 
 import java.time.LocalDate;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -14,6 +17,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Maps;
 import com.huatu.tiku.common.bean.reward.RewardMessage;
 import com.huatu.tiku.common.consts.RabbitConsts;
 import com.huatu.tiku.course.common.ActivityStatusEnum;
@@ -77,6 +81,36 @@ public class ActivityServiceImpl implements ActivityService {
 			log.error("signGiveCoin error:{}", e);
 		}
 		return ActivityStatusEnum.ERROR.getCode();
+	}
+
+	/**
+	 * 签到记录
+	 */
+	@Override
+	public Object signList(String uname) {
+		try {
+			final SetOperations<String, String> setOperations = redisTemplate.opsForSet();
+			JSONObject configObject = configObjectCache.get("618");
+			Set<String> it = configObject.keySet();
+			Map<String, Integer> signMap = Maps.newHashMap();
+			it.forEach(key -> {
+				LocalDate activityDate = LocalDate.parse(key);
+				if (setOperations.isMember(key, uname)) {
+					// 已经签到
+					signMap.put(key, ActivityStatusEnum.SIGNED.getCode());
+				} else if (LocalDate.now().compareTo(activityDate) > 0) {
+					// 已过期
+					signMap.put(key, ActivityStatusEnum.END.getCode());
+				} else {
+					// 未签到
+					signMap.put(key, ActivityStatusEnum.UNDO.getCode());
+				}
+			});
+			return signMap;
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
+		return Maps.newHashMap();
 	}
 
 }

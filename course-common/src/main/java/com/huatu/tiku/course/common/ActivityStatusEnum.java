@@ -13,7 +13,9 @@ public enum ActivityStatusEnum {
 
 	ERROR(-1, "签到异常"),
 
-	END(2, "活动结束");
+	END(2, "活动结束"),
+	
+	UNDO(3, "未签到");
 
 	private final Integer code;
 	private final String des;
