@@ -124,6 +124,13 @@ public interface UserCourseServiceV6 {
 	 */
 	@PostMapping(value = "/v5/c/class/unfinish_exam_status_record")
 	NetSchoolResponse readPeriod(@RequestParam Map<String, Object> params);
-	
+
+	/**
+	 * 一对一信息提交
+	 * @param p
+	 * @return
+	 */
+	@PostMapping(value = "/v5/c/user/one_to_one")
+	NetSchoolResponse one2One(@RequestParam(value = "p") String p);
 	
 }
