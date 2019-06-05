@@ -62,7 +62,7 @@ public class PromoteCoreServiceV3FallbackFactory implements Fallback<PromoteCore
 
             @Override
             public NetSchoolResponse payOrder(String p) {
-                log.error("支付订单异常:请求参数 --- p : {}, fallback reason: {}", p, throwable);
+                log.error("支付订单异常:请求参数 --- p : {}, fallback reason: {}, message:{}", p, throwable, throwable.getMessage());
                 return NetSchoolResponse.DEFAULT_ERROR;
             }
         }
