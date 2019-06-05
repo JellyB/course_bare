@@ -44,7 +44,7 @@ public class ActivityController {
 	 * @param cv
 	 * @return
 	 */
-	@GetMapping("/list")
+	@GetMapping("/sign/list")
 	public Object activitySignList(@Token UserSession userSession, @RequestHeader(value = "terminal") Integer terminal,
 			@RequestHeader(value = "cv") String cv) {
 		return activityService.signList(userSession.getUname());
