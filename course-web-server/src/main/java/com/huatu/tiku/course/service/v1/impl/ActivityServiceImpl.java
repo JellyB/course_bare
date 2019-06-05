@@ -43,6 +43,10 @@ public class ActivityServiceImpl implements ActivityService {
 
 	@Autowired
 	private RabbitTemplate rabbitTemplate;
+	
+	private String CACHENAME="618";
+	
+	private String CACHEPREFIX="activity_618_";
 
 	private LoadingCache<Object, JSONObject> configObjectCache = CacheBuilder.newBuilder().maximumSize(10)
 			.expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<Object, JSONObject>() {
@@ -56,19 +60,20 @@ public class ActivityServiceImpl implements ActivityService {
 	public int signGiveCoin(String uname) {
 
 		try {
-			JSONObject configObject = configObjectCache.get("618");
+			JSONObject configObject = configObjectCache.get(CACHENAME);
 			String currentKey = LocalDate.now().toString();
 			Integer coin = (Integer) configObject.get(currentKey);
 			if (coin != null) {
+				String activityKey = CACHEPREFIX+currentKey;
 				final SetOperations<String, String> setOperations = redisTemplate.opsForSet();
-				if (!setOperations.isMember(currentKey, uname)) {
+				if (!setOperations.isMember(activityKey, uname)) {
 					RewardMessage msg = RewardMessage.builder().gold(coin)
 							.action(RewardAction.ActionType.ACTIVTY.name()).experience(1).bizId(currentKey).uname(uname)
 							.timestamp(System.currentTimeMillis()).build();
 					log.info("618活动用户uname:{}赠送图币{},bizId为:{}", uname, coin, currentKey);
 					rabbitTemplate.convertAndSend("", RabbitConsts.QUEUE_REWARD_ACTION, msg);
-					setOperations.add(currentKey, uname);
-					redisTemplate.expire(currentKey, 7, TimeUnit.DAYS);
+					setOperations.add(activityKey, uname);
+					redisTemplate.expire(activityKey, 7, TimeUnit.DAYS);
 					return ActivityStatusEnum.SUCCESS.getCode();
 				} else {
 					log.info("618活动用户uname:{}已经赠送过图币{},bizId为:{}", uname, coin, currentKey);
@@ -90,12 +95,13 @@ public class ActivityServiceImpl implements ActivityService {
 	public Object signList(String uname) {
 		try {
 			final SetOperations<String, String> setOperations = redisTemplate.opsForSet();
-			JSONObject configObject = configObjectCache.get("618");
+			JSONObject configObject = configObjectCache.get(CACHENAME);
 			Set<String> it = configObject.keySet();
 			Map<String, Integer> signMap = Maps.newHashMap();
 			it.forEach(key -> {
+				String activityKey = CACHEPREFIX+key;
 				LocalDate activityDate = LocalDate.parse(key);
-				if (setOperations.isMember(key, uname)) {
+				if (setOperations.isMember(activityKey, uname)) {
 					// 已经签到
 					signMap.put(key, ActivityStatusEnum.SIGNED.getCode());
 				} else if (LocalDate.now().compareTo(activityDate) > 0) {
