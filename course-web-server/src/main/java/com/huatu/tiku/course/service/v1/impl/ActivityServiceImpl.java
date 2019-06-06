@@ -43,10 +43,10 @@ public class ActivityServiceImpl implements ActivityService {
 
 	@Autowired
 	private RabbitTemplate rabbitTemplate;
-	
-	private String CACHENAME="618";
-	
-	private String CACHEPREFIX="activity_618_";
+
+	private String CACHENAME = "618";
+
+	private String CACHEPREFIX = "activity_618_";
 
 	private LoadingCache<Object, JSONObject> configObjectCache = CacheBuilder.newBuilder().maximumSize(10)
 			.expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<Object, JSONObject>() {
@@ -58,13 +58,12 @@ public class ActivityServiceImpl implements ActivityService {
 
 	@Override
 	public int signGiveCoin(String uname) {
-
 		try {
 			JSONObject configObject = configObjectCache.get(CACHENAME);
 			String currentKey = LocalDate.now().toString();
 			Integer coin = (Integer) configObject.get(currentKey);
 			if (coin != null) {
-				String activityKey = CACHEPREFIX+currentKey;
+				String activityKey = CACHEPREFIX + currentKey;
 				final SetOperations<String, String> setOperations = redisTemplate.opsForSet();
 				if (!setOperations.isMember(activityKey, uname)) {
 					RewardMessage msg = RewardMessage.builder().gold(coin)
@@ -99,7 +98,7 @@ public class ActivityServiceImpl implements ActivityService {
 			Set<String> it = configObject.keySet();
 			Map<String, Integer> signMap = Maps.newHashMap();
 			it.forEach(key -> {
-				String activityKey = CACHEPREFIX+key;
+				String activityKey = CACHEPREFIX + key;
 				LocalDate activityDate = LocalDate.parse(key);
 				if (setOperations.isMember(activityKey, uname)) {
 					// 已经签到
