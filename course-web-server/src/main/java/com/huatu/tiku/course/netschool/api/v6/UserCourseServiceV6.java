@@ -139,7 +139,7 @@ public interface UserCourseServiceV6 {
 	 * @param p
 	 * @return
 	 */
-	@GetMapping
+	@GetMapping(value = "/v5/c/user/one_to_one")
 	NetSchoolResponse obtainOne2One(@RequestParam(value = "p") String p);
 
 }
