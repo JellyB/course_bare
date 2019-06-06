@@ -3,7 +3,6 @@ package com.huatu.tiku.course.netschool.api.fall;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
-import javafx.beans.binding.ObjectExpression;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
@@ -181,4 +180,26 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
 	public NetSchoolResponse readPeriod(Map<String, Object> params) {
 		 return NetSchoolResponse.DEFAULT;
 	}
+
+    /**
+     * 一对一信息提交
+     *
+     * @param p
+     * @return
+     */
+    @Override
+    public NetSchoolResponse one2One(String p) {
+        return NetSchoolResponse.DEFAULT;
+    }
+
+    /**
+     * 一对一信息获取
+     *
+     * @param p
+     * @return
+     */
+    @Override
+    public NetSchoolResponse obtainOne2One(String p) {
+        return NetSchoolResponse.DEFAULT;
+    }
 }

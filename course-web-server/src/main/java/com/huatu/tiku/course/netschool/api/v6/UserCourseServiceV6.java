@@ -132,5 +132,14 @@ public interface UserCourseServiceV6 {
 	 */
 	@PostMapping(value = "/v5/c/user/one_to_one")
 	NetSchoolResponse one2One(@RequestParam(value = "p") String p);
-	
+
+
+	/**
+	 * 一对一信息获取
+	 * @param p
+	 * @return
+	 */
+	@GetMapping
+	NetSchoolResponse obtainOne2One(@RequestParam(value = "p") String p);
+
 }

@@ -22,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.jnlp.IntegrationService;
 import java.util.Map;
 
 /**
@@ -455,6 +454,24 @@ public class UserCourseControllerV6 {
 
         Map<String,Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = userCourseService.one2One(RequestUtil.encrypt(params));
+        return ResponseUtil.build(netSchoolResponse);
+    }
+
+
+    /**
+     * 一对一信息获取
+     * @param OrderNum
+     * @param rid
+     * @return
+     * @throws BizException
+     */
+    @LocalMapParam
+    @PostMapping(value = "one2One")
+    public Object obtainOne2One(@RequestParam(value = "OrderNum") String OrderNum,
+                                @RequestParam(value = "rid") String rid) throws BizException{
+
+        Map<String,Object> params = LocalMapParamHandler.get();
+        NetSchoolResponse netSchoolResponse = userCourseService.obtainOne2One(RequestUtil.encrypt(params));
         return ResponseUtil.build(netSchoolResponse);
     }
 }
