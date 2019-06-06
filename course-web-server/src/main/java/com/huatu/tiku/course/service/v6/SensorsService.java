@@ -1,17 +1,14 @@
 package com.huatu.tiku.course.service.v6;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
+import com.huatu.tiku.course.consts.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Maps;
 import com.huatu.common.consts.SensorsEventEnum;
-import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.vo.CoursePracticeReportSensorsVo;
-import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.course.ztk.api.v4.user.UserServiceV4;
 import com.sensorsdata.analytics.javasdk.SensorsAnalytics;
 
@@ -66,6 +63,28 @@ public class SensorsService {
 				sensorsAnalytics.track("9999", false, SensorsEventEnum.COURSE_PRACTICE_QUESTION_INFO.getCode(),
 						properties);
 				sensorsAnalytics.flush();
+			//}
+		} catch (Exception e) {
+			log.error("reportCoursePracticeData error:{}", e);
+		}
+
+	}
+
+	/**
+	 * 课程送金币活动上报
+	 * @param userInfo
+	 */
+	public void reportActivitySign(UserInfo userInfo) {
+		try {
+			log.info("course coins activity report start");
+			Map<String, Object> properties = Maps.newHashMap();
+
+			properties.put("coins", userInfo.getCoins());
+			properties.put("time", userInfo.getTime());
+			log.info("reportCoursePracticeData properties:{}", properties);
+			sensorsAnalytics.track(userInfo.getUcId(), false, SensorsEventEnum.COURSE_ACTIVITY_COINS.getCode(),
+					properties);
+			sensorsAnalytics.flush();
 			//}
 		} catch (Exception e) {
 			log.error("reportCoursePracticeData error:{}", e);

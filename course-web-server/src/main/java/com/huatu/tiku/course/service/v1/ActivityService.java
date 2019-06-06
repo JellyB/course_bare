@@ -9,9 +9,10 @@ public interface ActivityService {
 
 	/**
 	 * 618活动签到送图币
-	 * @param uname
+	 * @param userName
+	 * @param ucId
 	 */
-	int signGiveCoin(String uname);
+	int signGiveCoin(String userName, String ucId);
 
 	/**
 	 * 签到记录

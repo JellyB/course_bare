@@ -33,7 +33,9 @@ public class ActivityController {
 	@PostMapping("/sign")
 	public Object activitySign(@Token UserSession userSession, @RequestHeader(value = "terminal") Integer terminal,
 			@RequestHeader(value = "cv") String cv) {
-		return activityService.signGiveCoin(userSession.getUname());
+		String userName = userSession.getUname();
+		String ucId = userSession.getUcId();
+		return activityService.signGiveCoin(userName, ucId);
 	}
 
 	/**
