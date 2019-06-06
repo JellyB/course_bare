@@ -166,7 +166,9 @@ public class ActivityServiceImpl implements ActivityService {
 		final HashOperations<String,String, String> hashOperations = redisTemplate.opsForHash();
 		Set<String> strings = setOperations.members(activityKey);
 		List<String> result = hashOperations.multiGet(CACHE_PREFIX_HASH_KEY, strings);
-		//todo
-
+		for(String str : result){
+			UserInfo userInfo = JSONObject.parseObject(str, UserInfo.class);
+			sensorsService.reportActivitySign(userInfo);
+		}
 	}
 }
