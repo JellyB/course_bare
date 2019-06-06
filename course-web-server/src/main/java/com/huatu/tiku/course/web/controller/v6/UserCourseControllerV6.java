@@ -466,7 +466,7 @@ public class UserCourseControllerV6 {
      * @throws BizException
      */
     @LocalMapParam
-    @PostMapping(value = "one2One")
+    @GetMapping(value = "one2One")
     public Object obtainOne2One(@RequestParam(value = "OrderNum") String OrderNum,
                                 @RequestParam(value = "rid") String rid) throws BizException{
 
