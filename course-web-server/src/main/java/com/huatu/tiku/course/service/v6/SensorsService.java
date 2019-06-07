@@ -78,6 +78,7 @@ public class SensorsService {
 	 * @param activityUserInfoList
 	 */
 	public void reportActivitySign(List<ActivityUserInfo> activityUserInfoList) {
+		log.info("start deal activity sign data:{}", activityUserInfoList.size());
 		if(CollectionUtils.isEmpty(activityUserInfoList)){
 			return;
 		}

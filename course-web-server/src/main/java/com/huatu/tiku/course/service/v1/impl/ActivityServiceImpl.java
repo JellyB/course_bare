@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import com.huatu.common.SuccessMessage;
@@ -16,6 +17,7 @@ import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.course.ztk.api.v4.user.UserServiceV4;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -158,6 +160,7 @@ public class ActivityServiceImpl implements ActivityService {
 	@Override
 	public Object report(String userName, int terminal, String cv, String currentKey) {
 		try{
+			log.info("数据上报处理userName:{}, terminal:{},cv:{},currentKey:{}",userName, terminal,cv,currentKey);
 			String activityKey = CACHEPREFIX + currentKey;
 			String activityHashKey = CACHE_PREFIX_HASH_KEY + currentKey;
 			final SetOperations<String, String> setOperations = redisTemplate.opsForSet();
@@ -165,11 +168,12 @@ public class ActivityServiceImpl implements ActivityService {
 			Set<String> userNames = setOperations.members(activityKey);
 			log.info("开始处理当前时间:{}的任务,需要处理:{}条数据", currentKey, userNames.size());
 			List<String> result = hashOperations.multiGet(activityHashKey, userNames);
+			List<String> filterResult = result.stream().filter(item -> StringUtils.isNotEmpty(item)).collect(Collectors.toList());
 			List<ActivityUserInfo> activityUserInfos = Lists.newArrayList();
 			String message;
-			if(CollectionUtils.isEmpty(result) && CollectionUtils.isEmpty(userNames)){
+			if(CollectionUtils.isEmpty(filterResult) && CollectionUtils.isEmpty(userNames)){
 				message = "hash key:" + activityHashKey + "中没有需要处理的数据";
-			}else if(CollectionUtils.isEmpty(result) && CollectionUtils.isNotEmpty(userNames)){
+			}else if(CollectionUtils.isEmpty(filterResult) && CollectionUtils.isNotEmpty(userNames)){
 				activityUserInfos.addAll(dealAbnormalActivityUserInfo(userNames, currentKey));
 				message = "处理非正常数据" + activityHashKey + "数据量:" + userNames.size();
 			}else{
@@ -231,8 +235,14 @@ public class ActivityServiceImpl implements ActivityService {
 			// 2 获取 ucId
 			NetSchoolResponse ucIdResponse = userServiceV4.getUserLevelBatch(userIds);
 			List<Map<String, Object>> userInfoList = (List<Map<String, Object>>) ucIdResponse.getData();
+			List<Integer> mobileIsNull = Lists.newArrayList();
 			for(Map<String, Object> map : userInfoList){
 				String mobile = MapUtils.getString(map, "mobile");
+				if(null == mobile || mobile.equals("null")){
+					Integer id = MapUtils.getInteger(map, "id");
+					mobileIsNull.add(id);
+					continue;
+				}
 				String uname = MapUtils.getString(map, "name");
 				ActivityUserInfo activityUserInfo = ActivityUserInfo.builder()
 						.time(currentKey + " 00:00:00")
@@ -243,6 +253,7 @@ public class ActivityServiceImpl implements ActivityService {
 						.build();
 				activityUserInfos.add(activityUserInfo);
 			}
+			log.error("上报用户手机号为空的数据,待处理size:{},手机号为空size:{},手机号为空userId:{}", userInfoList.size(), mobileIsNull.size(), mobileIsNull);
 			log.info("request 2 step obtain activityUserInfos.size:{}", activityUserInfos.size());
 			return activityUserInfos;
 		}catch (Exception e){
