@@ -78,7 +78,8 @@ public class SensorsService {
 	 * @param activityUserInfoList
 	 */
 	public void reportActivitySign(List<ActivityUserInfo> activityUserInfoList) {
-		log.info("start deal activity sign data:{}", activityUserInfoList.size());
+		log.info("start deal activity sign data.size:{}", activityUserInfoList.size());
+		log.info("start deal activity sign data.content:{}", activityUserInfoList);
 		if(CollectionUtils.isEmpty(activityUserInfoList)){
 			return;
 		}
@@ -89,7 +90,7 @@ public class SensorsService {
 				properties.put("coins", userInfo.getCoins());
 				properties.put("time", userInfo.getTime());
 				log.info(">>>>>>>>>>> deal userName:{}, activity properties:{}", userInfo.getUname(), properties);
-				sensorsAnalytics.track(userInfo.getUcId(), false, SensorsEventEnum.COURSE_ACTIVITY_COINS.getCode(),
+				sensorsAnalytics.track(userInfo.getUcId(), true, SensorsEventEnum.COURSE_ACTIVITY_COINS.getCode(),
 						properties);
 				sensorsAnalytics.flush();
 			}
