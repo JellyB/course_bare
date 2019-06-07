@@ -1,8 +1,11 @@
 package com.huatu.tiku.course.service.v6;
 
+import java.util.List;
 import java.util.Map;
 
-import com.huatu.tiku.course.consts.UserInfo;
+import com.alibaba.fastjson.JSONObject;
+import com.huatu.tiku.course.consts.ActivityUserInfo;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -72,24 +75,25 @@ public class SensorsService {
 
 	/**
 	 * 课程送金币活动上报
-	 * @param userInfo
+	 * @param activityUserInfoList
 	 */
-	public void reportActivitySign(UserInfo userInfo) {
-		try {
-			log.info("course coins activity report start");
-			Map<String, Object> properties = Maps.newHashMap();
-
-			properties.put("coins", userInfo.getCoins());
-			properties.put("time", userInfo.getTime());
-			log.info("reportCoursePracticeData properties:{}", properties);
-			sensorsAnalytics.track(userInfo.getUcId(), false, SensorsEventEnum.COURSE_ACTIVITY_COINS.getCode(),
-					properties);
-			sensorsAnalytics.flush();
-			//}
-		} catch (Exception e) {
-			log.error("reportCoursePracticeData error:{}", e);
+	public void reportActivitySign(List<ActivityUserInfo> activityUserInfoList) {
+		if(CollectionUtils.isEmpty(activityUserInfoList)){
+			return;
 		}
-
+		try {
+			for(ActivityUserInfo userInfo : activityUserInfoList){
+				log.info(">>>>>>>>>> deal activity userInfo:{}", JSONObject.toJSONString(userInfo));
+				Map<String, Object> properties = Maps.newHashMap();
+				properties.put("coins", userInfo.getCoins());
+				properties.put("time", userInfo.getTime());
+				log.info(">>>>>>>>>>> deal userName:{}, activity properties:{}", userInfo.getUname(), properties);
+				sensorsAnalytics.track(userInfo.getUcId(), false, SensorsEventEnum.COURSE_ACTIVITY_COINS.getCode(),
+						properties);
+				sensorsAnalytics.flush();
+			}
+		} catch (Exception e) {
+			log.error("课程送金币活动上报异常:用户信息{},异常信息:{}",JSONObject.toJSONString(activityUserInfoList), e);
+		}
 	}
-
 }

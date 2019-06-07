@@ -20,4 +20,14 @@ public interface ActivityService {
 	 * @return
 	 */
 	Object signList(String uname);
+
+	/**
+	 * 活动数据上报
+	 * @param userName
+	 * @param terminal
+	 * @param cv
+	 * @param day
+	 * @return
+	 */
+	Object report(String userName, int terminal, String cv, String day);
 }

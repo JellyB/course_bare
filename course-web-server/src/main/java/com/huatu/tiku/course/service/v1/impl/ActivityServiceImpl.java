@@ -2,17 +2,20 @@ package com.huatu.tiku.course.service.v1.impl;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import com.huatu.tiku.course.consts.UserInfo;
+import com.google.common.collect.Lists;
+import com.huatu.common.SuccessMessage;
+import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.consts.ActivityUserInfo;
+import com.huatu.tiku.course.netschool.api.UserAccountServiceV1;
 import com.huatu.tiku.course.service.v6.SensorsService;
+import com.huatu.tiku.course.util.ResponseUtil;
+import com.huatu.tiku.course.ztk.api.v4.user.UserServiceV4;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,11 +58,15 @@ public class ActivityServiceImpl implements ActivityService {
 	@Autowired
 	private SensorsService sensorsService;
 
+	@Autowired
+	private UserAccountServiceV1 userAccountServiceV1;
+
+	@Autowired
+	private UserServiceV4 userServiceV4;
+
 	private String CACHENAME = "618";
 
 	private String CACHEPREFIX = "activity_618_";
-
-	private String CACHE_PREFIX_EXIST = "activity_618_exist";
 
 	private String CACHE_PREFIX_HASH_KEY = "activity_618_hash_key";
 
@@ -79,6 +86,7 @@ public class ActivityServiceImpl implements ActivityService {
 			Integer coin = (Integer) configObject.get(currentKey);
 			if (coin != null) {
 				String activityKey = CACHEPREFIX + currentKey;
+				String activityHashKey = CACHE_PREFIX_HASH_KEY + currentKey;
 				final SetOperations<String, String> setOperations = redisTemplate.opsForSet();
 				final HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
 				if (!setOperations.isMember(activityKey, userName)) {
@@ -88,9 +96,10 @@ public class ActivityServiceImpl implements ActivityService {
 					rabbitTemplate.convertAndSend("", RabbitConsts.QUEUE_REWARD_ACTION, msg);
 					setOperations.add(activityKey, userName);
 					SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-					UserInfo userInfo = new UserInfo(userName, ucId, simpleDateFormat.format(new Date()), coin.intValue());
-					hashOperations.put(CACHE_PREFIX_HASH_KEY, currentKey, JSONObject.toJSONString(userInfo));
+					ActivityUserInfo userInfo = new ActivityUserInfo(userName, ucId, simpleDateFormat.format(new Date()), coin.intValue(), currentKey);
+					hashOperations.put(activityHashKey, userName, JSONObject.toJSONString(userInfo));
 					redisTemplate.expire(activityKey, 7, TimeUnit.DAYS);
+					redisTemplate.expire(activityHashKey, 7, TimeUnit.DAYS);
 					log.info("618活动用户 userName:{}赠送图币{},bizId为:{},ucId:{}", userName, coin, currentKey, ucId);
 					return ActivityStatusEnum.SUCCESS.getCode();
 				} else {
@@ -138,37 +147,107 @@ public class ActivityServiceImpl implements ActivityService {
 	}
 
 	/**
-	 * 每天的零晨 2 点执行定时任务
+	 * 活动数据上报
+	 *
+	 * @param userName
+	 * @param terminal
+	 * @param cv
+	 * @param currentKey
+	 * @return
 	 */
-	//@Scheduled(cron = "0 0 2 * * ?")
-	public void dealUserDataByDay(){
-		LocalDate localDate = LocalDate.now().minusDays(1);
-		String currentKey = localDate.toString();
-		log.info("开始处理当前时间任务:{}", currentKey);
-		final SetOperations<String, String> setOperations = redisTemplate.opsForSet();
-		if(setOperations.isMember(CACHE_PREFIX_EXIST, currentKey)){
-			log.info("当前 currentKey:{}已经被其他机器处理过!", currentKey);
-		}else{
-			setOperations.add(CACHE_PREFIX_EXIST, currentKey);
-			ExecutorService executorService = Executors.newSingleThreadExecutor();
-			executorService.execute(() -> dealCurrentKey(currentKey));
-			executorService.shutdown();
+	@Override
+	public Object report(String userName, int terminal, String cv, String currentKey) {
+		try{
+			String activityKey = CACHEPREFIX + currentKey;
+			String activityHashKey = CACHE_PREFIX_HASH_KEY + currentKey;
+			final SetOperations<String, String> setOperations = redisTemplate.opsForSet();
+			final HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
+			Set<String> userNames = setOperations.members(activityKey);
+			log.info("开始处理当前时间:{}的任务,需要处理:{}条数据", currentKey, userNames.size());
+			List<String> result = hashOperations.multiGet(activityHashKey, userNames);
+			List<ActivityUserInfo> activityUserInfos = Lists.newArrayList();
+			String message;
+			if(CollectionUtils.isEmpty(result) && CollectionUtils.isEmpty(userNames)){
+				message = "hash key:" + activityHashKey + "中没有需要处理的数据";
+			}else if(CollectionUtils.isEmpty(result) && CollectionUtils.isNotEmpty(userNames)){
+				activityUserInfos.addAll(dealAbnormalActivityUserInfo(userNames, currentKey));
+				message = "处理非正常数据" + activityHashKey + "数据量:" + userNames.size();
+			}else{
+				activityUserInfos.addAll(dealNormalActivityUserInfo(result));
+				message = "处理正常数据" + activityHashKey + "数据量:" + result.size();
+			}
+			sensorsService.reportActivitySign(activityUserInfos);
+			return SuccessMessage.create(message);
+		}catch (Exception e){
+			log.error("ActivityServiceImpl sign report error:{}", e);
+			return SuccessMessage.create("数据上报异常" + currentKey);
 		}
 	}
 
 	/**
-	 *
-	 * @param currentKey
+	 * 处理规范数据
+	 * @param result
+	 * @return
 	 */
-	private void dealCurrentKey(String currentKey){
-		String activityKey = CACHEPREFIX + currentKey;
-		final SetOperations<String, String> setOperations = redisTemplate.opsForSet();
-		final HashOperations<String,String, String> hashOperations = redisTemplate.opsForHash();
-		Set<String> strings = setOperations.members(activityKey);
-		List<String> result = hashOperations.multiGet(CACHE_PREFIX_HASH_KEY, strings);
-		for(String str : result){
-			UserInfo userInfo = JSONObject.parseObject(str, UserInfo.class);
-			sensorsService.reportActivitySign(userInfo);
+	private List<ActivityUserInfo> dealNormalActivityUserInfo(List<String> result){
+		List<ActivityUserInfo> activityUserInfos = Lists.newArrayList();
+		try{
+			for(String str : result){
+				ActivityUserInfo userInfo = JSONObject.parseObject(str, ActivityUserInfo.class);
+				if(null != userInfo){
+					activityUserInfos.add(userInfo);;
+				}
+			}
+			return activityUserInfos;
+		}catch (Exception e){
+			return activityUserInfos;
+		}
+	}
+	/**
+	 * 处理不规范的数据
+	 * @param members
+	 * @return
+	 */
+	private List<ActivityUserInfo> dealAbnormalActivityUserInfo(Set<String> members, String currentKey){
+		log.info("dealActivityUserInfo size:{}", members.size());
+		List<ActivityUserInfo> activityUserInfos = Lists.newArrayList();
+		try{
+			List<String> userNames = Lists.newArrayList(members);
+			List<String> userIds = Lists.newArrayList();
+			//1. 获取 userId
+			NetSchoolResponse userIdResponse = userAccountServiceV1.getUIdByUsernameBatch(userNames);
+			if(ResponseUtil.isFailure(userIdResponse)){
+				return activityUserInfos;
+			}
+			List<LinkedHashMap<String,Object>> data = (List<LinkedHashMap<String,Object>>) userIdResponse.getData();
+			log.info("obtain data from userAccountServiceV1 size:{}", data.size());
+			if(CollectionUtils.isEmpty(data)){
+				return activityUserInfos;
+			}
+			for(LinkedHashMap<String,Object> current : data){
+				userIds.add(String.valueOf(current.getOrDefault("userId", "0")));
+			}
+			log.info("dealActivityUserInfo.userIds.size:{}", userIds.size());
+			// 2 获取 ucId
+			NetSchoolResponse ucIdResponse = userServiceV4.getUserLevelBatch(userIds);
+			List<Map<String, Object>> userInfoList = (List<Map<String, Object>>) ucIdResponse.getData();
+			for(Map<String, Object> map : userInfoList){
+				String mobile = MapUtils.getString(map, "mobile");
+				String uname = MapUtils.getString(map, "name");
+				ActivityUserInfo activityUserInfo = ActivityUserInfo.builder()
+						.time(currentKey + " 00:00:00")
+						.currentKey(currentKey)
+						.coins(500)
+						.ucId(mobile)
+						.uname(uname)
+						.build();
+				activityUserInfos.add(activityUserInfo);
+			}
+			log.info("request 2 step obtain activityUserInfos.size:{}", activityUserInfos.size());
+			return activityUserInfos;
+		}catch (Exception e){
+			log.error("dealActivityUserInfo caught an exception:{}", e);
+			return activityUserInfos;
 		}
 	}
 }

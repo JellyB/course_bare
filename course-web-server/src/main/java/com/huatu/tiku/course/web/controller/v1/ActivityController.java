@@ -52,4 +52,20 @@ public class ActivityController {
 		return activityService.signList(userSession.getUname());
 	}
 
+
+	/**
+	 * 618 活动上报
+	 * @param userSession
+	 * @param terminal
+	 * @param cv
+	 * @return
+	 */
+	@PostMapping(value = "report")
+	public Object report(@Token UserSession userSession,
+						 @RequestHeader(value = "terminal") Integer terminal,
+						 @RequestHeader(value = "cv") String cv,
+						 @RequestHeader(value = "day") String day){
+		return activityService.report(userSession.getUname(), terminal, cv, day);
+	}
+
 }
