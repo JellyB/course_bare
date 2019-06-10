@@ -88,9 +88,9 @@ public class SensorsService {
 				log.info(">>>>>>>>>> deal activity userInfo:{}", JSONObject.toJSONString(userInfo));
 				Map<String, Object> properties = Maps.newHashMap();
 				properties.put("coins", userInfo.getCoins());
-				properties.put("timeV2", userInfo.getTime());
+				properties.put("$time", userInfo.getTime());
 				log.info(">>>>>>>>>>> deal userName:{}, activity properties:{}", userInfo.getUname(), properties);
-				sensorsAnalytics.track(userInfo.getUcId(), true, SensorsEventEnum.COURSE_ACTIVITY_COINS.getCode(),
+				sensorsAnalytics.track(userInfo.getUcId(), true, SensorsEventEnum.COURSE_ACTIVITY_COINS_V2.getCode(),
 						properties);
 				sensorsAnalytics.flush();
 			}
