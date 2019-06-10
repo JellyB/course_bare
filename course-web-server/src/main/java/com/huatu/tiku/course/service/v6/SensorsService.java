@@ -1,5 +1,7 @@
 package com.huatu.tiku.course.service.v6;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -87,8 +89,11 @@ public class SensorsService {
 			for(ActivityUserInfo userInfo : activityUserInfoList){
 				log.info(">>>>>>>>>> deal activity userInfo:{}", JSONObject.toJSONString(userInfo));
 				Map<String, Object> properties = Maps.newHashMap();
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String time = userInfo.getTime();
+                Date date = simpleDateFormat.parse(time);
 				properties.put("coins", userInfo.getCoins());
-				properties.put("$time", userInfo.getTime());
+				properties.put("$time", date);
 				log.info(">>>>>>>>>>> deal userName:{}, activity properties:{}", userInfo.getUname(), properties);
 				sensorsAnalytics.track(userInfo.getUcId(), true, SensorsEventEnum.COURSE_ACTIVITY_COINS_V2.getCode(),
 						properties);
