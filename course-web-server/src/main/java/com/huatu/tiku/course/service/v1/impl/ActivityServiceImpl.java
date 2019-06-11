@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.huatu.common.SuccessMessage;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.consts.ActivityUserInfo;
@@ -179,15 +178,7 @@ public class ActivityServiceImpl implements ActivityService {
 				activityUserInfos.addAll(dealAbnormalActivityUserInfo(userNames, currentKey));
 				message = "处理非正常数据" + activityHashKey + "数据量:" + userNames.size();
 			}else{
-				List<ActivityUserInfo> temUserInfos = dealNormalActivityUserInfo(result);
-				Set<String> contains =  temUserInfos.stream().map(ActivityUserInfo::getUname).collect(Collectors.toSet());
-				Set<String> dealSet = Sets.newHashSet();
-				for(String uname : userNames){
-					if(!contains.contains(uname)){
-						dealSet.add(uname);
-					}
-				}
-				activityUserInfos.addAll(dealAbnormalActivityUserInfo(dealSet,currentKey));
+				activityUserInfos.addAll(dealNormalActivityUserInfo(result));
 				message = "处理正常数据" + activityHashKey + "数据量:" + result.size();
 			}
 			sensorsService.reportActivitySign(activityUserInfos);
@@ -255,7 +246,7 @@ public class ActivityServiceImpl implements ActivityService {
 				}
 				String uname = MapUtils.getString(map, "name");
 				ActivityUserInfo activityUserInfo = ActivityUserInfo.builder()
-						.time(currentKey + " 12:00:00")
+						.time(currentKey + " 00:00:00")
 						.currentKey(currentKey)
 						.coins(500)
 						.ucId(mobile)
