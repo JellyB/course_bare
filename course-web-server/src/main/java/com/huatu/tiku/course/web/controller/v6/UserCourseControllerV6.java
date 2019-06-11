@@ -453,6 +453,7 @@ public class UserCourseControllerV6 {
                           @RequestParam(value = "subject", defaultValue = "0") String subject){
 
         Map<String,Object> params = LocalMapParamHandler.get();
+        log.info("one2One post params:{}", params);
         NetSchoolResponse netSchoolResponse = userCourseService.one2One(RequestUtil.encrypt(params));
         return ResponseUtil.build(netSchoolResponse);
     }
