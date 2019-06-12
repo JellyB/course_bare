@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 @Component
 public class CacheUtil {
 
-    @Resource(name = "redisTemplate")
+    @Resource(name = "redisCacheTemplate")
     private ValueOperations<String, Object> valueOperations;
 
     /**
