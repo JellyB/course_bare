@@ -4,9 +4,11 @@ import com.google.common.collect.Lists;
 import com.huatu.common.ErrorResult;
 import com.huatu.common.SuccessMessage;
 import com.huatu.common.exception.BizException;
+import com.huatu.common.utils.reflect.ClassUtils;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.bean.vo.One2OneFormDTOV2;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.service.v6.CourseBizV6Service;
@@ -22,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.Map;
 
 /**
@@ -394,68 +397,19 @@ public class UserCourseControllerV6 {
     /**
      * 一对一信息提交
      * @param userSession           用户 token
-     * @param age                   年龄
-     * @param ApplyJobs             报考职位
-     * @param ApplyNum              招聘人数
-     * @param Edu                   学历
-     * @param ExamExperience        相关考试经理
-     * @param Examtime              考试时间
-     * @param NetClassCategory      考试类型
-     * @param NetClassCategoryId    考试类型
-     * @param NetClassName          课程名称
-     * @param NetClassType          考试类型 1 笔试 2 面试
-     * @param OrderNum              订单编号
-     * @param QQ                    QQ
-     * @param Sex                   性别
-     * @param Telephone             电话
-     * @param UserBz                额外要求
-     * @param UserID                用户id
-     * @param UserReName            姓名
-     * @param ViewRatio
-     * @param area                  地区
-     * @param classTime             可上课时间段
-     * @param major                 专业
-     * @param orderID               订单号
-     * @param renewRemark           续约备注
-     * @param rid                   课程ID
-     * @param score                 分数
-     * @param stage                 报考学段
-     * @param subject               报考科目
+     * @param cv
+     * @param terminal
      * @return
      */
-    @LocalMapParam
-    @PostMapping(value = "one2One")
+    @PostMapping(value = "1v1")
     public Object one2One(@Token UserSession userSession,
-                          @RequestParam(value = "Age", required = false) String age,
-                          @RequestParam(value = "ApplyJobs", required = false) String ApplyJobs,
-                          @RequestParam(value = "ApplyNum", required = false) String ApplyNum,
-                          @RequestParam(value = "Edu") Integer Edu,
-                          @RequestParam(value = "ExamExperience", required = false) String ExamExperience,
-                          @RequestParam(value = "Examtime", required = false) String Examtime,
-                          @RequestParam(value = "NetClassCategory", required = false) String NetClassCategory,
-                          @RequestParam(value = "NetClassCategoryId", required = false) Long NetClassCategoryId,
-                          @RequestParam(value = "NetClassName") String NetClassName,
-                          @RequestParam(value = "NetClassType", required = false) String NetClassType,
-                          @RequestParam(value = "OrderNum") String OrderNum,
-                          @RequestParam(value = "QQ", required = false) String QQ,
-                          @RequestParam(value = "Sex", required = false) Integer Sex,
-                          @RequestParam(value = "Telephone") String Telephone,
-                          @RequestParam(value = "UserBz", required = false) String UserBz,
-                          @RequestParam(value = "UserID", required = false) String UserID,
-                          @RequestParam(value = "UserReName") String UserReName,
-                          @RequestParam(value = "ViewRatio", required = false) String ViewRatio,
-                          @RequestParam(value = "area", required = false) String area,
-                          @RequestParam(value = "classTime", required = false) String classTime,
-                          @RequestParam(value = "major", required = false) String major,
-                          @RequestParam(value = "orderID", required = false) String orderID,
-                          @RequestParam(value = "renewRemark", required = false) String renewRemark,
-                          @RequestParam(value = "rid") String rid,
-                          @RequestParam(value = "score", required = false) String score,
-                          @RequestParam(value = "stage", required = false) String stage,
-                          @RequestParam(value = "subject", required = false) String subject){
+                          @RequestHeader(value = "terminal") int terminal,
+                          @RequestHeader(value = "cv") String cv,
+                          @RequestBody @Valid One2OneFormDTOV2 one2OneFormDTOV2){
 
-        Map<String,Object> params = LocalMapParamHandler.get();
-        log.info("one2One post params:{}", params);
+        Map<String,Object> params = ClassUtils.getBeanProperties(one2OneFormDTOV2);
+        params.put("userName",userSession.getUname());
+        log.info("one2One post params:{},terminal:{},cv:{}", params,terminal,cv);
         NetSchoolResponse netSchoolResponse = userCourseService.one2One(RequestUtil.encrypt(params));
         return ResponseUtil.build(netSchoolResponse);
     }
@@ -469,7 +423,7 @@ public class UserCourseControllerV6 {
      * @throws BizException
      */
     @LocalMapParam
-    @GetMapping(value = "one2One")
+    @GetMapping(value = "1v1")
     public Object obtainOne2One(@RequestParam(value = "OrderNum") String OrderNum,
                                 @RequestParam(value = "rid") String rid) throws BizException{
 
