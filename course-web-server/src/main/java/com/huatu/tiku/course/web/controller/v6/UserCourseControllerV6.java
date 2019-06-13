@@ -4,9 +4,11 @@ import com.google.common.collect.Lists;
 import com.huatu.common.ErrorResult;
 import com.huatu.common.SuccessMessage;
 import com.huatu.common.exception.BizException;
+import com.huatu.common.utils.reflect.ClassUtils;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.bean.vo.One2OneFormDTOV2;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.service.v6.CourseBizV6Service;
@@ -22,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.Map;
 
 /**
@@ -119,7 +122,8 @@ public class UserCourseControllerV6 {
     /**
      * 阶段测试 单条已读
      * @param userSession
-     * @param id
+     * @param courseId
+     * @param syllabusId
      * @return
      */
     @PutMapping(value = "oneRead/periodTest/{syllabusId}/{courseId}")
@@ -349,7 +353,9 @@ public class UserCourseControllerV6 {
      */
     @LocalMapParam
     @GetMapping(value = "cateList")
-    public Object cateList(@Token UserSession userSession){
+    public Object cateList(@Token UserSession userSession,
+                           @RequestHeader(value = "cv") String cv,
+                           @RequestHeader(value = "terminal") int terminal){
         Map<String,Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = userCourseService.cateList(params);
         return ResponseUtil.build(netSchoolResponse);
@@ -392,68 +398,21 @@ public class UserCourseControllerV6 {
     /**
      * 一对一信息提交
      * @param userSession           用户 token
-     * @param age                   年龄
-     * @param ApplyJobs             报考职位
-     * @param ApplyNum              招聘人数
-     * @param Edu                   学历
-     * @param ExamExperience        相关考试经理
-     * @param Examtime              考试时间
-     * @param NetClassCategory      考试类型
-     * @param NetClassCategoryId    考试类型
-     * @param NetClassName          课程名称
-     * @param NetClassType          考试类型 1 笔试 2 面试
-     * @param OrderNum              订单编号
-     * @param QQ                    QQ
-     * @param Sex                   性别
-     * @param Telephone             电话
-     * @param UserBz                额外要求
-     * @param UserID                用户id
-     * @param UserReName            姓名
-     * @param ViewRatio
-     * @param area                  地区
-     * @param classTime             可上课时间段
-     * @param major                 专业
-     * @param orderID               订单号
-     * @param renewRemark           续约备注
-     * @param rid                   课程ID
-     * @param score                 分数
-     * @param stage                 报考学段
-     * @param subject               报考科目
+     * @param cv
+     * @param terminal
      * @return
      */
-    @LocalMapParam
-    @PostMapping(value = "one2One")
-    public Object one2One(@Token UserSession userSession,
-                          @RequestParam(value = "Age", defaultValue = "0") String age,
-                          @RequestParam(value = "ApplyJobs", defaultValue = "0") String ApplyJobs,
-                          @RequestParam(value = "ApplyNum", defaultValue = "0") String ApplyNum,
-                          @RequestParam(value = "Edu") Integer Edu,
-                          @RequestParam(value = "ExamExperience", defaultValue = "0") String ExamExperience,
-                          @RequestParam(value = "Examtime", defaultValue = "0") String Examtime,
-                          @RequestParam(value = "NetClassCategory", defaultValue = "0") String NetClassCategory,
-                          @RequestParam(value = "NetClassCategoryId", defaultValue = "0") Long NetClassCategoryId,
-                          @RequestParam(value = "NetClassName") String NetClassName,
-                          @RequestParam(value = "NetClassType", defaultValue = "0") String NetClassType,
-                          @RequestParam(value = "OrderNum") String OrderNum,
-                          @RequestParam(value = "QQ", defaultValue = "0") String QQ,
-                          @RequestParam(value = "Sex", defaultValue = "0") Integer Sex,
-                          @RequestParam(value = "Telephone") String Telephone,
-                          @RequestParam(value = "UserBz", defaultValue = "0") String UserBz,
-                          @RequestParam(value = "UserID", defaultValue = "0") String UserID,
-                          @RequestParam(value = "UserReName") String UserReName,
-                          @RequestParam(value = "ViewRatio", defaultValue = "0") String ViewRatio,
-                          @RequestParam(value = "area", defaultValue = "0") String area,
-                          @RequestParam(value = "classTime", defaultValue = "0") String classTime,
-                          @RequestParam(value = "major", defaultValue = "0") String major,
-                          @RequestParam(value = "orderID", defaultValue = "0") String orderID,
-                          @RequestParam(value = "renewRemark", defaultValue = "0") String renewRemark,
-                          @RequestParam(value = "rid") String rid,
-                          @RequestParam(value = "score", defaultValue = "0") String score,
-                          @RequestParam(value = "stage", defaultValue = "0") String stage,
-                          @RequestParam(value = "subject", defaultValue = "0") String subject){
+    @PostMapping(value = "/1v1/{courseId}")
+    public Object save1V1Table(@Token UserSession userSession,
+                          @RequestHeader(value = "terminal") int terminal,
+                          @RequestHeader(value = "cv") String cv,
+                          @RequestBody @Valid One2OneFormDTOV2 one2OneFormDTOV2,
+                          @PathVariable int courseId){
 
-        Map<String,Object> params = LocalMapParamHandler.get();
-        log.info("one2One post params:{}", params);
+        Map<String,Object> params = ClassUtils.getBeanProperties(one2OneFormDTOV2);
+        params.put("userName",userSession.getUname());
+        params.put("rid",courseId);
+        log.info("one2One post params:{},terminal:{},cv:{}", params,terminal,cv);
         NetSchoolResponse netSchoolResponse = userCourseService.one2One(RequestUtil.encrypt(params));
         return ResponseUtil.build(netSchoolResponse);
     }
@@ -462,16 +421,17 @@ public class UserCourseControllerV6 {
     /**
      * 一对一信息获取
      * @param OrderNum
-     * @param rid
+     * @param @PathVariable int courseId
      * @return
      * @throws BizException
      */
     @LocalMapParam
-    @GetMapping(value = "one2One")
-    public Object obtainOne2One(@RequestParam(value = "OrderNum") String OrderNum,
-                                @RequestParam(value = "rid") String rid) throws BizException{
+    @GetMapping(value = "/1v1/{courseId}")
+    public Object get1V1Table(@RequestParam(value = "OrderNum") String OrderNum,
+                              @PathVariable int courseId) throws BizException{
 
         Map<String,Object> params = LocalMapParamHandler.get();
+        params.put("rid",courseId);
         NetSchoolResponse netSchoolResponse = userCourseService.obtainOne2One(RequestUtil.encrypt(params));
         return ResponseUtil.build(netSchoolResponse);
     }
