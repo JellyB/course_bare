@@ -349,7 +349,9 @@ public class UserCourseControllerV6 {
      */
     @LocalMapParam
     @GetMapping(value = "cateList")
-    public Object cateList(@Token UserSession userSession){
+    public Object cateList(@Token UserSession userSession,
+                           @RequestHeader(value = "cv") String cv,
+                           @RequestHeader(value = "terminal") int terminal){
         Map<String,Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = userCourseService.cateList(params);
         return ResponseUtil.build(netSchoolResponse);
@@ -424,35 +426,36 @@ public class UserCourseControllerV6 {
     @LocalMapParam
     @PostMapping(value = "one2One")
     public Object one2One(@Token UserSession userSession,
-                          @RequestParam(value = "Age") String age,
-                          @RequestParam(value = "ApplyJobs") String ApplyJobs,
-                          @RequestParam(value = "ApplyNum") String ApplyNum,
+                          @RequestParam(value = "Age", required = false) String age,
+                          @RequestParam(value = "ApplyJobs", required = false) String ApplyJobs,
+                          @RequestParam(value = "ApplyNum", required = false) String ApplyNum,
                           @RequestParam(value = "Edu") Integer Edu,
-                          @RequestParam(value = "ExamExperience") String ExamExperience,
-                          @RequestParam(value = "Examtime") String Examtime,
-                          @RequestParam(value = "NetClassCategory") String NetClassCategory,
-                          @RequestParam(value = "NetClassCategoryId") Long NetClassCategoryId,
+                          @RequestParam(value = "ExamExperience", required = false) String ExamExperience,
+                          @RequestParam(value = "Examtime", required = false) String Examtime,
+                          @RequestParam(value = "NetClassCategory", required = false) String NetClassCategory,
+                          @RequestParam(value = "NetClassCategoryId", required = false) Long NetClassCategoryId,
                           @RequestParam(value = "NetClassName") String NetClassName,
-                          @RequestParam(value = "NetClassType") String NetClassType,
+                          @RequestParam(value = "NetClassType", required = false) String NetClassType,
                           @RequestParam(value = "OrderNum") String OrderNum,
-                          @RequestParam(value = "QQ") String QQ,
-                          @RequestParam(value = "Sex") Integer Sex,
+                          @RequestParam(value = "QQ", required = false) String QQ,
+                          @RequestParam(value = "Sex", required = false) Integer Sex,
                           @RequestParam(value = "Telephone") String Telephone,
-                          @RequestParam(value = "UserBz") String UserBz,
-                          @RequestParam(value = "UserID") String UserID,
+                          @RequestParam(value = "UserBz", required = false) String UserBz,
+                          @RequestParam(value = "UserID", required = false) String UserID,
                           @RequestParam(value = "UserReName") String UserReName,
-                          @RequestParam(value = "ViewRatio") String ViewRatio,
-                          @RequestParam(value = "area") String area,
-                          @RequestParam(value = "classTime") String classTime,
-                          @RequestParam(value = "major") String major,
-                          @RequestParam(value = "orderID") String orderID,
-                          @RequestParam(value = "renewRemark") String renewRemark,
+                          @RequestParam(value = "ViewRatio", required = false) String ViewRatio,
+                          @RequestParam(value = "area", required = false) String area,
+                          @RequestParam(value = "classTime", required = false) String classTime,
+                          @RequestParam(value = "major", required = false) String major,
+                          @RequestParam(value = "orderID", required = false) String orderID,
+                          @RequestParam(value = "renewRemark", required = false) String renewRemark,
                           @RequestParam(value = "rid") String rid,
-                          @RequestParam(value = "score") String score,
-                          @RequestParam(value = "stage") String stage,
-                          @RequestParam(value = "subject") String subject){
+                          @RequestParam(value = "score", required = false) String score,
+                          @RequestParam(value = "stage", required = false) String stage,
+                          @RequestParam(value = "subject", required = false) String subject){
 
         Map<String,Object> params = LocalMapParamHandler.get();
+        log.info("one2One post params:{}", params);
         NetSchoolResponse netSchoolResponse = userCourseService.one2One(RequestUtil.encrypt(params));
         return ResponseUtil.build(netSchoolResponse);
     }

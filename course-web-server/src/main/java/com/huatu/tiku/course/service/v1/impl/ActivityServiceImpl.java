@@ -168,6 +168,7 @@ public class ActivityServiceImpl implements ActivityService {
 			Set<String> userNames = setOperations.members(activityKey);
 			log.info("开始处理当前时间:{}的任务,需要处理:{}条数据", currentKey, userNames.size());
 			List<String> result = hashOperations.multiGet(activityHashKey, userNames);
+
 			List<String> filterResult = result.stream().filter(item -> StringUtils.isNotEmpty(item)).collect(Collectors.toList());
 			List<ActivityUserInfo> activityUserInfos = Lists.newArrayList();
 			String message;
