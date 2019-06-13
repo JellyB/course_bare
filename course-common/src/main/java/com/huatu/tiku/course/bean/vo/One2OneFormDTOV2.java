@@ -64,9 +64,6 @@ public class One2OneFormDTOV2 implements Serializable{
     private String orderID;
     @JsonProperty("renewRemark")
     private String renewRemark;
-    @JsonProperty("rid")
-    @NotNull(message = "rid不能为空")
-    private String rid;
     @JsonProperty("score")
     private String score;
     @JsonProperty("stage")

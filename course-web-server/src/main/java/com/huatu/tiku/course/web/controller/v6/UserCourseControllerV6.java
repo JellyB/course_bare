@@ -122,7 +122,8 @@ public class UserCourseControllerV6 {
     /**
      * 阶段测试 单条已读
      * @param userSession
-     * @param id
+     * @param courseId
+     * @param syllabusId
      * @return
      */
     @PutMapping(value = "oneRead/periodTest/{syllabusId}/{courseId}")
@@ -401,14 +402,16 @@ public class UserCourseControllerV6 {
      * @param terminal
      * @return
      */
-    @PostMapping(value = "1v1")
-    public Object one2One(@Token UserSession userSession,
+    @PostMapping(value = "/1v1/{courseId}")
+    public Object save1V1Table(@Token UserSession userSession,
                           @RequestHeader(value = "terminal") int terminal,
                           @RequestHeader(value = "cv") String cv,
-                          @RequestBody @Valid One2OneFormDTOV2 one2OneFormDTOV2){
+                          @RequestBody @Valid One2OneFormDTOV2 one2OneFormDTOV2,
+                          @PathVariable int courseId){
 
         Map<String,Object> params = ClassUtils.getBeanProperties(one2OneFormDTOV2);
         params.put("userName",userSession.getUname());
+        params.put("rid",courseId);
         log.info("one2One post params:{},terminal:{},cv:{}", params,terminal,cv);
         NetSchoolResponse netSchoolResponse = userCourseService.one2One(RequestUtil.encrypt(params));
         return ResponseUtil.build(netSchoolResponse);
@@ -418,16 +421,17 @@ public class UserCourseControllerV6 {
     /**
      * 一对一信息获取
      * @param OrderNum
-     * @param rid
+     * @param @PathVariable int courseId
      * @return
      * @throws BizException
      */
     @LocalMapParam
-    @GetMapping(value = "1v1")
-    public Object obtainOne2One(@RequestParam(value = "OrderNum") String OrderNum,
-                                @RequestParam(value = "rid") String rid) throws BizException{
+    @GetMapping(value = "/1v1/{courseId}")
+    public Object get1V1Table(@RequestParam(value = "OrderNum") String OrderNum,
+                              @PathVariable int courseId) throws BizException{
 
         Map<String,Object> params = LocalMapParamHandler.get();
+        params.put("rid",courseId);
         NetSchoolResponse netSchoolResponse = userCourseService.obtainOne2One(RequestUtil.encrypt(params));
         return ResponseUtil.build(netSchoolResponse);
     }
