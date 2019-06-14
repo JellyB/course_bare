@@ -12,14 +12,11 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.RedisNode;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import redis.clients.jedis.JedisPoolConfig;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -49,7 +46,6 @@ public class RedisSentinelConfig {
     public JedisPoolConfig jedisPoolConfig() {
         log.info("sentinel pool config initialize start ...");
         JedisPoolConfig config = new JedisPoolConfig();
-
 
         //最大总量
         config.setMaxTotal(sentinelSentinelProperties.getPoolMaxTotal());
@@ -97,23 +93,30 @@ public class RedisSentinelConfig {
             redisNodes.add(redisNode);
         }
         redisClusterConfiguration.setClusterNodes(redisNodes);
+        redisClusterConfiguration.setMaxRedirects(10);
         return redisClusterConfiguration;
     }
 
-    @Bean(name = "SentinelConnectionFactory")
+    @Bean(name = "sentinelConnectionFactory")
     public JedisConnectionFactory jedisConnectionFactory(){
         JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory(redisClusterConfiguration());
         jedisConnectionFactory.setPoolConfig(jedisPoolConfig());
+        jedisConnectionFactory.setPassword("3k80azVAgeza");
         return jedisConnectionFactory;
     }
 
     @Primary
     @Bean(name = "redisTemplate")
     public StringRedisTemplate redisTemplate(){
-        StringRedisTemplate redisTemplate = new StringRedisTemplate();
-        redisTemplate.setConnectionFactory(jedisConnectionFactory());
-        //redisTemplate.setKeySerializer(stringRedisKeySerializer);
-        //redisTemplate.setDefaultSerializer(genericJackson2JsonRedisSerializer);
-        return redisTemplate;
+        try{
+            StringRedisTemplate redisTemplate = new StringRedisTemplate();
+            redisTemplate.setConnectionFactory(jedisConnectionFactory());
+            //redisTemplate.setKeySerializer(stringRedisKeySerializer);
+            //redisTemplate.setDefaultSerializer(genericJackson2JsonRedisSerializer);
+            return redisTemplate;
+        }catch (Exception e){
+            log.error("{}", e);
+            return null;
+        }
     }
 }
