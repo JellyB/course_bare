@@ -105,7 +105,8 @@ public final class CoursePracticeCacheKey {
 
 	/**
 	 * 指定课中答对题的总题数
-	 * 
+	 * 使用持久化存储数据
+	 *
 	 * @param courseId
 	 * @return
 	 */
@@ -115,7 +116,8 @@ public final class CoursePracticeCacheKey {
 
 	/**
 	 * 指定课中总答题人数
-	 * 
+	 * 使用持久化存储数据
+	 *
 	 * @param courseId
 	 * @return
 	 */

@@ -21,6 +21,8 @@ import service.impl.BaseServiceHelperImpl;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.weekend.WeekendSqls;
 
+import javax.annotation.Resource;
+
 /**
  * Created by lijun on 2019/3/7
  */
@@ -33,8 +35,8 @@ public class PracticeUserMetaServiceImpl extends BaseServiceHelperImpl<CoursePra
 		super(CoursePracticeUserMeta.class);
 	}
 
-	@Autowired
-	private RedisTemplate redisTemplate;
+    @Resource(name = "PersistTemplate")
+	private RedisTemplate persistTemplate;
 	
 	@Autowired
 	private CoursePracticeUserMataMapper coursePracticeUserMataMapper;
@@ -55,8 +57,8 @@ public class PracticeUserMetaServiceImpl extends BaseServiceHelperImpl<CoursePra
 
 	@Override
 	public Map<String, Integer> getCountDateByRIdAndCId(Long roomId, Long coursewareId) {
-		HashOperations<String, String, Integer> metaOpsForHash = redisTemplate.opsForHash();
-		final SetOperations<String, Integer> setOperations = redisTemplate.opsForSet();
+		HashOperations<String, String, Integer> metaOpsForHash = persistTemplate.opsForHash();
+		final SetOperations<String, Integer> setOperations = persistTemplate.opsForSet();
 		Long count = setOperations.size(CoursePracticeCacheKey.roomIdUserMetaKey(roomId,coursewareId,2));
 		if (count == null || count == 0) {
 			count = 1L;

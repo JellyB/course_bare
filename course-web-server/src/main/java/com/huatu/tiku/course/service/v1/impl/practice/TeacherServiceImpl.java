@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.scheduling.annotation.Async;
@@ -31,6 +32,7 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.weekend.WeekendSqls;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -54,8 +56,10 @@ public class TeacherServiceImpl implements TeacherService {
 
     private final QuestionInfoService questionInfoService;
     private final PracticeMetaComponent practiceMetaComponent;
-    @Autowired
-    private final RedisTemplate redisTemplate;
+
+    @Resource(name = "PersistTemplate")
+    private RedisTemplate persistTemplate;
+
     @Autowired
     private CoursewarePracticeQuestionInfoService coursewarePracticeQuestionInfoService;
     @Override
@@ -299,10 +303,12 @@ public class TeacherServiceImpl implements TeacherService {
     public Integer getCourseRightRate(Long coursewareId,Long roomId){
         //获取课件下答对题的数目
         final String key = CoursePracticeCacheKey.roomRightQuestionSum(coursewareId);
-        Integer rightNum=Integer.parseInt(redisTemplate.opsForValue().get(key,0,-1));
+        //使用持久化存储数据
+        Integer rightNum=Integer.parseInt(persistTemplate.opsForValue().get(key,0,-1));
 
         //获取课件下作答总人数
-        final SetOperations<String, Long> opsForSet = redisTemplate.opsForSet();
+        //使用持久化存储数据
+        final SetOperations<String, Long> opsForSet = persistTemplate.opsForSet();
         final String allUserSumKey = CoursePracticeCacheKey.roomAllUserSum(coursewareId);
         Integer answerNum = opsForSet.members(allUserSumKey).size();
 

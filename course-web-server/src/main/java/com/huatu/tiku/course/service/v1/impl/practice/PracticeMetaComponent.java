@@ -14,6 +14,7 @@ import java.util.stream.IntStream;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
@@ -31,22 +32,28 @@ import com.huatu.tiku.course.bean.practice.StudentQuestionMetaBo;
 import com.huatu.tiku.course.service.cache.CoursePracticeCacheKey;
 import com.huatu.tiku.course.service.v1.practice.QuestionInfoService;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.annotation.Resource;
 
 /**
  * Created by lijun on 2019/2/27
  */
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class PracticeMetaComponent {
 
 	// 试题信息统计 存放时间的Key
 	private static final String QUESTION_TOTAL_TIME_KEY = "0";
 
-	private final RedisTemplate redisTemplate;
-	private final QuestionInfoService questionInfoService;
+	@Autowired
+	private RedisTemplate redisTemplate;
+
+	@Resource(name = "PersistTemplate")
+	private RedisTemplate persistTemplate;
+
+	@Autowired
+	private QuestionInfoService questionInfoService;
 
 	/**
 	 * 构建用户统计 缓存信息
@@ -59,7 +66,7 @@ public class PracticeMetaComponent {
 		final PracticeUserQuestionMetaInfoBo metaInfo = PracticeUserQuestionMetaInfoBo.builder().time(time)
 				.answer(answer).correct(correct).build();
 		hashOperations.put(key, String.valueOf(questionId), metaInfo);
-		redisTemplate.expire(key, CoursePracticeCacheKey.getDefaultKeyTTL(),
+		persistTemplate.expire(key, CoursePracticeCacheKey.getDefaultKeyTTL(),
 				CoursePracticeCacheKey.getDefaultTimeUnit());
 	}
 
@@ -283,7 +290,7 @@ public class PracticeMetaComponent {
 	 * @param roomId 房间ID
 	 */
 	public List<String> getRoomPracticedQuestion(Long roomId) {
-		final SetOperations<String, String> setOperations = redisTemplate.opsForSet();
+		final SetOperations<String, String> setOperations = persistTemplate.opsForSet();
 		final String key = CoursePracticeCacheKey.roomPractedQuestionNumKey(roomId);
 		Set<String> set = setOperations.members(key);
 		return set.stream().collect(Collectors.toList());
@@ -346,12 +353,15 @@ public class PracticeMetaComponent {
 	public void buildRoomRightQuestionSum(Long courseId, Long userId, Integer correct) {
 		final String key = CoursePracticeCacheKey.roomRightQuestionSum(courseId);
 		if (2 == correct) {
-			redisTemplate.opsForValue().increment(key, 1);// 设置答对题数
+			// 使用持久化存储数据
+			persistTemplate.opsForValue().increment(key, 1);// 设置答对题数
 		}
-		final SetOperations<String, Long> opsForSet = redisTemplate.opsForSet();
+		// 使用持久化存储数据
+		final SetOperations<String, Long> opsForSet = persistTemplate.opsForSet();
 		
 		final String allUserSumKey = CoursePracticeCacheKey.roomAllUserSum(courseId);
 		// 设置作答总人数
+		// 使用持久化存储数据
 		opsForSet.add(allUserSumKey, userId);
 
 	}

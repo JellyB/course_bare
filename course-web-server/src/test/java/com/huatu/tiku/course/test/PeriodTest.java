@@ -34,6 +34,8 @@ import com.huatu.ztk.paper.vo.PeriodTestSubmitlPayload;
 
 import lombok.extern.slf4j.Slf4j;
 
+import javax.annotation.Resource;
+
 /**
  * 阶段测试
  */
@@ -53,9 +55,9 @@ public class PeriodTest extends BaseWebTest {
 
 	@Autowired
 	private CourseLiveBackLogService courseLiveBackLogService;
-	
-	@Autowired
-	private RedisTemplate redisTemplate;
+
+	@Resource(name = "PersistTemplate")
+	private RedisTemplate persistTemplate;
 	
 	@Autowired
 	private PracticeUserMetaService practiceUserMetaService;
@@ -122,7 +124,7 @@ public class PeriodTest extends BaseWebTest {
 
 	@Test
 	public void testredisHash() {
-		final SetOperations<String, Integer> setOperations = redisTemplate.opsForSet();
+		final SetOperations<String, Integer> setOperations = persistTemplate.opsForSet();
 		String key_1 = CoursePracticeCacheKey.roomIdUserMetaKey(111L,111L, 2);
 		setOperations.add(key_1,222);
 		Long count = setOperations.size(key_1);
@@ -130,7 +132,7 @@ public class PeriodTest extends BaseWebTest {
 			count = 1L;
 		}
 		String key = "zhangchong123123";
-		HashOperations<String, String, Integer> metaOpsForHash = redisTemplate.opsForHash();
+		HashOperations<String, String, Integer> metaOpsForHash = persistTemplate.opsForHash();
 		Map<String, Integer> metaEntries = metaOpsForHash.entries(key);
 		Integer oldRcount = metaEntries.get(CoursePracticeCacheKey.RCOUNT);
 		Integer oldTotal = metaEntries.get(CoursePracticeCacheKey.TOTALTIME);

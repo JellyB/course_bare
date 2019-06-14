@@ -40,6 +40,8 @@ import service.impl.BaseServiceHelperImpl;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.weekend.WeekendSqls;
 
+import javax.annotation.Resource;
+
 /**
  * Created by lijun on 2019/2/21
  */
@@ -54,6 +56,9 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 
 	@Autowired
 	private RedisTemplate redisTemplate;
+
+	@Resource(name = "PersistTemplate")
+	private RedisTemplate persistTemplate;
 
 	@Autowired
 	private PracticeCardServiceV1 practiceCardServiceV1;
@@ -100,8 +105,8 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 	public void generateAnswerCardInfo(List<Integer> questionIds, List<String> courseUserStrs, Long roomId) {
 		HashOperations<String, String, PracticeUserQuestionMetaInfoBo> opsForHash = redisTemplate.opsForHash();
 		// 存储统计信息
-		HashOperations<String, String, Integer> metaOpsForHash = redisTemplate.opsForHash();
-		final SetOperations<String, Integer> setOperations = redisTemplate.opsForSet();
+		HashOperations<String, String, Integer> metaOpsForHash = persistTemplate.opsForHash();
+		final SetOperations<String, Integer> setOperations = persistTemplate.opsForSet();
 
 		// 遍历所有的key
 		for (String courseUserKey : courseUserStrs) {

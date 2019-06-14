@@ -57,7 +57,7 @@ public class RedisClusterConfig {
         return new GenericJackson2JsonRedisSerializer();
     }
 
-    @Bean
+    @Bean(name = "PersistTemplate")
     public RedisTemplate redisTemplate(StringRedisKeySerializer stringRedisKeySerializer,GenericJackson2JsonRedisSerializer genericJackson2JsonRedisSerializer,JedisConnectionFactory jedisConnectionFactory){
         RedisTemplate redisTemplate = new RedisTemplate();
         redisTemplate.setConnectionFactory(jedisConnectionFactory);

@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.spring.conf.base;
 
+import com.google.common.collect.Lists;
 import com.huatu.common.spring.serializer.StringRedisKeySerializer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,14 +8,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.RedisNode;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import redis.clients.jedis.JedisPoolConfig;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -41,7 +45,7 @@ public class RedisSentinelConfig {
     @Autowired
     private StringRedisKeySerializer stringRedisKeySerializer;
 
-    @Bean(value = "sentinelPoolConfig")
+    @Bean(name = "SentinelPoolConfig")
     public JedisPoolConfig jedisPoolConfig() {
         log.info("sentinel pool config initialize start ...");
         JedisPoolConfig config = new JedisPoolConfig();
@@ -66,11 +70,11 @@ public class RedisSentinelConfig {
      *
      * @return
      */
-    @Bean(value = "sentinelConfiguration")
+    @Bean(name = "SentinelConfiguration")
     public RedisClusterConfiguration redisClusterConfiguration() {
 
         RedisClusterConfiguration redisClusterConfiguration = new RedisClusterConfiguration();
-        Set<RedisNode> redisNodes = new HashSet<>();
+        List<RedisNode> redisNodes = Lists.newArrayList();
         //获取到节点信息
         String nodeString = sentinelSentinelProperties.getNodes();
         //判断字符串是否为空
@@ -96,19 +100,20 @@ public class RedisSentinelConfig {
         return redisClusterConfiguration;
     }
 
-    @Bean(value = "sentinelConnectionFactory")
+    @Bean(name = "SentinelConnectionFactory")
     public JedisConnectionFactory jedisConnectionFactory(){
         JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory(redisClusterConfiguration());
         jedisConnectionFactory.setPoolConfig(jedisPoolConfig());
         return jedisConnectionFactory;
     }
 
-    @Bean(value = "sentinelRedisTemplate")
-    public RedisTemplate redisTemplate(){
-        RedisTemplate redisTemplate = new RedisTemplate();
+    @Primary
+    @Bean(name = "redisTemplate")
+    public StringRedisTemplate redisTemplate(){
+        StringRedisTemplate redisTemplate = new StringRedisTemplate();
         redisTemplate.setConnectionFactory(jedisConnectionFactory());
-        redisTemplate.setKeySerializer(stringRedisKeySerializer);
-        redisTemplate.setDefaultSerializer(genericJackson2JsonRedisSerializer);
+        //redisTemplate.setKeySerializer(stringRedisKeySerializer);
+        //redisTemplate.setDefaultSerializer(genericJackson2JsonRedisSerializer);
         return redisTemplate;
     }
 }

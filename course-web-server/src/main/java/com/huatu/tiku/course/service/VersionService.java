@@ -61,7 +61,7 @@ public class VersionService {
         if (terminal == TerminalType.IPHONE || terminal == TerminalType.IPHONE_IPAD) {
             Integer member;
             try{
-                member =  cache.get(cv, new Callable<Integer>() {
+                member = cache.get(cv, new Callable<Integer>() {
                     @Override
                     public Integer call() throws Exception {
                         log.info("cache missed, call from remote");
