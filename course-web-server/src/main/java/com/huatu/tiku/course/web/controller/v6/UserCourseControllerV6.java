@@ -413,7 +413,8 @@ public class UserCourseControllerV6 {
         params.put("userName",userSession.getUname());
         params.put("rid",courseId);
         log.info("one2One post params:{},terminal:{},cv:{}", params,terminal,cv);
-        NetSchoolResponse netSchoolResponse = userCourseService.one2One(RequestUtil.encrypt(params));
+        String p = RequestUtil.encrypt(params);
+        NetSchoolResponse netSchoolResponse = userCourseService.one2One(p);
         return ResponseUtil.build(netSchoolResponse);
     }
 

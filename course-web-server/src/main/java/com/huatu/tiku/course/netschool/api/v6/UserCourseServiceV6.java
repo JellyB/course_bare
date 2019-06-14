@@ -2,6 +2,7 @@ package com.huatu.tiku.course.netschool.api.v6;
 
 import java.util.Map;
 
+import com.huatu.tiku.course.netschool.api.fall.UserCourseServiceV6FallBackFactory;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.vo.PeriodTestListVO;
-import com.huatu.tiku.course.netschool.api.fall.UserCourseServiceV6FallBack;
 
 /**
  * 描述：
@@ -19,7 +19,7 @@ import com.huatu.tiku.course.netschool.api.fall.UserCourseServiceV6FallBack;
  * Create time 2018-11-26 下午5:28
  **/
 
-@FeignClient(value = "o-course-service", path = "/lumenapi",fallback = UserCourseServiceV6FallBack.class)
+@FeignClient(value = "o-course-service", path = "/lumenapi", fallbackFactory = UserCourseServiceV6FallBackFactory.class)
 public interface UserCourseServiceV6 {
 
     /**
