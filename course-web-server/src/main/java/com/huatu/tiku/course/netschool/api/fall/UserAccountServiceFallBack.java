@@ -28,4 +28,15 @@ public class UserAccountServiceFallBack implements UserAccountServiceV1{
     public NetSchoolResponse getUIdByUsernameBatch(List<String> userNames) {
         return NetSchoolResponse.newInstance(Maps.newHashMap());
     }
+
+    /**
+     * 判断 ios 版本是否为审核版本
+     *
+     * @param cv
+     * @return
+     */
+    @Override
+    public NetSchoolResponse isIosAudit(String cv) {
+        return NetSchoolResponse.newInstance(false);
+    }
 }
