@@ -1,14 +1,10 @@
 package com.huatu.tiku.course.mq.listeners;
 
-import java.io.IOException;
-
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSONObject;
-import com.dingtalk.chatbot.DingtalkChatbotClient;
-import com.dingtalk.chatbot.message.TextMessage;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
 
 import lombok.extern.slf4j.Slf4j;
@@ -39,11 +35,11 @@ public class ErrorLogReportListener {
 	
 	private void sendMsg(String content){
 		try {
-			DingtalkChatbotClient client = new DingtalkChatbotClient();
-			TextMessage msg = new TextMessage(content);
-			msg.setIsAtAll(true);
-			client.send(webhook, msg);
-		} catch (IOException e) {
+//			DingtalkChatbotClient client = new DingtalkChatbotClient();
+//			TextMessage msg = new TextMessage(content);
+//			msg.setIsAtAll(true);
+//			client.send(webhook, msg);
+		} catch (Exception e) {
 			log.error("dingding sendMsg error:{}",e);
 		}
 	}
