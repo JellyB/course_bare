@@ -528,6 +528,7 @@ public class CourseExercisesStatisticsManager {
             rankInfo.put("avgCorrect", courseExercisesStatistics.getCorrects() / courseExercisesStatistics.getCounts());
             String existsKey = CourseCacheKey.getCourseWorkDealData(courseType, courseId);
             String rankKey = CourseCacheKey.getCourseWorkRankInfo(courseType, courseId);
+            log.info("obtainCourseRankInfo >>>> existsKey:{}, rankKey:{}, userId:{}",existsKey, rankKey, practiceCard.getUserId());
             if(!redisTemplate.hasKey(existsKey) || !redisTemplate.hasKey(rankKey)){
                 log.info("课后作业下用户第一个提交:courseType:{},courseId:{},userId:{}",courseType, courseId, userId);
                 this.dealCourseExercisesStatistics(practiceCard);
@@ -540,7 +541,7 @@ public class CourseExercisesStatisticsManager {
                 myRank = zSetOperations.rank(rankKey, String.valueOf(practiceCard.getUserId())) + 1;
             }catch (Exception e){
                 myRank = 0L;
-                log.error("课后作业统计排名异常 rankKey:{}, value:{}", rankKey, practiceCard.getUserId());
+                log.error("课后作业统计排名异常 rankKey:{}, value:{}, errorMsg:{}", rankKey, practiceCard.getUserId(), e);
             }
 
             Set<String> userIdRanks = zSetOperations.range(rankKey, START, END);
