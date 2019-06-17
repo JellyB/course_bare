@@ -3,6 +3,7 @@ package com.huatu.tiku.course.bean;
 import com.huatu.common.bean.CacheableValue;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import java.util.Map;
  */
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class CourseListV3DTO extends CacheableValue {
 
     public static final String KEY_SALE_START = "saleStart";
