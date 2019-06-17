@@ -117,6 +117,8 @@ public class CourseExercisesProcessLogManager {
     @Degrade(key = "unFinishNumV6", name = "学习面板 - 未读数")
     public Map<String, Integer> getCountByType(long userId,String userName) throws BizException{
         List<Integer> list = Lists.newArrayList(AnswerCardStatus.CREATE, AnswerCardStatus.UNDONE);
+        StopWatch stopWatch = new StopWatch("学习面板-未读数");
+        stopWatch.start("课后作业");
         Map<String, Integer> result = Maps.newHashMap();
         Map<String, String> param = Maps.newHashMap();
         Example example = new Example(CourseExercisesProcessLog.class);
@@ -127,10 +129,14 @@ public class CourseExercisesProcessLogManager {
         criteria.andIn("bizStatus", list);
         criteria.andEqualTo("dataType", StudyTypeEnum.COURSE_WORK.getOrder());
         int countWork = courseExercisesProcessLogMapper.selectCountByExample(example);
+        stopWatch.stop();
+        stopWatch.start("阶段测试");
         result.put(StudyTypeEnum.COURSE_WORK.getKey(), countWork);
         //获取总数量
         param.put("userName",userName );
         NetSchoolResponse response  = userCourseServiceV6.unfinishStageExamCount(param);
+        stopWatch.stop();
+        log.info("学习面板-未读数 pretty:{}", stopWatch.prettyPrint());
 		if (ResponseUtil.isSuccess(response)) {
 			Map<String, Integer> retMap = (Map<String, Integer>) response.getData();
 			Integer count = retMap.get("num");

@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.netschool.api.v5;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
@@ -11,6 +12,7 @@ import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StopWatch;
 
 import java.util.HashMap;
 
@@ -80,8 +82,13 @@ public class CourseDegradeServiceV5 {
      */
     @Degrade(key = "lastPlayLessonV5", name = "继续学习")
     public Object lastPlayLesson(HashMap<String, Object> params){
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         NetSchoolResponse netSchoolResponse = courseService.lastPlayLesson(params);
-        return ResponseUtil.build(netSchoolResponse);
+        Object result = ResponseUtil.build(netSchoolResponse);
+        stopWatch.stop();
+        log.info("继续学习 V5,响应时间:{}", stopWatch.prettyPrint());
+        return result;
     }
 
     /**

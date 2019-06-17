@@ -7,6 +7,7 @@ import com.huatu.tiku.course.bean.CourseListV3DTO;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v3.CourseServiceV3;
 import com.huatu.tiku.course.util.ResponseUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,7 @@ import static com.huatu.tiku.course.bean.NetSchoolResponse.DEFAULT_ERROR;
  * @date 2017/10/2 14:53
  */
 @Component
+@Slf4j
 public class CourseServiceV3Fallback implements CourseServiceV3 {
 
     /**
@@ -125,6 +127,7 @@ public class CourseServiceV3Fallback implements CourseServiceV3 {
         String key = "_mock_live_list$"+ RequestUtil.getParamSign(params);
         NetSchoolResponse response = FallbackCacheHolder.get(key);
         if(response == null){
+            log.error("try to obtain data from cache error:{}", params);
             return DEFAULT_ERROR;
         }else{
             CourseListV3DTO courseListV3DTO = ResponseUtil.build(response, CourseListV3DTO.class, false);

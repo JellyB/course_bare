@@ -7,8 +7,10 @@ import com.huatu.tiku.course.service.cache.CacheUtil;
 import com.huatu.tiku.course.service.cache.CourseCacheKey;
 import com.huatu.tiku.course.service.v5.CourseServiceV5Biz;
 import com.huatu.tiku.course.util.ResponseUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
 
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
@@ -18,6 +20,7 @@ import java.util.function.Supplier;
  * Created by lijun on 2018/6/25
  */
 @Service
+@Slf4j
 public class CourseServiceV5BizImpl implements CourseServiceV5Biz {
 
     @Autowired
@@ -28,12 +31,17 @@ public class CourseServiceV5BizImpl implements CourseServiceV5Biz {
 
     @Override
     public String getClassExt(int classId, int terminal) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         Supplier key = () -> CourseCacheKey.classExtKeyV5(classId, terminal);
         Supplier<String> value = () -> {
             String classExt = courseService.getClassExt(classId, terminal);
             return classExt;
         };
-        return cacheUtil.getCacheStringValue(key, value, 2, TimeUnit.MINUTES);
+        String result =  cacheUtil.getCacheStringValue(key, value, 2, TimeUnit.MINUTES);
+        stopWatch.stop();
+        log.info("获取课程说明-返回H5:{}", stopWatch.prettyPrint());
+        return result;
     }
 
     @Override
