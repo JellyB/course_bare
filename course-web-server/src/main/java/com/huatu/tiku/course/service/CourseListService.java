@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.service;
 
+import com.google.common.collect.Lists;
 import com.huatu.common.spring.cache.Cached;
 import com.huatu.common.utils.concurrent.ConcurrentBizLock;
 import com.huatu.springboot.degrade.core.Degrade;
@@ -70,6 +71,9 @@ public class CourseListService {
                 if (!result.isCache()) {
                     courseServiceV3Fallback.setLiveList(params, response);
                 }
+            }else{
+                log.error("cache failed, and feign build failed:{}", params);
+                return new CourseListV3DTO(0, Lists.newArrayList(), false);
             }
         } else {
             result.setCache(true);
