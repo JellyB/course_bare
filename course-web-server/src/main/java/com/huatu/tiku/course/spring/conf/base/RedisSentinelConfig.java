@@ -1,22 +1,22 @@
 package com.huatu.tiku.course.spring.conf.base;
 
-import com.google.common.collect.Lists;
-import com.huatu.common.spring.serializer.StringRedisKeySerializer;
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.data.redis.connection.RedisClusterConfiguration;
-import org.springframework.data.redis.connection.RedisNode;
+import org.springframework.data.redis.connection.RedisSentinelConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import redis.clients.jedis.JedisPoolConfig;
 
-import java.util.List;
+import com.huatu.common.spring.serializer.StringRedisKeySerializer;
+
+import lombok.extern.slf4j.Slf4j;
+import redis.clients.jedis.JedisPoolConfig;
 
 
 /**
@@ -37,28 +37,27 @@ public class RedisSentinelConfig {
 
 
     @Autowired
-    private GenericJackson2JsonRedisSerializer genericJackson2JsonRedisSerializer;
+	private GenericJackson2JsonRedisSerializer genericJackson2JsonRedisSerializer;
 
     @Autowired
     private StringRedisKeySerializer stringRedisKeySerializer;
 
-    @Bean(name = "SentinelPoolConfig")
+   
+    
+    @Bean(value = "sentinelPool")
     public JedisPoolConfig jedisPoolConfig() {
-        log.info("sentinel pool config initialize start ...");
+        log.info("JedisSentinelPool  config initialize start ...");
+        
         JedisPoolConfig config = new JedisPoolConfig();
-
-        //最大总量
-        config.setMaxTotal(sentinelSentinelProperties.getPoolMaxTotal());
-        //设置最大空闲数量
-        config.setMaxIdle(sentinelSentinelProperties.getPoolMaxIdle());
-        //设置最长等待时间
-        config.setMaxWaitMillis(sentinelSentinelProperties.getMaxWaitMillis());
-        //常规配置
-        config.setTestOnBorrow(true);
-        config.setTestOnReturn(true);
+		config.setMaxTotal(Integer.valueOf(1000));
+		config.setMaxIdle(Integer.valueOf(20));
+		// 表示当borrow(引入)一个jedis实例时，最大的等待时间，如果超过等待时间，则直接抛出JedisConnectionException；
+		config.setMinEvictableIdleTimeMillis(Integer.valueOf(-1));
+		config.setTestOnBorrow(Boolean.valueOf(true));
         log.info("sentinel pool config initialize end ...");
         return config;
     }
+    
 
 
     /**
@@ -66,57 +65,29 @@ public class RedisSentinelConfig {
      *
      * @return
      */
-    @Bean(name = "SentinelConfiguration")
-    public RedisClusterConfiguration redisClusterConfiguration() {
-
-        RedisClusterConfiguration redisClusterConfiguration = new RedisClusterConfiguration();
-        List<RedisNode> redisNodes = Lists.newArrayList();
-        //获取到节点信息
-        String nodeString = sentinelSentinelProperties.getNodes();
-        //判断字符串是否为空
-        if (nodeString == null || "".equals(nodeString)) {
-            log.error("RedisSentinelConfiguration initialize error nodeString is null");
-            throw new RuntimeException("RedisSentinelConfiguration initialize error nodeString is null");
-        }
-        String[] nodeArray = nodeString.split(",");
-        //判断是否为空
-        if (nodeArray == null || nodeArray.length == 0) {
-            log.error("RedisSentinelConfiguration initialize error nodeArray is null");
-            throw new RuntimeException("RedisSentinelConfiguration initialize error nodeArray is null");
-        }
-        //循环注入至Set中
-        for (String node : nodeArray) {
-            String host = node.split(":")[0];
-            int port = Integer.valueOf(node.split(":")[1]);
-            RedisNode redisNode = new RedisNode(host, port);
-            log.info("Read node : {}。", node);
-            redisNodes.add(redisNode);
-        }
-        redisClusterConfiguration.setClusterNodes(redisNodes);
-        redisClusterConfiguration.setMaxRedirects(10);
-        return redisClusterConfiguration;
+    @Bean(value = "sentinelConfiguration")
+    public RedisSentinelConfiguration sentinelConfiguration() {
+		String master = "resque";
+		Set<String> sentinels = new HashSet<String>();
+		sentinels.add("192.168.100.21:26479");
+		sentinels.add("192.168.100.21:26489");
+		RedisSentinelConfiguration sentinelConfiguration = new RedisSentinelConfiguration(master,sentinels);
+        return sentinelConfiguration;
     }
-
-    @Bean(name = "sentinelConnectionFactory")
-    public JedisConnectionFactory jedisConnectionFactory(){
-        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory(redisClusterConfiguration());
-        jedisConnectionFactory.setPoolConfig(jedisPoolConfig());
-        jedisConnectionFactory.setPassword("3k80azVAgeza");
+    
+    @Bean(value = "sentinelJedisConnectionFactory")
+    public JedisConnectionFactory jedisConnectionFactory(JedisPoolConfig jedisPoolConfig, RedisSentinelConfiguration sentinelConfig) {
+        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory(sentinelConfig, jedisPoolConfig);
         return jedisConnectionFactory;
     }
+   
 
-    @Primary
-    @Bean(name = "redisTemplate")
-    public StringRedisTemplate redisTemplate(){
-        try{
-            StringRedisTemplate redisTemplate = new StringRedisTemplate();
-            redisTemplate.setConnectionFactory(jedisConnectionFactory());
-            //redisTemplate.setKeySerializer(stringRedisKeySerializer);
-            //redisTemplate.setDefaultSerializer(genericJackson2JsonRedisSerializer);
-            return redisTemplate;
-        }catch (Exception e){
-            log.error("{}", e);
-            return null;
-        }
+    @Bean(value = "sentinelRedisTemplate")
+    public RedisTemplate sentinelRedisTemplate(){
+        RedisTemplate sentinelRedisTemplate = new RedisTemplate();
+        sentinelRedisTemplate.setConnectionFactory(jedisConnectionFactory(jedisPoolConfig(),sentinelConfiguration()));
+        sentinelRedisTemplate.setKeySerializer(stringRedisKeySerializer);
+        sentinelRedisTemplate.setDefaultSerializer(genericJackson2JsonRedisSerializer);
+        return sentinelRedisTemplate;
     }
 }
