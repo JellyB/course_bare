@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.Lists;
 import com.huatu.common.utils.web.RequestUtil;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
-import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.util.ResponseUtil;
 
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
  **/
 @Slf4j
 @Component
-public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
+public class UserCourseServiceV6FallBack{
 
 
     private static final String CALENDAR_LEARN_PRE = "_mock_calendar_learn$";
@@ -34,7 +33,6 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
      * @param params
      * @return
      */
-    @Override
     public NetSchoolResponse obtainLearnCalender(Map<String, Object> params) {
         log.warn("response from call back obtainLearnCalender");
         String key = CALENDAR_LEARN_PRE + RequestUtil.getParamSign(params);
@@ -52,7 +50,6 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
      * @param params
      * @return
      */
-    @Override
     public NetSchoolResponse obtainExpiredCourses(Map<String, Object> params) {
         return NetSchoolResponse.DEFAULT;
     }
@@ -63,7 +60,6 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
      * @param params
      * @return
      */
-    @Override
     public NetSchoolResponse obtainCourseFilterList(Map<String, Object> params) {
         return NetSchoolResponse.DEFAULT;
     }
@@ -74,7 +70,6 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
      * @param params
      * @return
      */
-    @Override
     public NetSchoolResponse obtainMineCourses(Map<String, Object> params) {
         log.warn("response from call back obtainMineCourses");
         String key = COURSE_MINE_PRE + RequestUtil.getParamSign(params);
@@ -91,50 +86,6 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
             return NetSchoolResponse.newInstance(fallBack);
         }
         return response;
-    }
-
-    /**
-     * 一键清除我的已过期课程
-     *
-     * @param params
-     * @return
-     */
-    @Override
-    public NetSchoolResponse clearExpiredCourses(Map<String, Object> params) {
-        return NetSchoolResponse.DEFAULT;
-    }
-
-    /**
-     * 课程所属考试接口
-     *
-     * @param params
-     * @return
-     */
-    @Override
-    public NetSchoolResponse cateList(Map<String, Object> params) {
-        return NetSchoolResponse.DEFAULT;
-    }
-
-    /**
-     * 列表设置考试类型
-     *
-     * @param params
-     * @return
-     */
-    @Override
-    public NetSchoolResponse setCategory(Map<String, Object> params) {
-        return NetSchoolResponse.DEFAULT;
-    }
-
-    /**
-     * 直播学习记录上报
-     *
-     * @param params
-     * @return
-     */
-    @Override
-    public NetSchoolResponse saveLiveRecord(Map<String, Object> params) {
-        return NetSchoolResponse.DEFAULT;
     }
 
     /**
@@ -159,47 +110,5 @@ public class UserCourseServiceV6FallBack implements UserCourseServiceV6 {
         if(ResponseUtil.isSuccess(response)){
             FallbackCacheHolder.put(key, response);
         }
-    }
-
-	@Override
-	public NetSchoolResponse unfinishStageExamList(Map<String, Object> params) {
-		return NetSchoolResponse.DEFAULT;
-	}
-
-	@Override
-	public NetSchoolResponse<Integer> stageTestStudyRecord(Map<String, Object> params) {
-		 return NetSchoolResponse.DEFAULT;
-	}
-
-	@Override
-	public NetSchoolResponse unfinishStageExamCount(Map<String, String> params) {
-		 return NetSchoolResponse.DEFAULT;
-	}
-
-	@Override
-	public NetSchoolResponse readPeriod(Map<String, Object> params) {
-		 return NetSchoolResponse.DEFAULT;
-	}
-
-    /**
-     * 一对一信息提交
-     *
-     * @param p
-     * @return
-     */
-    @Override
-    public NetSchoolResponse one2One(String p) {
-        return NetSchoolResponse.DEFAULT;
-    }
-
-    /**
-     * 一对一信息获取
-     *
-     * @param p
-     * @return
-     */
-    @Override
-    public NetSchoolResponse obtainOne2One(String p) {
-        return NetSchoolResponse.DEFAULT;
     }
 }

@@ -30,6 +30,7 @@ public class One2OneFormDTOV2 implements Serializable{
     @JsonProperty("NetClassCategory")
     private String NetClassCategory;
     @JsonProperty("NetClassCategoryId")
+    @NotNull(message = "NetClassCategoryId 不能为空")
     private Long NetClassCategoryId;
     @JsonProperty("NetClassName")
     private String NetClassName;
