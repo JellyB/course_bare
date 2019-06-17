@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
-import javax.annotation.Resource;
 import java.util.concurrent.TimeUnit;
 
 
@@ -45,8 +44,8 @@ public class RedisTest extends BaseWebTest {
 
     @Test
     public void addRedis(){
-        String key = "redis.test.2019062122222222";
-        String key_ = "redis.test.201906233333333";
+        String key = "redis.test.1111_00000000";
+        String key_ = "redis.test.2222_0000000";
         String value = "world";
         ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
         valueOperations.set(key, value);

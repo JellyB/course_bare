@@ -1,7 +1,5 @@
 package com.huatu.tiku.course.test;
 
-import com.huatu.common.SuccessMessage;
-import com.huatu.common.test.BaseTest;
 import com.huatu.common.test.BaseWebTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
@@ -23,12 +21,12 @@ import java.util.concurrent.TimeUnit;
 public class SentinelTest extends BaseWebTest {
 
     @Autowired
-    @Qualifier(value = "sentinelRedisTemplate")
+    @Qualifier(value = "redisTemplate")
     private RedisTemplate sentinelRedisTemplate;
 
     @Test
     public void put(){
-        String key = "course.sentinel.key1";
+        String key = "course.sentinel.key1234";
         String value = "helloWorld";
         int expire = 10;
         ValueOperations<String,String> valueOperations = sentinelRedisTemplate.opsForValue();
