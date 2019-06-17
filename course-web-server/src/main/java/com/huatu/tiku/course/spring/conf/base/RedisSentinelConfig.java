@@ -8,9 +8,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisSentinelConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 
 import com.huatu.common.spring.serializer.StringRedisKeySerializer;
@@ -82,7 +83,8 @@ public class RedisSentinelConfig {
     }
    
 
-    @Bean(value = "sentinelRedisTemplate")
+    @Primary
+    @Bean(value = "redisTemplate")
     public RedisTemplate sentinelRedisTemplate(){
         RedisTemplate sentinelRedisTemplate = new RedisTemplate();
         sentinelRedisTemplate.setConnectionFactory(jedisConnectionFactory(jedisPoolConfig(),sentinelConfiguration()));
