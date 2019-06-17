@@ -5,6 +5,7 @@ import com.huatu.tiku.course.service.VersionService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
@@ -26,9 +27,11 @@ public class RedisTest extends BaseWebTest {
     private VersionService versionService;
 
     @Autowired
+    @Qualifier(value = "redisTemplate")
     private RedisTemplate redisTemplate;
 
-    @Resource(name = "PersistTemplate")
+    @Autowired
+    @Qualifier(value = "persistTemplate")
     private RedisTemplate  persistTemplate;
 
 
@@ -42,15 +45,16 @@ public class RedisTest extends BaseWebTest {
 
     @Test
     public void addRedis(){
-        String key = "redis.test.20190617";
+        String key = "redis.test.2019062122222222";
+        String key_ = "redis.test.201906233333333";
         String value = "world";
         ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
         valueOperations.set(key, value);
         redisTemplate.expire(key,100, TimeUnit.SECONDS);
 
         ValueOperations valueOperations_ = persistTemplate.opsForValue();
-        valueOperations_.set(key, value);
-        persistTemplate.expire(key,100, TimeUnit.SECONDS);
+        valueOperations_.set(key_, value);
+        persistTemplate.expire(key_,100, TimeUnit.SECONDS);
 
         log.error(">>>>>>>>>>>>>> get from redisTemplate:{}", valueOperations.get(key));
         log.error(">>>>>>>>>>>>>> get from persistTemplate:{}", valueOperations_.get(key));

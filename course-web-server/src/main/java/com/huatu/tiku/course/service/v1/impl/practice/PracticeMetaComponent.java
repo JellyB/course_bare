@@ -15,6 +15,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
@@ -49,7 +50,8 @@ public class PracticeMetaComponent {
 	@Autowired
 	private RedisTemplate redisTemplate;
 
-	@Resource(name = "PersistTemplate")
+	@Autowired
+	@Qualifier(value = "persistTemplate")
 	private RedisTemplate persistTemplate;
 
 	@Autowired

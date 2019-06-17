@@ -57,7 +57,8 @@ public class TeacherServiceImpl implements TeacherService {
     private final QuestionInfoService questionInfoService;
     private final PracticeMetaComponent practiceMetaComponent;
 
-    @Resource(name = "PersistTemplate")
+    @Autowired
+    @Qualifier(value = "persistTemplate")
     private RedisTemplate persistTemplate;
 
     @Autowired

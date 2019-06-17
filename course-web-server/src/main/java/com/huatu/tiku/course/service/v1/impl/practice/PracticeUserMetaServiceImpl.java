@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
@@ -35,7 +36,8 @@ public class PracticeUserMetaServiceImpl extends BaseServiceHelperImpl<CoursePra
 		super(CoursePracticeUserMeta.class);
 	}
 
-    @Resource(name = "PersistTemplate")
+	@Autowired
+	@Qualifier(value = "persistTemplate")
 	private RedisTemplate persistTemplate;
 	
 	@Autowired

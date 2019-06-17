@@ -15,7 +15,7 @@ import static com.huatu.common.consts.ApolloConfigConsts.NAMESPACE_TIKU_CACHE_RE
 @ConfigurationProperties(prefix = "spring.redis.sentinel")
 @EnableApolloConfig(NAMESPACE_TIKU_CACHE_REDIS)
 @Data
-public class SentinelSentinelProperties {
+public class SentinelProperties {
     private String nodes;
     private Integer poolMaxTotal;
     private Integer poolMaxIdle;

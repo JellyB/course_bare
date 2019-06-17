@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
@@ -57,7 +58,8 @@ public class CoursePracticeQuestionInfoServiceImpl extends BaseServiceHelperImpl
 	@Autowired
 	private RedisTemplate redisTemplate;
 
-	@Resource(name = "PersistTemplate")
+	@Autowired
+	@Qualifier(value = "persistTemplate")
 	private RedisTemplate persistTemplate;
 
 	@Autowired

@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutionException;
 import org.junit.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
@@ -56,7 +57,8 @@ public class PeriodTest extends BaseWebTest {
 	@Autowired
 	private CourseLiveBackLogService courseLiveBackLogService;
 
-	@Resource(name = "PersistTemplate")
+	@Autowired
+	@Qualifier(value = "persistTemplate")
 	private RedisTemplate persistTemplate;
 	
 	@Autowired

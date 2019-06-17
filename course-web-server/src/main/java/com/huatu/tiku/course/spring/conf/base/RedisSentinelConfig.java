@@ -27,14 +27,14 @@ import redis.clients.jedis.JedisPoolConfig;
 
 @Configuration
 @Slf4j
-@EnableConfigurationProperties(SentinelSentinelProperties.class)
+@EnableConfigurationProperties(SentinelProperties.class)
 public class RedisSentinelConfig {
     @Value("${spring.application.name:unknown}")
     private String applicationName;
 
 
     @Autowired
-    private SentinelSentinelProperties sentinelSentinelProperties;
+    private SentinelProperties sentinelSentinelProperties;
 
 
     @Autowired
