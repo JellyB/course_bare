@@ -336,32 +336,36 @@ public class CourseExercisesProcessLogManager {
                 .andEqualTo("status", YesOrNoStatus.YES.getCode())
                 .andEqualTo("cardId", cardId);
 
-        CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogMapper.selectOneByExample(example);
-        log.info("创建课后作业答题卡信息:{}",JSONObject.toJSONString(courseExercisesProcessLog));
-        if(null == courseExercisesProcessLog){
-            /**
-             * 新增数据
-             */
+        try{
+            CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogMapper.selectOneByExample(example);
+            log.info("创建课后作业答题卡信息:{}",JSONObject.toJSONString(courseExercisesProcessLog));
+            if(null == courseExercisesProcessLog){
+                /**
+                 * 新增数据
+                 */
 
-            CourseExercisesProcessLog newLog = newLog(userId, isAlert);
-            newLog.setCourseType(courseType);
-            newLog.setSyllabusId(syllabusId);
-            newLog.setUserId(Long.valueOf(userId));
-            newLog.setCourseId(courseId);
-            newLog.setLessonId(coursewareId);
-            newLog.setCardId(cardId);
-            newLog.setBizStatus(status);
-            courseExercisesProcessLogMapper.insertSelective(newLog);
-            putIntoDealList(syllabusId);
-        }else{
-            /**
-             * 更新答题卡字段
-             */
-            CourseExercisesProcessLog update = new CourseExercisesProcessLog();
-            BeanUtils.copyProperties(courseExercisesProcessLog, update);
-            update.setGmtModify(new Timestamp(System.currentTimeMillis()));
-            update.setBizStatus(status);
-            courseExercisesProcessLogMapper.updateByExampleSelective(update, example);
+                CourseExercisesProcessLog newLog = newLog(userId, isAlert);
+                newLog.setCourseType(courseType);
+                newLog.setSyllabusId(syllabusId);
+                newLog.setUserId(Long.valueOf(userId));
+                newLog.setCourseId(courseId);
+                newLog.setLessonId(coursewareId);
+                newLog.setCardId(cardId);
+                newLog.setBizStatus(status);
+                courseExercisesProcessLogMapper.insertSelective(newLog);
+                putIntoDealList(syllabusId);
+            }else{
+                /**
+                 * 更新答题卡字段
+                 */
+                CourseExercisesProcessLog update = new CourseExercisesProcessLog();
+                BeanUtils.copyProperties(courseExercisesProcessLog, update);
+                update.setGmtModify(new Timestamp(System.currentTimeMillis()));
+                update.setBizStatus(status);
+                courseExercisesProcessLogMapper.updateByExampleSelective(update, example);
+            }
+        }catch (Exception e){
+            log.error("课后作业创建答题卡异步处理方法失败, userId:{},courseType:{},coursewareId:{},courseId:{},syllabusId:{},result:{},error:{}", userId, courseType, coursewareId, courseId, syllabusId, result, e.getMessage());
         }
     }
 
@@ -934,7 +938,7 @@ public class CourseExercisesProcessLogManager {
                 createCourseWorkAnswerCard(userId, courseType, courseWareId, courseId, syllabusId, params,false);
                 log.debug("处理课后作业入库----> userId:{},courseType:{},courseWareId:{},courseId:{},syllabusId:{},params:{}", userId, courseType, courseWareId, courseId, syllabusId, params);
             }catch (Exception e){
-                log.error("处理课后作业入库 mysql 异常 userId:{},courseType:{},cardId:{},status:{},courseWareId:{},syllabusDataInfo:{}", userId, courseType, cardId, status, courseWareId, syllabusDataInfo);
+                log.error("处理课后作业入库 mysql 异常 userId:{},courseType:{},cardId:{},status:{},courseWareId:{},syllabusDataInfo:{},error:{}", userId, courseType, cardId, status, courseWareId, syllabusDataInfo,e.getMessage());
                 throw new IllegalArgumentException("处理课后作业入库 mysql 异常");
             }
         }
