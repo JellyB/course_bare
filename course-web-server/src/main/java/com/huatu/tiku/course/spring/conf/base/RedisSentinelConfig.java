@@ -1,8 +1,10 @@
 package com.huatu.tiku.course.spring.conf.base;
 
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -34,7 +36,7 @@ public class RedisSentinelConfig {
 
 
     @Autowired
-    private SentinelProperties sentinelSentinelProperties;
+    private SentinelProperties sentinelProperties;
 
 
     @Autowired
@@ -47,14 +49,14 @@ public class RedisSentinelConfig {
     
     @Bean(value = "sentinelPool")
     public JedisPoolConfig jedisPoolConfig() {
-        log.info("JedisSentinelPool  config initialize start ...");
-        
+        log.info("Jedis Sentinel Pool  config initialize start ...");
+
         JedisPoolConfig config = new JedisPoolConfig();
-		config.setMaxTotal(Integer.valueOf(1000));
-		config.setMaxIdle(Integer.valueOf(20));
-		// 表示当borrow(引入)一个jedis实例时，最大的等待时间，如果超过等待时间，则直接抛出JedisConnectionException；
-		config.setMinEvictableIdleTimeMillis(Integer.valueOf(-1));
-		config.setTestOnBorrow(Boolean.valueOf(true));
+        config.setMaxIdle(sentinelProperties.getPool().getMaxIdle());
+        config.setMinIdle(sentinelProperties.getPool().getMinIdle());
+        config.setMaxWaitMillis(sentinelProperties.getPool().getMaxWait());
+        config.setMaxTotal(sentinelProperties.getPool().getMaxActive());
+        config.setTestOnBorrow(sentinelProperties.getPool().isTestOnBorrow());
         log.info("sentinel pool config initialize end ...");
         return config;
     }
@@ -68,11 +70,17 @@ public class RedisSentinelConfig {
      */
     @Bean(value = "sentinelConfiguration")
     public RedisSentinelConfiguration sentinelConfiguration() {
-		String master = "resque";
-		Set<String> sentinels = new HashSet<String>();
-		sentinels.add("192.168.100.21:26479");
-		sentinels.add("192.168.100.21:26489");
-		RedisSentinelConfiguration sentinelConfiguration = new RedisSentinelConfiguration(master,sentinels);
+
+        Set<String> sentinelHostAndPorts = Sets.newHashSet();
+        String[] nodeArray = sentinelProperties.getSentinel().getNodes().split(",");
+        //判断是否为空
+        if (nodeArray == null || nodeArray.length == 0) {
+            log.error("RedisClusterConfiguration initialize error nodeArray is null");
+            throw new RuntimeException("RedisClusterConfiguration initialize error nodeArray is null");
+        }
+
+        sentinelHostAndPorts = Arrays.stream(nodeArray).collect(Collectors.toSet());
+		RedisSentinelConfiguration sentinelConfiguration = new RedisSentinelConfiguration(sentinelProperties.getSentinel().getMaster(), sentinelHostAndPorts);
         return sentinelConfiguration;
     }
     

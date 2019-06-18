@@ -1,5 +1,8 @@
 package com.huatu.tiku.course.netschool.api.v5;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.huatu.common.Result;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v5.configuration.CourseServiceV5Config;
 import com.huatu.tiku.course.util.ResponseUtil;
@@ -253,7 +256,14 @@ public interface CourseServiceV5 {
                 @Override
                 public NetSchoolResponse findPurchasesTimetable(Map<String, Object> params) {
                     log.error("course service v5 findPurchasesTimetable fallback,params: {}, fall back reason: {}",params, throwable);
-                    return NetSchoolResponse.DEFAULT;
+                    /**
+                     * 可能存在大批量请求数据的情况，比如pageSize = 1000
+                     */
+                    Map<String, Object> defaultMap = Maps.newHashMap();
+                    defaultMap.put("list", Lists.newArrayList());
+                    defaultMap.put("netClassName", "");
+                    defaultMap.put("next", 0);
+                    return new NetSchoolResponse(Result.SUCCESS_CODE, "", defaultMap);
                 }
 
                 /**

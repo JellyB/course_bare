@@ -27,7 +27,9 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
+import com.huatu.tiku.common.consts.RabbitConsts;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
+import com.huatu.tiku.course.mq.listeners.ErrorLogReportListener;
 import com.huatu.tiku.course.mq.listeners.RewardMessageListener;
 
 /**
@@ -170,4 +172,25 @@ public class RabbitMqConfig {
 	public Queue CourseWorkReportDealQueue(){
 		return new Queue(RabbitMqConstants.COURSE_WORK_REPORT_USERS_DEAL_QUEUE);
 	}
+	
+	@Bean
+	public SimpleMessageListenerContainer reportLogListenerContainer(@Autowired ConnectionFactory connectionFactory,
+			@Autowired(required = false) @Qualifier("coreThreadPool") ThreadPoolTaskExecutor threadPoolTaskExecutor,
+			@Autowired ErrorLogReportListener reportListener, @Autowired AmqpAdmin amqpAdmin) {
+		SimpleMessageListenerContainer manualRabbitContainer = new SimpleMessageListenerContainer();
+		manualRabbitContainer.setQueueNames(RabbitConsts.QUEUE_REPORT);
+		manualRabbitContainer.setConnectionFactory(connectionFactory);
+		if (amqpAdmin instanceof RabbitAdmin) {
+			manualRabbitContainer.setRabbitAdmin((RabbitAdmin) amqpAdmin);
+		}
+		if (threadPoolTaskExecutor != null) {
+			manualRabbitContainer.setTaskExecutor(threadPoolTaskExecutor);
+		}
+		manualRabbitContainer.setAcknowledgeMode(AcknowledgeMode.AUTO);
+		manualRabbitContainer.setConcurrentConsumers(threadPoolTaskExecutor.getCorePoolSize() / 4);
+		manualRabbitContainer.setMaxConcurrentConsumers(threadPoolTaskExecutor.getCorePoolSize() / 4);
+		manualRabbitContainer.setMessageListener(reportListener);
+		return manualRabbitContainer;
+	}
+	
 }
