@@ -68,7 +68,7 @@ public class CourseListService {
                 valueOperations.set(cacheKey, result, 1, TimeUnit.MINUTES);
             }
             //非fallback获取到，设置到fallback缓存
-            if (!result.isCache()) {
+            if (result != null && !result.isCache()) {
                 courseServiceV3Fallback.setLiveList(params, response);
             }
         } else {
