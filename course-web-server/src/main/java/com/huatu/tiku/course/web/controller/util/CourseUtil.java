@@ -210,6 +210,7 @@ public class CourseUtil {
                     //查询用户答题信息
                     log.info("获取课后练习的答题卡信息,参数信息，userId = {},paramsList = {}", userId, paramsList);
                     Object courseExercisesCardInfo = practiceCardServiceV1.getCourseExercisesCardInfo(userId, paramsList);
+                    log.info("获取课后练习的答题卡信息,参数信息，userId = {},paramsList = {}, result = {}", userId, paramsList, JSONObject.toJSONString(courseExercisesCardInfo));
                     Object build = ZTKResponseUtil.build(courseExercisesCardInfo);
 
                     Map<Object, Object> defaultMap = HashMapBuilder.newBuilder()
