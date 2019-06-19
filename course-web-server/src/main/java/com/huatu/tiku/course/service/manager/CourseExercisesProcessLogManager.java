@@ -337,13 +337,12 @@ public class CourseExercisesProcessLogManager {
                 .andEqualTo("cardId", cardId);
 
         try{
-            CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogMapper.selectOneByExample(example);
-            log.info("创建课后作业答题卡信息:{}",JSONObject.toJSONString(courseExercisesProcessLog));
-            if(null == courseExercisesProcessLog){
+            List<CourseExercisesProcessLog> courseExercisesProcessLogList = courseExercisesProcessLogMapper.selectByExample(example);
+            log.info("创建课后作业答题卡信息:{}",JSONObject.toJSONString(courseExercisesProcessLogList));
+            if(CollectionUtils.isEmpty(courseExercisesProcessLogList)){
                 /**
                  * 新增数据
                  */
-
                 CourseExercisesProcessLog newLog = newLog(userId, isAlert);
                 newLog.setCourseType(courseType);
                 newLog.setSyllabusId(syllabusId);
@@ -355,6 +354,14 @@ public class CourseExercisesProcessLogManager {
                 courseExercisesProcessLogMapper.insertSelective(newLog);
                 putIntoDealList(syllabusId);
             }else{
+                CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogList.get(0);
+                if(courseExercisesProcessLogList.size() > 1){
+                    for(int i = 1; i < courseExercisesProcessLogList.size(); i ++){
+                        CourseExercisesProcessLog temp = courseExercisesProcessLogList.get(i);
+                        courseExercisesProcessLogMapper.deleteByPrimaryKey(temp.getId());
+                        log.error("课后作业重复数据,数据size:{}:数据内容{},", courseExercisesProcessLogList.size(), JSONObject.toJSONString(temp));
+                    }
+                }
                 /**
                  * 更新答题卡字段
                  */
