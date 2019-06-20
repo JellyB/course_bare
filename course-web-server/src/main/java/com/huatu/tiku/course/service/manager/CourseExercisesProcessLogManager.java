@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.*;
 import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.bean.vo.RecordProcess;
 import com.huatu.tiku.course.common.VideoTypeEnum;
@@ -14,7 +15,6 @@ import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.entity.CourseLiveBackLog;
-import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
 import io.jsonwebtoken.lang.Collections;
 import lombok.*;
 import org.apache.commons.collections.CollectionUtils;
@@ -34,11 +34,6 @@ import org.springframework.stereotype.Component;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Table;
-import com.google.common.collect.TreeBasedTable;
 import com.huatu.common.exception.BizException;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
@@ -62,7 +57,6 @@ import com.huatu.ztk.paper.common.AnswerCardStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StopWatch;
 import tk.mybatis.mapper.entity.Example;
-import tk.mybatis.mapper.weekend.WeekendSqls;
 
 /**
  * 描述：
@@ -346,15 +340,7 @@ public class CourseExercisesProcessLogManager {
                 /**
                  * 新增数据
                  */
-                CourseExercisesProcessLog newLog = newLog(userId, isAlert);
-                newLog.setCourseType(courseType);
-                newLog.setSyllabusId(syllabusId);
-                newLog.setUserId(Long.valueOf(userId));
-                newLog.setCourseId(courseId);
-                newLog.setLessonId(coursewareId);
-                newLog.setCardId(cardId);
-                newLog.setBizStatus(status);
-                courseExercisesProcessLogMapper.insertSelective(newLog);
+                buildCourseWorkLog4insert(userId, courseType, coursewareId, courseId, syllabusId, isAlert, cardId, status);
                 putIntoDealList(syllabusId);
             }else{
                 CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogList.get(0);
@@ -377,6 +363,29 @@ public class CourseExercisesProcessLogManager {
         }catch (Exception e){
             log.error("课后作业创建答题卡异步处理方法失败, userId:{},courseType:{},coursewareId:{},courseId:{},syllabusId:{},result:{},error:{}", userId, courseType, coursewareId, courseId, syllabusId, result, e.getMessage());
         }
+    }
+
+    /**
+     * 构建数据 for insert
+     * @param userId
+     * @param courseType
+     * @param coursewareId
+     * @param courseId
+     * @param syllabusId
+     * @param isAlert
+     * @param cardId
+     * @param status
+     */
+    private void buildCourseWorkLog4insert(int userId, Integer courseType, Long coursewareId, Long courseId, Long syllabusId, boolean isAlert, Long cardId, int status) {
+        CourseExercisesProcessLog newLog = newLog(userId, isAlert);
+        newLog.setCourseType(courseType);
+        newLog.setSyllabusId(syllabusId);
+        newLog.setUserId(Long.valueOf(userId));
+        newLog.setCourseId(courseId);
+        newLog.setLessonId(coursewareId);
+        newLog.setCardId(cardId);
+        newLog.setBizStatus(status);
+        courseExercisesProcessLogMapper.insertSelective(newLog);
     }
 
 
@@ -879,6 +888,55 @@ public class CourseExercisesProcessLogManager {
     }
 
     /**
+     * 查询数据库校验答题卡是否存在
+     * @param userId
+     * @param hashMapImmutableList
+     * @param longImmutableList
+     */
+    public void analyzeCardIdExist(int userId, ImmutableList<HashMap<String, Object>> hashMapImmutableList, ImmutableList<Long> longImmutableList){
+        List<HashMap<String,Object>> fixList = Lists.newArrayList();
+        for(HashMap<String, Object> map : hashMapImmutableList){
+
+            int courseType = MapUtils.getInteger(map, SyllabusInfo.VideoType, 0);
+            long lessonId = MapUtils.getInteger(map, SyllabusInfo.CourseId, 0);
+
+            try{
+                Example example = new Example(CourseExercisesProcessLog.class);
+                example.and()
+                        .andEqualTo("userId", userId)
+                        .andEqualTo("lessonId", lessonId)
+                        .andEqualTo("courseType", courseType)
+                        .andEqualTo("status", YesOrNoStatus.YES.getCode());
+                CourseExercisesProcessLog log = courseExercisesProcessLogMapper.selectOneByExample(example);
+                if(null == log){
+                    fixList.add(map);
+                }
+            }catch (Exception e){
+                log.error("courseExercisesProcessLogMapper selectOneByExample error,userId = {}, courseType = {}, lessonId = {}, error = {}", userId, courseType, lessonId, e.getMessage());
+            }
+        }
+        if(CollectionUtils.isNotEmpty(fixList)){
+            requestCourseWorkInfo4Mysql(userId, fixList);
+        }
+    }
+
+    /**
+     * 请求 paper 服务刷新数据进入 mysql
+     * @param userId
+     * @param fixList
+     */
+    private void requestCourseWorkInfo4Mysql(int userId, List<HashMap<String,Object>> fixList){
+        log.error("课后作业数据修正 - 需要请求paper并放入mysql的数据  userId = {}, paramList = {}", userId, fixList);
+        List<DataInfo> dataInfos = Lists.newArrayList();
+        Object practiceCardInfos = practiceCardService.getCourseExercisesCardInfo(userId, fixList);
+        List<Map> answerCardInfo = (List<Map>) ZTKResponseUtil.build(practiceCardInfos);
+        if(CollectionUtils.isNotEmpty(dataInfos)){
+            dealCourseExercisesCards(userId, answerCardInfo);
+        }
+    }
+
+
+    /**
      * 遍历获取到的数据
      * @param courseExercisesCards
      */
@@ -992,14 +1050,32 @@ public class CourseExercisesProcessLogManager {
 	    private int ucount;
 	    private int rcount;
 	    private int qcount;
+	    private long  id;
 
 	    @Builder
-        public DataInfo(int status, int wcount, int ucount, int rcount, int qcount) {
+        public DataInfo(int status, int wcount, int ucount, int rcount, int qcount, long id) {
             this.status = status;
             this.wcount = wcount;
             this.ucount = ucount;
             this.rcount = rcount;
             this.qcount = qcount;
+            this.id = id;
+        }
+    }
+
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    public static class UserInfo{
+        private Integer userId;
+        private Long lessonId;
+        private Integer courseType;
+
+        @Builder
+        public UserInfo(Integer userId, Long lessonId, Integer courseType) {
+            this.userId = userId;
+            this.lessonId = lessonId;
+            this.courseType = courseType;
         }
     }
 }
