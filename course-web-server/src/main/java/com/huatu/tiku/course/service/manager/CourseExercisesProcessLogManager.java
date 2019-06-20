@@ -11,8 +11,10 @@ import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.bean.vo.RecordProcess;
 import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
+import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.entity.CourseLiveBackLog;
+import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
 import io.jsonwebtoken.lang.Collections;
 import lombok.*;
 import org.apache.commons.collections.CollectionUtils;
@@ -60,6 +62,7 @@ import com.huatu.ztk.paper.common.AnswerCardStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StopWatch;
 import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.weekend.WeekendSqls;
 
 /**
  * 描述：
@@ -949,6 +952,35 @@ public class CourseExercisesProcessLogManager {
                 throw new IllegalArgumentException("处理课后作业入库 mysql 异常");
             }
         }
+    }
+
+    /**
+     * 通过courseType或者lessonId获取答题卡id
+     * @param userId
+     * @param paramsList
+     * @return
+     */
+    public List<Long> obtainCardIdsByCourseTypeAndLessonId(long userId, List<HashMap<String, Object>> paramsList){
+
+        List<Long> cardIds = Lists.newArrayList();
+        for(Map item : paramsList){
+            int courseType = MapUtils.getIntValue(item, SyllabusInfo.VideoType);
+            int lessonId = MapUtils.getIntValue(item, SyllabusInfo.CourseWareId);
+            try{
+                Example example = new Example(CourseExercisesProcessLog.class);
+                example.and()
+                        .andEqualTo("userId", userId)
+                        .andEqualTo("status", YesOrNoStatus.YES.getCode())
+                        .andEqualTo("courseType", courseType)
+                        .andEqualTo("lessonId", lessonId);
+
+                CourseExercisesProcessLog log = courseExercisesProcessLogMapper.selectOneByExample(example);
+                cardIds.add(log.getCardId());
+            }catch (Exception e){
+                log.error("obtainCardIdsByCourseTypeAndLessonId error!: userId = {}, paramsList = {}, error = {}", userId, paramsList, e.getMessage());
+            }
+        }
+        return cardIds;
     }
 
 	@NoArgsConstructor

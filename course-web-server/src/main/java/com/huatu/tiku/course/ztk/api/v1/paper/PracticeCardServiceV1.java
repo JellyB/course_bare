@@ -53,6 +53,14 @@ public interface PracticeCardServiceV1 {
     );
 
     /**
+     * 查询课后练习答题卡信息V2
+     */
+    @PostMapping(value = "/v2/practices/getCourseExercisesCardInfoV2")
+    Object getCourseExercisesCardInfoV2(
+            @RequestBody List<Long> cardIds
+    );
+
+    /**
      * 查询指定用户所有答题卡信息
      */
     @PostMapping(value = "/v2/practices/{userId}/getCourseExercisesAllCardInfo")

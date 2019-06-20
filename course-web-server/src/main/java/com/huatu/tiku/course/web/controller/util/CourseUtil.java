@@ -27,6 +27,7 @@ import com.huatu.tiku.entity.CourseExercisesProcessLog;
 import com.huatu.tiku.entity.CourseLiveBackLog;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
 import com.huatu.tiku.springboot.basic.reward.event.RewardActionEvent;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -40,6 +41,8 @@ import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -207,10 +210,98 @@ public class CourseUtil {
                                 return build;
                             })
                             .collect(Collectors.toList());
+
+
                     //查询用户答题信息
                     log.info("获取课后练习的答题卡信息,参数信息，userId = {},paramsList = {}", userId, paramsList);
                     Object courseExercisesCardInfo = practiceCardServiceV1.getCourseExercisesCardInfo(userId, paramsList);
                     log.info("获取课后练习的答题卡信息,参数信息，userId = {},paramsList = {}, result = {}", userId, paramsList, JSONObject.toJSONString(courseExercisesCardInfo));
+                    Object build = ZTKResponseUtil.build(courseExercisesCardInfo);
+
+                    Map<Object, Object> defaultMap = HashMapBuilder.newBuilder()
+                            .put("status", 0)
+                            .put("rcount", 0)
+                            .put("wcount", 0)
+                            .put("ucount", 0)
+                            .put("id", need2Str ? "0" : 0)
+                            .build();
+                    List<Map> courseExercisesCards = (List<Map>) build;         //课后作业相关答题卡
+                    if (CollectionUtils.isNotEmpty(courseExercisesCards)) {
+                        //获取答题卡信息状态
+                        Function<HashMap<String, Object>, Map> getCourse = (valueData) -> {
+                            Optional<Map> first = courseExercisesCards.stream()
+                                    .filter(result -> null != result.get(SyllabusInfo.CourseId) && null != result.get("courseType"))
+                                    .filter(result ->
+                                            MapUtils.getString(result, SyllabusInfo.CourseId).equals(MapUtils.getString(valueData, SyllabusInfo.CourseWareId))
+                                                    && MapUtils.getString(result, "courseType").equals(MapUtils.getString(valueData, SyllabusInfo.VideoType))
+                                    )
+                                    .findFirst();
+                            if (first.isPresent()) {
+                                Map map = first.get();
+                                map.remove("courseId");
+                                map.remove("courseType");
+                                if(need2Str){
+                                    map.computeIfPresent("id", (mapK, mapV) -> String.valueOf(mapV));
+                                }
+                                return map;
+                            } else {
+                                return defaultMap;
+                            }
+                        };
+                        List<Map> mapList = ((List<Map>) value).stream()
+                                .map(valueData -> {
+                                    Map answerCard = getCourse.apply((HashMap<String, Object>) valueData);
+                                    valueData.put("answerCard", answerCard);
+                                    return valueData;
+                                })
+                                .collect(Collectors.toList());
+                        return mapList;
+                    } else {
+                        List<Map> mapList = ((List<Map>) value).stream()
+                                .map(valueData -> {
+                                    valueData.put("answerCard", defaultMap);
+                                    return valueData;
+                                })
+                                .collect(Collectors.toList());
+                        return mapList;
+                    }
+                }
+        );
+        log.info("学习报告 - 课后作业答题卡信息:userId:{},耗时:{}", userId,  stopwatch.elapsed(TimeUnit.MILLISECONDS));
+    }
+
+
+    /**
+     * 课程大纲-售后-添加课后答题结果信息 V2
+     *
+     * @param response 响应结果集
+     * @param userId   用户ID
+     */
+    public void addExercisesCardInfoV2(LinkedHashMap response, long userId, boolean need2Str) {
+        StopWatch stopWatch = new StopWatch();
+        response.computeIfPresent("list", (key, value) -> {
+                    List<HashMap<String, Object>> paramsList = ((List<Map>) value).stream()
+                            .filter(map -> (null != MapUtils.getString(map, SyllabusInfo.Type)
+                                    && MapUtils.getString(map, SyllabusInfo.Type).equals(String.valueOf(TypeEnum.COURSE_WARE.getType())))
+                            )
+                            .filter(map -> null != map.get(SyllabusInfo.VideoType) && null != map.get(SyllabusInfo.CourseWareId))
+                            .map(map -> {
+                                HashMap<String, Object> build = HashMapBuilder.<String, Object>newBuilder()
+                                        .put(SyllabusInfo.VideoType, MapUtils.getIntValue(map, SyllabusInfo.VideoType, 0))
+                                        .put(SyllabusInfo.CourseId, MapUtils.getIntValue(map, SyllabusInfo.CourseWareId, 0))
+                                        .build();
+                                return build;
+                            })
+                            .collect(Collectors.toList());
+
+
+                    //查询用户答题信息
+                    log.info("获取课后练习的答题卡信息 v2,参数信息，userId = {},paramsList = {}", userId, paramsList);
+                    List<Long> cardIds = courseExercisesProcessLogManager.obtainCardIdsByCourseTypeAndLessonId(userId, paramsList);
+                    log.info("获取课后练习的答题卡信息 v2,答题卡返回信息，userId = {}, cardIds = {}", userId, cardIds);
+                    Object courseExercisesCardInfo = practiceCardServiceV1.getCourseExercisesCardInfoV2(cardIds);
+                    dealCourseWorkReport2BProcessedStorage(userId, paramsList, cardIds);
+                    log.info("获取课后练习的答题卡信息 v2,参数信息，userId = {},paramsList = {}, result = {}", userId, paramsList, JSONObject.toJSONString(courseExercisesCardInfo));
                     Object build = ZTKResponseUtil.build(courseExercisesCardInfo);
 
                     Map<Object, Object> defaultMap = HashMapBuilder.newBuilder()
@@ -574,5 +665,41 @@ public class CourseUtil {
             log.debug("deal userId:{} into rabbit mq", userIdStr);
             rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_WORK_REPORT_USERS_DEAL_QUEUE, userIdStr);
         }
+    }
+
+    private void dealCourseWorkReport2BProcessedStorage(long userId, List<HashMap<String, Object>> paramsList, List<Long> cardIds){
+        int paramSize = paramsList.size();
+        int cardSize = cardIds.size();
+        if(CollectionUtils.isEmpty(paramsList)){
+            return;
+        }
+        if(paramSize > cardSize){
+            int poolSize = paramSize - cardSize;
+            ExecutorService executorService = Executors.newFixedThreadPool(poolSize);
+            for(Map<String, Object> temp : paramsList){
+                //todo
+            }
+            executorService.shutdown();
+        }
+
+    }
+
+    private void dealUserInfo(Integer userId, Long lessonId, Integer courseType){
+        UserInfo userInfo = new UserInfo();
+        userInfo.setCourseType(courseType);
+        userInfo.setLessonId(lessonId);
+        userInfo.setUserId(userId);
+        String key = "course.work.exercise.log.unDeal.data$1";
+        SetOperations setOperations = redisTemplate.opsForSet();
+        String userInfoStr = JSONObject.toJSONString(userInfo);
+        setOperations.add(key, userInfoStr);
+    }
+
+
+    @Data
+    class UserInfo{
+        private Integer userId;
+        private Long lessonId;
+        private Integer courseType;
     }
 }
