@@ -262,43 +262,45 @@ public class CourseExercisesProcessLogManager {
                 courseType, courseId, syllabusId, coursewareId, terminal, cv, userId);
         StopWatch stopwatch = new StopWatch("手动创建录播或直播回放课后作业答题卡");
         stopwatch.start();
-        if(courseType == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
-            SyllabusWareInfo syllabusWareInfo = requestSingleSyllabusInfoWithCache(syllabusId);
-            if(null == syllabusWareInfo || StringUtils.isEmpty(syllabusWareInfo.getRoomId())){
-                log.error("直播回放创建课后作业答题卡失败，查询不到百家云信息:{}", syllabusId);
-                return null;
-            }
-            CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(Long.valueOf(syllabusWareInfo.getRoomId()), syllabusWareInfo.getCoursewareId());
-            if(null == courseLiveBackLog){
-                log.error("直播回放数据查询不到roomId:{},课件id:{},终端信息:terminal:{},cv:{}",syllabusWareInfo.getRoomId(), syllabusWareInfo.getCoursewareId(),terminal, cv);
-                return null;
-            }else{
-                coursewareId = courseLiveBackLog.getLiveCoursewareId();
-                courseType = VideoTypeEnum.LIVE.getVideoType();
-            }
-        }
-
-        List<Map<String, Object>> list = courseExercisesService.listQuestionByCourseId(courseType, coursewareId);
-        if (CollectionUtils.isEmpty(list)) {
-            return null;
-        }
-        String questionId = list.stream()
-                .filter(map -> null != map && null != map.get("id"))
-                .map(map -> String.valueOf(map.get("id")))
-                .collect(Collectors.joining(","));
-        Object practiceCard = practiceCardService.createCourseExercisesPracticeCard(
-                terminal, subject, userId, "课后作业练习",
-                courseType, coursewareId, questionId
-        );
-        HashMap<String, Object> result = (HashMap<String, Object>) ZTKResponseUtil.build(practiceCard);
-        if (null == result) {
-            return null;
-        }
-        result.computeIfPresent("id", (key, value) -> String.valueOf(value));
+        HashMap<String, Object> result;
         try{
+            if(courseType == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
+                SyllabusWareInfo syllabusWareInfo = requestSingleSyllabusInfoWithCache(syllabusId);
+                if(null == syllabusWareInfo || StringUtils.isEmpty(syllabusWareInfo.getRoomId())){
+                    log.error("直播回放创建课后作业答题卡失败，查询不到百家云信息:{}", syllabusId);
+                    return null;
+                }
+                CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(Long.valueOf(syllabusWareInfo.getRoomId()), syllabusWareInfo.getCoursewareId());
+                if(null == courseLiveBackLog){
+                    log.error("直播回放数据查询不到roomId:{},课件id:{},终端信息:terminal:{},cv:{}",syllabusWareInfo.getRoomId(), syllabusWareInfo.getCoursewareId(),terminal, cv);
+                    return null;
+                }else{
+                    coursewareId = courseLiveBackLog.getLiveCoursewareId();
+                    courseType = VideoTypeEnum.LIVE.getVideoType();
+                }
+            }
+
+            List<Map<String, Object>> list = courseExercisesService.listQuestionByCourseId(courseType, coursewareId);
+            if (CollectionUtils.isEmpty(list)) {
+                return null;
+            }
+            String questionId = list.stream()
+                    .filter(map -> null != map && null != map.get("id"))
+                    .map(map -> String.valueOf(map.get("id")))
+                    .collect(Collectors.joining(","));
+            Object practiceCard = practiceCardService.createCourseExercisesPracticeCard(
+                    terminal, subject, userId, "课后作业练习",
+                    courseType, coursewareId, questionId
+            );
+            result = (HashMap<String, Object>) ZTKResponseUtil.build(practiceCard);
+            if (MapUtils.isEmpty(result)) {
+                return null;
+            }
+            result.computeIfPresent("id", (key, value) -> String.valueOf(value));
+
             createCourseWorkAnswerCard(userId, courseType, coursewareId, courseId, syllabusId, result, true);
-        }catch (IllegalArgumentException e){
-            log.error("IllegalArgumentException:{}, terminal:{}, cv:{}", syllabusId, terminal, cv);
+        }catch (Exception e){
+            log.error("Exception:{}, terminal:{}, cv:{}", syllabusId, terminal, cv);
             return null;
         }
         log.info("课后作业 - 创建课后答题卡请求参数:courseId:{},syllabusId:{},courseType:{},coursewareId:{},userId:{}", courseId, syllabusId, courseType, coursewareId, userId);
