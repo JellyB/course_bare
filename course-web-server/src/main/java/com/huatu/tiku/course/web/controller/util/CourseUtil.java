@@ -42,7 +42,6 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -251,12 +250,12 @@ public class CourseUtil {
 
 
                     //查询用户答题信息
-                    log.info("获取课后练习的答题卡信息 v2,参数信息，userId = {},paramsList = {}", userId, paramsList);
+                    log.info("获取课后练习的答题卡信息 v2,参数信息, userId = {}, paramsList = {}", userId, paramsList);
                     List<Long> cardIds = courseExercisesProcessLogManager.obtainCardIdsByCourseTypeAndLessonId(userId, paramsList);
-                    log.info("获取课后练习的答题卡信息 v2,答题卡返回信息，userId = {}, cardIds = {}", userId, cardIds);
+                    log.info("获取课后练习的答题卡信息 v2,答题卡返回信息, userId = {}, cardIds = {}", userId, cardIds);
                     Object courseExercisesCardInfo = practiceCardServiceV1.getCourseExercisesCardInfoV2(cardIds);
                     courseWorkDataConsistenceCheck(userId, paramsList, cardIds);
-                    log.info("获取课后练习的答题卡信息 v2,参数信息，userId = {},paramsList = {}, result = {}", userId, paramsList, JSONObject.toJSONString(courseExercisesCardInfo));
+                    log.info("获取课后练习的答题卡信息 v2,参数信息, userId = {}, paramsList = {}, result = {}", userId, paramsList, JSONObject.toJSONString(courseExercisesCardInfo));
                     Object build = ZTKResponseUtil.build(courseExercisesCardInfo);
 
                     return buildResponseConstructCardInfo(need2Str, (List<Map>) value, (List<Map>) build);

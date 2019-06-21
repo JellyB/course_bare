@@ -1022,7 +1022,7 @@ public class CourseExercisesProcessLogManager {
         List<Long> cardIds = Lists.newArrayList();
         for(Map item : paramsList){
             int courseType = MapUtils.getIntValue(item, SyllabusInfo.VideoType);
-            int lessonId = MapUtils.getIntValue(item, SyllabusInfo.CourseWareId);
+            int lessonId = MapUtils.getIntValue(item, SyllabusInfo.CourseId);
             try{
                 Example example = new Example(CourseExercisesProcessLog.class);
                 example.and()
@@ -1037,6 +1037,7 @@ public class CourseExercisesProcessLogManager {
                 log.error("obtainCardIdsByCourseTypeAndLessonId error!: userId = {}, paramsList = {}, error = {}", userId, paramsList, e.getMessage());
             }
         }
+        log.info("obtainCardIdsByCourseTypeAndLessonId: cardId = {}", cardIds);
         return cardIds;
     }
 
