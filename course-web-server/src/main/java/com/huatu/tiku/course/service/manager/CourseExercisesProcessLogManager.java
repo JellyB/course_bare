@@ -15,7 +15,6 @@ import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.entity.CourseLiveBackLog;
-import io.jsonwebtoken.lang.Collections;
 import lombok.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -908,7 +907,7 @@ public class CourseExercisesProcessLogManager {
                         .andEqualTo("courseType", courseType)
                         .andEqualTo("status", YesOrNoStatus.YES.getCode());
                 CourseExercisesProcessLog log = courseExercisesProcessLogMapper.selectOneByExample(example);
-                if(null == log){
+                if(null == log || !(longImmutableList.contains(log.getCardId()))){
                     fixList.add(map);
                 }
             }catch (Exception e){
@@ -927,10 +926,10 @@ public class CourseExercisesProcessLogManager {
      */
     private void requestCourseWorkInfo4Mysql(int userId, List<HashMap<String,Object>> fixList){
         log.error("课后作业数据修正 - 需要请求paper并放入mysql的数据  userId = {}, paramList = {}", userId, fixList);
-        List<DataInfo> dataInfos = Lists.newArrayList();
         Object practiceCardInfos = practiceCardService.getCourseExercisesCardInfo(userId, fixList);
         List<Map> answerCardInfo = (List<Map>) ZTKResponseUtil.build(practiceCardInfos);
-        if(CollectionUtils.isNotEmpty(dataInfos)){
+        if(CollectionUtils.isNotEmpty(answerCardInfo)){
+            log.info("requestCourseWorkInfo4Mysql ===》 mysql, userId = {}, answerCardInfos = {}", userId, JSONObject.toJSONString(answerCardInfo));
             dealCourseExercisesCards(userId, answerCardInfo);
         }
     }
@@ -953,13 +952,13 @@ public class CourseExercisesProcessLogManager {
                 NetSchoolResponse netSchoolResponse = syllabusService.obtainSyllabusIdByCourseWareId(params);
                 if(netSchoolResponse != NetSchoolResponse.DEFAULT){
                     List<Map<String,Object>> syllabusDataInfo = (List<Map<String,Object>>)netSchoolResponse.getData();
-                    if(!Collections.isEmpty(syllabusDataInfo)){
+                    if(CollectionUtils.isNotEmpty(syllabusDataInfo)){
                         //处理入库 mysql
                         dealCourseWorkDataIntoMySQL(userId, courseType, cardId, status, courseWareId, syllabusDataInfo);
                     }
                 }
             }catch (Exception e){
-	            log.error("dealCourseExercisesCards caught an exception:{}", e);
+	            log.error("dealCourseExercisesCards caught an error:{}", e.getMessage());
 	            throw new IllegalArgumentException("遍历数据请求 php 并入库异常");
             }
         }
@@ -1006,8 +1005,8 @@ public class CourseExercisesProcessLogManager {
                 createCourseWorkAnswerCard(userId, courseType, courseWareId, courseId, syllabusId, params,false);
                 log.debug("处理课后作业入库----> userId:{},courseType:{},courseWareId:{},courseId:{},syllabusId:{},params:{}", userId, courseType, courseWareId, courseId, syllabusId, params);
             }catch (Exception e){
-                log.error("处理课后作业入库 mysql 异常 userId:{},courseType:{},cardId:{},status:{},courseWareId:{},syllabusDataInfo:{},error:{}", userId, courseType, cardId, status, courseWareId, syllabusDataInfo,e.getMessage());
-                throw new IllegalArgumentException("处理课后作业入库 mysql 异常");
+                log.error("处理课后作业入库 mysql 异常 userId:{}, courseType:{}, cardId:{}, status:{}, courseWareId:{},syllabusDataInfo:{}, error:{}", userId, courseType, cardId, status, courseWareId, syllabusDataInfo,e.getMessage());
+                throw new IllegalArgumentException("处理课后作业入库 mysql 异常" + userId);
             }
         }
     }
