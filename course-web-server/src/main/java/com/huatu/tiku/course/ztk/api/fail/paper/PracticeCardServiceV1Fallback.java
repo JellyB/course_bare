@@ -119,6 +119,17 @@ public class PracticeCardServiceV1Fallback implements Fallback<PracticeCardServi
 				log.error("PracticeCardServiceV1 getCourseExercisesAllCardInfo failed:{}", throwable);
 				return ResponseUtil.DEFAULT_PAGE_EMPTY;
 			}
+
+			/**
+			 * 查询课后练习答题卡信息V2
+			 *
+			 * @param cardIds
+			 */
+			@Override
+			public Object getCourseExercisesCardInfoV2(List<Long> cardIds) {
+				log.error("PracticeCardServiceV1 getCourseExercisesCardInfoV2 failed, cardIds:{}, fall back reason:{}", cardIds, throwable);
+				return ZTKResponseUtil.defaultResult();
+			}
 		};
 	}
 }
