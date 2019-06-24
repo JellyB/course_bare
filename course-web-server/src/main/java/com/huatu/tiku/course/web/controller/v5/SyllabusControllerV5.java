@@ -50,7 +50,7 @@ public class SyllabusControllerV5 {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         Object response = ResponseUtil.build(syllabusService.buyAfterSyllabus(map));
         //添加答题信息
-        courseUtil.addExercisesCardInfo((LinkedHashMap) response, userSession.getId(), false);
+        courseUtil.addExercisesCardInfoV2((LinkedHashMap) response, userSession.getId(), false);
         courseUtil.dealCourseWorkReport2BProcessed(userSession.getId());
         return response;
     }

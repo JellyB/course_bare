@@ -109,7 +109,7 @@ public class SyllabusControllerV6 {
         stopwatch.stop();
         //添加答题信息
         stopwatch.start("addExercisesCardInfo");
-        courseUtil.addExercisesCardInfo((LinkedHashMap) response, userSession.getId(), false);
+        courseUtil.addExercisesCardInfoV2((LinkedHashMap) response, userSession.getId(), false);
         courseUtil.dealCourseWorkReport2BProcessed(userSession.getId());
         stopwatch.stop();
         if(versionControlService.checkLearnReportShow(terminal, cv)){
@@ -148,7 +148,7 @@ public class SyllabusControllerV6 {
         //添加答题信息
         Object timeTable = ResponseUtil.build(syllabusService.classSyllabus(map));
         //添加答题信息
-        courseUtil.addExercisesCardInfo((LinkedHashMap) timeTable, userSession.getId(), false);
+        courseUtil.addExercisesCardInfoV2((LinkedHashMap) timeTable, userSession.getId(), false);
         courseUtil.dealCourseWorkReport2BProcessed(userSession.getId());
         return timeTable;
     }
