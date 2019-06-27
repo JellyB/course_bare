@@ -19,7 +19,7 @@ import com.huatu.tiku.course.bean.NetSchoolResponse;
  * @author zhangchong
  *
  */
-@FeignClient(value = "ztk-service", fallback = PeriodTestServiceV4.PeriodTestServiceV4FallbackFallbackFactory.class, path = "/p")
+@FeignClient(value = "ztk-service", fallbackFactory = PeriodTestServiceV4.PeriodTestServiceV4FallbackFallbackFactory.class, path = "/p")
 public interface PeriodTestServiceV4 {
 
 	/**
