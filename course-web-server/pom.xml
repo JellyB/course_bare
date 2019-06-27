@@ -117,6 +117,11 @@
             <groupId>com.huatu.tiku.springboot</groupId>
             <artifactId>spring-boot-starter-users</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.huatu.tiku.springboot</groupId>
+            <artifactId>spring-boot-starter-redis-sentinel</artifactId>
+            <version>1.0-${project.environment}-SNAPSHOT</version>
+        </dependency>
 
         <dependency>
             <groupId>com.huatu.tiku.springboot</groupId>

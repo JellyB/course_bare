@@ -25,20 +25,20 @@ public class PracticeCardServiceV1Fallback implements Fallback<PracticeCardServi
 			@Override
 			public Object createCourseExercisesPracticeCard(Integer terminal, Integer subject, Integer uid, String name,
 															Integer courseType, Long courseId, String questionId) {
-				log.error("PracticeCardServiceV1 createCourseExercisesPracticeCard failed, terminal:{}, subject:{}, uid:{}, name:{}, courseType:{}, courseId:{}, questionId:{}, fall back reason:{}", terminal, subject, uid, name, courseType, courseId, questionId, throwable);
+				log.error("PracticeCardServiceV1 createCourseExercisesPracticeCard failed,terminal:{},subject:{},uid:{},name:{},courseType:{},courseId:{}, questionId,:{}, fall back reason:{}", terminal, subject, uid, name, courseType, courseId, questionId, throwable);
 				return ZTKResponseUtil.defaultResult();
 			}
 
 			@Override
 			public Object createCourseBreakPointPracticeCard(Integer terminal, Integer subject, Integer uid, String name,
 															 Integer courseType, Long courseId, String questionId, List<Object> questionInfoList) {
-				log.error("PracticeCardServiceV1 createCourseBreakPointPracticeCard failed,terminal: {}, subject:{}, uid:{}, name:{}, courseType:{}, courseId:{}, questionId:{},questionInfoList:{}, fall back reason:{}", terminal, subject, uid, name, courseType, courseId, questionId, questionInfoList, throwable);
+				log.error("PracticeCardServiceV1 createCourseBreakPointPracticeCard failed,terminal:{}, subject:{}, uid:{}, name:{},courseType:{}, courseId:{},questionId:{},questionInfoList:{},fall back reason:{}", terminal, subject, uid, name, courseType, courseId, questionId, questionInfoList, throwable);
 				return ZTKResponseUtil.defaultResult();
 			}
 
 			@Override
 			public Object getCourseExercisesCardInfo(long userId, List<HashMap<String, Object>> paramsList) {
-				log.error("PracticeCardServiceV1 getCourseExercisesCardInfo failed, userId:{},paramsList:{}, fall back reason:{}", userId, paramsList, throwable);
+				log.error("PracticeCardServiceV1 getCourseExercisesCardInfo failed, userId:{}, paramsList:{}, fall back reason:{}", userId, paramsList, throwable);
 				return ZTKResponseUtil.defaultResult();
 			}
 
@@ -91,7 +91,7 @@ public class PracticeCardServiceV1Fallback implements Fallback<PracticeCardServi
 			@Override
 			public Object getCourseExercisesCardInfoBatch(String ids)
 			{
-				log.error("PracticeCardServiceV1 getCourseExercisesCardInfoBatch failed, ids:{}, fall back reason:{}", ids, throwable);
+				log.error("PracticeCardServiceV1 getCourseExercisesCardInfoBatch failed, ids:{}, fall back reason:{}",ids, throwable);
 				return ResponseUtil.DEFAULT_PAGE_EMPTY;
 			}
 
@@ -118,6 +118,17 @@ public class PracticeCardServiceV1Fallback implements Fallback<PracticeCardServi
 			public Object getCourseExercisesAllCardInfo(long userId) {
 				log.error("PracticeCardServiceV1 getCourseExercisesAllCardInfo failed: userId:{}, fall back reason:{}",userId, throwable);
 				return ResponseUtil.DEFAULT_PAGE_EMPTY;
+			}
+
+			/**
+			 * 查询课后练习答题卡信息V2
+			 *
+			 * @param cardIds
+			 */
+			@Override
+			public Object getCourseExercisesCardInfoV2(List<Long> cardIds) {
+				log.error("PracticeCardServiceV1 getCourseExercisesCardInfoV2 failed, cardIds:{}, fall back reason:{}", cardIds, throwable);
+				return ZTKResponseUtil.defaultResult();
 			}
 		};
 	}

@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import tk.mybatis.mapper.entity.Example;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -229,6 +230,21 @@ public class CourseExercisesProcessLogMapperTest extends BaseWebTest {
                     .userId(234934290)
                     .liveRecordInfo(liveRecordInfo).build();
             rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_LIVE_REPORT_LOG, JSONObject.toJSONString(liveRecordInfoWithUserId));
+        }
+    }
+
+    @Test
+    public void duplicateDate(){
+        List<Integer> list = Lists.newArrayList(412,4156,86424,65238);
+
+        for(Integer id  :  list){
+            CourseExercisesProcessLog log = new CourseExercisesProcessLog();
+            log.setId(Long.valueOf(id));
+            log.setStatus(YesOrNoStatus.NO.getCode());
+            log.setModifierId(10010L);
+            log.setGmtModify(new Timestamp(System.currentTimeMillis()));
+            int result = courseExercisesProcessLogMapper.updateByPrimaryKeySelective(log);
+            System.err.println(".>>>>>>>>>>>>>:"+ id + "<> " + result );
         }
     }
 
