@@ -546,8 +546,7 @@ public class CourseExercisesProcessLogManager {
                 SyllabusWareInfo courseInfo = syllabusWareInfoTable.get(COURSE_LABEL, courseWorkCourseVo.getCourseId());
                 if(null == courseInfo){
                     courseWorkCourseVo.setCourseTitle(StringUtils.EMPTY);
-                    requestSingleSyllabusInfoWithCache(courseInfo.getSyllabusId());
-                    log.error("根据大纲id获取大纲信息异常:课程id {}, 大纲 ids: {}", courseInfo.getClassId(), courseInfo.getSyllabusId());
+                    log.error("根据大纲id获取大纲信息异常:课程id & 大纲 ids: {}", item);
                 }else{
                     courseWorkCourseVo.setCourseTitle(courseInfo.getClassName());
                 }
@@ -611,6 +610,7 @@ public class CourseExercisesProcessLogManager {
      */
     public Table<String, Long, SyllabusWareInfo> dealSyllabusInfo(Set<Long> syllabusIds) throws BizException{
         log.debug("deal syllabusId info:{}", syllabusIds);
+        ExecutorService executorService = Executors.newCachedThreadPool();
         Table<String, Long, SyllabusWareInfo> table = TreeBasedTable.create();
         Set<Long> copy = Sets.newHashSet();
         copy.addAll(syllabusIds);
@@ -632,6 +632,9 @@ public class CourseExercisesProcessLogManager {
                 if((syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE.getVideoType() || syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()) && StringUtils.isEmpty(syllabusWareInfo.getRoomId())){
                     redisTemplate.delete(key);
                 }
+            }else{
+                log.info("executorService execute for syllabus info:{}", item);
+                executorService.execute(() -> requestSingleSyllabusInfoWithCache(item));
             }
         });
         if(CollectionUtils.isNotEmpty(copy)){
@@ -670,7 +673,6 @@ public class CourseExercisesProcessLogManager {
         }
         SyllabusWareInfo syllabusWareInfo = objectMapper.convertValue(data.get(0), SyllabusWareInfo.class);
         valueOperations.set(key, JSONObject.toJSONString(syllabusWareInfo));
-        //redisTemplate.expire(key, 20, TimeUnit.MINUTES);
         return syllabusWareInfo;
     }
     /**
