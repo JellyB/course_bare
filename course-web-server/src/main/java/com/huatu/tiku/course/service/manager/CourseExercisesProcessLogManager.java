@@ -546,7 +546,8 @@ public class CourseExercisesProcessLogManager {
                 SyllabusWareInfo courseInfo = syllabusWareInfoTable.get(COURSE_LABEL, courseWorkCourseVo.getCourseId());
                 if(null == courseInfo){
                     courseWorkCourseVo.setCourseTitle(StringUtils.EMPTY);
-                    log.error("根据大纲id获取大纲信息异常:课程id & 大纲 ids: {}", item);
+                    requestSingleSyllabusInfoWithCache(courseInfo.getSyllabusId());
+                    log.error("根据大纲id获取大纲信息异常:课程id {}, 大纲 ids: {}", courseInfo.getClassId(), courseInfo.getSyllabusId());
                 }else{
                     courseWorkCourseVo.setCourseTitle(courseInfo.getClassName());
                 }
@@ -669,7 +670,7 @@ public class CourseExercisesProcessLogManager {
         }
         SyllabusWareInfo syllabusWareInfo = objectMapper.convertValue(data.get(0), SyllabusWareInfo.class);
         valueOperations.set(key, JSONObject.toJSONString(syllabusWareInfo));
-        redisTemplate.expire(key, 20, TimeUnit.MINUTES);
+        //redisTemplate.expire(key, 20, TimeUnit.MINUTES);
         return syllabusWareInfo;
     }
     /**
