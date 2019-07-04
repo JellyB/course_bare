@@ -198,6 +198,18 @@ public class UserCourseServiceV6FallBackFactory implements Fallback<UserCourseSe
                 log.error("UserCourseService V6 obtainOne2One fall back params:{}, fallback reason:{}", p, throwable);
                 return NetSchoolResponse.DEFAULT;
             }
+
+            /**
+             * 获取学员已购买的课程 id 集合
+             *
+             * @param userName
+             * @return
+             */
+            @Override
+            public NetSchoolResponse obtainMyCourseIdList(String userName) {
+                log.error("UserCourseService V6 obtainMyCourseIdList fall back params:{}, fallback reason:{}", userName, throwable);
+                return NetSchoolResponse.DEFAULT;
+            }
         };
     }
 }

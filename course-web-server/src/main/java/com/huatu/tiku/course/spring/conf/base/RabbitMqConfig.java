@@ -165,12 +165,21 @@ public class RabbitMqConfig {
 
 
 	/**
-	 * 课后作业 mongo -> mysql 处理队列
+	 * 课后作业 mongo -> mysql 处理队列 - userId
 	 * @return
 	 */
 	@Bean
 	public Queue CourseWorkReportDealQueue(){
 		return new Queue(RabbitMqConstants.COURSE_WORK_REPORT_USERS_DEAL_QUEUE);
+	}
+
+	/**
+	 * 课后作业 mongo -> mysql 数据修正处理队列 - username
+	 * @return
+	 */
+	@Bean
+	public Queue CourseWorkUsersDataFixQueue(){
+		return new Queue(RabbitMqConstants.COURSE_WORK_REPORT_USERS_DEAL_QUEUE_USER_INFO);
 	}
 	
 	@Bean

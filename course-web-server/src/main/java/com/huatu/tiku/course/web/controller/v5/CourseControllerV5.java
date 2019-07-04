@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by lijun on 2018/6/25
@@ -136,6 +135,7 @@ public class CourseControllerV5 {
     public Object classSyllabus(
             @Token UserSession userSession,
             @RequestHeader(required = false, defaultValue = "7.0.0") String cv,
+            @RequestHeader(required = false, defaultValue = "1") Integer terminal,
             @PathVariable("classId") int classId,
             @RequestParam int parentId,
             @RequestParam(defaultValue = "1") int page,
@@ -148,6 +148,7 @@ public class CourseControllerV5 {
         //添加答题信息
         courseUtil.addExercisesCardInfoV2((LinkedHashMap) timeTable, userSession.getId(), false);
         courseUtil.dealCourseWorkReport2BProcessed(userSession.getId());
+        courseUtil.dealCourseWorkUsersDataFix(userSession.getId(), userSession.getUname(), terminal, cv, userSession.getSubject());
         return timeTable;
     }
 
@@ -193,6 +194,8 @@ public class CourseControllerV5 {
     @GetMapping("/{classId}/purchasedClassSyllabus")
     public Object purchasedClassSyllabus(
             @Token UserSession userSession,
+            @RequestHeader(required = false, defaultValue = "7.0.0") String cv,
+            @RequestHeader(required = false, defaultValue = "1") Integer terminal,
             @RequestParam int parentId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int pageSize
@@ -203,6 +206,7 @@ public class CourseControllerV5 {
         Object purchasesTimetable = courseServiceBiz.findPurchasesTimetable(userSession.getId(), map);
         stopwatch.stop();
         courseUtil.dealCourseWorkReport2BProcessed(userSession.getId());
+        courseUtil.dealCourseWorkUsersDataFix(userSession.getId(), userSession.getUname(), terminal, cv, userSession.getSubject());
         //添加答题信息
         stopwatch.start("addExercisesCardInfo");
         courseUtil.addExercisesCardInfoV2((LinkedHashMap) purchasesTimetable, userSession.getId(), true);

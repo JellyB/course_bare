@@ -52,6 +52,11 @@ public class RabbitMqConstants {
      * 课后作业处理队列
      */
     public static final String COURSE_WORK_REPORT_USERS_DEAL_QUEUE = "course_work_report_users_queue";
+
+    /**
+     * 课后作业处理队列
+     */
+    public static final String COURSE_WORK_REPORT_USERS_DEAL_QUEUE_USER_INFO = "course_work_report_users_queue_user_info";
     
     /**
      * error log 日志

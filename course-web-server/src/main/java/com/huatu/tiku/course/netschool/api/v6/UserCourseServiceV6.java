@@ -142,4 +142,11 @@ public interface UserCourseServiceV6 {
 	@GetMapping(value = "/v5/c/user/one_to_one")
 	NetSchoolResponse obtainOne2One(@RequestParam(value = "p") String p);
 
+	/**
+	 * 获取学员已购买的课程 id 集合
+	 * @param userName
+	 * @return
+	 */
+	@GetMapping(value = "v5/c/class/user_class_id")
+	NetSchoolResponse obtainMyCourseIdList(@RequestParam(value = "userName") String userName);
 }

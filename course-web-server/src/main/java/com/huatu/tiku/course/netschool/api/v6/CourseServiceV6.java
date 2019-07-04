@@ -76,4 +76,12 @@ public interface CourseServiceV6 {
      */
     @GetMapping(value = "/v5/c/class/analysis_class_list")
     NetSchoolResponse analysisClassList(@RequestParam Map<String, Object> params);
+
+    /**
+     * 学员已购买课程课后作业 fix
+     * @param classId
+     * @return
+     */
+    @GetMapping(value = "/v5/c/class/node_id_by_class_id")
+    NetSchoolResponse nodeIdByClassId(@RequestParam(value = "classId") Integer classId);
 }

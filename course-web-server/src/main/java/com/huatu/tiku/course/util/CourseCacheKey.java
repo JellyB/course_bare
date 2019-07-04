@@ -67,6 +67,12 @@ public class CourseCacheKey {
      */
     public static final String COURSE_WORK_REPORT_USERS_ALREADY_PROCESSED = "course_work_report_users_already_processed";
 
+    /**
+     * 已经处理完后的课后作业 redis key username
+     */
+    public static final String COURSE_WORK_USERS_DATA_FIX_USER_INFO = "course_work_users_data_fix_user_info";
+
+    public static final String COURSE_WORK_COURSES_DATA_FIX_HASH_INFO = "course_work_courses_data_fix_hash_info";
 
     /**
      * IOS 内侧版本信息

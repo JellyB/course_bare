@@ -142,6 +142,18 @@ public class CourseServiceV6FallBack implements CourseServiceV6 {
         }
     }
 
+    /**
+     * 学员已购买课程课后作业 fix
+     *
+     * @param classId
+     * @return
+     */
+    @Override
+    public NetSchoolResponse nodeIdByClassId(Integer classId) {
+        log.error("CourseService v6 nodeIdByClassId fall back param:{}", classId);
+        return NetSchoolResponse.DEFAULT;
+    }
+
     @Getter
     @Setter
     @NoArgsConstructor
