@@ -28,4 +28,16 @@ public class UserAccountServiceFallBack implements UserAccountServiceV1{
     public NetSchoolResponse getUIdByUsernameBatch(List<String> userNames) {
         return NetSchoolResponse.newInstance(Maps.newHashMap());
     }
+
+    /**
+     * 通过 userId 获取 userName
+     *
+     * @param userId
+     * @return
+     */
+    @Override
+    public NetSchoolResponse getUserNameById(Integer userId) {
+        log.error("UserAccountService v1 get userNme through userId error, userId:{}", userId);
+        return NetSchoolResponse.newInstance("");
+    }
 }

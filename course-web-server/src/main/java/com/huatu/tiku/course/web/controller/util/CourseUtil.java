@@ -13,7 +13,6 @@ import com.huatu.tiku.course.common.TypeEnum;
 import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
-import com.huatu.tiku.course.consts.SimpleUserInfo;
 import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.hbase.api.v1.VideoServiceV1;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
@@ -628,33 +627,6 @@ public class CourseUtil {
         }
     }
 
-
-    /**
-     * 课后作业待处理的 userName
-     * @param userId
-     * @param userName
-     */
-    public synchronized void dealCourseWorkUsersDataFix(Integer userId, String userName, Integer terminal, String cv, Integer subject){
-        SimpleUserInfo simpleUserInfo = SimpleUserInfo
-                .builder()
-                .userId(userId)
-                .userName(userName)
-                .terminal(terminal)
-                .cv(cv)
-                .subject(subject)
-                .build();
-
-        String userInfo = JSONObject.toJSONString(simpleUserInfo);
-        String alreadyProcessed = CourseCacheKey.COURSE_WORK_USERS_DATA_FIX_USER_INFO;
-        SetOperations<String, String> alreadyProcessedOperations = redisTemplate.opsForSet();
-        //如果用户已经存在当前等待处理的set中不处理
-        if(alreadyProcessedOperations.isMember(alreadyProcessed, userName)){
-            log.info("already processed user info:{}", userInfo);
-        }else{
-            log.debug("deal user info :{} into rabbit mq", userInfo);
-            rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_WORK_REPORT_USERS_DEAL_QUEUE_USER_INFO, userInfo);
-        }
-    }
 
     /**
      * 处理课后作业数据是否需要 fix

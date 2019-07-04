@@ -111,7 +111,6 @@ public class SyllabusControllerV6 {
         stopwatch.start("addExercisesCardInfo");
         courseUtil.addExercisesCardInfoV2((LinkedHashMap) response, userSession.getId(), false);
         courseUtil.dealCourseWorkReport2BProcessed(userSession.getId());
-        courseUtil.dealCourseWorkUsersDataFix(userSession.getId(), userSession.getUname(), terminal, cv, userSession.getSubject());
         stopwatch.stop();
         if(versionControlService.checkLearnReportShow(terminal, cv)){
             stopwatch.start("buyAfterSyllabus - addPeriodTestInfo 1");
@@ -139,7 +138,6 @@ public class SyllabusControllerV6 {
     public Object classSyllabus(
             @Token UserSession userSession,
             @RequestHeader(value = "terminal") int terminal,
-            @RequestHeader(required = false, defaultValue = "7.0.0") String cv,
             @PathVariable("classId") int classId,
             @RequestParam int parentId,
             @RequestParam(defaultValue = "0") int onlyTrial,
@@ -152,7 +150,6 @@ public class SyllabusControllerV6 {
         //添加答题信息
         courseUtil.addExercisesCardInfoV2((LinkedHashMap) timeTable, userSession.getId(), false);
         courseUtil.dealCourseWorkReport2BProcessed(userSession.getId());
-        courseUtil.dealCourseWorkUsersDataFix(userSession.getId(), userSession.getUname(), terminal, cv, userSession.getSubject());
         return timeTable;
     }
 

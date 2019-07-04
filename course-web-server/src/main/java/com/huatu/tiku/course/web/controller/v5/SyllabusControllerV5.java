@@ -38,8 +38,6 @@ public class SyllabusControllerV5 {
     @GetMapping("{netClassId}/buyAfterSyllabus")
     public Object buyAfterSyllabus(
             @Token UserSession userSession,
-            @RequestHeader(required = false, defaultValue = "7.0.0") String cv,
-            @RequestHeader(required = false, defaultValue = "1") Integer terminal,
             @PathVariable int netClassId,
             @RequestParam(defaultValue = "") String classId,
             @RequestParam(defaultValue = "") String classNodeId,
@@ -54,7 +52,6 @@ public class SyllabusControllerV5 {
         //添加答题信息
         courseUtil.addExercisesCardInfoV2((LinkedHashMap) response, userSession.getId(), false);
         courseUtil.dealCourseWorkReport2BProcessed(userSession.getId());
-        courseUtil.dealCourseWorkUsersDataFix(userSession.getId(), userSession.getUname(), terminal, cv, userSession.getSubject());
         return response;
     }
 

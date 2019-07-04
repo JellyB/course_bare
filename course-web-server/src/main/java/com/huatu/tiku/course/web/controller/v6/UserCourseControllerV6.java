@@ -436,4 +436,26 @@ public class UserCourseControllerV6 {
         NetSchoolResponse netSchoolResponse = userCourseService.obtainOne2One(RequestUtil.encrypt(params));
         return ResponseUtil.build(netSchoolResponse);
     }
+
+    /**
+     * 课后作业数据修正
+     * @param userSession
+     * @param secret
+     * @return
+     * @throws BizException
+     */
+    @GetMapping(value = "/courseWork/dataFix")
+    @ResponseBody
+    public Object dataFix(@Token UserSession userSession,
+                          @RequestHeader(value = "secret") String secret) throws BizException{
+
+        if(secret.equals("123ztk")){
+            throw new BizException(ErrorResult.create(1000110, "鉴权失败！"));
+        }
+        try{
+            return courseExercisesProcessLogManager.courseWorkDataFix(userSession.getId());
+        }catch (Exception e){
+            return SuccessMessage.create("操作失败");
+        }
+    }
 }
