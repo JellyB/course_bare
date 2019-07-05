@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.web.controller.v6;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.huatu.common.ErrorResult;
 import com.huatu.common.SuccessMessage;
@@ -9,6 +10,7 @@ import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.vo.One2OneFormDTOV2;
+import com.huatu.tiku.course.consts.SimpleUserInfo;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.service.v6.CourseBizV6Service;
@@ -458,4 +460,25 @@ public class UserCourseControllerV6 {
             return SuccessMessage.create("操作失败");
         }
     }
+
+    @GetMapping(value = "/courseWork/dataFixTest")
+    @ResponseBody
+    public Object dataFixTest(@Token UserSession userSession,
+                          @RequestHeader(value = "secret") String secret) throws BizException{
+
+        if(!secret.equals("123ztk")){
+            throw new BizException(ErrorResult.create(1000110, "鉴权失败！"));
+        }
+        try{
+            SimpleUserInfo simpleUserInfo = SimpleUserInfo.builder().subject(1).terminal(1).cv("7.1.1").userId(userSession.getId()).userName(userSession.getUname()).build();
+            String userInfo = JSONObject.toJSONString(simpleUserInfo);
+            courseExercisesProcessLogManager.dealCourseWorkUsersDataFix(userInfo);
+            return SuccessMessage.create("操作成功");
+        }catch (Exception e){
+            return SuccessMessage.create("操作失败");
+        }
+    }
+
+
+
 }

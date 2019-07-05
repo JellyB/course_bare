@@ -6,6 +6,8 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.*;
 import com.huatu.common.SuccessMessage;
 import com.huatu.springboot.degrade.core.Degrade;
@@ -121,6 +123,12 @@ public class CourseExercisesProcessLogManager {
     private static final String CORRECT_DATA_KEY = "data_correct_2019";
     private static final String CORRECT_DATA_SWITCH = "data_correct_2019_switch";
     private static final String CORRECT_DATA_SWITCH_ON = "on";
+
+    private final Cache<Integer, List<ClassInfo>> classInfo = CacheBuilder.newBuilder()
+            .recordStats()
+            .maximumSize(2048)
+            .expireAfterWrite(5, TimeUnit.HOURS)
+            .build();
 
     /**
      * 获取类型未读量
@@ -1016,6 +1024,7 @@ public class CourseExercisesProcessLogManager {
         }
     }
 
+
     /**
      * 数据迁移处理逻辑 - step 2
      * @param courseList
@@ -1026,43 +1035,60 @@ public class CourseExercisesProcessLogManager {
             Future<List<ClassInfo>> future = executorService.submit(new Callable<List<ClassInfo>>() {
                 @Override
                 public List<ClassInfo> call() throws Exception {
-                    List<ClassInfo> tmp = Lists.newArrayList();
                     final Integer classId_ = Integer.valueOf(classId);
+                    List<ClassInfo> tmp = getClassInfoWithGuava(classId_ );
+                    return tmp;
+                }
+
+                /**
+                 * 通过缓存获取数据
+                 * @return
+                 */
+                private List<ClassInfo> getClassInfoWithGuava(final Integer classId_ ) {
+                    try{
+                         return classInfo.get(classId_, new Callable<List<ClassInfo>>() {
+                            @Override
+                            public List<ClassInfo> call() throws Exception {
+                                return getCourseInfoClient(classId_);
+                            }
+                        });
+                    }catch (Exception e){
+                        log.error("课后作业数据修正--- 通过 guava 获取课程信息异常:{}", e.getMessage());
+                        return Lists.newArrayList();
+                    }
+                }
+
+                /**
+                 * php 接口获取课程信息
+                 * @param classId_
+                 * @return
+                 */
+                private List<ClassInfo> getCourseInfoClient(Integer classId_) {
+                    List<ClassInfo> tmp = Lists.newArrayList();
                     NetSchoolResponse nodeInfo = courseServiceV6.nodeIdByClassId(classId_);
                     if(nodeInfo == NetSchoolResponse.DEFAULT){
                         log.error("课后作业数据修正--- obtain current course info failed! class id :{}", classId);
                         return tmp;
-                    }else{
-                        List<Map> nodeInfo_ = (List<Map>) nodeInfo.getData();
-                        if(CollectionUtils.isEmpty(nodeInfo_)){
-                            log.debug("课后作业数据修正--- empty result:{}", nodeInfo_.size());
-                            return tmp;
+                    }
+                    List<Map> nodeInfo_ = (List<Map>) nodeInfo.getData();
+                    if(CollectionUtils.isEmpty(nodeInfo_)){
+                        log.debug("课后作业数据修正--- empty result:{}", nodeInfo_.size());
+                        return tmp;
+                    }
+                    for (Map map : nodeInfo_){
+                        Integer courseWareId = MapUtils.getInteger(map, "coursewareId", 0);
+                        Integer courseWareType = MapUtils.getInteger(map, "coursewareType", 0);
+                        Integer syllabusId = MapUtils.getInteger(map, "syllabusId", 0);
+                        String bjyRoomId = MapUtils.getString(map, "bjyRoomId", "");
+                        Integer hasAfterExercises = MapUtils.getInteger(map, "hasAfterExercises", 0);
+                        if(courseWareId.intValue() <= 0 || courseWareType.intValue() <= 0 || syllabusId.intValue() <= 0 || hasAfterExercises.intValue() <= 0){
+                            log.error("课后作业数据修正--- 课后作业数据 fix, 非法的数据:courseWareId {}, courseWareType:{}, syllabusId:{}, bjyRoomId:{}, hasAfterExercises:{}", courseWareId, courseWareType, syllabusId, bjyRoomId, hasAfterExercises);
                         }else{
-                            for (Map map : nodeInfo_){
-                                Integer courseWareId = MapUtils.getInteger(map, "coursewareId", 0);
-                                Integer courseWareType = MapUtils.getInteger(map, "coursewareType", 0);
-                                Integer syllabusId = MapUtils.getInteger(map, "syllabusId", 0);
-                                String bjyRoomId = MapUtils.getString(map, "bjyRoomId", "");
-                                Integer hasAfterExercises = MapUtils.getInteger(map, "hasAfterExercises", 0);
-                                if(courseWareId.intValue() <= 0 || courseWareType.intValue() <= 0 || syllabusId.intValue() <= 0 || hasAfterExercises.intValue() <= 0){
-                                    log.error("课后作业数据修正--- 课后作业数据 fix, 非法的数据:courseWareId {}, courseWareType:{}, syllabusId:{}, bjyRoomId:{}, hasAfterExercises:{}", courseWareId, courseWareType, syllabusId, bjyRoomId, hasAfterExercises);
-                                    continue;
-                                }else{
-                                    ClassInfo classInfo = ClassInfo.builder()
-                                            .hasAfterExercises(hasAfterExercises)
-                                            .courseWareId(courseWareId)
-                                            .coursewareType(courseWareType)
-                                            .syllabusId(syllabusId)
-                                            .classId(Integer.valueOf(classId))
-                                            .bjyRoomId(bjyRoomId)
-                                            .build();
-
-                                    tmp.add(classInfo);
-                                }
-                            }
-                            return tmp;
+                            ClassInfo classInfo = ClassInfo.builder().classId(classId_).hasAfterExercises(hasAfterExercises).courseWareId(courseWareId).coursewareType(courseWareType).syllabusId(syllabusId).bjyRoomId(bjyRoomId).build();
+                            tmp.add(classInfo);
                         }
                     }
+                    return tmp;
                 }
             });
 
@@ -1071,6 +1097,7 @@ public class CourseExercisesProcessLogManager {
                 classInfoList_.addAll(classInfoList);
             }
         }
+        log.debug("课后作业数据修正--- guava 缓存命中率:{}", classInfo.stats());
         if(CollectionUtils.isNotEmpty(classInfoList_)){
             dealCourseWorkUsersDataFixStep3(simpleUserInfo, classInfoList_);
         }
@@ -1084,11 +1111,15 @@ public class CourseExercisesProcessLogManager {
         if(CollectionUtils.isEmpty(classInfoList)){
             return;
         }
-        for (final ClassInfo classInfo : classInfoList) {
+        Set<ClassInfo> classInfoSet = classInfoList.stream().collect(Collectors.toSet());
+        for (ClassInfo classInfo : classInfoSet) {
             executorService.execute(() -> {
-                HashMap<String, Object> answerCardInfo = obtainOrCreateAnswerCardThroughPaperService(classInfo.getSyllabusId(), classInfo.getCoursewareType(), classInfo.getCourseWareId(), simpleUserInfo.getSubject(), simpleUserInfo.getTerminal(), simpleUserInfo.getCv(), simpleUserInfo.getUserId());
-
-                insertCardInfo(simpleUserInfo.getUserId().intValue(), classInfo.getCoursewareType(), classInfo.getCourseWareId().longValue(), classInfo.getClassId().longValue(), classInfo.getSyllabusId().longValue(), answerCardInfo, true);
+                try{
+                    HashMap<String, Object> answerCardInfo = obtainOrCreateAnswerCardThroughPaperService(classInfo.getSyllabusId(), classInfo.getCoursewareType(), classInfo.getCourseWareId(), simpleUserInfo.getSubject(), simpleUserInfo.getTerminal(), simpleUserInfo.getCv(), simpleUserInfo.getUserId());
+                    insertCardInfo(simpleUserInfo.getUserId().intValue(), classInfo.getCoursewareType(), classInfo.getCourseWareId().longValue(), classInfo.getClassId().longValue(), classInfo.getSyllabusId().longValue(), answerCardInfo, true);
+                }catch (Exception e){
+                    log.error("课后作业数据修正--- dealCourseWorkUsersDataFixStep3 {}", e.getMessage());
+                }
             });
         }
     }
@@ -1327,6 +1358,20 @@ public class CourseExercisesProcessLogManager {
             this.syllabusId = syllabusId;
             this.bjyRoomId = bjyRoomId;
             this.hasAfterExercises = hasAfterExercises;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof ClassInfo)) return false;
+            ClassInfo classInfo = (ClassInfo) o;
+            return Objects.equals(getSyllabusId(), classInfo.getSyllabusId());
+        }
+
+        @Override
+        public int hashCode() {
+
+            return Objects.hash(getSyllabusId());
         }
     }
 
