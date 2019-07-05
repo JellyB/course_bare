@@ -449,7 +449,7 @@ public class UserCourseControllerV6 {
     public Object dataFix(@Token UserSession userSession,
                           @RequestHeader(value = "secret") String secret) throws BizException{
 
-        if(secret.equals("123ztk")){
+        if(!secret.equals("123ztk")){
             throw new BizException(ErrorResult.create(1000110, "鉴权失败！"));
         }
         try{

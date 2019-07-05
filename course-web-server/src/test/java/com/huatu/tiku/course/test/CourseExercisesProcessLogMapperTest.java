@@ -12,6 +12,7 @@ import com.huatu.tiku.course.bean.vo.LiveRecordInfoWithUserInfo;
 import com.huatu.tiku.course.bean.vo.SyllabusWareInfo;
 import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
+import com.huatu.tiku.course.consts.SimpleUserInfo;
 import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.service.manager.CourseExercisesStatisticsManager;
@@ -246,6 +247,16 @@ public class CourseExercisesProcessLogMapperTest extends BaseWebTest {
             int result = courseExercisesProcessLogMapper.updateByPrimaryKeySelective(log);
             System.err.println(".>>>>>>>>>>>>>:"+ id + "<> " + result );
         }
+    }
+
+
+    @Test
+    public void dealCourseWorkUsersDataFix(){
+        SimpleUserInfo simpleUserInfo = SimpleUserInfo.builder().subject(1).terminal(1).cv("7.1.1").userId(233982024).userName("app_ztk802796288").build();
+        String userInfo = JSONObject.toJSONString(simpleUserInfo);
+        courseExercisesProcessLogManager.dealCourseWorkUsersDataFix(userInfo);
+
+
     }
 
 
