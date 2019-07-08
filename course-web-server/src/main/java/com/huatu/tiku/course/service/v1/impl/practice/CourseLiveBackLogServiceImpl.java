@@ -7,6 +7,8 @@ import java.util.Optional;
 import java.util.concurrent.*;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Maps;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v6.LessonServiceV6;
@@ -16,6 +18,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.guava.GuavaCache;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
@@ -49,14 +52,16 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 	@Qualifier(value = "courseExecutorService")
 	private ExecutorService executorService;
 
+	private final Cache<String, CourseLiveBackLog> logCache = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).maximumSize(10000).build();
 
 	public CourseLiveBackLogServiceImpl() {
 		super(CourseLiveBackLog.class);
 	}
 
 	@Override
+	@Deprecated
 	public CourseLiveBackLog findByRoomIdAndLiveCoursewareId(final Long roomId, final Long coursewareId) {
-		final ValueOperations<String,String> operations = redisTemplate.opsForValue();
+		final ValueOperations<String, String> operations = redisTemplate.opsForValue();
 		String key = CourseCacheKey.findByRoomIdAndLiveCourseWareId(roomId, coursewareId);
 		final CountDownLatch countDownLatch = new CountDownLatch(1);
 
@@ -64,14 +69,14 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 			//线程异步获取 courseLiveBackLog 信息，并入库 & 写入redis
 			executorService.execute(() -> {
 				log.info("调用 php 获取直播回放对应的直播课件id:直播回放id:{},房间id:{}", coursewareId, roomId);
-				Map<String,Object> params = Maps.newHashMap();
-				params.put("liveBackCoursewareId",coursewareId);
+				Map<String, Object> params = Maps.newHashMap();
+				params.put("liveBackCoursewareId", coursewareId);
 				params.put("roomId", roomId);
 				NetSchoolResponse netSchoolResponse = lessonService.obtainLiveWareId(params);
-				if(ResponseUtil.isSuccess(netSchoolResponse)){
-					LinkedHashMap<String,Object> result = (LinkedHashMap<String,Object>) netSchoolResponse.getData();
+				if (ResponseUtil.isSuccess(netSchoolResponse)) {
+					LinkedHashMap<String, Object> result = (LinkedHashMap<String, Object>) netSchoolResponse.getData();
 					long liveCourseWareId = MapUtils.getLong(result, "liveCoursewareId");
-					if(liveCourseWareId != 0){
+					if (liveCourseWareId != 0) {
 						CourseLiveBackLog courseLiveBackLog = new CourseLiveBackLog();
 						courseLiveBackLog.setLiveBackCoursewareId(coursewareId);
 						courseLiveBackLog.setRoomId(roomId);
@@ -88,15 +93,15 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 
 		Callable<CourseLiveBackLog> redisTask = () -> {
 			try {
-				if(redisTemplate.hasKey(key)){
+				if (redisTemplate.hasKey(key)) {
 					String value = operations.get(key);
 					log.info("get live courseWareId from redis:roomId:{}, courseWareId:{}", roomId, coursewareId);
-					CourseLiveBackLog courseLiveBackLog = JSONObject.parseObject(value,CourseLiveBackLog.class);
+					CourseLiveBackLog courseLiveBackLog = JSONObject.parseObject(value, CourseLiveBackLog.class);
 					return courseLiveBackLog;
-				}else{
+				} else {
 					return null;
 				}
-			}finally{
+			} finally {
 				countDownLatch.countDown();
 			}
 		};
@@ -108,17 +113,17 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 			final Example example = Example.builder(CourseLiveBackLog.class).where(courseLiveBackLogWeekendSql).build();
 			List<CourseLiveBackLog> courseLiveBackLogList = selectByExample(example);
 
-			try{
+			try {
 				if (CollectionUtils.isNotEmpty(courseLiveBackLogList)) {
 					CourseLiveBackLog courseLiveBackLog = courseLiveBackLogList.get(0);
 					operations.set(key, JSONObject.toJSONString(courseLiveBackLog), 30, TimeUnit.MINUTES);
 					log.info("get live courseWareId from mysql:roomId:{}, courseWareId:{}", roomId, coursewareId);
 					return courseLiveBackLog;
-				}else{
+				} else {
 					executorService.execute(phpTask);
 					return null;
 				}
-			}finally {
+			} finally {
 				countDownLatch.countDown();
 			}
 		};
@@ -126,25 +131,70 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 		Future<CourseLiveBackLog> redisFuture = executorService.submit(redisTask);
 		Future<CourseLiveBackLog> mysqlFuture = executorService.submit(mysqlTask);
 
-		try{
+		try {
 			countDownLatch.await();
-			if(redisFuture.isDone() || mysqlFuture.isDone()){
-				if(redisFuture.isDone()){
+			if (redisFuture.isDone() || mysqlFuture.isDone()) {
+				if (redisFuture.isDone()) {
 					log.debug("findByRoomIdAndLiveCourseWareId redis result:{}", redisFuture.get());
 					return redisFuture.get();
-				}else if(mysqlFuture.isDone()){
+				} else if (mysqlFuture.isDone()) {
 					log.debug("findByRoomIdAndLiveCourseWareId mysql result:{}", mysqlFuture.get());
 					return mysqlFuture.get();
-				}else{
+				} else {
 					return null;
 				}
-			}else{
+			} else {
 				log.error("redis & mysql task both is unDone");
 			}
-		}catch (Exception e){
+		} catch (Exception e) {
 			log.error("get future task result failed!");
 			return null;
 		}
 		return null;
+	}
+
+
+	/**
+	 * 通过 guava 或者 database 获取直播课件id
+	 *
+	 * @param roomId
+	 * @param courseWareId
+	 * @return
+	 */
+	@Override
+	public CourseLiveBackLog findByRoomIdAndLiveCourseWareIdV2(final Long roomId, final Long courseWareId) {
+		final ValueOperations<String, String> operations = redisTemplate.opsForValue();
+
+		String key = roomId.longValue() + "_" + courseWareId;
+		try {
+			return logCache.get(key, new Callable<CourseLiveBackLog>() {
+				@Override
+				public CourseLiveBackLog call() throws Exception {
+					return findFromDataBase();
+				}
+
+				/**
+				 * 从数据库获取直播课件信息
+				 * @return
+				 */
+				private CourseLiveBackLog findFromDataBase() {
+					WeekendSqls<CourseLiveBackLog> courseLiveBackLogWeekendSql = WeekendSqls.<CourseLiveBackLog>custom()
+							.andEqualTo(CourseLiveBackLog::getRoomId, roomId)
+							.andEqualTo(CourseLiveBackLog::getLiveBackCoursewareId, courseWareId);
+					final Example example = Example.builder(CourseLiveBackLog.class).where(courseLiveBackLogWeekendSql).build();
+					List<CourseLiveBackLog> courseLiveBackLogList = selectByExample(example);
+					if (CollectionUtils.isNotEmpty(courseLiveBackLogList)) {
+						CourseLiveBackLog courseLiveBackLog = courseLiveBackLogList.get(0);
+						log.debug("get live courseWareId from mysql:roomId:{}, courseWareId:{}", roomId, courseWareId);
+						return courseLiveBackLog;
+					} else {
+						return null;
+					}
+				}
+			});
+		} catch (Exception e) {
+			log.error("课后作业数据修正---  guava 获取直播课件信息异常:roomId:{}, wareId:{}, error:{}", roomId, courseWareId, e.getMessage());
+			return null;
+		}
 	}
 }

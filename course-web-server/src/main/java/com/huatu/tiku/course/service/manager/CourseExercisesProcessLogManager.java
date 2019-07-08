@@ -327,7 +327,7 @@ public class CourseExercisesProcessLogManager {
                 log.error("课后作业数据修正---  直播回放创建课后作业答题卡失败，查询不到百家云信息:{}", syllabusId);
                 return answerCardInfo;
             }
-            CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(Long.valueOf(syllabusWareInfo.getRoomId()), syllabusWareInfo.getCoursewareId());
+            CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(Long.valueOf(syllabusWareInfo.getRoomId()), syllabusWareInfo.getCoursewareId());
             if(null == courseLiveBackLog){
                 log.error("课后作业数据修正---  直播回放数据查询不到roomId:{},课件id:{},终端信息:terminal:{},cv:{}",syllabusWareInfo.getRoomId(), syllabusWareInfo.getCoursewareId(),terminal, cv);
                 return answerCardInfo;

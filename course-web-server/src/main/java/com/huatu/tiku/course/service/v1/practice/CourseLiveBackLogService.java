@@ -17,4 +17,9 @@ public interface CourseLiveBackLogService extends BaseServiceHelper<CourseLiveBa
 	 */
 	CourseLiveBackLog findByRoomIdAndLiveCoursewareId(Long roomId, Long coursewareId);
 
+
+	/**
+	 * 根据 roomId 直播课件id 查询绑定关系 v2
+	 */
+	CourseLiveBackLog findByRoomIdAndLiveCourseWareIdV2(Long roomId, Long courseWareId);
 }
