@@ -28,6 +28,17 @@ public interface PracticeCardServiceV1 {
             @RequestParam("questionId") String questionId
     );
 
+
+    /**
+     * 获取课后作业答题卡，没有不创建
+     */
+    @PostMapping(value = "/v2/practices/obtainCourseExercisesPracticeCard")
+    Object obtainCourseExercisesPracticeCard(
+            @RequestParam("userId") Integer uid,
+            @RequestParam("courseType") Integer courseType,
+            @RequestParam("courseId") Long courseId);
+
+
     /**
      * 创建课程 课中练习
      */
