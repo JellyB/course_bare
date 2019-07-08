@@ -319,7 +319,7 @@ public class CourseExercisesProcessLogManager {
      * @return
      */
     private HashMap<String, Object> obtainOrCreateAnswerCardThroughPaperService(long syllabusId, int courseType, long courseWareId, int subject, int terminal, String cv, int userId){
-        log.debug("课后作业数据修正--- obtainOrCreateAnswerCardThroughPaperService: userID:{}, syllabusId:{}", userId, syllabusId);
+        log.debug("课后作业数据修正--- obtainOrCreateAnswerCardThroughPaperService 1: userID:{}, syllabusId:{}", userId, syllabusId);
         HashMap<String, Object> answerCardInfo = Maps.newHashMap();
         if(courseType == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
             SyllabusWareInfo syllabusWareInfo = requestSingleSyllabusInfoWithCache(syllabusId);
@@ -337,24 +337,30 @@ public class CourseExercisesProcessLogManager {
             }
         }
 
+        log.debug("课后作业数据修正--- obtainOrCreateAnswerCardThroughPaperService 2: userID:{}, syllabusId:{}", userId, syllabusId);
         List<Map<String, Object>> list = courseExercisesService.listQuestionByCourseId(courseType, courseWareId);
         if (CollectionUtils.isEmpty(list)) {
             log.error("课后作业数据修正---  没有配置课后作业试题信息:courseType:{}, courseWareId:{}", courseType, courseWareId);
             return answerCardInfo;
         }
+
+        log.debug("课后作业数据修正--- obtainOrCreateAnswerCardThroughPaperService 3: userID:{}, syllabusId:{}", userId, syllabusId);
         String questionId = list.stream()
                 .filter(map -> null != map && null != map.get("id"))
                 .map(map -> String.valueOf(map.get("id")))
                 .collect(Collectors.joining(","));
 
+        log.debug("课后作业数据修正--- obtainOrCreateAnswerCardThroughPaperService 4: userID:{}, syllabusId:{}", userId, syllabusId);
         Object practiceCard = practiceCardService.createCourseExercisesPracticeCard(
                 terminal, subject, userId, "课后作业练习", courseType, courseWareId, questionId);
 
         answerCardInfo = (HashMap<String, Object>) ZTKResponseUtil.build(practiceCard);
-        log.debug("课后作业数据修正--- obtain answerCardInfo from paper client, userId:{}, syllabusId:{}, answerCardInfo:{}", userId, syllabusId, JSONObject.toJSONString(answerCardInfo));
+        log.debug("课后作业数据修正--- obtainOrCreateAnswerCardThroughPaperService 5: userID:{}, syllabusId:{}, answerCardInfo:{}", userId, syllabusId, JSONObject.toJSONString(answerCardInfo));
         if (MapUtils.isNotEmpty(answerCardInfo)) {
             answerCardInfo.computeIfPresent("id", (key, value) -> String.valueOf(value));
         }
+
+        log.debug("课后作业数据修正--- obtainOrCreateAnswerCardThroughPaperService 6: userID:{}, syllabusId:{}", userId, syllabusId);
         return answerCardInfo;
     }
 
@@ -1121,15 +1127,14 @@ public class CourseExercisesProcessLogManager {
         log.debug("课后作业数据修正--- dealCourseWorkUsersDataFixStep3 start. userId:{}, classInfo.size:{}", simpleUserInfo.getUserId(), classInfoList.size());
         Set<ClassInfo> classInfoSet = classInfoList.stream().collect(Collectors.toSet());
         for (ClassInfo classInfo : classInfoSet) {
-            executorService.execute(() -> {
-                try{
-                    HashMap<String, Object> answerCardInfo = obtainOrCreateAnswerCardThroughPaperService(classInfo.getSyllabusId(), classInfo.getCoursewareType(), classInfo.getCourseWareId(), simpleUserInfo.getSubject(), simpleUserInfo.getTerminal(), simpleUserInfo.getCv(), simpleUserInfo.getUserId());
-                    log.debug("课后作业数据修正--- obtainOrCreateAnswerCardThroughPaperService <=> insertCardInfo");
-                    insertCardInfo(simpleUserInfo.getUserId().intValue(), classInfo.getCoursewareType(), classInfo.getCourseWareId().longValue(), classInfo.getClassId().longValue(), classInfo.getSyllabusId().longValue(), answerCardInfo, true);
-                }catch (Exception e){
-                    log.error("课后作业数据修正--- dealCourseWorkUsersDataFixStep3 exception, error:{}", e.getMessage());
-                }
-            });
+            try{
+                log.debug("课后作业数据修正---  新的任务执行了 -----> :{}", JSONObject.toJSONString(classInfo));
+                HashMap<String, Object> answerCardInfo = obtainOrCreateAnswerCardThroughPaperService(classInfo.getSyllabusId(), classInfo.getCoursewareType(), classInfo.getCourseWareId(), simpleUserInfo.getSubject(), simpleUserInfo.getTerminal(), simpleUserInfo.getCv(), simpleUserInfo.getUserId());
+                log.debug("课后作业数据修正--- obtainOrCreateAnswerCardThroughPaperService <=> insertCardInfo");
+                insertCardInfo(simpleUserInfo.getUserId().intValue(), classInfo.getCoursewareType(), classInfo.getCourseWareId().longValue(), classInfo.getClassId().longValue(), classInfo.getSyllabusId().longValue(), answerCardInfo, true);
+            }catch (Exception e){
+                log.error("课后作业数据修正--- dealCourseWorkUsersDataFixStep3 exception, error:{}", e.getMessage());
+            }
         }
     }
 
