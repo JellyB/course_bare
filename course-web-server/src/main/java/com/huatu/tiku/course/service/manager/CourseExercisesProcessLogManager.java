@@ -339,6 +339,7 @@ public class CourseExercisesProcessLogManager {
 
         List<Map<String, Object>> list = courseExercisesService.listQuestionByCourseId(courseType, courseWareId);
         if (CollectionUtils.isEmpty(list)) {
+            log.error("课后作业数据修正---  没有配置课后作业试题信息:courseType:{}, courseWareId:{}", courseType, courseWareId);
             return answerCardInfo;
         }
         String questionId = list.stream()
@@ -350,6 +351,7 @@ public class CourseExercisesProcessLogManager {
                 terminal, subject, userId, "课后作业练习", courseType, courseWareId, questionId);
 
         answerCardInfo = (HashMap<String, Object>) ZTKResponseUtil.build(practiceCard);
+        log.debug("课后作业数据修正--- obtain answerCardInfo from paper client, userId:{}, syllabusId:{}, answerCardInfo:{}", userId, syllabusId, JSONObject.toJSONString(answerCardInfo));
         if (MapUtils.isNotEmpty(answerCardInfo)) {
             answerCardInfo.computeIfPresent("id", (key, value) -> String.valueOf(value));
         }
@@ -1122,9 +1124,10 @@ public class CourseExercisesProcessLogManager {
             executorService.execute(() -> {
                 try{
                     HashMap<String, Object> answerCardInfo = obtainOrCreateAnswerCardThroughPaperService(classInfo.getSyllabusId(), classInfo.getCoursewareType(), classInfo.getCourseWareId(), simpleUserInfo.getSubject(), simpleUserInfo.getTerminal(), simpleUserInfo.getCv(), simpleUserInfo.getUserId());
+                    log.debug("课后作业数据修正--- obtainOrCreateAnswerCardThroughPaperService <=> insertCardInfo");
                     insertCardInfo(simpleUserInfo.getUserId().intValue(), classInfo.getCoursewareType(), classInfo.getCourseWareId().longValue(), classInfo.getClassId().longValue(), classInfo.getSyllabusId().longValue(), answerCardInfo, true);
                 }catch (Exception e){
-                    log.error("课后作业数据修正--- dealCourseWorkUsersDataFixStep3 {}", e.getMessage());
+                    log.error("课后作业数据修正--- dealCourseWorkUsersDataFixStep3 exception, error:{}", e.getMessage());
                 }
             });
         }
