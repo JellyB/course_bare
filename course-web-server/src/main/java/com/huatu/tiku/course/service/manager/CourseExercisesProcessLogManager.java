@@ -1144,7 +1144,12 @@ public class CourseExercisesProcessLogManager {
                 HashMap<String, Object> answerCardInfo = obtainOrCreateAnswerCardThroughPaperService(classInfo, simpleUserInfo.getSubject(), simpleUserInfo.getTerminal(), simpleUserInfo.getCv(), simpleUserInfo.getUserId(), false);
                 log.debug("课后作业数据修正--- obtainOrCreateAnswerCardThroughPaperService <=> insertCardInfo");
                 if(CollectionUtils.isNotEmpty(answerCardInfo.keySet())){
-                    insertCardInfo(simpleUserInfo.getUserId(), classInfo, answerCardInfo, true);
+                    Long id = MapUtils.getLong(answerCardInfo, "id");
+                    if(id == null || id.longValue() == 0){
+                        log.error("课后作业数据修正--- 答题卡为空: 试题信息:{}, userId:{}", JSONObject.toJSONString(classInfo), simpleUserInfo.getUserId());
+                    }else{
+                        insertCardInfo(simpleUserInfo.getUserId(), classInfo, answerCardInfo, true);
+                    }
                 }
             }catch (Exception e){
                 log.error("课后作业数据修正--- dealCourseWorkUsersDataFixStep3 exception, error:{}", e.getMessage());
