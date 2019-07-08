@@ -319,6 +319,7 @@ public class CourseExercisesProcessLogManager {
      * @return
      */
     private HashMap<String, Object> obtainOrCreateAnswerCardThroughPaperService(long syllabusId, int courseType, long courseWareId, int subject, int terminal, String cv, int userId){
+        log.debug("课后作业数据修正--- obtainOrCreateAnswerCardThroughPaperService: userID:{}, syllabusId:{}", userId, syllabusId);
         HashMap<String, Object> answerCardInfo = Maps.newHashMap();
         if(courseType == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
             SyllabusWareInfo syllabusWareInfo = requestSingleSyllabusInfoWithCache(syllabusId);
@@ -424,6 +425,8 @@ public class CourseExercisesProcessLogManager {
      * @param isAlert
      */
     public void insertCardInfo(int userId, Integer courseType, Long courseWareId, Long courseId, Long syllabusId, HashMap<String,Object> result, boolean isAlert){
+
+        log.debug("课后作业数据修正---  insertCardInfo: userId:{}, syllabusId:{}", userId, syllabusId);
         Long cardId = MapUtils.getLongValue(result, "id");
         int status = MapUtils.getIntValue(result, "status");
 
@@ -480,7 +483,7 @@ public class CourseExercisesProcessLogManager {
         cardInfo.setLessonId(courseWareId);
         cardInfo.setCardId(cardId);
         cardInfo.setBizStatus(status);
-        log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>:{}", JSONObject.toJSONString(cardInfo));
+        log.info("课后作业数据修正--- >>>>>>>>>>>>>>>>>>>>>>>>>>:{}", JSONObject.toJSONString(cardInfo));
         courseExercisesCardInfoMapper.insertSelective(cardInfo);
     }
 
@@ -1006,6 +1009,7 @@ public class CourseExercisesProcessLogManager {
      * @param userInfo
      */
 	public void dealCourseWorkUsersDataFix(String userInfo){
+	    log.debug("课后作业数据修正--- dealCourseWorkUsersDataFix.start:{}", userInfo);
         SimpleUserInfo simpleUserInfo = JSONObject.parseObject(userInfo, SimpleUserInfo.class);
         NetSchoolResponse myCourseIdList = userCourseServiceV6.obtainMyCourseIdList(simpleUserInfo.getUserName());
         if(myCourseIdList == NetSchoolResponse.DEFAULT){
@@ -1030,6 +1034,7 @@ public class CourseExercisesProcessLogManager {
      * @param courseList
      */
     private void dealCourseWorkUsersDataFixStep2(SimpleUserInfo simpleUserInfo, List<String> courseList) throws Exception{
+        log.debug("课后作业数据修正---  dealCourseWorkUsersDataFixStep2, userId:{}, courseList:{}", simpleUserInfo.getUserId(), courseList);
         final CopyOnWriteArrayList<ClassInfo> classInfoList_ = new CopyOnWriteArrayList<>();
         for (String classId : courseList) {
             Future<List<ClassInfo>> future = executorService.submit(new Callable<List<ClassInfo>>() {
@@ -1097,7 +1102,7 @@ public class CourseExercisesProcessLogManager {
                 classInfoList_.addAll(classInfoList);
             }
         }
-        log.debug("课后作业数据修正--- guava 缓存命中率:{}", classInfo.stats());
+        log.debug("课后作业数据修正--- guava 缓存命中率:, userId:{}, status:{}", simpleUserInfo.getUserId(), classInfo.stats());
         if(CollectionUtils.isNotEmpty(classInfoList_)){
             dealCourseWorkUsersDataFixStep3(simpleUserInfo, classInfoList_);
         }
@@ -1111,6 +1116,7 @@ public class CourseExercisesProcessLogManager {
         if(CollectionUtils.isEmpty(classInfoList)){
             return;
         }
+        log.debug("课后作业数据修正--- dealCourseWorkUsersDataFixStep3 start. userId:{}, classInfo.size:{}", simpleUserInfo.getUserId(), classInfoList.size());
         Set<ClassInfo> classInfoSet = classInfoList.stream().collect(Collectors.toSet());
         for (ClassInfo classInfo : classInfoSet) {
             executorService.execute(() -> {
@@ -1327,7 +1333,7 @@ public class CourseExercisesProcessLogManager {
         }
         countDownLatch.await();
         executorService.shutdown();
-
+        log.debug("课后作业数据修正--- convertAndSend data size:{}", simpleUserInfoList.size());
         for(SimpleUserInfo userInfo : simpleUserInfoList){
             String userInfo_ = JSONObject.toJSONString(userInfo);
             log.debug("课后作业数据修正--- deal user info :{} into rabbit mq", userInfo_);

@@ -27,9 +27,9 @@ public class ThreadPoolConf {
 
     @Bean(value = "courseExecutorService")
     public ExecutorService executorService(){
-        ExecutorService pool = new ThreadPoolExecutor(10, 50, 200,
+        ExecutorService pool = new ThreadPoolExecutor(5, 20, 200,
                 TimeUnit.MILLISECONDS,
-                new LinkedBlockingDeque<>(2048),
+                new LinkedBlockingDeque<>(20480),
                 threadFactory(),
                 new ThreadPoolExecutor.CallerRunsPolicy());
         return pool;
