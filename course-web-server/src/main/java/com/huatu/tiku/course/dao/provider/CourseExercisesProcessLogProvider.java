@@ -34,7 +34,7 @@ public class CourseExercisesProcessLogProvider {
         stringBuilder.append(" course_id as courseId,");
         stringBuilder.append(" GROUP_CONCAT( distinct syllabus_id) AS syllabusIds");
         stringBuilder.append(" FROM");
-        stringBuilder.append(" course_exercises_process_log");
+        stringBuilder.append(" course_exercises_card_info");
         stringBuilder.append(" WHERE");
         stringBuilder.append(" biz_status in (");
         stringBuilder.append(Joiner.on(",").join(list));

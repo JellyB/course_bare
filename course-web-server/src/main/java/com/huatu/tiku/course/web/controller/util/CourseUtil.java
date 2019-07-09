@@ -230,6 +230,7 @@ public class CourseUtil {
      * @param response 响应结果集
      * @param userId   用户ID
      */
+    @Deprecated
     public void addExercisesCardInfoV2(LinkedHashMap response, int userId, boolean need2Str) {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start("课程大纲-售后-添加课后答题结果信息 V2");
@@ -258,6 +259,36 @@ public class CourseUtil {
                     log.info("获取课后练习的答题卡信息 v2,参数信息, userId = {}, paramsList = {}, result = {}", userId, paramsList, JSONObject.toJSONString(courseExercisesCardInfo));
                     Object build = ZTKResponseUtil.build(courseExercisesCardInfo);
 
+                    return buildResponseConstructCardInfo(need2Str, (List<Map>) value, (List<Map>) build);
+                }
+        );
+        stopWatch.stop();
+        log.info("学习报告 - 课后作业答题卡信息 V2:userId:{}, 耗时:{}", userId,  stopWatch.prettyPrint());
+    }
+
+    /**
+     * 课程大纲-售后-添加课后答题结果信息 V3
+     * 使用 大纲 id 获取
+     * @param response 响应结果集
+     * @param userId   用户ID
+     */
+    public void addExercisesCardInfoV3(LinkedHashMap response, int userId, boolean need2Str) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start("课程大纲-售后-添加课后答题结果信息 V3");
+        response.computeIfPresent("list", (key, value) -> {
+                    List<Long> paramsList = ((List<Map>) value).stream()
+                            .filter(map -> null != map.get(SyllabusInfo.VideoType) && null != map.get(SyllabusInfo.CourseWareId))
+                            .filter(map -> null != map.get(SyllabusInfo.SyllabusId))
+                            .map(map -> MapUtils.getLong(map, SyllabusInfo.SyllabusId))
+                            .collect(Collectors.toList());
+
+                    //查询用户答题信息
+                    log.info("获取课后练习的答题卡信息 v3,参数信息, userId = {}, paramsList = {}", userId, paramsList);
+                    List<Long> cardIds = courseExercisesProcessLogManager.obtainCardIdsBySyllabusIds(userId, paramsList);
+                    log.info("获取课后练习的答题卡信息 v3,答题卡返回信息, userId = {}, cardIds = {}", userId, cardIds);
+                    Object courseExercisesCardInfo = practiceCardServiceV1.getCourseExercisesCardInfoV2(cardIds);
+                    log.info("获取课后练习的答题卡信息 v3,参数信息, userId = {}, paramsList = {}, result = {}", userId, paramsList, JSONObject.toJSONString(courseExercisesCardInfo));
+                    Object build = ZTKResponseUtil.build(courseExercisesCardInfo);
                     return buildResponseConstructCardInfo(need2Str, (List<Map>) value, (List<Map>) build);
                 }
         );
@@ -342,7 +373,7 @@ public class CourseUtil {
                 continue;
             }
             long bjyRoomId = MapUtils.getLongValue(currentMap, SyllabusInfo.BjyRoomId);
-            CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(bjyRoomId, courseWareId);
+            CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(bjyRoomId, courseWareId);
             if(null == courseLiveBackLog){
                 continue;
             }
@@ -401,7 +432,7 @@ public class CourseUtil {
         example.and()
                 .andEqualTo("roomId", bjyRoomId)
                 .andEqualTo("liveBackCoursewareId", liveBackCoursewareId);
-        CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(bjyRoomId, liveBackCoursewareId);
+        CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(bjyRoomId, liveBackCoursewareId);
         return Optional.of(courseLiveBackLog);
     }
 
@@ -570,7 +601,7 @@ public class CourseUtil {
                 .andEqualTo("liveBackCoursewareId", liveBackCoursewareId)
                 .andEqualTo("roomId", bjyRoomId);
         try{
-            CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(Long.valueOf(bjyRoomId), liveBackCoursewareId);
+            CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(Long.valueOf(bjyRoomId), liveBackCoursewareId);
             if(null == courseLiveBackLog){
                 result.put(SyllabusInfo.ReportStatus, YesOrNoStatus.NO.getCode());
             }else{
