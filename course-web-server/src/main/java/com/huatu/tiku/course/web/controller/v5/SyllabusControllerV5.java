@@ -51,7 +51,7 @@ public class SyllabusControllerV5 {
         Object response = ResponseUtil.build(syllabusService.buyAfterSyllabus(map));
         //添加答题信息
         courseUtil.addExercisesCardInfoV2((LinkedHashMap) response, userSession.getId(), false);
-        courseUtil.dealCourseWorkReport2BProcessed(userSession.getId());
+        //courseUtil.dealCourseWorkReport2BProcessed(userSession.getId());
         return response;
     }
 

@@ -868,6 +868,7 @@ public class CourseExercisesProcessLogManager {
      * 数据迁移处理逻辑
      * @param message
      */
+    @Deprecated
 	public void dealCourseWorkReportUsers(String message){
 	    int userId = Integer.parseInt(message);
 	    String userIdStr = String.valueOf(userId);

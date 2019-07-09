@@ -614,6 +614,7 @@ public class CourseUtil {
      * 课后作业待处理的 userId
      * @param userId
      */
+    @Deprecated
     public synchronized void dealCourseWorkReport2BProcessed(int userId){
         String userIdStr = String.valueOf(userId);
         String alreadyProcessed = CourseCacheKey.COURSE_WORK_REPORT_USERS_ALREADY_PROCESSED;

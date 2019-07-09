@@ -110,7 +110,7 @@ public class SyllabusControllerV6 {
         //添加答题信息
         stopwatch.start("addExercisesCardInfo");
         courseUtil.addExercisesCardInfoV2((LinkedHashMap) response, userSession.getId(), false);
-        courseUtil.dealCourseWorkReport2BProcessed(userSession.getId());
+        //courseUtil.dealCourseWorkReport2BProcessed(userSession.getId());
         stopwatch.stop();
         if(versionControlService.checkLearnReportShow(terminal, cv)){
             stopwatch.start("buyAfterSyllabus - addPeriodTestInfo 1");
@@ -149,7 +149,7 @@ public class SyllabusControllerV6 {
         Object timeTable = ResponseUtil.build(syllabusService.classSyllabus(map));
         //添加答题信息
         courseUtil.addExercisesCardInfoV2((LinkedHashMap) timeTable, userSession.getId(), false);
-        courseUtil.dealCourseWorkReport2BProcessed(userSession.getId());
+        //courseUtil.dealCourseWorkReport2BProcessed(userSession.getId());
         return timeTable;
     }
 

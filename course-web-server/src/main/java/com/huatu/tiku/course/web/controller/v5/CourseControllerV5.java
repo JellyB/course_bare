@@ -147,7 +147,7 @@ public class CourseControllerV5 {
         Object timeTable = ResponseUtil.build(courseService.findTimetable(map));
         //添加答题信息
         courseUtil.addExercisesCardInfoV2((LinkedHashMap) timeTable, userSession.getId(), false);
-        courseUtil.dealCourseWorkReport2BProcessed(userSession.getId());
+        //courseUtil.dealCourseWorkReport2BProcessed(userSession.getId());
         return timeTable;
     }
 
@@ -202,7 +202,7 @@ public class CourseControllerV5 {
         stopwatch.start("findPurchasesTimetable");
         Object purchasesTimetable = courseServiceBiz.findPurchasesTimetable(userSession.getId(), map);
         stopwatch.stop();
-        courseUtil.dealCourseWorkReport2BProcessed(userSession.getId());
+        //courseUtil.dealCourseWorkReport2BProcessed(userSession.getId());
         //添加答题信息
         stopwatch.start("addExercisesCardInfo");
         courseUtil.addExercisesCardInfoV2((LinkedHashMap) purchasesTimetable, userSession.getId(), true);
