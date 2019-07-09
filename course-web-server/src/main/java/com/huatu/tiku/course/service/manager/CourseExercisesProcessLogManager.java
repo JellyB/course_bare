@@ -1113,17 +1113,22 @@ public class CourseExercisesProcessLogManager {
      * @return
      */
     public List<Long> obtainCardIdsBySyllabusIds(long userId, List<Long> syllabusIds){
+        try{
+            Example example = new Example(CourseExercisesProcessLog.class);
+            example.and()
+                    .andEqualTo("userId", userId)
+                    .andEqualTo("status", YesOrNoStatus.YES.getCode())
+                    .andIn("syllabusId", syllabusIds);
 
-        Example example = new Example(CourseExercisesProcessLog.class);
-        example.and()
-                .andEqualTo("userId", userId)
-                .andEqualTo("status", YesOrNoStatus.YES.getCode())
-                .andIn("syllabusId", syllabusIds);
-
-        List<CourseExercisesProcessLog> logList = courseExercisesProcessLogMapper.selectByExample(example);
-        if(CollectionUtils.isNotEmpty(logList)){
-            return logList.stream().map(CourseExercisesProcessLog::getCardId).collect(Collectors.toList());
-        }else{
+            List<CourseExercisesProcessLog> logList = courseExercisesProcessLogMapper.selectByExample(example);
+            if(CollectionUtils.isNotEmpty(logList)){
+                return logList.stream().map(CourseExercisesProcessLog::getCardId).collect(Collectors.toList());
+            }else{
+                return Lists.newArrayList();
+            }
+        }catch (Exception e){
+            log.error("obtainCardIdsBySyllabusIds 异常: userId:{}, syllabusIds:{}", userId, syllabusIds);
+            e.printStackTrace();
             return Lists.newArrayList();
         }
     }

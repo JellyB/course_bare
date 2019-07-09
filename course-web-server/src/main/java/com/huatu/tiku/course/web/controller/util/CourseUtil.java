@@ -2,6 +2,7 @@ package com.huatu.tiku.course.web.controller.util;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.huatu.common.exception.BizException;
 import com.huatu.common.spring.event.EventPublisher;
@@ -279,21 +280,30 @@ public class CourseUtil {
                     List<Long> paramsList = ((List<Map>) value).stream()
                             .filter(map -> null != map.get(SyllabusInfo.VideoType) && null != map.get(SyllabusInfo.CourseWareId))
                             .filter(map -> null != map.get(SyllabusInfo.SyllabusId))
-                            .map(map -> MapUtils.getLong(map, SyllabusInfo.SyllabusId))
+                            .map(map -> MapUtils.getLongValue(map, SyllabusInfo.SyllabusId))
                             .collect(Collectors.toList());
 
                     //查询用户答题信息
+                    List<Map> build = Lists.newArrayList();
                     log.info("获取课后练习的答题卡信息 v3,参数信息, userId = {}, paramsList = {}", userId, paramsList);
+                    if(CollectionUtils.isEmpty(paramsList)){
+                        log.error("获取课后练习的答题卡信息 v3,参数信息 syllabusList is empty, userId:{}, response:{}",userId, response);
+                        return buildResponseConstructCardInfo(need2Str, (List<Map>) value, build);
+                    }
                     List<Long> cardIds = courseExercisesProcessLogManager.obtainCardIdsBySyllabusIds(userId, paramsList);
                     log.info("获取课后练习的答题卡信息 v3,答题卡返回信息, userId = {}, cardIds = {}", userId, cardIds);
-                    Object courseExercisesCardInfo = practiceCardServiceV1.getCourseExercisesCardInfoV2(cardIds);
-                    log.info("获取课后练习的答题卡信息 v3,参数信息, userId = {}, paramsList = {}, result = {}", userId, paramsList, JSONObject.toJSONString(courseExercisesCardInfo));
-                    Object build = ZTKResponseUtil.build(courseExercisesCardInfo);
-                    return buildResponseConstructCardInfo(need2Str, (List<Map>) value, (List<Map>) build);
+
+                    if(CollectionUtils.isNotEmpty(cardIds)){
+                        Object courseExercisesCardInfo = practiceCardServiceV1.getCourseExercisesCardInfoV2(cardIds);
+                        log.info("获取课后练习的答题卡信息 v3,参数信息, userId = {}, paramsList = {}, result = {}", userId, paramsList, JSONObject.toJSONString(courseExercisesCardInfo));
+                        Object object = ZTKResponseUtil.build(courseExercisesCardInfo);
+                        build.addAll((List<Map>) object);
+                    }
+                    return buildResponseConstructCardInfo(need2Str, (List<Map>) value, build);
                 }
         );
         stopWatch.stop();
-        log.info("学习报告 - 课后作业答题卡信息 V2:userId:{}, 耗时:{}", userId,  stopWatch.prettyPrint());
+        log.info("学习报告 - 课后作业答题卡信息 V3:userId:{}, 耗时:{}", userId,  stopWatch.prettyPrint());
     }
 
 
