@@ -304,7 +304,7 @@ public class CourseExercisesProcessLogManager {
                 return null;
             }
             result.computeIfPresent("id", (key, value) -> String.valueOf(value));
-
+            result.computeIfPresent("score", (key, value) -> new Double(Double.parseDouble(value.toString())).intValue());
             createCourseWorkAnswerCard(userId, courseType, coursewareId, courseId, syllabusId, result, true);
         }catch (Exception e){
             log.error("Exception:{}, terminal:{}, cv:{}", syllabusId, terminal, cv);
@@ -369,6 +369,7 @@ public class CourseExercisesProcessLogManager {
                 return null;
             }
             result.computeIfPresent("id", (key, value) -> String.valueOf(value));
+            result.computeIfPresent("score", (key, value) -> new Double(Double.parseDouble(value.toString())).intValue());
 
             createCourseWorkAnswerCard(userId, courseType, courseWareId, courseId, syllabusId, result, true);
         }catch (Exception e){
