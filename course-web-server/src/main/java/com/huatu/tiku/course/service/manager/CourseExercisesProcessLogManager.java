@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.service.manager;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -1131,6 +1132,64 @@ public class CourseExercisesProcessLogManager {
             log.error("obtainCardIdsBySyllabusIds 异常: userId:{}, syllabusIds:{}", userId, syllabusIds);
             e.printStackTrace();
             return Lists.newArrayList();
+        }
+    }
+
+
+    @Deprecated
+    public void dataFix(long modifierId){
+        List<HashMap<String, Object>> dataList = courseExercisesProcessLogMapper.getDuplicateDate();
+        log.info("查询错误数据..............: dataList:{}", dataList);
+        List<DataFix> dataFixes = Lists.newArrayList();
+        dataList.forEach(item -> {
+            String ids = String.valueOf(item.get("ids"));
+            String userId = String.valueOf(item.get("user_id"));
+            List<Long> ids_ = Arrays.stream(ids.split(",")).map(Long::valueOf).distinct().collect(Collectors.toList());
+            DataFix dataFix = DataFix.builder().userId(Long.valueOf(userId)).ids(ids_).build();
+            dataFixes.add(dataFix);
+        });
+        if(CollectionUtils.isEmpty(dataFixes)){
+            return;
+        }
+        for (DataFix dataFix : dataFixes) {
+            if(dataFix.getIds().size() > 1){
+                log.error("current data fix is too many, skip...");
+            }
+            List<Long> syllabusIds = dataFix.getIds();
+            Example example = new Example(CourseExercisesProcessLog.class);
+            example.and().andEqualTo("status", YesOrNoStatus.YES.getCode())
+                    .andEqualTo("userId", dataFix.getUserId())
+                    .andEqualTo("syllabusId", syllabusIds.get(0));
+            example.orderBy("bizStatus").asc();
+
+            List<CourseExercisesProcessLog> courseExercisesProcessLogs = courseExercisesProcessLogMapper.selectByExample(example);
+            if(courseExercisesProcessLogs.size() <= 1){
+                log.error("data is normal");
+                continue;
+            }
+            CourseExercisesProcessLog tmp = courseExercisesProcessLogs.get(0);
+
+            CourseExercisesProcessLog update = new CourseExercisesProcessLog();
+            update.setId(tmp.getId());
+            update.setGmtModify(new Timestamp(System.currentTimeMillis()));
+            update.setStatus(YesOrNoStatus.NO.getCode());
+            update.setModifierId(modifierId);
+            courseExercisesProcessLogMapper.updateByPrimaryKeySelective(update);
+        }
+    }
+
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    static class DataFix implements Serializable {
+        private Long userId;
+        private List<Long> ids;
+
+        @Builder
+        public DataFix(Long userId, List<Long> ids) {
+            this.userId = userId;
+            this.ids = ids;
         }
     }
 

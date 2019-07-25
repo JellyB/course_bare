@@ -47,4 +47,24 @@ public class CourseExercisesProcessLogProvider {
         stringBuilder.append(" gmt_modify DESC");
         return stringBuilder.toString();
     }
+
+    /**
+     * 查询库中的错误数据
+     * @return
+     */
+    private String getDuplicateDate(){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT");
+        stringBuilder.append(" user_id,");
+        stringBuilder.append(" GROUP_CONCAT( syllabus_id ) AS ids ");
+        stringBuilder.append(" FROM");
+        stringBuilder.append(" course_exercises_process_log t ");
+        stringBuilder.append(" WHERE");
+        stringBuilder.append(" t.`status` = 1 ");
+        stringBuilder.append(" GROUP BY");
+        stringBuilder.append(" user_id,syllabus_id ");
+        stringBuilder.append(" HAVING");
+        stringBuilder.append(" COUNT( syllabus_id ) > 1");
+        return stringBuilder.toString();
+    }
 }
