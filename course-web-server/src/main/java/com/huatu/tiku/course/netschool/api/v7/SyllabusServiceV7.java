@@ -32,5 +32,6 @@ public interface SyllabusServiceV7 {
      * @return
      */
     @GetMapping(value = "/v5/c/class/syllabus_id_class_id_by_courseware_id")
+    @Deprecated
     NetSchoolResponse obtainSyllabusIdByCourseWareId(@RequestParam Map<String, Object> params);
 }

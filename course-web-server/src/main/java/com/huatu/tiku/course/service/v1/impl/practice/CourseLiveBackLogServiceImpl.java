@@ -7,6 +7,8 @@ import java.util.Optional;
 import java.util.concurrent.*;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Maps;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.netschool.api.v6.LessonServiceV6;
@@ -24,10 +26,12 @@ import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.entity.CourseLiveBackLog;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StopWatch;
+import org.springframework.web.bind.annotation.PostMapping;
 import service.impl.BaseServiceHelperImpl;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.weekend.WeekendSqls;
+
+import javax.annotation.PostConstruct;
 
 /**
  * 
@@ -49,6 +53,7 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 	@Qualifier(value = "courseExecutorService")
 	private ExecutorService executorService;
 
+	private final Cache<String, CourseLiveBackLog> logCache = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).maximumSize(10000).build();
 
 	public CourseLiveBackLogServiceImpl() {
 		super(CourseLiveBackLog.class);
@@ -146,5 +151,76 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 			return null;
 		}
 		return null;
+	}
+
+
+	/**
+	 * 通过 guava 或者 database 获取直播课件id
+	 *
+	 * @param roomId
+	 * @param courseWareId
+	 * @return
+	 */
+	@Override
+	public CourseLiveBackLog findByRoomIdAndLiveCourseWareIdV2(final Long roomId, final Long courseWareId) {
+
+		String key = roomId.longValue() + "_" + courseWareId;
+		try {
+			return logCache.get(key, new Callable<CourseLiveBackLog>() {
+				@Override
+				public CourseLiveBackLog call() throws Exception {
+					return findFromDataBase();
+				}
+
+				/**
+				 * 从数据库获取直播课件信息
+				 * @return
+				 */
+				private CourseLiveBackLog findFromDataBase() {
+					WeekendSqls<CourseLiveBackLog> courseLiveBackLogWeekendSql = WeekendSqls.<CourseLiveBackLog>custom()
+							.andEqualTo(CourseLiveBackLog::getRoomId, roomId)
+							.andEqualTo(CourseLiveBackLog::getLiveBackCoursewareId, courseWareId);
+					final Example example = Example.builder(CourseLiveBackLog.class).where(courseLiveBackLogWeekendSql).build();
+					List<CourseLiveBackLog> courseLiveBackLogList = selectByExample(example);
+					if (CollectionUtils.isNotEmpty(courseLiveBackLogList)) {
+						CourseLiveBackLog courseLiveBackLog = courseLiveBackLogList.get(0);
+						log.debug("get live courseWareId from mysql:roomId:{}, courseWareId:{}", roomId, courseWareId);
+						return courseLiveBackLog;
+					} else {
+						return findFromPhp();
+					}
+				}
+
+				/**
+				 * PHP 获取数据
+				 * @return
+				 */
+				private CourseLiveBackLog findFromPhp(){
+					Map<String,Object> params = Maps.newHashMap();
+					params.put("liveBackCoursewareId",courseWareId);
+					params.put("roomId", roomId);
+					CourseLiveBackLog courseLiveBackLog = null;
+					NetSchoolResponse netSchoolResponse = lessonService.obtainLiveWareId(params);
+					if(ResponseUtil.isSuccess(netSchoolResponse)){
+						LinkedHashMap<String,Object> result = (LinkedHashMap<String,Object>) netSchoolResponse.getData();
+						long liveCourseWareId = MapUtils.getLong(result, "liveCoursewareId");
+						if(liveCourseWareId != 0){
+							courseLiveBackLog = new CourseLiveBackLog();
+							courseLiveBackLog.setLiveBackCoursewareId(courseWareId);
+							courseLiveBackLog.setRoomId(roomId);
+							courseLiveBackLog.setLiveCoursewareId(liveCourseWareId);
+							courseLiveBackLog.setLiveBackCoursewareId(courseWareId);
+							courseLiveBackLog.setCreatorId(10L);
+							insert(courseLiveBackLog);
+							log.info("get live courseWareId from remote by rest:roomId:{}, coursewareId:{}", roomId, courseWareId);
+						}
+					}
+					return courseLiveBackLog;
+				}
+			});
+		} catch (Exception e) {
+			log.error("课后作业数据修正---  guava 获取直播课件信息异常:roomId:{}, wareId:{}, error:{}", roomId, courseWareId, e.getMessage());
+			return null;
+		}
 	}
 }

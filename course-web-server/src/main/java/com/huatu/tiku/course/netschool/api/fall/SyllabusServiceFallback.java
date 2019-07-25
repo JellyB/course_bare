@@ -35,6 +35,7 @@ public class SyllabusServiceFallback implements SyllabusServiceV7{
      * @param params
      * @return
      */
+    @Deprecated
     @Override
     public NetSchoolResponse obtainSyllabusIdByCourseWareId(Map<String, Object> params) {
         return NetSchoolResponse.DEFAULT;

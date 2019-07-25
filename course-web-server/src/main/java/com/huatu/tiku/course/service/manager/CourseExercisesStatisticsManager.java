@@ -368,7 +368,7 @@ public class CourseExercisesStatisticsManager {
                     result.add(param);
                     continue;
                 }else{
-                    CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(bjyRoomId, courseId);
+                    CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(bjyRoomId, courseId);
                     if(null == courseLiveBackLog){
                         param.putAll(defaultResult);
                         result.add(param);

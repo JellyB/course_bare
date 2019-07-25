@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.web.controller.v2;
 
+import com.google.common.collect.Maps;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
@@ -51,7 +52,13 @@ public class CourseExercisesControllerV2 {
             @RequestParam(value = "syllabusId") Long syllabusId
 
     ) {
-        return courseExercisesProcessLogManager.createCourseWorkAnswerCardEntrance(courseId, syllabusId, courseType, coursewareId, userSession.getSubject(), terminal, cv, userSession.getId());
+        try{
+            return courseExercisesProcessLogManager.createCourseWorkAnswerCardEntranceV2(courseId, syllabusId, courseType, coursewareId, userSession.getSubject(), terminal, cv, userSession.getId());
+        }catch (Exception e){
+            log.error("CourseExercisesControllerV2 card caught an exception :params courseId:{}, syllabusId:{}, courseType:{}, coursewareId:{}, subject:{}, terminal:{}, cv:{}, id:{}, error:{}", courseId, syllabusId, courseType, coursewareId, userSession.getSubject(), terminal, cv, userSession.getId(), e.getMessage());
+            e.printStackTrace();
+            return Maps.newLinkedHashMap();
+        }
     }
 
 

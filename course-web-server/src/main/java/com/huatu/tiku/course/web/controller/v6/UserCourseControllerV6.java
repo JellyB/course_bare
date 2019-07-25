@@ -159,6 +159,18 @@ public class UserCourseControllerV6 {
         return SuccessMessage.create("操作成功！");
     }
 
+    /**
+     * 数据纠正
+     * @param userSession
+     * @param secret
+     * @return
+     */
+    @PostMapping(value = "dataCorrect")
+    public Object dataFix(@Token UserSession userSession, @RequestHeader("secret") String secret){
+        courseExercisesProcessLogManager.dataFix(userSession.getId());
+        return SuccessMessage.create("操作成功！");
+    }
+
     @PostMapping(value = "dataCorrect/switch")
     public Object dataCorrectSwitch(@Token UserSession userSession, @RequestHeader("switch") String str){
         courseExercisesProcessLogManager.dataCorrectSwitch(userSession.getId(), str);

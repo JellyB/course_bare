@@ -27,4 +27,12 @@ public interface CourseExercisesProcessLogMapper extends Mapper<CourseExercisesP
      */
     @SelectProvider(type = CourseExercisesProcessLogProvider.class, method = "getCoursePageInfo")
     List<HashMap<String, Object>> getCoursePageInfo(long userId, int page, int size);
+
+
+    /**
+     * 查询错误数据
+     * @return
+     */
+    @SelectProvider(type = CourseExercisesProcessLogProvider.class, method = "getDuplicateDate")
+    List<HashMap<String, Object>> getDuplicateDate();
 }

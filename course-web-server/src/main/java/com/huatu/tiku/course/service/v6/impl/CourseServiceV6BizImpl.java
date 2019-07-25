@@ -471,7 +471,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         //如果为录播回放，查看回放是否生成
         boolean playBackAvailable = false;
         if(videoTypeEnum == VideoTypeEnum.LIVE_PLAY_BACK){
-            CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(Long.valueOf(bjyRoomId), courseWareId);
+            CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(Long.valueOf(bjyRoomId), courseWareId);
             if(null != courseLiveBackLog && null != courseLiveBackLog.getLiveCoursewareId()){
                 courseWareId = courseLiveBackLog.getLiveCoursewareId();
                 playBackAvailable = true;
