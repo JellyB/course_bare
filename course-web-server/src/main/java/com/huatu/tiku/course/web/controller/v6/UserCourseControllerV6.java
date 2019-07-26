@@ -165,7 +165,7 @@ public class UserCourseControllerV6 {
      * @param secret
      * @return
      */
-    @PostMapping(value = "dataCorrect")
+    @PostMapping(value = "dataFix")
     public Object dataFix(@Token UserSession userSession, @RequestHeader("secret") String secret){
         courseExercisesProcessLogManager.dataFix(userSession.getId());
         return SuccessMessage.create("操作成功！");

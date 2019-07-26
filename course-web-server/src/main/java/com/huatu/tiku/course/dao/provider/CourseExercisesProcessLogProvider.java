@@ -52,7 +52,7 @@ public class CourseExercisesProcessLogProvider {
      * 查询库中的错误数据
      * @return
      */
-    private String getDuplicateDate(){
+    public String getDuplicateDate(){
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(" SELECT");
         stringBuilder.append(" user_id,");
