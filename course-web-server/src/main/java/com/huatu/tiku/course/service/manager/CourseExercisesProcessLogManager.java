@@ -1168,7 +1168,7 @@ public class CourseExercisesProcessLogManager {
                 continue;
             }
             CourseExercisesProcessLog tmp = courseExercisesProcessLogs.get(0);
-
+            log.debug("课后作业当前需要修正的数据:{}", JSONObject.toJSONString(tmp));
             CourseExercisesProcessLog update = new CourseExercisesProcessLog();
             update.setId(tmp.getId());
             update.setGmtModify(new Timestamp(System.currentTimeMillis()));
