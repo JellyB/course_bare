@@ -150,6 +150,22 @@ public class CourseControllerV6 {
         return result;
     }
 
+
+    /**
+     * 查询用户是否报名课程，课程是否免费，课程是否已结束
+     * @param userSession
+     * @param terminal
+     * @param cv
+     * @return
+     */
+    @GetMapping(value = "status/{classId}")
+    public Object getUserCourseInfo(@Token UserSession userSession,
+                                    @RequestHeader(value = "terminal") int terminal,
+                                    @RequestHeader(value = "cv") String cv,
+                                    @PathVariable int classId,
+                                    @RequestParam(defaultValue = "-1") int collageActivityId ){
+        return courseServiceV6Biz.getUserCourseStatus(userSession.getUname(),classId,collageActivityId);
+    }
     /**
      * 小模考历史解析课信息列表
      *

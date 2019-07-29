@@ -76,4 +76,13 @@ public interface CourseServiceV6 {
      */
     @GetMapping(value = "/v5/c/class/analysis_class_list")
     NetSchoolResponse analysisClassList(@RequestParam Map<String, Object> params);
+
+
+    /**
+     * 查询用户是否报名课程，课程是否免费，课程是否已结束
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "v5/c/class/is_live_in_class")
+    NetSchoolResponse userCourseStatus(@RequestParam Map<String, Object> params);
 }
