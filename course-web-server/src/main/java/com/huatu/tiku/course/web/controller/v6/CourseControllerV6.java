@@ -13,6 +13,7 @@ import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -150,6 +151,22 @@ public class CourseControllerV6 {
         return result;
     }
 
+
+    /**
+     * 查询用户是否报名课程，课程是否免费，课程是否已结束
+     * @param userSession
+     * @param terminal
+     * @param cv
+     * @return
+     */
+    @GetMapping(value = "status/{classId}")
+    public Object getUserCourseInfo(@Token UserSession userSession,
+                                    @RequestHeader(value = "terminal") int terminal,
+                                    @RequestHeader(value = "cv") String cv,
+                                    @PathVariable int classId,
+                                    @RequestParam(defaultValue = "-1") int collageActivityId ){
+        return courseServiceV6Biz.getUserCourseStatus(userSession.getUname(),classId,collageActivityId);
+    }
     /**
      * 小模考历史解析课信息列表
      *
