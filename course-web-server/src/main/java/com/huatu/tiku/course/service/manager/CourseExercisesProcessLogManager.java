@@ -21,7 +21,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
@@ -306,7 +305,8 @@ public class CourseExercisesProcessLogManager {
             }
             result.computeIfPresent("id", (key, value) -> String.valueOf(value));
             result.computeIfPresent("score", (key, value) -> new Double(Double.parseDouble(value.toString())).intValue());
-            createCourseWorkAnswerCard(userId, courseType, coursewareId, courseId, syllabusId, result, true);
+            //取消调用
+            //createCourseWorkAnswerCard(userId, courseType, coursewareId, courseId, syllabusId, result, true);
         }catch (Exception e){
             log.error("Exception:{}, terminal:{}, cv:{}", syllabusId, terminal, cv);
             return null;
@@ -993,6 +993,7 @@ public class CourseExercisesProcessLogManager {
      * 遍历获取到的数据
      * @param courseExercisesCards
      */
+    @Deprecated
     private void dealCourseExercisesCards(int userId, List<Map> courseExercisesCards){
 	    for(Map<String,Object> current : courseExercisesCards){
 	        try{
@@ -1048,6 +1049,7 @@ public class CourseExercisesProcessLogManager {
      * @param courseWareId
      * @param syllabusDataInfo
      */
+    @Deprecated
     private void dealCourseWorkDataIntoMySQL(int userId, int courseType, Long cardId, int status, Long courseWareId, List<Map<String,Object>> syllabusDataInfo){
         HashMap<String, Object> params = Maps.newHashMap();
         params.put("id", cardId);
@@ -1056,7 +1058,8 @@ public class CourseExercisesProcessLogManager {
             try{
                 Long courseId = MapUtils.getLong(current, "classId");
                 Long syllabusId = MapUtils.getLong(current, "syllabusId");
-                createCourseWorkAnswerCard(userId, courseType, courseWareId, courseId, syllabusId, params,false);
+                //取消调用
+                //createCourseWorkAnswerCard(userId, courseType, courseWareId, courseId, syllabusId, params,false);
                 log.debug("处理课后作业入库----> userId:{},courseType:{},courseWareId:{},courseId:{},syllabusId:{},params:{}", userId, courseType, courseWareId, courseId, syllabusId, params);
             }catch (Exception e){
                 log.error("处理课后作业入库 mysql 异常 userId:{}, courseType:{}, cardId:{}, status:{}, courseWareId:{},syllabusDataInfo:{}, error:{}", userId, courseType, cardId, status, courseWareId, syllabusDataInfo,e.getMessage());
