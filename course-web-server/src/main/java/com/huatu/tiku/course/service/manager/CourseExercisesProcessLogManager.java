@@ -502,13 +502,18 @@ public class CourseExercisesProcessLogManager {
                 .andEqualTo("status", YesOrNoStatus.YES.getCode())
                 .andEqualTo("userId", answerCard.getUserId())
                 .andEqualTo("cardId", answerCard.getId());
-        CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogMapper.selectOneByExample(example);
-        if(null != courseExercisesProcessLog){
-            courseExercisesProcessLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
-            courseExercisesProcessLog.setBizStatus(answerCard.getStatus());
-            courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
+        /**
+         * 学员买了多个课，课后作业会有多个数据
+         */
+        List<CourseExercisesProcessLog> courseExercisesProcessLogs = courseExercisesProcessLogMapper.selectByExample(example);
+        if(CollectionUtils.isNotEmpty(courseExercisesProcessLogs)){
+            for (CourseExercisesProcessLog courseExercisesProcessLog : courseExercisesProcessLogs) {
+                courseExercisesProcessLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
+                courseExercisesProcessLog.setBizStatus(answerCard.getStatus());
+                courseExercisesProcessLogMapper.updateByPrimaryKeySelective(courseExercisesProcessLog);
+            }
         }else{
-            log.error("队列提交课后作业答题卡查询失败:{}", JSONObject.toJSONString(answerCard));
+            log.error("队列提交课后作业数据查询为空:{}", JSONObject.toJSONString(answerCard));
         }
     }
     /**
