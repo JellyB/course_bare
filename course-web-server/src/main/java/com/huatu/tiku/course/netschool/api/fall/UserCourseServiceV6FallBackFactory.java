@@ -194,8 +194,8 @@ public class UserCourseServiceV6FallBackFactory implements Fallback<UserCourseSe
              * @return
              */
             @Override
-            public NetSchoolResponse obtainOne2One(String p) {
-                log.error("UserCourseService V6 obtainOne2One fall back params:{}, fallback reason:{}", p, throwable);
+            public NetSchoolResponse obtainOne2One(String p, int terminal) {
+                log.error("UserCourseService V6 obtainOne2One fall back params:{}, terminal:{}, fallback reason:{}", p, terminal, throwable);
                 return NetSchoolResponse.DEFAULT;
             }
         };
