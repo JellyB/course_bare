@@ -442,11 +442,12 @@ public class UserCourseControllerV6 {
     @LocalMapParam
     @GetMapping(value = "/1v1/{courseId}")
     public Object get1V1Table(@RequestParam(value = "OrderNum") String OrderNum,
+                              @RequestHeader(value = "terminal") int terminal,
                               @PathVariable int courseId) throws BizException{
 
         Map<String,Object> params = LocalMapParamHandler.get();
         params.put("rid",courseId);
-        NetSchoolResponse netSchoolResponse = userCourseService.obtainOne2One(RequestUtil.encrypt(params));
+        NetSchoolResponse netSchoolResponse = userCourseService.obtainOne2One(RequestUtil.encrypt(params), terminal);
         return ResponseUtil.build(netSchoolResponse);
     }
 }
