@@ -140,6 +140,6 @@ public interface UserCourseServiceV6 {
 	 * @return
 	 */
 	@GetMapping(value = "/v5/c/user/one_to_one")
-	NetSchoolResponse obtainOne2One(@RequestParam(value = "p") String p, int terminal);
+	NetSchoolResponse obtainOne2One(@RequestParam(value = "p") String p, @RequestParam(value = "terminal") int terminal);
 
 }
