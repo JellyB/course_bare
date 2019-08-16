@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.web.controller.v3;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
 import com.huatu.common.consts.TerminalType;
@@ -214,7 +215,13 @@ public class CourseControllerV3 {
                 .put("cv", cv)
                 .put("terminal", terminal)
                 .build();
-        CourseListV3DTO courseListV3 = courseBizService.getCourseListV3(params);
+        //CourseListV3DTO courseListV3 = courseBizService.getCourseListV3(params);
+        CourseListV3DTO courseListV3 = new CourseListV3DTO();
+        courseListV3.setCache(true);
+        courseListV3.setDegrade(true);
+        courseListV3.setNext(0);
+        courseListV3.setResult(Lists.newArrayList());
+        courseListV3.setCacheTimestamp(System.currentTimeMillis());
         log.warn("1$${}$${}$${}$${}$${}$${}$${}$${}", categoryid, -1, userSession.getId(), userSession.getUname(), "", String.valueOf(System.currentTimeMillis()), cv, terminal);
         return courseListV3;
     }

@@ -2,6 +2,7 @@ package com.huatu.tiku.course.web.controller;
 
 import com.google.common.collect.Maps;
 import com.huatu.tiku.common.consts.CatgoryType;
+import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.common.NetSchoolConfig;
 import com.huatu.tiku.course.netschool.api.SydwCourseServiceV1;
 import com.huatu.tiku.course.netschool.api.UserCoursesServiceV1;
@@ -62,7 +63,8 @@ public class SydwCourseControllerV2 {
         paramMap.put("shortTitle", shortTitle);
 
         if(StringUtils.isBlank(shortTitle)){
-            return ResponseUtil.build(sydwCourseService.allCollectionList(paramMap));
+            //return ResponseUtil.build(sydwCourseService.allCollectionList(paramMap));
+            return ResponseUtil.build(NetSchoolResponse.DEFAULT);
         }else{
             return ResponseUtil.build(sydwCourseService.sydwTotalList(paramMap));
         }
@@ -116,7 +118,8 @@ public class SydwCourseControllerV2 {
         parameterMap.put("keywords", StringUtils.trimToEmpty(keywords));
         parameterMap.put("categoryid", transformToNetschool(catgory));
         log.warn("8$${}$${}$${}$${}$${}$${}$${}$${}",keywords,catgory,userSession.getId(),userSession.getUname(),String.valueOf(System.currentTimeMillis()),cv,terminal);
-        return ResponseUtil.build(sydwCourseService.allCollectionList(parameterMap));
+        //return ResponseUtil.build(sydwCourseService.allCollectionList(parameterMap));
+        return ResponseUtil.build(NetSchoolResponse.DEFAULT);
     }
 
 
