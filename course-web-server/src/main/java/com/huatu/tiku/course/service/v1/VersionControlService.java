@@ -29,7 +29,7 @@ public class VersionControlService {
         int versionCount = Integer.valueOf(StringUtils.rightPad(cv.replaceAll("\\.", ""), 4, '0'));
         if(terminal == AppVersionEnum.TerminalTypeEnum.IOS.getValue() && versionCount >= IosVersion){
             return true;
-        }else if(versionCount >= AndroidVersion){
+        }else if((terminal == 4 || terminal == AppVersionEnum.TerminalTypeEnum.ANDROID.getValue()) && versionCount >= AndroidVersion){
             return true;
         }else {
             return false;
