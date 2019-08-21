@@ -887,4 +887,15 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         log.info("更新秒杀课信息 --- classId:{}, limit:{}", classId, limit);
         return SuccessMessage.create("ok");
     }
+    
+    @Override
+    public Object getUserCourseStatus(String uname, int netClassId, int collageActivityId) {
+        HashMap<String, Object> map = Maps.newHashMap();
+        map.put("userName",uname);
+        map.put("netClassId",netClassId);
+        if(collageActivityId > 0){
+            map.put("collageActivityId",collageActivityId);
+        }
+        return courseService.userCourseStatus(map);
+    }
 }

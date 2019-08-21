@@ -86,4 +86,13 @@ public interface CourseServiceV6Biz {
      * @throws BizException
      */
     Object addSecKillInfo(String classId, int limit) throws BizException;
+    
+    /**
+     * 查询用户某个课程的状态
+     * @param uname     用户名
+     * @param netClassId   课程ID
+     * @param collageActivityId   拼团活动Id
+     * @return
+     */
+    Object getUserCourseStatus(String uname, int netClassId, int collageActivityId);
 }
