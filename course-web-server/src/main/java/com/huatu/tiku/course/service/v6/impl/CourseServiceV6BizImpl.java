@@ -896,6 +896,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         if(collageActivityId > 0){
             map.put("collageActivityId",collageActivityId);
         }
-        return courseService.userCourseStatus(map);
+        NetSchoolResponse netSchoolResponse = courseService.userCourseStatus(map);
+        return netSchoolResponse.getData();
     }
 }
