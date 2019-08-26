@@ -555,23 +555,23 @@ public class CourseExercisesStatisticsManager {
                 return userRankInfo;
             }).collect(Collectors.toList()));
 
-            List<Long> userIds = userRankInfoArrayList.stream().map(UserRankInfo::getUid).collect(Collectors.toList());
+            /*List<Long> userIds = userRankInfoArrayList.stream().map(UserRankInfo::getUid).collect(Collectors.toList());
             UserRankInfo userRankInfo = UserRankInfo
                     .builder()
                     .uid(userId)
                     .submitTimeInfo(practiceCard.getCreateTime())
                     .rcount(practiceCard.getRcount())
                     .expendTime(Arrays.stream(practiceCard.getTimes()).sum())
-                    .build();
-
-            if(!userIds.contains(userId)) {
+                    .build();*/
+            //用户排名列表整理
+            /*if(!userIds.contains(userId)) {
                 if(userIds.size() < COUNT){
                     userRankInfoArrayList.add(userRankInfo);
                 }else{
                     userRankInfoArrayList.add(END, userRankInfo);
                     userRankInfoArrayList = userRankInfoArrayList.subList(START, COUNT);
                 }
-            }
+            }*/
 
             UserRankInfo top = userRankInfoArrayList.get(0);
             rankInfo.put("maxCorrect", top.getRcount());
