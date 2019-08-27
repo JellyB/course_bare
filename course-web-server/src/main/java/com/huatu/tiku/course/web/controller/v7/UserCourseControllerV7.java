@@ -68,13 +68,30 @@ public class UserCourseControllerV7 {
 
 
     /**
+     * 我的学习界面 - 课后作业&阶段考试未完成数量
+     * @param userSession
+     * @param cv
+     * @param terminal
+     * @return
+     */
+    @LocalMapParam(checkToken = true)
+    @GetMapping(value = "unFinishNum")
+    public Object obtainUnFinishedNum(@Token UserSession userSession,
+                                      @RequestHeader(value = "cv") String cv,
+                                      @RequestHeader(value = "terminal") int terminal){
+
+        return userCourseBizV7Service.getCountByType(userSession.getId(),userSession.getUname());
+    }
+
+
+    /**
      * 课后作业&阶段考试列表
      * @param userSession
      * @return
      */
     @GetMapping(value = "courseWork/{type}/detailList")
     public Object studyList(@Token UserSession userSession,
-                            @PathVariable(value = "type") String type,
+                            @PathVariable(value = "type") int type,
                             @RequestParam(value = "page", defaultValue = "1")int page,
                             @RequestParam(value = "size", defaultValue = "20") int size){
 
