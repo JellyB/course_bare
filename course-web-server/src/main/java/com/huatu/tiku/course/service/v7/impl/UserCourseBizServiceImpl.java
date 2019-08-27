@@ -57,5 +57,16 @@ public class UserCourseBizServiceImpl implements UserCourseBizV7Service {
         rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_LIVE_REPORT_LOG, JSONObject.toJSONString(liveRecordInfoWithUserId));
     }
 
-
+    /**
+     * 课后作业全部已读 行测、申论
+     *
+     * @param userId
+     * @param type
+     * @param uName
+     * @throws BizException
+     */
+    @Override
+    public void allReadByType(long userId, String type, String uName) throws BizException {
+        return;
+    }
 }

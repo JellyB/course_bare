@@ -21,4 +21,14 @@ public interface UserCourseBizV7Service {
      */
     void dealLiveReport(int userId, String userName, int subject, int terminal, String cv, LiveRecordInfo liveRecordInfo) throws BizException;
 
+
+    /**
+     * 课后作业全部已读 行测、申论
+     * @param userId
+     * @param type
+     * @param uName
+     * @throws BizException
+     */
+    void allReadByType(long userId, String type, String uName) throws BizException;
+
 }
