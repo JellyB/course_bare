@@ -63,4 +63,15 @@ public class SyllabusServiceFallback implements SyllabusServiceV7{
     public NetSchoolResponse buyAfterSyllabus(Map<String, Object> params) {
         return null;
     }
+
+    /**
+     * 分享音频课件列表
+     *
+     * @param params
+     * @return
+     */
+    @Override
+    public NetSchoolResponse shareAudio(Map<String, Object> params) {
+        return null;
+    }
 }
