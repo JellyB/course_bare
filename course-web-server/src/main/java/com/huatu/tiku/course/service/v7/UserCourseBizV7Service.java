@@ -1,7 +1,10 @@
 package com.huatu.tiku.course.service.v7;
 
 import com.huatu.common.exception.BizException;
+import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.bean.vo.LiveRecordInfo;
+
+import java.util.Map;
 
 /**
  * 描述：
@@ -29,7 +32,7 @@ public interface UserCourseBizV7Service {
      * @param uName
      * @throws BizException
      */
-    void allReadByType(long userId, String type, String uName) throws BizException;
+    int allReadByType(long userId, String type, String uName) throws BizException;
 
 
     /**
@@ -41,6 +44,15 @@ public interface UserCourseBizV7Service {
      * @return
      * @throws BizException
      */
-    Object courseWorkList(long userId, String type, int page, int size) throws BizException;
+    Object courseWorkList(long userId, int type, int page, int size) throws BizException;
 
+
+    /**
+     * 课后作业未读数
+     * @param userId
+     * @param userName
+     * @return
+     * @throws BizException
+     */
+    Map<String, Integer> getCountByType(long userId, String userName) throws BizException;
 }
