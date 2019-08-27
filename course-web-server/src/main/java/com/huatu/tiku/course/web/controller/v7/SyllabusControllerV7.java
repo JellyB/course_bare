@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.web.controller.v7;
 
+import com.google.common.collect.Maps;
 import com.huatu.common.exception.BizException;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * 描述：
@@ -106,8 +108,18 @@ public class SyllabusControllerV7 {
         return timeTable;
     }
 
-
-    @LocalMapParam(checkToken = false)
+    /**
+     *
+     * 分享音频课件列表
+     *
+     * @param terminal
+     * @param cv
+     * @param netClassId
+     * @param shareSyllabusId
+     * @param afterNodeId
+     * @param beforeNodeId
+     * @return
+     */
     @GetMapping("{netClassId}/shareAudio")
     public Object buyAfterSyllabus(@RequestHeader(value = "terminal") int terminal,
                                    @RequestHeader(value = "cv") String cv,
@@ -115,7 +127,13 @@ public class SyllabusControllerV7 {
                                    @RequestParam(value = "shareSyllabusId") int shareSyllabusId,
                                    @RequestParam(defaultValue = "0") int afterNodeId,
                                    @RequestParam(defaultValue = "0") int beforeNodeId){
-        HashMap<String, Object> map = LocalMapParamHandler.get();
-        return ResponseUtil.build(syllabusService.shareAudio(map));
+        Map<String,Object> params = Maps.newHashMap();
+        params.put("terminal", terminal);
+        params.put("cv", cv);
+        params.put("netClassId", netClassId);
+        params.put("shareSyllabusId", shareSyllabusId);
+        params.put("afterNodeId", afterNodeId);
+        params.put("beforeNodeId", beforeNodeId);
+        return ResponseUtil.build(syllabusService.shareAudio(params));
     }
 }
