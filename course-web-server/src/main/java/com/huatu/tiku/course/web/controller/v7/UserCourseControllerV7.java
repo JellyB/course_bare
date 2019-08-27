@@ -34,6 +34,7 @@ public class UserCourseControllerV7 {
 
 
 
+
     /**
      * 直播学习记录上报
      * @param userSession
@@ -48,5 +49,35 @@ public class UserCourseControllerV7 {
         userCourseBizV7Service.dealLiveReport(userSession.getId(), userSession.getUname(), userSession.getSubject(), terminal, cv, liveRecordInfo);
         return SuccessMessage.create();
 
+    }
+
+
+    /**
+     * 全部已读
+     * @param userSession
+     * @param type
+     * @return
+     */
+    @PutMapping(value = "allRead/{type}")
+    public Object allReadCourseWork(@Token UserSession userSession,
+                                    @PathVariable(value = "type")String type){
+
+        userCourseBizV7Service.allReadByType(userSession.getId(), type, userSession.getUname());
+        return SuccessMessage.create("操作成功");
+    }
+
+
+    /**
+     * 课后作业&阶段考试列表
+     * @param userSession
+     * @return
+     */
+    @GetMapping(value = "courseWork/{type}/detailList")
+    public Object studyList(@Token UserSession userSession,
+                            @PathVariable(value = "type") String type,
+                            @RequestParam(value = "page", defaultValue = "1")int page,
+                            @RequestParam(value = "size", defaultValue = "20") int size){
+
+        return userCourseBizV7Service.courseWorkList(userSession.getId(), type, page, size);
     }
 }

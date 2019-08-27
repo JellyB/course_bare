@@ -5,6 +5,7 @@ import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.vo.LiveRecordInfo;
 import com.huatu.tiku.course.bean.vo.LiveRecordInfoWithUserInfo;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
+import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.service.v7.UserCourseBizV7Service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -26,6 +27,8 @@ public class UserCourseBizServiceImpl implements UserCourseBizV7Service {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
+    @Autowired
+    private CourseExercisesProcessLogManager courseExercisesProcessLogManager;
 
 
 
@@ -57,5 +60,32 @@ public class UserCourseBizServiceImpl implements UserCourseBizV7Service {
         rabbitTemplate.convertAndSend("", RabbitMqConstants.COURSE_LIVE_REPORT_LOG, JSONObject.toJSONString(liveRecordInfoWithUserId));
     }
 
+    /**
+     * 课后作业全部已读 行测、申论
+     *
+     * @param userId
+     * @param type
+     * @param uName
+     * @throws BizException
+     */
+    @Override
+    public void allReadByType(long userId, String type, String uName) throws BizException {
+        return;
+    }
 
+
+    /**
+     * 获取行测、申论课后作业列表
+     *
+     * @param userId
+     * @param type
+     * @param page
+     * @param size
+     * @return
+     * @throws BizException
+     */
+    @Override
+    public Object courseWorkList(long userId, String type, int page, int size) throws BizException {
+        return null;
+    }
 }

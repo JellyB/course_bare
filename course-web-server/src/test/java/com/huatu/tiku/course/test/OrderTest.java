@@ -54,7 +54,7 @@ public class OrderTest extends BaseWebTest {
         JSONObject jsonObject = JSONObject.parseObject(result);
         Map<String,Object> params = Maps.newHashMap();
         params.putAll(jsonObject);
-        NetSchoolResponse netSchoolResponse = userCourseService.obtainOne2One(RequestUtil.encrypt(params));
+        NetSchoolResponse netSchoolResponse = userCourseService.obtainOne2One(RequestUtil.encrypt(params), 0);
         log.error("获取 1 对 1 返回结果:{}", JSONObject.toJSONString(netSchoolResponse));
 
     }

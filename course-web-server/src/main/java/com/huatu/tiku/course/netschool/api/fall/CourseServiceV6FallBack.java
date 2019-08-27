@@ -182,4 +182,9 @@ public class CourseServiceV6FallBack implements CourseServiceV6 {
             this.to = to;
         }
     }
+
+	@Override
+	public NetSchoolResponse userCourseStatus(Map<String, Object> params) {
+		 return NetSchoolResponse.DEFAULT;
+	}
 }

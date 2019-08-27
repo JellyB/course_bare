@@ -62,13 +62,14 @@ public class CourseControllerV4 {
                 .put("keywords",keywords)
                 .put("cv",cv)
                 .put("provinceid",provinceId).build();
-        NetSchoolResponse recordingList = courseServiceV4.findRecordingList(params);
+        //NetSchoolResponse recordingList = courseServiceV4.findRecordingList(params);
         log.info(" V4 record courseRecord = {}",started.elapsed(TimeUnit.MILLISECONDS));
 
-        courseServiceV4Fallback.setRecordingList(params,recordingList);
+        //courseServiceV4Fallback.setRecordingList(params,recordingList);
         log.info(" V4 record callBack = {}",started.elapsed(TimeUnit.MILLISECONDS));
 
         log.warn("2$${}$${}$${}$${}$${}$${}$${}$${}$${}",categoryid,subjectid,userSession.getId(),userSession.getUname(),keywords,String.valueOf(System.currentTimeMillis()),cv,terminal,provinceId);
-        return ResponseUtil.build(recordingList);
+        //return ResponseUtil.build(recordingList);
+        return ResponseUtil.build(NetSchoolResponse.DEFAULT);
     }
 }
