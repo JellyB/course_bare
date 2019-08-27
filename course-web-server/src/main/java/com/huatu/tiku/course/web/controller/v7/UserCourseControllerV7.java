@@ -65,4 +65,19 @@ public class UserCourseControllerV7 {
         userCourseBizV7Service.allReadByType(userSession.getId(), type, userSession.getUname());
         return SuccessMessage.create("操作成功");
     }
+
+
+    /**
+     * 课后作业&阶段考试列表
+     * @param userSession
+     * @return
+     */
+    @GetMapping(value = "courseWork/{type}/detailList")
+    public Object studyList(@Token UserSession userSession,
+                            @PathVariable(value = "type") String type,
+                            @RequestParam(value = "page", defaultValue = "1")int page,
+                            @RequestParam(value = "size", defaultValue = "20") int size){
+
+        return userCourseBizV7Service.courseWorkList(userSession.getId(), type, page, size);
+    }
 }

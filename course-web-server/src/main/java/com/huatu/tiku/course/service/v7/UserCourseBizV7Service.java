@@ -31,4 +31,16 @@ public interface UserCourseBizV7Service {
      */
     void allReadByType(long userId, String type, String uName) throws BizException;
 
+
+    /**
+     * 获取行测、申论课后作业列表
+     * @param userId
+     * @param type
+     * @param page
+     * @param size
+     * @return
+     * @throws BizException
+     */
+    Object courseWorkList(long userId, String type, int page, int size) throws BizException;
+
 }

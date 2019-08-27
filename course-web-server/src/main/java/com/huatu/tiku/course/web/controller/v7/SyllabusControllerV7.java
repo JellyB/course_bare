@@ -107,28 +107,9 @@ public class SyllabusControllerV7 {
     }
 
 
-
-    /**
-     * 获取课程大纲-售前-不用登录
-     */
-    @LocalMapParam
-    @GetMapping("/{classId}/classSyllabusWithoutSession")
-    public Object classSyllabusWithoutSession(
-            @RequestHeader(value = "terminal") int terminal,
-            @PathVariable("classId") int classId,
-            @RequestParam int parentId,
-            @RequestParam(defaultValue = "0") int onlyTrial,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "20") int pageSize
-    ) {
-        HashMap<String, Object> map = LocalMapParamHandler.get();
-        return ResponseUtil.build(syllabusService.classSyllabus(map));
-    }
-
     @LocalMapParam(checkToken = false)
     @GetMapping("{netClassId}/shareAudio")
-    public Object buyAfterSyllabus(@Token(required = false) UserSession userSession,
-                                   @RequestHeader(value = "terminal") int terminal,
+    public Object buyAfterSyllabus(@RequestHeader(value = "terminal") int terminal,
                                    @RequestHeader(value = "cv") String cv,
                                    @PathVariable int netClassId,
                                    @RequestParam(value = "shareSyllabusId") int shareSyllabusId,
