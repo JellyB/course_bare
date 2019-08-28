@@ -612,10 +612,12 @@ public class CourseExercisesProcessLogManager {
                             result = result && (null !=  courseExercisesProcessLogMap.get(Long.valueOf(ware)));
                             return result;
                         }).map(ware -> {
-                            SyllabusWareInfo syllabusWareInfo = syllabusWareInfoTable.get(LESSON_LABEL, Long.valueOf(ware));
+                            Long syllabusId = Long.valueOf(ware);
+                            SyllabusWareInfo syllabusWareInfo = syllabusWareInfoTable.get(LESSON_LABEL, syllabusId);
                             CourseExercisesProcessLog courseExercisesProcessLog = courseExercisesProcessLogMap.get(Long.valueOf(ware));
                             CourseWorkWareVo courseWorkWareVo = new CourseWorkWareVo();
 
+                            courseWorkWareVo.setSyllabusId(syllabusId);
                             courseWorkWareVo.setCourseWareTitle(syllabusWareInfo.getCoursewareName());
                             courseWorkWareVo.setVideoLength(syllabusWareInfo.getLength());
                             courseWorkWareVo.setSerialNumber(syllabusWareInfo.getSerialNumber());

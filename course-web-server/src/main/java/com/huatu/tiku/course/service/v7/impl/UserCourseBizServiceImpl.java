@@ -5,6 +5,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.bean.vo.CourseWorkCourseVo;
+import com.huatu.tiku.course.bean.vo.CourseWorkWareVo;
 import com.huatu.tiku.course.bean.vo.LiveRecordInfo;
 import com.huatu.tiku.course.bean.vo.LiveRecordInfoWithUserInfo;
 import com.huatu.tiku.course.common.StudyTypeEnum;
@@ -30,6 +32,7 @@ import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Map;
 
 
@@ -134,7 +137,16 @@ public class UserCourseBizServiceImpl implements UserCourseBizV7Service {
         }
         if(subjectEnum == SubjectEnum.SL){
             // TODO 通过 rest 接口获取申论课后作业列表
-            return courseExercisesProcessLogManager.courseWorkList(userId, page, size);
+            Object object = courseExercisesProcessLogManager.courseWorkList(userId, page, size);
+            List<CourseWorkCourseVo> courseWorkCourseVos = (List<CourseWorkCourseVo>) object;
+            courseWorkCourseVos.forEach(item -> {
+                List<CourseWorkWareVo> courseWorkWareVos = item.getWareInfoList();
+                for (CourseWorkWareVo courseWorkWareVo : courseWorkWareVos) {
+                    courseWorkWareVo.setQuestionType(0);
+                    courseWorkWareVo.setSyllabusId(141324L);
+                }
+            });
+
         }
         return Lists.newArrayList();
     }
