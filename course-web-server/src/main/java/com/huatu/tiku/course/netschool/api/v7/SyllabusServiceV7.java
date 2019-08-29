@@ -40,7 +40,7 @@ public interface SyllabusServiceV7 {
      * @param params
      * @return
      */
-    @GetMapping(value = "/class/class_syllabus")
+    @GetMapping(value = "/v4/common/class/class_syllabus")
     NetSchoolResponse classSyllabus(@RequestParam Map<String, Object> params);
 
 
@@ -49,7 +49,7 @@ public interface SyllabusServiceV7 {
      * @param params
      * @return
      */
-    @GetMapping(value = "/class/buy_after_syllabus")
+    @GetMapping(value = "/v4/common/class/buy_after_syllabus")
     NetSchoolResponse buyAfterSyllabus(@RequestParam Map<String, Object> params);
 
     /**
