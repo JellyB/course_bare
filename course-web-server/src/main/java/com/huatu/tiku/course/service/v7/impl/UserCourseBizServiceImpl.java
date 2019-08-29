@@ -136,8 +136,12 @@ public class UserCourseBizServiceImpl implements UserCourseBizV7Service {
         List<CourseWorkCourseVo> list = Lists.newArrayList();
         if(subjectEnum == SubjectEnum.XC){
             list.addAll((List<CourseWorkCourseVo>) courseExercisesProcessLogManager.courseWorkList(userId, page, size));
+            result.put("unReadCount", 1);
+            result.put("otherUnReadCount", 3);
         }
         if(subjectEnum == SubjectEnum.SL){
+            result.put("unReadCount", 3);
+            result.put("otherUnReadCount", 1);
             // TODO 通过 rest 接口获取申论课后作业列表
             list.addAll((List<CourseWorkCourseVo>) courseExercisesProcessLogManager.courseWorkList(userId, page, size));
             list.forEach(item -> {
@@ -150,8 +154,6 @@ public class UserCourseBizServiceImpl implements UserCourseBizV7Service {
 
         }
         result.put("list", list);
-        result.put("1", 3);
-        result.put("2", 3);
         return result;
     }
 
