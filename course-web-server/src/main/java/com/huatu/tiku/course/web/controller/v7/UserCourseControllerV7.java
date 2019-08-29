@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.web.controller.v7;
 
+import com.google.common.collect.Maps;
 import com.huatu.common.SuccessMessage;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
@@ -110,5 +111,28 @@ public class UserCourseControllerV7 {
                             @RequestParam(value = "size", defaultValue = "20") int size){
 
         return userCourseBizV7Service.courseWorkList(userSession.getId(), type, page, size);
+    }
+
+    /**
+     * 获取大纲绑定课后作业信息
+     * @param userSession
+     * @param syllabusId
+     * @return
+     */
+    @GetMapping(value = "courseWork/questionInfo/{syllabusId}")
+    public Object questionInfo(@Token UserSession userSession,
+                               @PathVariable(value = "syllabusId") long syllabusId){
+
+        Map<String,Object> result = Maps.newHashMap();
+
+        /**
+         * 单题 | 标准答案  0
+         * 试卷            1
+         * 议论文          2
+         */
+        result.put("questionId", 1234123l);
+        result.put("questionType", 2);
+        return result;
+
     }
 }
