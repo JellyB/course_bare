@@ -166,10 +166,9 @@ public class UserCourseBizServiceImpl implements UserCourseBizV7Service {
                 for (CourseWorkWareVo courseWorkWareVo : courseWorkWareVos) {
                     courseWorkWareVo.setQuestionType(0);
                     courseWorkWareVo.setSyllabusId(141324L);
-                    courseWorkWareVo.setQuestionTitle("2020 国考第一季...");
+                    courseWorkWareVo.getAnswerCardInfo().setType(SubjectEnum.SL.getCode());
                 }
             });
-
         }
         result.put("list", list);
         result.put("civilUnRead", 1);

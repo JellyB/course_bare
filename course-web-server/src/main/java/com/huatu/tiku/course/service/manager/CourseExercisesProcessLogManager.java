@@ -10,7 +10,8 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.*;
 import com.huatu.springboot.degrade.core.Degrade;
-import com.huatu.tiku.course.bean.vo.RecordProcess;
+import com.huatu.tiku.course.bean.vo.*;
+import com.huatu.tiku.course.common.SubjectEnum;
 import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.consts.SyllabusInfo;
@@ -36,9 +37,6 @@ import com.google.common.base.Joiner;
 import com.huatu.common.exception.BizException;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
-import com.huatu.tiku.course.bean.vo.CourseWorkCourseVo;
-import com.huatu.tiku.course.bean.vo.CourseWorkWareVo;
-import com.huatu.tiku.course.bean.vo.SyllabusWareInfo;
 import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
@@ -543,7 +541,7 @@ public class CourseExercisesProcessLogManager {
     public Object courseWorkList(long userId, int page, int size) throws BizException{
 
         List<CourseWorkCourseVo> courseWorkCourseVos = Lists.newArrayList();
-        Map<Long, DataInfo> answerCardMaps = Maps.newHashMap();
+        Map<Long, AnswerCardInfo> answerCardMaps = Maps.newHashMap();
         List<HashMap<String, Object>> dataList = courseExercisesProcessLogMapper.getCoursePageInfo(userId, page, size);
         log.info("查询数据库获取用户未完成课后练习数据列表: keySet:{}", dataList);
         Set<Long> allSyllabusIds = Sets.newHashSet();
@@ -570,9 +568,10 @@ public class CourseExercisesProcessLogManager {
                 Object practiceCardInfos = practiceCardService.getCourseExercisesCardInfoBatch(cardIds);
                 List<HashMap<String, Object>> answerCardInfo = (List<HashMap<String, Object>>) ZTKResponseUtil.build(practiceCardInfos);
                 answerCardMaps.putAll(answerCardInfo.stream().collect(Collectors.toMap(item -> MapUtils.getLong(item,"id"), item -> {
-                    DataInfo dataInfo = new DataInfo();
+                    AnswerCardInfo dataInfo = new AnswerCardInfo();
                     try{
                         org.apache.commons.beanutils.BeanUtils.populate(dataInfo, item);
+                        dataInfo.setType(SubjectEnum.XC.getCode());
                         return dataInfo;
                     }catch (Exception e) {
                         log.error("答题卡信息转换异常:{}", e);
@@ -634,7 +633,7 @@ public class CourseExercisesProcessLogManager {
                             if(answerCardMaps.containsKey(courseExercisesProcessLog.getCardId())){
                                 courseWorkWareVo.setAnswerCardInfo(answerCardMaps.get(courseExercisesProcessLog.getCardId()));
                             }else{
-                                courseWorkWareVo.setAnswerCardInfo(new DataInfo());
+                                courseWorkWareVo.setAnswerCardInfo(new AnswerCardInfo());
                             }
                             return courseWorkWareVo;
                         }).collect(Collectors.toList());
@@ -1191,27 +1190,6 @@ public class CourseExercisesProcessLogManager {
         }
     }
 
-	@NoArgsConstructor
-    @Getter
-    @Setter
-	public static class DataInfo{
-	    private int status;
-	    private int wcount;
-	    private int ucount;
-	    private int rcount;
-	    private int qcount;
-	    private long  id;
-
-	    @Builder
-        public DataInfo(int status, int wcount, int ucount, int rcount, int qcount, long id) {
-            this.status = status;
-            this.wcount = wcount;
-            this.ucount = ucount;
-            this.rcount = rcount;
-            this.qcount = qcount;
-            this.id = id;
-        }
-    }
 
     @NoArgsConstructor
     @Getter
