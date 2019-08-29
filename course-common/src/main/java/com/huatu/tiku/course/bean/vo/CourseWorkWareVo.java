@@ -28,9 +28,10 @@ public class CourseWorkWareVo {
     private Object answerCardInfo;
     private int isAlert;
     private Long syllabusId;
+    private int bizStatus;
 
     @Builder
-    public CourseWorkWareVo(String courseWareTitle, long courseWareId, int videoType, String videoLength, int serialNumber, long answerCardId, String questionIds, int questionType, Object answerCardInfo, int isAlert, Long syllabusId) {
+    public CourseWorkWareVo(String courseWareTitle, long courseWareId, int videoType, String videoLength, int serialNumber, long answerCardId, String questionIds, int questionType, Object answerCardInfo, int isAlert, Long syllabusId, int bizStatus) {
         this.courseWareTitle = courseWareTitle;
         this.courseWareId = courseWareId;
         this.videoType = videoType;
@@ -42,5 +43,6 @@ public class CourseWorkWareVo {
         this.answerCardInfo = answerCardInfo;
         this.isAlert = isAlert;
         this.syllabusId = syllabusId;
+        this.bizStatus = bizStatus;
     }
 }

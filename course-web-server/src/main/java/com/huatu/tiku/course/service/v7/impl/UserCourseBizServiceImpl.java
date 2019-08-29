@@ -144,6 +144,7 @@ public class UserCourseBizServiceImpl implements UserCourseBizV7Service {
                 for (CourseWorkWareVo courseWorkWareVo : courseWorkWareVos) {
                     courseWorkWareVo.setQuestionType(0);
                     courseWorkWareVo.setSyllabusId(141324L);
+                    courseWorkWareVo.setBizStatus(1);
                 }
             });
 
