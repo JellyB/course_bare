@@ -132,14 +132,15 @@ public class UserCourseBizServiceImpl implements UserCourseBizV7Service {
     @Override
     public Object courseWorkList(long userId, int type, int page, int size) throws BizException {
         SubjectEnum subjectEnum = SubjectEnum.create(type);
+        Map<String,Object> result = Maps.newHashMap();
+        List<CourseWorkCourseVo> list = Lists.newArrayList();
         if(subjectEnum == SubjectEnum.XC){
-            return courseExercisesProcessLogManager.courseWorkList(userId, page, size);
+            list.addAll((List<CourseWorkCourseVo>) courseExercisesProcessLogManager.courseWorkList(userId, page, size));
         }
         if(subjectEnum == SubjectEnum.SL){
             // TODO 通过 rest 接口获取申论课后作业列表
-            Object object = courseExercisesProcessLogManager.courseWorkList(userId, page, size);
-            List<CourseWorkCourseVo> courseWorkCourseVos = (List<CourseWorkCourseVo>) object;
-            courseWorkCourseVos.forEach(item -> {
+            list.addAll((List<CourseWorkCourseVo>) courseExercisesProcessLogManager.courseWorkList(userId, page, size));
+            list.forEach(item -> {
                 List<CourseWorkWareVo> courseWorkWareVos = item.getWareInfoList();
                 for (CourseWorkWareVo courseWorkWareVo : courseWorkWareVos) {
                     courseWorkWareVo.setQuestionType(0);
@@ -149,7 +150,12 @@ public class UserCourseBizServiceImpl implements UserCourseBizV7Service {
             });
 
         }
-        return Lists.newArrayList();
+        List<Integer> count = Lists.newArrayList();
+        count.add(3);
+        count.add(5);
+        result.put("list", list);
+        result.put("count", count);
+        return result;
     }
 
     /**
