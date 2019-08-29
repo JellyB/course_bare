@@ -133,9 +133,6 @@ public class UserCourseBizServiceImpl implements UserCourseBizV7Service {
     public Object courseWorkList(long userId, int type, int page, int size) throws BizException {
         SubjectEnum subjectEnum = SubjectEnum.create(type);
         Map<String,Object> result = Maps.newHashMap();
-        Map<Integer,Integer> count = Maps.newHashMap();
-        count.put(SubjectEnum.XC.getCode(), 3);
-        count.put(SubjectEnum.SL.getCode(), 5);
         List<CourseWorkCourseVo> list = Lists.newArrayList();
         if(subjectEnum == SubjectEnum.XC){
             list.addAll((List<CourseWorkCourseVo>) courseExercisesProcessLogManager.courseWorkList(userId, page, size));
@@ -148,13 +145,13 @@ public class UserCourseBizServiceImpl implements UserCourseBizV7Service {
                 for (CourseWorkWareVo courseWorkWareVo : courseWorkWareVos) {
                     courseWorkWareVo.setQuestionType(0);
                     courseWorkWareVo.setSyllabusId(141324L);
-                    courseWorkWareVo.setBizStatus(1);
                 }
             });
 
         }
         result.put("list", list);
-        result.put("count", count);
+        result.put("1", 3);
+        result.put("2", 3);
         return result;
     }
 
