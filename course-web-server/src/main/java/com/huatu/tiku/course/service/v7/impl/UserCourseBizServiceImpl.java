@@ -3,6 +3,7 @@ package com.huatu.tiku.course.service.v7.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.huatu.common.SuccessMessage;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.vo.CourseWorkCourseVo;
@@ -108,6 +109,26 @@ public class UserCourseBizServiceImpl implements UserCourseBizV7Service {
             updateCount = -1;
         }
         return updateCount;
+    }
+
+    /**
+     * 单条已读
+     *
+     * @param userId
+     * @param syllabusId
+     * @return
+     * @throws BizException
+     */
+    @Override
+    public Object readyOneCourseWork(int userId, int type, long syllabusId) throws BizException {
+        SubjectEnum subjectEnum = SubjectEnum.create(type);
+        if(subjectEnum == SubjectEnum.XC){
+            // todo 根据 syllabusId 更新行测课后作业数据 isAlert
+        }
+        if(subjectEnum == SubjectEnum.SL){
+            // todo 根据 syllabusId 更新申论课后作业数据 isAlert
+        }
+        return SuccessMessage.create("操作成功");
     }
 
     /**

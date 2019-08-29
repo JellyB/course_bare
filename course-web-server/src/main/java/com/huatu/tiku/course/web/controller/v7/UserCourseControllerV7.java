@@ -66,6 +66,20 @@ public class UserCourseControllerV7 {
         return SuccessMessage.create("操作成功");
     }
 
+    /**
+     * 课后作业 单条已读
+     * @param type
+     * @param userSession
+     * @param syllabusId
+     * @return
+     */
+    @PutMapping(value = "oneRead/courseWork/{type}/{syllabusId}")
+    public Object readOneCourseWork(@Token UserSession userSession,
+                                    @PathVariable(value = "type") int type,
+                                    @PathVariable(value = "syllabusId") long syllabusId){
+        return userCourseBizV7Service.readyOneCourseWork(userSession.getId(), type, syllabusId);
+    }
+
 
     /**
      * 我的学习界面 - 课后作业&阶段考试未完成数量
