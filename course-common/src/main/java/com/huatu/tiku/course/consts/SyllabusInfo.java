@@ -30,6 +30,12 @@ public class SyllabusInfo {
     public static String VideoType = "videoType";
 
     /**
+     * 科目类型
+     * {@link com.huatu.tiku.course.common.SubjectEnum}
+     */
+    public static String SubjectType = "subjectType";
+
+    /**
      * 查询paper服务所映射的 videoType 字段
      */
     public static String PaperCourseType = "courseType";

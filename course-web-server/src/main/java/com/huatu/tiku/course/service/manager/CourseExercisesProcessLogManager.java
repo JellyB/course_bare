@@ -218,6 +218,26 @@ public class CourseExercisesProcessLogManager {
     }
 
     /**
+     * 单条已读 - 大纲id
+     * @param userId
+     * @param syllabusId
+     * @return
+     * @throws BizException
+     */
+    public int readyOneCourseWorkBySyllabusId(int userId, long syllabusId) throws BizException {
+        CourseExercisesProcessLog courseExercisesProcessLog = new CourseExercisesProcessLog();
+        courseExercisesProcessLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
+        courseExercisesProcessLog.setIsAlert(YesOrNoStatus.NO.getCode());
+
+        Example example = new Example(CourseExercisesProcessLog.class);
+        example.and().andEqualTo("userId", userId)
+                .andEqualTo("syllabusId", syllabusId)
+                .andEqualTo("dataType", StudyTypeEnum.COURSE_WORK.getOrder());
+
+        return	courseExercisesProcessLogMapper.updateByExampleSelective(courseExercisesProcessLog, example);
+    }
+
+    /**
      * 录播 & 回放处理进度
      * @param recordProcess
      * @throws BizException
@@ -673,14 +693,14 @@ public class CourseExercisesProcessLogManager {
             String key = CourseCacheKey.getProcessLogSyllabusInfo(item);
             if(redisTemplate.hasKey(key)){
                 try{
-                    String value = valueOperations.get(key);
-                    SyllabusWareInfo syllabusWareInfo = JSONObject.parseObject(value, SyllabusWareInfo.class);
-                    table.put(LESSON_LABEL, item, syllabusWareInfo);
-                    table.put(COURSE_LABEL, syllabusWareInfo.getClassId(), syllabusWareInfo);
-                    copy.remove(item);
-                    if((syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE.getVideoType() || syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()) && StringUtils.isEmpty(syllabusWareInfo.getRoomId())){
-                        redisTemplate.delete(key);
-                    }
+                String value = valueOperations.get(key);
+                SyllabusWareInfo syllabusWareInfo = JSONObject.parseObject(value, SyllabusWareInfo.class);
+                table.put(LESSON_LABEL, item, syllabusWareInfo);
+                table.put(COURSE_LABEL, syllabusWareInfo.getClassId(), syllabusWareInfo);
+                copy.remove(item);
+                if((syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE.getVideoType() || syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()) && StringUtils.isEmpty(syllabusWareInfo.getRoomId())){
+                    redisTemplate.delete(key);
+                }
                 }catch (Exception e){
                     e.printStackTrace();
                     log.error("dealSyllabusInfo.2.table key:{}", key);

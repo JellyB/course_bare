@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.huatu.common.SuccessMessage;
 import com.huatu.common.exception.BizException;
-import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.vo.CourseWorkCourseVo;
 import com.huatu.tiku.course.bean.vo.CourseWorkWareVo;
 import com.huatu.tiku.course.bean.vo.LiveRecordInfo;
@@ -14,21 +13,14 @@ import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.common.SubjectEnum;
 import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
-import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
-import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
-import com.huatu.tiku.course.netschool.api.v7.SyllabusServiceV7;
+import com.huatu.tiku.course.dao.manual.CourseExercisesProcessEssayLogMapper;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
-import com.huatu.tiku.course.service.manager.CourseExercisesStatisticsManager;
-import com.huatu.tiku.course.service.v1.CourseExercisesService;
-import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.course.service.v7.UserCourseBizV7Service;
-import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
-import com.huatu.tiku.entity.CourseExercisesProcessLog;
+import com.huatu.tiku.entity.CourseExercisesProcessEssayLog;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
@@ -53,6 +45,9 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
     @Autowired
     private CourseExercisesProcessLogManager courseExercisesProcessLogManager;
+
+    @Autowired
+    private CourseExercisesProcessEssayLogMapper courseExercisesProcessEssayLogMapper;
 
 
 
@@ -100,6 +95,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
         try{
             updateCount = courseExercisesProcessLogManager.allReadByType(userId, type, uName);
             StudyTypeEnum studyTypeEnum = StudyTypeEnum.create(type);
+            //更新申论课后作业小红点
             if(studyTypeEnum.equals(StudyTypeEnum.COURSE_WORK)){
                 updateCount = updateCount + allReadEssayCourseWork(userId);
             }
@@ -123,20 +119,51 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
     public Object readyOneCourseWork(int userId, int type, long syllabusId) throws BizException {
         SubjectEnum subjectEnum = SubjectEnum.create(type);
         if(subjectEnum == SubjectEnum.XC){
-            // todo 根据 syllabusId 更新行测课后作业数据 isAlert
+            courseExercisesProcessLogManager.readyOneCourseWorkBySyllabusId(userId, syllabusId);
         }
         if(subjectEnum == SubjectEnum.SL){
-            // todo 根据 syllabusId 更新申论课后作业数据 isAlert
+            readyOneEssayCourseWorkBySyllabusId(userId, syllabusId);
         }
         return SuccessMessage.create("操作成功");
     }
 
+
     /**
-     * 更新申论课后作业未读数
+     * 单条已读 - 大纲id
+     * @param userId
+     * @param syllabusId
+     * @return
+     * @throws BizException
      */
-    //todo rest 更新申论课后作业库
+    private int readyOneEssayCourseWorkBySyllabusId(int userId, long syllabusId) throws BizException {
+        CourseExercisesProcessEssayLog courseExercisesProcessEssayLog = new CourseExercisesProcessEssayLog();
+        courseExercisesProcessEssayLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
+        courseExercisesProcessEssayLog.setIsAlert(YesOrNoStatus.NO.getCode());
+
+        Example example = new Example(CourseExercisesProcessEssayLog.class);
+        example.and().andEqualTo("userId", userId)
+                .andEqualTo("syllabusId", syllabusId);
+        return	courseExercisesProcessEssayLogMapper.updateByExampleSelective(courseExercisesProcessEssayLog, example);
+    }
+
+
+
+    /**
+     * 更新申论课后作业全部已读
+     */
     private int allReadEssayCourseWork(long userId){
-        return 0;
+
+        CourseExercisesProcessEssayLog courseExercisesProcessEssayLog = new CourseExercisesProcessEssayLog();
+        courseExercisesProcessEssayLog.setGmtModify(new Timestamp(System.currentTimeMillis()));
+        courseExercisesProcessEssayLog.setIsAlert(YesOrNoStatus.NO.getCode());
+
+        Example example = new Example(CourseExercisesProcessEssayLog.class);
+        example.and().andEqualTo("status", YesOrNoStatus.YES.getCode())
+                .andEqualTo("userId", userId)
+                .andEqualTo("isAlert", YesOrNoStatus.YES.getCode());
+        int count = courseExercisesProcessEssayLogMapper.updateByExampleSelective(courseExercisesProcessEssayLog,
+                example);
+        return count;
     }
 
 
@@ -192,5 +219,18 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
         int origin = MapUtils.getIntValue(result, StudyTypeEnum.COURSE_WORK.getKey(), 0);
         result.put(StudyTypeEnum.COURSE_WORK.getKey(), essay + origin);
         return result;
+    }
+
+
+    /**
+     * 申论课后作业处理队列
+     *
+     * @param type
+     * @param message
+     * @throws BizException
+     */
+    @Override
+    public void dealEssayCourseWork(String type, String message) throws BizException {
+
     }
 }
