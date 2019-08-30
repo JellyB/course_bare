@@ -672,13 +672,18 @@ public class CourseExercisesProcessLogManager {
             }
             String key = CourseCacheKey.getProcessLogSyllabusInfo(item);
             if(redisTemplate.hasKey(key)){
-                String value = valueOperations.get(key);
-                SyllabusWareInfo syllabusWareInfo = JSONObject.parseObject(value, SyllabusWareInfo.class);
-                table.put(LESSON_LABEL, item, syllabusWareInfo);
-                table.put(COURSE_LABEL, syllabusWareInfo.getClassId(), syllabusWareInfo);
-                copy.remove(item);
-                if((syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE.getVideoType() || syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()) && StringUtils.isEmpty(syllabusWareInfo.getRoomId())){
-                    redisTemplate.delete(key);
+                try{
+                    String value = valueOperations.get(key);
+                    SyllabusWareInfo syllabusWareInfo = JSONObject.parseObject(value, SyllabusWareInfo.class);
+                    table.put(LESSON_LABEL, item, syllabusWareInfo);
+                    table.put(COURSE_LABEL, syllabusWareInfo.getClassId(), syllabusWareInfo);
+                    copy.remove(item);
+                    if((syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE.getVideoType() || syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()) && StringUtils.isEmpty(syllabusWareInfo.getRoomId())){
+                        redisTemplate.delete(key);
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                    log.error("dealSyllabusInfo.2.table key:{}", key);
                 }
             }else{
                 log.info("executorService execute for syllabus info:{}", item);
