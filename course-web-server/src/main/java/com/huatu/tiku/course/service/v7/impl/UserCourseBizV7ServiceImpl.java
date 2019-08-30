@@ -45,7 +45,7 @@ import java.util.Map;
  **/
 @Service
 @Slf4j
-public class UserCourseBizServiceImpl implements UserCourseBizV7Service {
+public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
 
     @Autowired

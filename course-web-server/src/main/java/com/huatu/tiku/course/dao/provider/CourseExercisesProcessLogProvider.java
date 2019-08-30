@@ -26,6 +26,22 @@ public class CourseExercisesProcessLogProvider {
         return stringBuilder.toString();
     }
 
+    public String getEssayCoursePageInfo(long userId, int page, int size){
+        String tempTable = essayTempTable(userId);
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT * FROM (")
+                .append(tempTable)
+                .append(" ) AS temp_table")
+                .append(" LIMIT ")
+                .append(page -1).append(",").append(size);
+        return stringBuilder.toString();
+    }
+
+    /**
+     * 行测课后作业
+     * @param userId
+     * @return
+     */
     private String tempTable(long userId){
         List<Integer> list = Lists.newArrayList(AnswerCardStatus.CREATE, AnswerCardStatus.UNDONE);
 
@@ -35,6 +51,33 @@ public class CourseExercisesProcessLogProvider {
         stringBuilder.append(" GROUP_CONCAT( distinct syllabus_id) AS syllabusIds");
         stringBuilder.append(" FROM");
         stringBuilder.append(" course_exercises_process_log");
+        stringBuilder.append(" WHERE");
+        stringBuilder.append(" biz_status in (");
+        stringBuilder.append(Joiner.on(",").join(list));
+        stringBuilder.append(" )");
+        stringBuilder.append(" AND user_id = ").append(userId);
+        stringBuilder.append(" AND status = ").append(YesOrNoStatus.YES.getCode());
+        stringBuilder.append(" GROUP BY");
+        stringBuilder.append(" course_id");
+        stringBuilder.append(" ORDER BY");
+        stringBuilder.append(" gmt_modify DESC");
+        return stringBuilder.toString();
+    }
+
+    /**
+     * 申论查询信息
+     * @param userId
+     * @return
+     */
+    private String essayTempTable(long userId){
+        List<Integer> list = Lists.newArrayList(AnswerCardStatus.CREATE, AnswerCardStatus.UNDONE);
+
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT");
+        stringBuilder.append(" course_id as courseId,");
+        stringBuilder.append(" GROUP_CONCAT( distinct syllabus_id) AS syllabusIds");
+        stringBuilder.append(" FROM");
+        stringBuilder.append(" course_exercises_process_essay_log");
         stringBuilder.append(" WHERE");
         stringBuilder.append(" biz_status in (");
         stringBuilder.append(Joiner.on(",").join(list));
