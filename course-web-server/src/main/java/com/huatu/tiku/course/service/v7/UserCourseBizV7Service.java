@@ -65,4 +65,13 @@ public interface UserCourseBizV7Service {
      * @throws BizException
      */
     Map<String, Integer> getCountByType(long userId, String userName) throws BizException;
+
+
+    /**
+     * 申论课后作业处理队列
+     * @param type
+     * @param message
+     * @throws BizException
+     */
+    void dealEssayCourseWork(String type, String message) throws BizException;
 }

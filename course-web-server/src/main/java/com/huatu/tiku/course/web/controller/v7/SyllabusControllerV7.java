@@ -103,8 +103,6 @@ public class SyllabusControllerV7 {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         //添加答题信息
         Object timeTable = ResponseUtil.build(syllabusService.classSyllabus(map));
-        //添加答题信息
-        //courseUtil.addExercisesCardInfoV3((LinkedHashMap) timeTable, userSession.getId(), false);
         return timeTable;
     }
 
