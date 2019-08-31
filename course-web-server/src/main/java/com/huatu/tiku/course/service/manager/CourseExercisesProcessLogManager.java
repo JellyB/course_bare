@@ -93,9 +93,9 @@ public class CourseExercisesProcessLogManager {
     @Autowired
     private CourseLiveBackLogService courseLiveBackLogService;
 
-    private static final String LESSON_LABEL = "lesson";
+    public static final String LESSON_LABEL = "lesson";
 
-    private static final String COURSE_LABEL = "course";
+    public static final String COURSE_LABEL = "course";
 
     private static final long PERIOD_TIME = 60 * 1000;
 
@@ -1198,6 +1198,20 @@ public class CourseExercisesProcessLogManager {
             update.setModifierId(modifierId);
             courseExercisesProcessLogMapper.updateByPrimaryKeySelective(update);
         }
+    }
+
+    /**
+     * 行测课后作业未读数
+     * @param userId
+     * @return
+     */
+    public int obtainCivilCourseWorkUnReadCount(long userId){
+        Example example = new Example(CourseExercisesProcessLog.class);
+        example.and().andEqualTo("userId", userId)
+                .andEqualTo("status", YesOrNoStatus.YES.getCode())
+                .andEqualTo("isAlert",YesOrNoStatus.NO.getCode());
+
+        return courseExercisesProcessLogMapper.selectCountByExample(example);
     }
 
 

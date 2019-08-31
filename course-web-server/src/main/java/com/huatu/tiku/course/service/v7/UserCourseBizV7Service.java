@@ -32,7 +32,7 @@ public interface UserCourseBizV7Service {
      * @param uName
      * @throws BizException
      */
-    int allReadByType(long userId, String type, String uName) throws BizException;
+    long allReadByType(long userId, String type, String uName) throws BizException;
 
     /**
      * 单条已读

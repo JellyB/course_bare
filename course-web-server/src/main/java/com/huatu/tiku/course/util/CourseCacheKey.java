@@ -63,6 +63,10 @@ public class CourseCacheKey {
     private static final String COURSE_WORK_RANK_INFO = "course_work_rank_info_v1$%s$%s";
     private static final String COURSE_LIVE_BACK_LOG_INFO = "course_live_back_log_info_v1$%s$%s";
     /**
+     * 申论课后作业 key
+     */
+    private static final String COURSE_WORK_ESSAY_ISALERT = "course_work_essay_isAlert_v1%s";
+    /**
      * 已经处理完后的课后作业 redis key
      */
     public static final String COURSE_WORK_REPORT_USERS_ALREADY_PROCESSED = "course_work_report_users_already_processed";
@@ -143,5 +147,16 @@ public class CourseCacheKey {
      */
     public static String findByRoomIdAndLiveCourseWareId(long roomId, long liveBackWareId){
         return String.format(COURSE_LIVE_BACK_LOG_INFO, roomId, liveBackWareId);
+    }
+
+    /**
+     * 获取申论课后作业未读数
+     * @param userId
+     * key userId
+     * values syllabusIds
+     * @return
+     */
+    public static String getCourseWorkEssayIsAlert(long userId){
+        return String.format(COURSE_WORK_ESSAY_ISALERT, userId);
     }
 }
