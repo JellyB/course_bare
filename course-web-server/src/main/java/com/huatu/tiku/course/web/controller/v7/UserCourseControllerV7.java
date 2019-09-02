@@ -1,20 +1,16 @@
 package com.huatu.tiku.course.web.controller.v7;
 
-import com.google.common.collect.Maps;
 import com.huatu.common.SuccessMessage;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
+import com.huatu.tiku.course.bean.vo.EssayCourseWorkSyllabusInfo;
 import com.huatu.tiku.course.bean.vo.LiveRecordInfo;
-import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.service.v7.UserCourseBizV7Service;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
-import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.springboot.users.support.Token;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 /**
  * 描述：
@@ -32,8 +28,6 @@ public class UserCourseControllerV7 {
 
     @Autowired
     private UserCourseBizV7Service userCourseBizV7Service;
-
-
 
 
     /**
@@ -115,24 +109,11 @@ public class UserCourseControllerV7 {
 
     /**
      * 获取大纲绑定课后作业信息
-     * @param userSession
      * @param syllabusId
      * @return
      */
     @GetMapping(value = "courseWork/questionInfo/{syllabusId}")
-    public Object questionInfo(@Token UserSession userSession,
-                               @PathVariable(value = "syllabusId") long syllabusId){
-
-        Map<String,Object> result = Maps.newHashMap();
-
-        /**
-         * 单题 | 标准答案  0
-         * 试卷            1
-         * 议论文          2
-         */
-        result.put("questionId", 1234123l);
-        result.put("questionType", 2);
-        return result;
-
+    public EssayCourseWorkSyllabusInfo questionInfo(@PathVariable(value = "syllabusId") long syllabusId){
+        return userCourseBizV7Service.essayCourseWorkSyllabusInfo(syllabusId);
     }
 }

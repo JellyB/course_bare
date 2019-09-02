@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
+import com.huatu.common.ErrorResult;
 import com.huatu.common.SuccessMessage;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.vo.*;
@@ -12,11 +13,17 @@ import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.common.SubjectEnum;
 import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
-import com.huatu.tiku.course.dao.essay.EssayExercisesAnswerMetaMapper;
+import com.huatu.tiku.course.dao.essay.*;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.service.v7.UserCourseBizV7Service;
 import com.huatu.tiku.course.util.CourseCacheKey;
+import com.huatu.tiku.essay.entity.EssayPaperBase;
+import com.huatu.tiku.essay.entity.EssayQuestionBase;
+import com.huatu.tiku.essay.entity.EssayQuestionDetail;
+import com.huatu.tiku.essay.entity.EssaySimilarQuestion;
+import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
 import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
+import com.huatu.tiku.essay.essayEnum.EssayAnswerCardEnum;
 import com.huatu.tiku.essay.essayEnum.EssayStatusEnum;
 import com.huatu.tiku.essay.essayEnum.YesNoEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -27,11 +34,12 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
-import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
@@ -57,6 +65,21 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
     @Autowired
     private EssayExercisesAnswerMetaMapper essayExercisesAnswerMetaMapper;
+
+    @Autowired
+    private EssayCourseExercisesQuestionMapper essayCourseExercisesQuestionMapper;
+
+    @Autowired
+    private EssaySimilarQuestionMapper essaySimilarQuestionMapper;
+
+    @Autowired
+    private EssayQuestionBaseMapper essayQuestionBaseMapper;
+
+    @Autowired
+    private EssayQuestionDetailMapper essayQuestionDetailMapper;
+
+    @Autowired
+    private EssayPaperBaseMapper essayPaperBaseMapper;
 
 
     /**
@@ -340,5 +363,66 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
     @Override
     public void dealEssayCourseWork(String type, String message) throws BizException {
 
+    }
+
+    /**
+     * 获取申论课后作业大纲信息
+     *
+     * @param syllabusId
+     * @return
+     * @throws BizException
+     */
+    @Override
+    public EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(long syllabusId) throws BizException {
+        EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo = null;
+        String key = CourseCacheKey.getEssayCourseWorkSyllabusInfo(syllabusId);
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        if(redisTemplate.hasKey(key)){
+            String value = valueOperations.get(key);
+            essayCourseWorkSyllabusInfo = JSONObject.parseObject(value, EssayCourseWorkSyllabusInfo.class);
+            return essayCourseWorkSyllabusInfo;
+        }else{
+            essayCourseWorkSyllabusInfo = new EssayCourseWorkSyllabusInfo();
+            Example example = new Example(EssayCourseExercisesQuestion.class);
+            example.and()
+                    .andEqualTo("syllabusId", syllabusId)
+                    .andEqualTo("status", EssayStatusEnum.NORMAL.getCode());
+            EssayCourseExercisesQuestion essayCourseExercisesQuestion = essayCourseExercisesQuestionMapper.selectOneByExample(example);
+            if(null == essayCourseExercisesQuestion){
+                throw new BizException(ErrorResult.create(100010, "数据错误"));
+            }
+            /**
+             * 如果为单题
+             */
+            if(essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.QUESTION.getType()){
+                Example exampleQuestion = new Example(EssaySimilarQuestion.class);
+                exampleQuestion.and()
+                        .andEqualTo("questionBaseId", essayCourseExercisesQuestion.getPQid());
+                EssaySimilarQuestion essaySimilarQuestion = essaySimilarQuestionMapper.selectOneByExample(exampleQuestion);
+                EssayQuestionBase essayQuestionBase = essayQuestionBaseMapper.selectByPrimaryKey(essayCourseExercisesQuestion.getPQid());
+                EssayQuestionDetail essayQuestionDetail = essayQuestionDetailMapper.selectByPrimaryKey(essayQuestionBase.getDetailId());
+                essayCourseWorkSyllabusInfo.setSimilarId(essaySimilarQuestion.getSimilarId());
+                essayCourseWorkSyllabusInfo.setQuestionId(essayCourseExercisesQuestion.getPQid());
+                essayCourseWorkSyllabusInfo.setAreaName(essayQuestionBase.getAreaName());
+                essayCourseWorkSyllabusInfo.setQuestionType(essayQuestionDetail.getType());
+                essayCourseWorkSyllabusInfo.setPaperName(StringUtils.EMPTY);
+                essayCourseWorkSyllabusInfo.setPaperId(0l);
+            }
+
+            /**
+             * 如果为套题
+             */
+            if(essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.PAPER.getType()){
+                EssayPaperBase essayPaperBase = essayPaperBaseMapper.selectByPrimaryKey(essayCourseExercisesQuestion.getPQid());
+                essayCourseWorkSyllabusInfo.setSimilarId(0l);
+                essayCourseWorkSyllabusInfo.setQuestionId(0l);
+                essayCourseWorkSyllabusInfo.setAreaName(StringUtils.EMPTY);
+                essayCourseWorkSyllabusInfo.setQuestionType(0);
+                essayCourseWorkSyllabusInfo.setPaperName(essayPaperBase.getName());
+                essayCourseWorkSyllabusInfo.setPaperId(essayPaperBase.getId());
+            }
+            valueOperations.set(key, JSONObject.toJSONString(essayCourseWorkSyllabusInfo),  30, TimeUnit.DAYS);
+        }
+        return essayCourseWorkSyllabusInfo;
     }
 }
