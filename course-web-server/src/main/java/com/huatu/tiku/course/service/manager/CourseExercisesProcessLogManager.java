@@ -824,7 +824,7 @@ public class CourseExercisesProcessLogManager {
      * @param syllabusId
      * @param cv
      */
-    @Async
+//    @Async
     public void saveLiveRecord(int userId, int subject, int terminal, long syllabusId, String cv) {
         SyllabusWareInfo syllabusWareInfo = requestSingleSyllabusInfoWithCache(syllabusId);
         if (null == syllabusWareInfo) {
