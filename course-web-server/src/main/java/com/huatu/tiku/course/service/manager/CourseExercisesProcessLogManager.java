@@ -16,6 +16,7 @@ import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
+import com.huatu.tiku.course.service.v7.UserCourseBizV7Service;
 import com.huatu.tiku.entity.CourseLiveBackLog;
 import lombok.*;
 import org.apache.commons.collections.CollectionUtils;
@@ -89,6 +90,9 @@ public class CourseExercisesProcessLogManager {
 
     @Autowired
     private UserCourseServiceV6 userCourseServiceV6;
+
+    @Autowired
+    private UserCourseBizV7Service userCourseBizV7Service;
 
     @Autowired
     private CourseLiveBackLogService courseLiveBackLogService;
@@ -257,14 +261,19 @@ public class CourseExercisesProcessLogManager {
         if(syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
             return;
         }
-        this.createCourseWorkAnswerCardEntranceV2(syllabusWareInfo.getClassId(),
-                recordProcess.getSyllabusId(),
-                syllabusWareInfo.getVideoType(),
-                syllabusWareInfo.getCoursewareId(),
-                recordProcess.getSubject(),
-                recordProcess.getTerminal(),
-                recordProcess.getCv(),
-                recordProcess.getUserId());
+        // 申论创建课后作业
+        if(null != syllabusWareInfo.getSubjectType() && syllabusWareInfo.getSubjectType() == SubjectEnum.SL.getCode()){
+            userCourseBizV7Service.createEssayInitUserMeta(recordProcess.getUserId(), recordProcess.getSyllabusId());
+        }else{
+            this.createCourseWorkAnswerCardEntranceV2(syllabusWareInfo.getClassId(),
+                    recordProcess.getSyllabusId(),
+                    syllabusWareInfo.getVideoType(),
+                    syllabusWareInfo.getCoursewareId(),
+                    recordProcess.getSubject(),
+                    recordProcess.getTerminal(),
+                    recordProcess.getCv(),
+                    recordProcess.getUserId());
+        }
     }
 
 
@@ -678,16 +687,16 @@ public class CourseExercisesProcessLogManager {
      */
     public Table<String, Long, SyllabusWareInfo> dealSyllabusInfo(Set<Long> syllabusIds) throws BizException{
         log.debug("deal syllabusId info:{}", syllabusIds);
-        ExecutorService executorService = Executors.newCachedThreadPool();
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
         Table<String, Long, SyllabusWareInfo> table = TreeBasedTable.create();
-        Set<Long> copy = Sets.newHashSet();
-        copy.addAll(syllabusIds);
         if(CollectionUtils.isEmpty(syllabusIds)){
             return table;
         }
+        Set<Long> copy = Sets.newHashSet();
+        copy.addAll(syllabusIds);
         ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
         syllabusIds.forEach(item -> {
-            if(item.longValue() == 0){
+            if(null == item || item.longValue() == 0){
                 return;
             }
             String key = CourseCacheKey.getProcessLogSyllabusInfo(item);
@@ -698,16 +707,24 @@ public class CourseExercisesProcessLogManager {
                 table.put(LESSON_LABEL, item, syllabusWareInfo);
                 table.put(COURSE_LABEL, syllabusWareInfo.getClassId(), syllabusWareInfo);
                 copy.remove(item);
-                if((syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE.getVideoType() || syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()) && StringUtils.isEmpty(syllabusWareInfo.getRoomId())){
+                /*if((syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE.getVideoType() || syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()) && StringUtils.isEmpty(syllabusWareInfo.getRoomId())){
                     redisTemplate.delete(key);
-                }
+                }*/
                 }catch (Exception e){
                     e.printStackTrace();
+                    redisTemplate.delete(key);
                     log.error("dealSyllabusInfo.2.table key:{}", key);
                 }
             }else{
                 log.info("executorService execute for syllabus info:{}", item);
-                executorService.execute(() -> requestSingleSyllabusInfoWithCache(item));
+                try{
+                    executorService.execute(() -> requestSingleSyllabusInfoWithCache(item));
+                }catch (Exception e){
+                    log.info("异步线程获取大纲信息异常:{}", item);
+                }finally {
+                    executorService.shutdown();
+                }
+
             }
         });
         if(CollectionUtils.isNotEmpty(copy)){
@@ -745,7 +762,7 @@ public class CourseExercisesProcessLogManager {
             return null;
         }
         SyllabusWareInfo syllabusWareInfo = objectMapper.convertValue(data.get(0), SyllabusWareInfo.class);
-        valueOperations.set(key, JSONObject.toJSONString(syllabusWareInfo));
+        valueOperations.set(key, JSONObject.toJSONString(syllabusWareInfo), 20, TimeUnit.MINUTES);
         return syllabusWareInfo;
     }
     /**
@@ -809,22 +826,23 @@ public class CourseExercisesProcessLogManager {
      */
     @Async
     public void saveLiveRecord(int userId, int subject, int terminal, long syllabusId, String cv) {
-        Set<Long> syllabusIds = Sets.newHashSet();
-        syllabusIds.add(syllabusId);
-        Table<String, Long, SyllabusWareInfo> table = requestSyllabusWareInfoPut2Cache(syllabusIds);
-        if (null == table.get(LESSON_LABEL, syllabusId)) {
+        SyllabusWareInfo syllabusWareInfo = requestSingleSyllabusInfoWithCache(syllabusId);
+        if (null == syllabusWareInfo) {
             return;
         }
-        /**
-         * 创建答题卡
-         */
-        SyllabusWareInfo syllabusWareInfo = table.get(LESSON_LABEL, syllabusId);
+        if(syllabusWareInfo.getAfterCoreseNum() == 0){
+            return;
+        }
         if(VideoTypeEnum.LIVE.getVideoType() != syllabusWareInfo.getVideoType()){
             log.error("直播上报数据与大纲数据不一致:{}", JSONObject.toJSONString(syllabusWareInfo));
             return;
         }
         log.info("直播创建或更新课后作业答题卡:大纲id{}", syllabusId);
-        createCourseWorkAnswerCardEntranceV2(syllabusWareInfo.getClassId(), syllabusWareInfo.getSyllabusId(), syllabusWareInfo.getVideoType(), syllabusWareInfo.getCoursewareId(), subject, terminal, cv, userId);
+        if(null != syllabusWareInfo.getSubjectType() && syllabusWareInfo.getSubjectType() == SubjectEnum.SL.getCode()){
+            userCourseBizV7Service.createEssayInitUserMeta(userId, syllabusId);
+        }else{
+            createCourseWorkAnswerCardEntranceV2(syllabusWareInfo.getClassId(), syllabusWareInfo.getSyllabusId(), syllabusWareInfo.getVideoType(), syllabusWareInfo.getCoursewareId(), subject, terminal, cv, userId);
+        }
     }
 
     /**
