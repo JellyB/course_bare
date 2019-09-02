@@ -17,10 +17,12 @@ import com.huatu.tiku.course.dao.essay.*;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.service.v7.UserCourseBizV7Service;
 import com.huatu.tiku.course.util.CourseCacheKey;
+import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
 import com.huatu.tiku.essay.entity.EssayPaperBase;
 import com.huatu.tiku.essay.entity.EssayQuestionBase;
 import com.huatu.tiku.essay.entity.EssayQuestionDetail;
 import com.huatu.tiku.essay.entity.EssaySimilarQuestion;
+import com.huatu.tiku.essay.entity.correct.CorrectOrder;
 import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
 import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
 import com.huatu.tiku.essay.essayEnum.EssayAnswerCardEnum;
@@ -80,6 +82,9 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
     @Autowired
     private EssayPaperBaseMapper essayPaperBaseMapper;
+
+    @Autowired
+    private CorrectOrderMapper correctOrderMapper;
 
 
     /**
@@ -316,6 +321,15 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
             essayAnswerCardInfo.setScore(100);
             essayAnswerCardInfo.setSimilarId(100l);
             essayAnswerCardInfo.setStatus(essayExercisesAnswerMeta.getBizStatus());
+            if(essayExercisesAnswerMeta.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()){
+                Example example = new Example(CorrectOrder.class);
+                example.and()
+                .andEqualTo("status", EssayStatusEnum.NORMAL.getCode())
+                .andEqualTo("answerCardType", essayExercisesAnswerMeta.getAnswerType())
+                .andEqualTo("answerCardId", essayExercisesAnswerMeta.getAnswerId());
+                CorrectOrder correctOrder = correctOrderMapper.selectOneByExample(example);
+                essayAnswerCardInfo.setCorrectMemo(null != correctOrder ? correctOrder.getCorrectMemo() : StringUtils.EMPTY);
+            }
             result.put(essayExercisesAnswerMeta.getAnswerId(), essayAnswerCardInfo);
         }
         return Maps.newHashMap();
