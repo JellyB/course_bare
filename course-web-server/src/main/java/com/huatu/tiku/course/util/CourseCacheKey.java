@@ -53,6 +53,8 @@ public class CourseCacheKey {
     private static final String PROCESS_REPORT_DELAY_QUEUE = "process_report_delay";
 
     private static final String PROCESS_LOG_SYLLABUS_INFO = "process_log_syllabus_v6$%s";
+    private static final String ESSAY_COURSE_WORK_SYLLABUS_INFO = "essay_course_work_syllabus_v7$%s";
+
     private static final String PROCESS_LOG_SYLLABUS_DEAL_LIST = "process_log_syllabus_list_v6";
     private static final String USER_ACCOUNT_INFO_KEY = "user_account_info_key";
 
@@ -158,5 +160,14 @@ public class CourseCacheKey {
      */
     public static String getCourseWorkEssayIsAlert(long userId){
         return String.format(COURSE_WORK_ESSAY_ISALERT, userId);
+    }
+
+    /**
+     * 申论课后作业大纲信息
+     * @param syllabusId
+     * @return
+     */
+    public static String getEssayCourseWorkSyllabusInfo(long syllabusId){
+        return String.format(ESSAY_COURSE_WORK_SYLLABUS_INFO, syllabusId);
     }
 }

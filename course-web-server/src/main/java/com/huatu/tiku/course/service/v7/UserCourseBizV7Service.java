@@ -2,6 +2,7 @@ package com.huatu.tiku.course.service.v7;
 
 import com.huatu.common.exception.BizException;
 import com.huatu.springboot.degrade.core.Degrade;
+import com.huatu.tiku.course.bean.vo.EssayCourseWorkSyllabusInfo;
 import com.huatu.tiku.course.bean.vo.LiveRecordInfo;
 
 import java.util.Map;
@@ -74,4 +75,12 @@ public interface UserCourseBizV7Service {
      * @throws BizException
      */
     void dealEssayCourseWork(String type, String message) throws BizException;
+
+    /**
+     * 获取申论课后作业大纲信息
+     * @param syllabusId
+     * @return
+     * @throws BizException
+     */
+    EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(long syllabusId) throws BizException;
 }
