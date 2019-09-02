@@ -117,6 +117,11 @@ public class CourseCacheKey {
         return PROCESS_REPORT_DELAY_QUEUE;
     }
 
+    /**
+     * 获取 syllabusInfo cache key
+     * @param syllabusId
+     * @return
+     */
     public static String getProcessLogSyllabusInfo(Long syllabusId){return String.format(PROCESS_LOG_SYLLABUS_INFO, syllabusId);}
 
     public static String getUserAccountInfoKey(){

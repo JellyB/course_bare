@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import tk.mybatis.mapper.entity.Example;
 
 /**
  * 描述：
@@ -41,6 +40,5 @@ public class PlayBackProcessListener {
         }catch (Exception e){
             log.error("大数据上报学习进度创建课后作业答题卡失败:{}", message);
         }
-
     }
 }

@@ -439,4 +439,46 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
         }
         return essayCourseWorkSyllabusInfo;
     }
+
+    /**
+     * 创建空白答题卡
+     * @param userId
+     * @param syllabusId
+     * @throws BizException
+     */
+    @Override
+    public void createEssayInitUserMeta(int userId, long syllabusId) throws BizException {
+        Example example = new Example(EssayExercisesAnswerMeta.class);
+        example.and().andEqualTo("syllabusId", syllabusId)
+                .andEqualTo("userId", userId)
+                .andEqualTo("status", EssayStatusEnum.NORMAL.getCode());
+
+        List<EssayExercisesAnswerMeta> list = essayExercisesAnswerMetaMapper.selectByExample(example);
+        if(CollectionUtils.isNotEmpty(list)){
+            return;
+        }
+        Example example_ = new Example(EssayCourseExercisesQuestion.class);
+        example_.and()
+                .andEqualTo("syllabusId", syllabusId)
+                .andEqualTo("status", EssayStatusEnum.NORMAL.getCode());
+
+        List<EssayCourseExercisesQuestion> essayCourseExercisesQuestions = essayCourseExercisesQuestionMapper.selectByExample(example_);
+        if(CollectionUtils.isEmpty(essayCourseExercisesQuestions)){
+            return;
+        }
+        //创建空白答题卡
+        for (EssayCourseExercisesQuestion essayCourseExercisesQuestion : essayCourseExercisesQuestions) {
+            EssayExercisesAnswerMeta exercisesAnswerMeta = EssayExercisesAnswerMeta.builder()
+                    .answerType(essayCourseExercisesQuestion.getType())
+                    .courseId(essayCourseExercisesQuestion.getCourseId())
+                    .courseWareId(essayCourseExercisesQuestion.getCourseWareId())
+                    .syllabusId(essayCourseExercisesQuestion.getSyllabusId())
+                    .pQid(essayCourseExercisesQuestion.getPQid())
+                    .userId(userId)
+                    .build();
+
+            exercisesAnswerMeta.setBizStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
+            essayExercisesAnswerMetaMapper.insertSelective(exercisesAnswerMeta);
+        }
+    }
 }

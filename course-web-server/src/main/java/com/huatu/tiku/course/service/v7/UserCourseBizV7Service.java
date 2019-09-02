@@ -1,7 +1,6 @@
 package com.huatu.tiku.course.service.v7;
 
 import com.huatu.common.exception.BizException;
-import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.bean.vo.EssayCourseWorkSyllabusInfo;
 import com.huatu.tiku.course.bean.vo.LiveRecordInfo;
 
@@ -83,4 +82,13 @@ public interface UserCourseBizV7Service {
      * @throws BizException
      */
     EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(long syllabusId) throws BizException;
+
+
+    /**
+     * 创建申论课后作业空白答题卡
+     * @param userId
+     * @param syllabusId
+     * @throws BizException
+     */
+    void createEssayInitUserMeta(int userId, long syllabusId)throws BizException;
 }
