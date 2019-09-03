@@ -372,12 +372,26 @@ public class CourseUtil {
                 .collect(Collectors.toSet());
 
         List<EssayExercisesAnswerMeta> metas = userCourseBizV7Service.metas(userId, syllabusIds);
+        if(CollectionUtils.isEmpty(metas)){
+            return;
+        }
 
-        /*for (Map map : mapList) {
-            if(null == map.get){
+        Map<Long, EssayAnswerCardInfo> essayAnswerCardInfoMap = buildEssayAnswerCardInfo(metas);
 
-            }
-        }*/
+        for (Map map : mapList) {
+            long syllabusId = MapUtils.getLongValue(map, "id", 0);
+            EssayAnswerCardInfo essayAnswerCardInfo = essayAnswerCardInfoMap.get(syllabusId);
+            map.put("answerCard", essayAnswerCardInfo);
+        }
+    }
+
+    private Map<Long, EssayAnswerCardInfo> buildEssayAnswerCardInfo(List<EssayExercisesAnswerMeta> metas) throws BizException{
+        Map<Long, EssayAnswerCardInfo> result = Maps.newHashMap();
+        for (EssayExercisesAnswerMeta meta : metas) {
+            EssayAnswerCardInfo essayAnswerCardInfo = new EssayAnswerCardInfo();
+            result.put(meta.getSyllabusId(), essayAnswerCardInfo);
+        }
+        return result;
     }
 
 
