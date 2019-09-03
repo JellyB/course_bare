@@ -109,11 +109,12 @@ public class UserCourseControllerV7 {
 
     /**
      * 获取大纲绑定课后作业信息
-     * @param syllabusId
+     * @param courseWareId
      * @return
      */
-    @GetMapping(value = "courseWork/questionInfo/{syllabusId}")
-    public EssayCourseWorkSyllabusInfo questionInfo(@PathVariable(value = "syllabusId") long syllabusId){
-        return userCourseBizV7Service.essayCourseWorkSyllabusInfo(syllabusId);
+    @GetMapping(value = "courseWork/questionInfo/{videoType}/{courseWareId}")
+    public EssayCourseWorkSyllabusInfo questionInfo(@PathVariable(value = "videoType") Integer courseType,
+                                                    @PathVariable(value = "courseWareId") Long courseWareId){
+        return userCourseBizV7Service.essayCourseWorkSyllabusInfo(courseType, courseWareId);
     }
 }

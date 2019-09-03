@@ -382,14 +382,15 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
     /**
      * 获取申论课后作业大纲信息
      *
-     * @param syllabusId
+     * @param courseType
+     * @param courseWareId
      * @return
      * @throws BizException
      */
     @Override
-    public EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(long syllabusId) throws BizException {
+    public EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(Integer courseType, Long courseWareId) throws BizException {
         EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo = null;
-        String key = CourseCacheKey.getEssayCourseWorkSyllabusInfo(syllabusId);
+        String key = CourseCacheKey.getEssayCourseWorkSyllabusInfo(courseType, courseWareId);
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
         if(redisTemplate.hasKey(key)){
             String value = valueOperations.get(key);
@@ -399,7 +400,8 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
             essayCourseWorkSyllabusInfo = new EssayCourseWorkSyllabusInfo();
             Example example = new Example(EssayCourseExercisesQuestion.class);
             example.and()
-                    .andEqualTo("syllabusId", syllabusId)
+                    .andEqualTo("courseType", courseType)
+                    .andEqualTo("courseWareId", courseWareId)
                     .andEqualTo("status", EssayStatusEnum.NORMAL.getCode());
             EssayCourseExercisesQuestion essayCourseExercisesQuestion = essayCourseExercisesQuestionMapper.selectOneByExample(example);
             if(null == essayCourseExercisesQuestion){
