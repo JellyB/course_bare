@@ -11,7 +11,7 @@ import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.vo.*;
 import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.common.SubjectEnum;
-import com.huatu.tiku.course.common.VideoTypeEnum;
+import com.huatu.tiku.course.common.CourseWareTypeEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.dao.essay.*;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
@@ -256,7 +256,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                                 courseWorkWareVo.setVideoLength(syllabusWareInfo.getLength());
                                 courseWorkWareVo.setSerialNumber(syllabusWareInfo.getSerialNumber());
                                 courseWorkWareVo.setAnswerCardId(essayExercisesAnswerMeta.getAnswerId());
-                                if(syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
+                                if(syllabusWareInfo.getVideoType() == CourseWareTypeEnum.LIVE_PLAY_BACK.getVideoType()){
                                     courseWorkWareVo.setCourseWareId(essayExercisesAnswerMeta.getCourseWareId());
                                     courseWorkWareVo.setVideoType(essayExercisesAnswerMeta.getCourseType());
                                 }else{
@@ -382,14 +382,15 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
     /**
      * 获取申论课后作业大纲信息
      *
-     * @param syllabusId
+     * @param courseType
+     * @param courseWareId
      * @return
      * @throws BizException
      */
     @Override
-    public EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(long syllabusId) throws BizException {
+    public EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(Integer courseType, Long courseWareId) throws BizException {
         EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo = null;
-        String key = CourseCacheKey.getEssayCourseWorkSyllabusInfo(syllabusId);
+        String key = CourseCacheKey.getEssayCourseWorkSyllabusInfo(courseType, courseWareId);
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
         if(redisTemplate.hasKey(key)){
             String value = valueOperations.get(key);
@@ -399,7 +400,8 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
             essayCourseWorkSyllabusInfo = new EssayCourseWorkSyllabusInfo();
             Example example = new Example(EssayCourseExercisesQuestion.class);
             example.and()
-                    .andEqualTo("syllabusId", syllabusId)
+                    .andEqualTo("courseType", courseType)
+                    .andEqualTo("courseWareId", courseWareId)
                     .andEqualTo("status", EssayStatusEnum.NORMAL.getCode());
             EssayCourseExercisesQuestion essayCourseExercisesQuestion = essayCourseExercisesQuestionMapper.selectOneByExample(example);
             if(null == essayCourseExercisesQuestion){

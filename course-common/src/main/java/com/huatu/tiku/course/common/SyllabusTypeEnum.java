@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 描述：
+ * 描述：大纲类型枚举
  *
  * @author biguodong
  * Create time 2019-03-21 3:27 PM
@@ -12,7 +12,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public enum  TypeEnum {
+public enum SyllabusTypeEnum {
 
     /**
      * 阶段
@@ -29,8 +29,8 @@ public enum  TypeEnum {
     private String value;
     private int type;
 
-    public static TypeEnum create(int type){
-        for (TypeEnum typeEnum : values()) {
+    public static SyllabusTypeEnum create(int type){
+        for (SyllabusTypeEnum typeEnum : values()) {
             if(typeEnum.getType() == type){
                 return typeEnum;
             }

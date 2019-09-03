@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 描述：大纲返回课件videoType 枚举
+ * 描述：大纲返回课件 videoType 枚举
  *
  * @author biguodong
  * Create time 2019-03-21 2:44 PM
@@ -12,10 +12,10 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public enum VideoTypeEnum {
+public enum CourseWareTypeEnum {
 
     /**
-     * 点播
+     * 点播（录播）
      */
     DOT_LIVE("点播", 1),
     /**
@@ -34,8 +34,8 @@ public enum VideoTypeEnum {
     private String value;
     private int videoType;
 
-    public static VideoTypeEnum create (int videoType){
-        for (VideoTypeEnum courseWareEnum : values()) {
+    public static CourseWareTypeEnum create (int videoType){
+        for (CourseWareTypeEnum courseWareEnum : values()) {
             if(courseWareEnum.getVideoType() == videoType){
                 return courseWareEnum;
             }

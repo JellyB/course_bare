@@ -81,11 +81,12 @@ public interface UserCourseBizV7Service {
 
     /**
      * 获取申论课后作业大纲信息
-     * @param syllabusId
+     * @param courseType
+     * @param courseWareId
      * @return
      * @throws BizException
      */
-    EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(long syllabusId) throws BizException;
+    EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(Integer courseType, Long courseWareId) throws BizException;
 
     /**
      * 根据 syllabus id 批量查询 EssayExercisesAnswerMeta 信息
