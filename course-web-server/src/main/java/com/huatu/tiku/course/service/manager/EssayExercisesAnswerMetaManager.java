@@ -68,9 +68,7 @@ public class EssayExercisesAnswerMetaManager {
         for (EssayCourseExercisesQuestion essayCourseExercisesQuestion : essayCourseExercisesQuestions) {
             EssayExercisesAnswerMeta exercisesAnswerMeta = EssayExercisesAnswerMeta.builder()
                     .answerType(essayCourseExercisesQuestion.getType())
-                    .courseId(essayCourseExercisesQuestion.getCourseId())
                     .courseWareId(essayCourseExercisesQuestion.getCourseWareId())
-                    .syllabusId(essayCourseExercisesQuestion.getSyllabusId())
                     .pQid(essayCourseExercisesQuestion.getPQid())
                     .userId(userId)
                     .build();

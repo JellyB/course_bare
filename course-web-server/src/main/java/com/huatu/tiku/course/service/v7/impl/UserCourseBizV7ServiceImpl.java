@@ -434,10 +434,10 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                 essayCourseWorkSyllabusInfo.setQuestionId(0l);
                 essayCourseWorkSyllabusInfo.setAreaName(StringUtils.EMPTY);
                 essayCourseWorkSyllabusInfo.setQuestionType(0);
-                essayCourseWorkSyllabusInfo.setPaperName(essayPaperBase.getName());
-                essayCourseWorkSyllabusInfo.setPaperId(essayPaperBase.getId());
+                essayCourseWorkSyllabusInfo.setPaperName(null == essayPaperBase ? StringUtils.EMPTY : essayPaperBase.getName());
+                essayCourseWorkSyllabusInfo.setPaperId(essayCourseExercisesQuestion.getPQid());
             }
-            valueOperations.set(key, JSONObject.toJSONString(essayCourseWorkSyllabusInfo),  30, TimeUnit.DAYS);
+            valueOperations.set(key, JSONObject.toJSONString(essayCourseWorkSyllabusInfo),  1, TimeUnit.DAYS);
         }
         return essayCourseWorkSyllabusInfo;
     }
