@@ -458,7 +458,9 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
      */
     @Override
     public List<EssayExercisesAnswerMeta> metas(int userId, Set<Long> syllabusIds) throws BizException {
-
+        if(CollectionUtils.isEmpty(syllabusIds)){
+            return Lists.newArrayList();
+        }
         Example example = new Example(EssayExercisesAnswerMeta.class);
         example.and()
                 .andEqualTo("userId", userId)
