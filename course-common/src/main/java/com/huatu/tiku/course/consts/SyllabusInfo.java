@@ -1,6 +1,5 @@
 package com.huatu.tiku.course.consts;
 
-import com.huatu.tiku.course.common.CourseWareTypeEnum;
 
 /**
  * 描述：
@@ -27,7 +26,7 @@ public class SyllabusInfo {
 
     /**
      * 课件类型
-     * {@link CourseWareTypeEnum}
+     * CourseWareTypeEnum
      */
     public static String VideoType = "videoType";
 
