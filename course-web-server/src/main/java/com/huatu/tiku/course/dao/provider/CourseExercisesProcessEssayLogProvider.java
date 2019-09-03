@@ -33,7 +33,8 @@ public class CourseExercisesProcessEssayLogProvider {
      */
     private String essayTempTable(long userId){
         List<Integer> list = Lists.newArrayList(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus(),
-                EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
+                EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus(),
+                EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
 
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(" SELECT");

@@ -9,6 +9,7 @@ import com.huatu.common.spring.event.EventPublisher;
 import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.bean.vo.EssayAnswerCardInfo;
 import com.huatu.tiku.course.common.*;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.consts.SyllabusInfo;
@@ -16,6 +17,7 @@ import com.huatu.tiku.course.hbase.api.v1.VideoServiceV1;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.service.v1.CourseExercisesService;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
+import com.huatu.tiku.course.service.v7.UserCourseBizV7Service;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.ResponseUtil;
 import com.huatu.tiku.course.util.ZTKResponseUtil;
@@ -23,6 +25,7 @@ import com.huatu.tiku.course.ztk.api.v1.paper.PracticeCardServiceV1;
 import com.huatu.tiku.course.ztk.api.v4.paper.PeriodTestServiceV4;
 import com.huatu.tiku.entity.CourseExercisesProcessLog;
 import com.huatu.tiku.entity.CourseLiveBackLog;
+import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
 import com.huatu.tiku.springboot.basic.reward.event.RewardActionEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -70,6 +73,9 @@ public class CourseUtil {
 
     @Autowired
     private CourseExercisesProcessLogManager courseExercisesProcessLogManager;
+
+    @Autowired
+    private UserCourseBizV7Service userCourseBizV7Service;
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -305,35 +311,35 @@ public class CourseUtil {
 
 
     /**
-     * 课程大纲-售后-添加课后答题结果信息 with essay
+     * 课程大纲-售后-添加课后答题结果信息 with civil
      * 使用 大纲 id 获取
      * @param response 响应结果集
      * @param userId   用户ID
      */
-    public void addExercisesCardInfoWithEssay(LinkedHashMap response, int userId, boolean need2Str) {
+    public void addExercisesCardInfoWithCivil(LinkedHashMap response, int userId, boolean need2Str) {
         StopWatch stopWatch = new StopWatch();
-        stopWatch.start("课程大纲-售后-添加课后答题结果信息 with essay");
+        stopWatch.start("课程大纲-售后-添加课后答题结果信息 with civil");
         response.computeIfPresent("list", (key, value) -> {
                     List<Long> civilParamsList = ((List<Map>) value).stream()
                             .filter(map -> null != map.get(SyllabusInfo.VideoType) && null != map.get(SyllabusInfo.CourseWareId))
                             .filter(map -> null != map.get(SyllabusInfo.SyllabusId))
-                            .filter(map -> null != map.get(SyllabusInfo.SubjectType) && MapUtils.getIntValue(map, SyllabusInfo.SubjectType, 0) == SubjectEnum.XC.getCode())
+                            .filter(map -> null != map.get(SyllabusInfo.SubjectType) && MapUtils.getIntValue(map, SyllabusInfo.SubjectType) == SubjectEnum.XC.getCode())
                             .map(map -> MapUtils.getLongValue(map, SyllabusInfo.SyllabusId))
                             .collect(Collectors.toList());
 
                     //查询用户答题信息
                     List<Map> build = Lists.newArrayList();
-                    log.info("获取课后练习的答题卡信息 with essay,参数信息, userId = {}, paramsList = {}", userId, civilParamsList);
+                    log.info("获取课后练习的答题卡信息 with civil,参数信息, userId = {}, paramsList = {}", userId, civilParamsList);
                     if(CollectionUtils.isEmpty(civilParamsList)){
-                        log.error("获取课后练习的答题卡信息 v3,参数信息 syllabusList is empty, userId:{}, response:{}",userId, response);
+                        log.error("获取课后练习的答题卡信息 civil,参数信息 syllabusList is empty, userId:{}, response:{}",userId, response);
                         return buildResponseConstructCardInfo(need2Str, (List<Map>) value, build);
                     }
                     List<Long> cardIds = courseExercisesProcessLogManager.obtainCardIdsBySyllabusIds(userId, civilParamsList);
-                    log.info("获取课后练习的答题卡信息 v3,答题卡返回信息, userId = {}, cardIds = {}", userId, cardIds);
+                    log.info("获取课后练习的答题卡信息 civil,答题卡返回信息, userId = {}, cardIds = {}", userId, cardIds);
 
                     if(CollectionUtils.isNotEmpty(cardIds)){
                         Object courseExercisesCardInfo = practiceCardServiceV1.getCourseExercisesCardInfoV2(cardIds);
-                        log.info("获取课后练习的答题卡信息 v3,参数信息, userId = {}, paramsList = {}, result = {}", userId, civilParamsList, JSONObject.toJSONString(courseExercisesCardInfo));
+                        log.info("获取课后练习的答题卡信息 civil,参数信息, userId = {}, paramsList = {}, result = {}", userId, civilParamsList, JSONObject.toJSONString(courseExercisesCardInfo));
                         Object object = ZTKResponseUtil.build(courseExercisesCardInfo);
                         build.addAll((List<Map>) object);
                     }
@@ -342,6 +348,34 @@ public class CourseUtil {
         );
         stopWatch.stop();
         log.info("学习报告 - 课后作业答题卡信息 V3:userId:{}, 耗时:{}", userId,  stopWatch.prettyPrint());
+    }
+
+
+    /**
+     * 课程大纲-售后-添加课后答题结果信息 with essay
+     * 使用 大纲 id 获取
+     * @param response 响应结果集
+     * @param userId   用户ID
+     */
+    public void addExercisesCardInfoWithEssay(LinkedHashMap response, int userId) {
+        if(!response.containsKey("list")){
+            return;
+        }
+        List<Map> mapList = (List<Map>) response.get("list");
+        Set<Long> syllabusIds = mapList.stream()
+                .filter(map -> null != map.get(SyllabusInfo.VideoType) && null != map.get(SyllabusInfo.CourseWareId))
+                .filter(map -> null != map.get(SyllabusInfo.SyllabusId))
+                .filter(map -> null != map.get(SyllabusInfo.SubjectType) && MapUtils.getIntValue(map, SyllabusInfo.SubjectType) == SubjectEnum.SL.getCode())
+                .map(map -> MapUtils.getLongValue(map, SyllabusInfo.SyllabusId))
+                .collect(Collectors.toSet());
+
+        List<EssayExercisesAnswerMeta> metas = userCourseBizV7Service.metas(userId, syllabusIds);
+
+        /*for (Map map : mapList) {
+            if(null == map.get){
+
+            }
+        }*/
     }
 
 
@@ -392,6 +426,14 @@ public class CourseUtil {
                     })
                     .collect(Collectors.toList());
             return mapList;
+        }
+    }
+
+
+    private void buildResponseConstructCardInfoWithEssay(List<Map> value, List<EssayExercisesAnswerMeta> metas) {
+
+        for (Map map : value) {
+            map.put("answerCard", JSONObject.toJSON(new EssayAnswerCardInfo()));
         }
     }
 
