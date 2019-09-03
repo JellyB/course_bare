@@ -42,7 +42,7 @@ public class SyllabusControllerV7 {
     /**
      * 大纲 售后
      */
-    @LocalMapParam(checkToken = true)
+    @LocalMapParam
     @GetMapping("{netClassId}/buyAfterSyllabus")
     public Object buyAfterSyllabus(
             @Token UserSession userSession,
@@ -63,6 +63,7 @@ public class SyllabusControllerV7 {
             @RequestParam(defaultValue = "0", required = false) int parentNodeId
     ) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
+        map.put("cv", cv);
         StopWatch stopwatch = new StopWatch("app 端售后大纲请求时间统计");
         stopwatch.start("buyAfterSyllabus.7");
         Object response = ResponseUtil.build(syllabusService.buyAfterSyllabus(map));
