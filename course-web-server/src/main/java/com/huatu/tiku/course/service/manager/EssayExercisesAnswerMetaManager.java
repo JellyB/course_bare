@@ -1,6 +1,5 @@
 package com.huatu.tiku.course.service.manager;
 
-import com.google.common.collect.Maps;
 import com.huatu.common.ErrorResult;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.vo.EssayAnswerCardInfo;
@@ -17,20 +16,16 @@ import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
 import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
 import com.huatu.tiku.essay.essayEnum.EssayAnswerCardEnum;
 import com.huatu.tiku.essay.essayEnum.EssayStatusEnum;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.stereotype.Component;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 描述：
