@@ -449,27 +449,6 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
     }
 
     /**
-     * 根据 syllabus id 批量查询 EssayExercisesAnswerMeta 信息
-     *
-     * @param userId
-     * @param syllabusIds
-     * @return
-     * @throws BizException
-     */
-    @Override
-    public List<EssayExercisesAnswerMeta> metas(int userId, Set<Long> syllabusIds) throws BizException {
-        if(CollectionUtils.isEmpty(syllabusIds)){
-            return Lists.newArrayList();
-        }
-        Example example = new Example(EssayExercisesAnswerMeta.class);
-        example.and()
-                .andEqualTo("userId", userId)
-                .andEqualTo("status", EssayStatusEnum.NORMAL.getCode())
-                .andIn("syllabusId", syllabusIds);
-        return essayExercisesAnswerMetaMapper.selectByExample(example);
-    }
-
-    /**
      * 使用 syllabusId 构建申论课后作业答题卡信息
      *
      * @param userId

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.huatu.common.exception.BizException;
 import com.huatu.common.spring.event.EventPublisher;
 import com.huatu.common.utils.collection.HashMapBuilder;
@@ -15,6 +16,7 @@ import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.hbase.api.v1.VideoServiceV1;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
+import com.huatu.tiku.course.service.manager.EssayExercisesAnswerMetaManager;
 import com.huatu.tiku.course.service.v1.CourseExercisesService;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.course.service.v7.UserCourseBizV7Service;
@@ -77,7 +79,7 @@ public class CourseUtil {
     private CourseExercisesProcessLogManager courseExercisesProcessLogManager;
 
     @Autowired
-    private UserCourseBizV7Service userCourseBizV7Service;
+    private EssayExercisesAnswerMetaManager essayExercisesAnswerMetaManager;
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -364,36 +366,30 @@ public class CourseUtil {
             return;
         }
         List<Map> mapList = (List<Map>) response.get("list");
-        Set<Long> syllabusIds = mapList.stream()
-                .filter(map -> null != map.get(SyllabusInfo.VideoType) && null != map.get(SyllabusInfo.CourseWareId))
-                .filter(map -> null != map.get(SyllabusInfo.SyllabusId))
-                .filter(map -> null != map.get(SyllabusInfo.SubjectType) && MapUtils.getIntValue(map, SyllabusInfo.SubjectType) == SubjectEnum.SL.getCode())
-                .map(map -> MapUtils.getLongValue(map, SyllabusInfo.SyllabusId))
-                .collect(Collectors.toSet());
-
-        List<EssayExercisesAnswerMeta> metas = userCourseBizV7Service.metas(userId, syllabusIds);
-        if(CollectionUtils.isEmpty(metas)){
-            return;
-        }
-
-        Map<Long, EssayAnswerCardInfo> essayAnswerCardInfoMap = buildEssayAnswerCardInfo(metas);
-
-        for (Map map : mapList) {
-            long syllabusId = MapUtils.getLongValue(map, "id", 0);
-            EssayAnswerCardInfo essayAnswerCardInfo = essayAnswerCardInfoMap.get(syllabusId);
-            map.put("answerCard", essayAnswerCardInfo);
+        Set<Long> syllabusIds = Sets.newHashSet();
+        for(Map map : mapList){
+            if(!check(map)){
+                continue;
+            }else{
+                EssayAnswerCardInfo essayAnswerCardInfo = essayExercisesAnswerMetaManager.buildEssayAnswerCardInfo(userId, map);
+                map.put("answerCard", essayAnswerCardInfo);
+            }
         }
     }
 
-    private Map<Long, EssayAnswerCardInfo> buildEssayAnswerCardInfo(List<EssayExercisesAnswerMeta> metas) throws BizException{
-        Map<Long, EssayAnswerCardInfo> result = Maps.newHashMap();
-        for (EssayExercisesAnswerMeta meta : metas) {
-            EssayAnswerCardInfo essayAnswerCardInfo = new EssayAnswerCardInfo();
-            result.put(meta.getSyllabusId(), essayAnswerCardInfo);
-        }
+    /**
+     * 大纲数据检查
+     * @param map
+     * @return
+     */
+    private boolean check(Map map){
+        boolean result = true;
+        result = result && MapUtils.getIntValue(map, SyllabusInfo.VideoType, 0) > 0;
+        result = result && MapUtils.getIntValue(map, SyllabusInfo.CourseWareId, 0) > 0;
+        result = result && MapUtils.getIntValue(map, SyllabusInfo.SubjectType) == SubjectEnum.SL.getCode();
+        result = result && MapUtils.getIntValue(map, SyllabusInfo.AfterCourseNum, 0) > 0;
         return result;
     }
-
 
     private Object buildResponseConstructCardInfo(boolean need2Str, List<Map> value, List<Map> build) {
         Map<Object, Object> defaultMap = HashMapBuilder.newBuilder()
