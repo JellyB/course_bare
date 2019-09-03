@@ -88,14 +88,6 @@ public interface UserCourseBizV7Service {
      */
     EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(Integer courseType, Long courseWareId) throws BizException;
 
-    /**
-     * 根据 syllabus id 批量查询 EssayExercisesAnswerMeta 信息
-     * @param userId
-     * @param syllabusIds
-     * @return
-     * @throws BizException
-     */
-    List<EssayExercisesAnswerMeta> metas(int userId, Set<Long> syllabusIds) throws BizException;
 
     /**
      * 使用 syllabusId 构建申论课后作业答题卡信息
