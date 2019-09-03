@@ -1,10 +1,14 @@
 package com.huatu.tiku.course.service.v7;
 
 import com.huatu.common.exception.BizException;
+import com.huatu.tiku.course.bean.vo.EssayAnswerCardInfo;
 import com.huatu.tiku.course.bean.vo.EssayCourseWorkSyllabusInfo;
 import com.huatu.tiku.course.bean.vo.LiveRecordInfo;
+import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 描述：
@@ -83,12 +87,21 @@ public interface UserCourseBizV7Service {
      */
     EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(long syllabusId) throws BizException;
 
-
     /**
-     * 创建申论课后作业空白答题卡
+     * 根据 syllabus id 批量查询 EssayExercisesAnswerMeta 信息
      * @param userId
-     * @param syllabusId
+     * @param syllabusIds
+     * @return
      * @throws BizException
      */
-    void createEssayInitUserMeta(int userId, long syllabusId)throws BizException;
+    List<EssayExercisesAnswerMeta> metas(int userId, Set<Long> syllabusIds) throws BizException;
+
+    /**
+     * 使用 syllabusId 构建申论课后作业答题卡信息
+     * @param userId
+     * @param syllabusId
+     * @return
+     * @throws BizException
+     */
+    EssayAnswerCardInfo buildEssayAnswerCardInfo(int userId, long syllabusId) throws BizException;
 }

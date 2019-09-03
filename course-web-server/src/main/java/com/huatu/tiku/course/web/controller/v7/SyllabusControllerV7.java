@@ -69,7 +69,8 @@ public class SyllabusControllerV7 {
         stopwatch.stop();
         //添加答题信息
         stopwatch.start("addExercisesCardInfo");
-        courseUtil.addExercisesCardInfoV3((LinkedHashMap) response, userSession.getId(), false);
+        courseUtil.addExercisesCardInfoWithCivil((LinkedHashMap) response, userSession.getId(), false);
+        courseUtil.addExercisesCardInfoWithEssay((LinkedHashMap) response, userSession.getId());
         stopwatch.stop();
         stopwatch.start("buyAfterSyllabus.7 - addPeriodTestInfo 1");
         courseUtil.addPeriodTestInfo((LinkedHashMap) response, userSession.getId());

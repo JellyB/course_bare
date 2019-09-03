@@ -16,7 +16,6 @@ import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
-import com.huatu.tiku.course.service.v7.UserCourseBizV7Service;
 import com.huatu.tiku.entity.CourseLiveBackLog;
 import lombok.*;
 import org.apache.commons.collections.CollectionUtils;
@@ -92,7 +91,7 @@ public class CourseExercisesProcessLogManager {
     private UserCourseServiceV6 userCourseServiceV6;
 
     @Autowired
-    private UserCourseBizV7Service userCourseBizV7Service;
+    private EssayExercisesAnswerMetaManager essayExercisesAnswerMetaManager;
 
     @Autowired
     private CourseLiveBackLogService courseLiveBackLogService;
@@ -263,7 +262,7 @@ public class CourseExercisesProcessLogManager {
         }
         // 申论创建课后作业
         if(null != syllabusWareInfo.getSubjectType() && syllabusWareInfo.getSubjectType() == SubjectEnum.SL.getCode()){
-            userCourseBizV7Service.createEssayInitUserMeta(recordProcess.getUserId(), recordProcess.getSyllabusId());
+            essayExercisesAnswerMetaManager.createEssayInitUserMeta(recordProcess.getUserId(), recordProcess.getSyllabusId());
         }else{
             this.createCourseWorkAnswerCardEntranceV2(syllabusWareInfo.getClassId(),
                     recordProcess.getSyllabusId(),
@@ -839,7 +838,7 @@ public class CourseExercisesProcessLogManager {
         }
         log.info("直播创建或更新课后作业答题卡:大纲id{}", syllabusId);
         if(null != syllabusWareInfo.getSubjectType() && syllabusWareInfo.getSubjectType() == SubjectEnum.SL.getCode()){
-            userCourseBizV7Service.createEssayInitUserMeta(userId, syllabusId);
+            essayExercisesAnswerMetaManager.createEssayInitUserMeta(userId, syllabusId);
         }else{
             createCourseWorkAnswerCardEntranceV2(syllabusWareInfo.getClassId(), syllabusWareInfo.getSyllabusId(), syllabusWareInfo.getVideoType(), syllabusWareInfo.getCoursewareId(), subject, terminal, cv, userId);
         }

@@ -441,44 +441,34 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
     }
 
     /**
-     * 创建空白答题卡
+     * 根据 syllabus id 批量查询 EssayExercisesAnswerMeta 信息
+     *
      * @param userId
-     * @param syllabusId
+     * @param syllabusIds
+     * @return
      * @throws BizException
      */
     @Override
-    public void createEssayInitUserMeta(int userId, long syllabusId) throws BizException {
+    public List<EssayExercisesAnswerMeta> metas(int userId, Set<Long> syllabusIds) throws BizException {
+
         Example example = new Example(EssayExercisesAnswerMeta.class);
-        example.and().andEqualTo("syllabusId", syllabusId)
+        example.and()
                 .andEqualTo("userId", userId)
-                .andEqualTo("status", EssayStatusEnum.NORMAL.getCode());
+                .andEqualTo("status", EssayStatusEnum.NORMAL.getCode())
+                .andIn("syllabusId", syllabusIds);
+        return essayExercisesAnswerMetaMapper.selectByExample(example);
+    }
 
-        List<EssayExercisesAnswerMeta> list = essayExercisesAnswerMetaMapper.selectByExample(example);
-        if(CollectionUtils.isNotEmpty(list)){
-            return;
-        }
-        Example example_ = new Example(EssayCourseExercisesQuestion.class);
-        example_.and()
-                .andEqualTo("syllabusId", syllabusId)
-                .andEqualTo("status", EssayStatusEnum.NORMAL.getCode());
-
-        List<EssayCourseExercisesQuestion> essayCourseExercisesQuestions = essayCourseExercisesQuestionMapper.selectByExample(example_);
-        if(CollectionUtils.isEmpty(essayCourseExercisesQuestions)){
-            return;
-        }
-        //创建空白答题卡
-        for (EssayCourseExercisesQuestion essayCourseExercisesQuestion : essayCourseExercisesQuestions) {
-            EssayExercisesAnswerMeta exercisesAnswerMeta = EssayExercisesAnswerMeta.builder()
-                    .answerType(essayCourseExercisesQuestion.getType())
-                    .courseId(essayCourseExercisesQuestion.getCourseId())
-                    .courseWareId(essayCourseExercisesQuestion.getCourseWareId())
-                    .syllabusId(essayCourseExercisesQuestion.getSyllabusId())
-                    .pQid(essayCourseExercisesQuestion.getPQid())
-                    .userId(userId)
-                    .build();
-
-            exercisesAnswerMeta.setBizStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
-            essayExercisesAnswerMetaMapper.insertSelective(exercisesAnswerMeta);
-        }
+    /**
+     * 使用 syllabusId 构建申论课后作业答题卡信息
+     *
+     * @param userId
+     * @param syllabusId
+     * @return
+     * @throws BizException
+     */
+    @Override
+    public EssayAnswerCardInfo buildEssayAnswerCardInfo(int userId, long syllabusId) throws BizException {
+        return null;
     }
 }
