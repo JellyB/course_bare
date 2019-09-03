@@ -7,7 +7,7 @@ import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.practice.QuestionInfo;
 import com.huatu.tiku.course.bean.practice.QuestionInfoWithStatistics;
-import com.huatu.tiku.course.common.VideoTypeEnum;
+import com.huatu.tiku.course.common.CourseWareTypeEnum;
 import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.dao.manual.CourseExercisesQuestionsStatisticsMapper;
 import com.huatu.tiku.course.dao.manual.CourseExercisesChoicesStatisticsMapper;
@@ -360,8 +360,8 @@ public class CourseExercisesStatisticsManager {
         for (Map<String, Object> param : params) {
             int courseType = MapUtils.getIntValue(param, "courseType");
             long courseId = MapUtils.getLongValue(param, "courseId");
-            VideoTypeEnum courseTypeEnum = VideoTypeEnum.create(courseType);
-            if(courseTypeEnum == VideoTypeEnum.LIVE_PLAY_BACK){
+            CourseWareTypeEnum courseTypeEnum = CourseWareTypeEnum.create(courseType);
+            if(courseTypeEnum == CourseWareTypeEnum.LIVE_PLAY_BACK){
                 Long bjyRoomId = MapUtils.getLong(param,"bjyRoomId");
                 if(null == bjyRoomId || bjyRoomId.longValue() == 0){
                     param.putAll(defaultResult);
@@ -375,7 +375,7 @@ public class CourseExercisesStatisticsManager {
                         continue;
                     }else{
                         courseId = courseLiveBackLog.getLiveCoursewareId();
-                        courseType = VideoTypeEnum.LIVE.getVideoType();
+                        courseType = CourseWareTypeEnum.LIVE.getVideoType();
                     }
                 }
             }

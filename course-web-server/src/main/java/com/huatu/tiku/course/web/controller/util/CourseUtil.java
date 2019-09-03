@@ -202,7 +202,7 @@ public class CourseUtil {
         response.computeIfPresent("list", (key, value) -> {
                     List<HashMap<String, Object>> paramsList = ((List<Map>) value).stream()
                             .filter(map -> (null != MapUtils.getString(map, SyllabusInfo.Type)
-                                    && MapUtils.getString(map, SyllabusInfo.Type).equals(String.valueOf(TypeEnum.COURSE_WARE.getType())))
+                                    && MapUtils.getString(map, SyllabusInfo.Type).equals(String.valueOf(SyllabusTypeEnum.COURSE_WARE.getType())))
                             )
                             .filter(map -> null != map.get(SyllabusInfo.VideoType) && null != map.get(SyllabusInfo.CourseWareId))
                             .map(map -> {
@@ -241,7 +241,7 @@ public class CourseUtil {
         response.computeIfPresent("list", (key, value) -> {
                     List<HashMap<String, Object>> paramsList = ((List<Map>) value).stream()
                             .filter(map -> (null != MapUtils.getString(map, SyllabusInfo.Type)
-                                    && MapUtils.getString(map, SyllabusInfo.Type).equals(String.valueOf(TypeEnum.COURSE_WARE.getType())))
+                                    && MapUtils.getString(map, SyllabusInfo.Type).equals(String.valueOf(SyllabusTypeEnum.COURSE_WARE.getType())))
                             )
                             .filter(map -> null != map.get(SyllabusInfo.VideoType) && null != map.get(SyllabusInfo.CourseWareId))
                             .map(map -> {
@@ -454,12 +454,12 @@ public class CourseUtil {
             int type = MapUtils.getIntValue(currentMap, SyllabusInfo.Type);
             int videoType = MapUtils.getIntValue(currentMap, SyllabusInfo.VideoType);
             Long courseWareId = MapUtils.getLong(currentMap, SyllabusInfo.CourseWareId);
-            TypeEnum typeEnum = TypeEnum.create(type);
-            VideoTypeEnum videoTypeEnum = VideoTypeEnum.create(videoType);
-            if(typeEnum != TypeEnum.COURSE_WARE){
+            SyllabusTypeEnum typeEnum = SyllabusTypeEnum.create(type);
+            CourseWareTypeEnum videoTypeEnum = CourseWareTypeEnum.create(videoType);
+            if(typeEnum != SyllabusTypeEnum.COURSE_WARE){
                 continue;
             }
-            if(videoTypeEnum != VideoTypeEnum.LIVE_PLAY_BACK){
+            if(videoTypeEnum != CourseWareTypeEnum.LIVE_PLAY_BACK){
                 continue;
             }
             long bjyRoomId = MapUtils.getLongValue(currentMap, SyllabusInfo.BjyRoomId);
@@ -468,13 +468,13 @@ public class CourseUtil {
                 continue;
             }
             //课后作业数目处理
-            List<Map<String, Object>> listQuestionByCourseId = courseExercisesService.listQuestionByCourseId(VideoTypeEnum.LIVE.getVideoType(), courseLiveBackLog.getLiveCoursewareId());
+            List<Map<String, Object>> listQuestionByCourseId = courseExercisesService.listQuestionByCourseId(CourseWareTypeEnum.LIVE.getVideoType(), courseLiveBackLog.getLiveCoursewareId());
             if (CollectionUtils.isEmpty(listQuestionByCourseId)) {
                 continue;
             }
             currentMap.put(SyllabusInfo.AfterCourseNum, listQuestionByCourseId.size());
             //如果是直播回放 -> 查询直播回放的课后练习数据信息
-            Optional<CourseExercisesProcessLog> optionalCourseExercisesProcessLog = courseExercisesProcessLogManager.getCourseExercisesProcessLogByTypeAndWareId(userId, VideoTypeEnum.LIVE.getVideoType(), courseLiveBackLog.getLiveCoursewareId());
+            Optional<CourseExercisesProcessLog> optionalCourseExercisesProcessLog = courseExercisesProcessLogManager.getCourseExercisesProcessLogByTypeAndWareId(userId, CourseWareTypeEnum.LIVE.getVideoType(), courseLiveBackLog.getLiveCoursewareId());
             if(!optionalCourseExercisesProcessLog.isPresent()){
                 continue;
             }
@@ -538,7 +538,7 @@ public class CourseUtil {
                 response.computeIfPresent("list", (key, value) -> {
                         Set<String> paperIds = ((List<Map>) value).stream()
                                 //videoType	1点播2直播3直播回放4阶段测试题
-                                .filter(map -> VideoTypeEnum.create(MapUtils.getIntValue(map, "videoType")) == VideoTypeEnum.PERIOD_TEST)
+                                .filter(map -> CourseWareTypeEnum.create(MapUtils.getIntValue(map, "videoType")) == CourseWareTypeEnum.PERIOD_TEST)
                                     //coursewareId	课件id
                                 .filter(map -> null != map.get(SyllabusInfo.CourseWareId) && null != map.get("id"))
                                 .map(map -> {
@@ -603,8 +603,8 @@ public class CourseUtil {
         for (Map<String, Object> stringObjectMap : list) {
             try{
                 int type =  MapUtils.getInteger(stringObjectMap, SyllabusInfo.Type);
-                TypeEnum typeEnum = TypeEnum.create(type);
-                if(typeEnum != TypeEnum.COURSE_WARE){
+                SyllabusTypeEnum typeEnum = SyllabusTypeEnum.create(type);
+                if(typeEnum != SyllabusTypeEnum.COURSE_WARE){
                     stringObjectMap.put(SyllabusInfo.ReportStatus, YesOrNoStatus.UN_DEFINED.getCode());
                     continue;
                 }
@@ -637,7 +637,7 @@ public class CourseUtil {
     public Map<String,Object> dealLearnReportBranchInfo(int videoType, long courseWareId, String bjyRoomId, int userId, int liveStatus, int studyReport){
         Map<String, Object> branchMap = Maps.newHashMap();
         branchMap.put(SyllabusInfo.ReportStatus, YesOrNoStatus.UN_DEFINED.getCode());
-        VideoTypeEnum videoTypeEnum = VideoTypeEnum.create(videoType);
+        CourseWareTypeEnum videoTypeEnum = CourseWareTypeEnum.create(videoType);
         switch (videoTypeEnum){
             case LIVE:
                 branchMap.putAll(doLiveReport(liveStatus));
@@ -718,7 +718,7 @@ public class CourseUtil {
         stopWatch.start();
         Map<String,Object> result = Maps.newHashMap();
         result.put("reportStatus", YesOrNoStatus.NO.getCode());
-        NetSchoolResponse netSchoolResponse = practiceCardServiceV1.getClassExerciseReport(courseWareId, VideoTypeEnum.DOT_LIVE.getVideoType(), userId);
+        NetSchoolResponse netSchoolResponse = practiceCardServiceV1.getClassExerciseReport(courseWareId, CourseWareTypeEnum.DOT_LIVE.getVideoType(), userId);
         if(ResponseUtil.isSuccess(netSchoolResponse) && null != netSchoolResponse.getData() ){
             Map<String,Object> data = (Map<String,Object>)netSchoolResponse.getData();
             if(data.containsKey("id")){

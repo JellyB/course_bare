@@ -11,7 +11,7 @@ import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.vo.*;
 import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.common.SubjectEnum;
-import com.huatu.tiku.course.common.VideoTypeEnum;
+import com.huatu.tiku.course.common.CourseWareTypeEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.dao.essay.*;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
@@ -256,7 +256,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                                 courseWorkWareVo.setVideoLength(syllabusWareInfo.getLength());
                                 courseWorkWareVo.setSerialNumber(syllabusWareInfo.getSerialNumber());
                                 courseWorkWareVo.setAnswerCardId(essayExercisesAnswerMeta.getAnswerId());
-                                if(syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
+                                if(syllabusWareInfo.getVideoType() == CourseWareTypeEnum.LIVE_PLAY_BACK.getVideoType()){
                                     courseWorkWareVo.setCourseWareId(essayExercisesAnswerMeta.getCourseWareId());
                                     courseWorkWareVo.setVideoType(essayExercisesAnswerMeta.getCourseType());
                                 }else{
