@@ -18,21 +18,21 @@ import lombok.Setter;
 @NoArgsConstructor
 public class EssayAnswerCardInfo extends AnswerCardInfo{
 
+    /* 第几次作答 */
     private int correctNum;
     /* 学员所得分数 */
     private double examScore;
     /*  试题总分 */
     private double score;
-
+    /* 单题组id */
     private long similarId;
-
+    /* 单题 type */
     private int questionType;
+    /* 单题 id */
     private Long questionBaseId;
+    /* 套卷 id */
     private Long paperId;
-
-    /**
-     * 退回原因（退回学员原因,其他类型原因均在操作日志表中查询）
-     */
+    /* 退回原因（退回学员原因,其他类型原因均在操作日志表中查询）*/
     private String correctMemo;
 
     public EssayAnswerCardInfo(int correctNum, double examScore, double score, long similarId, int questionType, Long questionBaseId, Long paperId, String correctMemo) {
