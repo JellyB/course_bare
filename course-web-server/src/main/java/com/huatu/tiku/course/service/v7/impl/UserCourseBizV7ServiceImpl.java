@@ -415,6 +415,9 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                 exampleQuestion.and()
                         .andEqualTo("questionBaseId", essayCourseExercisesQuestion.getPQid());
                 EssaySimilarQuestion essaySimilarQuestion = essaySimilarQuestionMapper.selectOneByExample(exampleQuestion);
+                if(null == essaySimilarQuestion){
+                    throw new BizException(ErrorResult.create(100010, "试题不存在"));
+                }
                 EssayQuestionBase essayQuestionBase = essayQuestionBaseMapper.selectByPrimaryKey(essayCourseExercisesQuestion.getPQid());
                 EssayQuestionDetail essayQuestionDetail = essayQuestionDetailMapper.selectByPrimaryKey(essayQuestionBase.getDetailId());
                 essayCourseWorkSyllabusInfo.setSimilarId(essaySimilarQuestion.getSimilarId());
@@ -430,11 +433,14 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
              */
             if(essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.PAPER.getType()){
                 EssayPaperBase essayPaperBase = essayPaperBaseMapper.selectByPrimaryKey(essayCourseExercisesQuestion.getPQid());
+                if(null == essayPaperBase){
+                    throw new BizException(ErrorResult.create(100010, "套卷不存在"));
+                }
                 essayCourseWorkSyllabusInfo.setSimilarId(0l);
                 essayCourseWorkSyllabusInfo.setQuestionId(0l);
-                essayCourseWorkSyllabusInfo.setAreaName(StringUtils.EMPTY);
+                essayCourseWorkSyllabusInfo.setAreaName(essayPaperBase.getAreaName());
                 essayCourseWorkSyllabusInfo.setQuestionType(0);
-                essayCourseWorkSyllabusInfo.setPaperName(null == essayPaperBase ? StringUtils.EMPTY : essayPaperBase.getName());
+                essayCourseWorkSyllabusInfo.setPaperName(essayPaperBase.getName());
                 essayCourseWorkSyllabusInfo.setPaperId(essayCourseExercisesQuestion.getPQid());
             }
             valueOperations.set(key, JSONObject.toJSONString(essayCourseWorkSyllabusInfo),  1, TimeUnit.DAYS);
