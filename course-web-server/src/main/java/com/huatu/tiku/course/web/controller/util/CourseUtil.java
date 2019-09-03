@@ -26,6 +26,8 @@ import com.huatu.tiku.course.ztk.api.v4.paper.PeriodTestServiceV4;
 import com.huatu.tiku.entity.CourseExercisesProcessLog;
 import com.huatu.tiku.entity.CourseLiveBackLog;
 import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
+import com.huatu.tiku.essay.essayEnum.CourseWareTypeEnum;
+import com.huatu.tiku.essay.essayEnum.SyllabusTypeEnum;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
 import com.huatu.tiku.springboot.basic.reward.event.RewardActionEvent;
 import lombok.extern.slf4j.Slf4j;
