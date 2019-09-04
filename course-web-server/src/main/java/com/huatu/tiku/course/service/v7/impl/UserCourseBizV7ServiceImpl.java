@@ -17,9 +17,6 @@ import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.service.v7.UserCourseBizV7Service;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
-import com.huatu.tiku.essay.entity.EssayPaperBase;
-import com.huatu.tiku.essay.entity.EssayQuestionBase;
-import com.huatu.tiku.essay.entity.EssayQuestionDetail;
 import com.huatu.tiku.essay.entity.EssaySimilarQuestion;
 import com.huatu.tiku.essay.entity.correct.CorrectOrder;
 import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
@@ -418,14 +415,13 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                 if(null == essaySimilarQuestion){
                     throw new BizException(ErrorResult.create(100010, "试题不存在"));
                 }
-                Example questionBaseExample = new Example(EssayQuestionBase.class);
-                questionBaseExample.and().andEqualTo("id", essayCourseExercisesQuestion.getPQid());
-                EssayQuestionBase essayQuestionBase = essayQuestionBaseMapper.selectOneByExample(questionBaseExample);
-                EssayQuestionDetail essayQuestionDetail = essayQuestionDetailMapper.selectByPrimaryKey(essayQuestionBase.getDetailId());
+
+                Map<String, Object> questionBaseMap = essayQuestionBaseMapper.selectQuestionBaseById(essayCourseExercisesQuestion.getPQid());
+                Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionBaseMap, "detailId", 0));
                 essayCourseWorkSyllabusInfo.setSimilarId(essaySimilarQuestion.getSimilarId());
                 essayCourseWorkSyllabusInfo.setQuestionId(essayCourseExercisesQuestion.getPQid());
-                essayCourseWorkSyllabusInfo.setAreaName(essayQuestionBase.getAreaName());
-                essayCourseWorkSyllabusInfo.setQuestionType(essayQuestionDetail.getType());
+                essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(questionBaseMap, "areaName", ""));
+                essayCourseWorkSyllabusInfo.setQuestionType(MapUtils.getIntValue(detailMap, "type", 0));
                 essayCourseWorkSyllabusInfo.setPaperName(StringUtils.EMPTY);
                 essayCourseWorkSyllabusInfo.setPaperId(0l);
             }
@@ -434,20 +430,18 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
              * 如果为套题
              */
             if(essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.PAPER.getType()){
-                Example paperBaseExample = new Example(EssayPaperBase.class);
-                paperBaseExample.and().andEqualTo("id", essayCourseExercisesQuestion.getPQid());
-                EssayPaperBase essayPaperBase = essayPaperBaseMapper.selectOneByExample(paperBaseExample);
-                if(null == essayPaperBase){
+                Map<String, Object> paperBaseMap = essayPaperBaseMapper.selectPaperBaseById(essayCourseExercisesQuestion.getPQid().longValue());
+                if(paperBaseMap.isEmpty()){
                     throw new BizException(ErrorResult.create(100010, "套卷不存在"));
                 }
                 essayCourseWorkSyllabusInfo.setSimilarId(0l);
                 essayCourseWorkSyllabusInfo.setQuestionId(0l);
-                essayCourseWorkSyllabusInfo.setAreaName(essayPaperBase.getAreaName());
+                essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(paperBaseMap, "areaName"));
                 essayCourseWorkSyllabusInfo.setQuestionType(0);
-                essayCourseWorkSyllabusInfo.setPaperName(essayPaperBase.getName());
+                essayCourseWorkSyllabusInfo.setPaperName(MapUtils.getString(paperBaseMap, "name", ""));
                 essayCourseWorkSyllabusInfo.setPaperId(essayCourseExercisesQuestion.getPQid());
             }
-            valueOperations.set(key, JSONObject.toJSONString(essayCourseWorkSyllabusInfo),  1, TimeUnit.DAYS);
+            valueOperations.set(key, JSONObject.toJSONString(essayCourseWorkSyllabusInfo),  1, TimeUnit.MINUTES);
         }
         return essayCourseWorkSyllabusInfo;
     }

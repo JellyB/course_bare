@@ -4,6 +4,8 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
 import com.huatu.tiku.essay.essayEnum.EssayStatusEnum;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.SelectProvider;
 
 import java.util.List;
 
@@ -52,6 +54,45 @@ public class CourseExercisesProcessEssayLogProvider {
         stringBuilder.append(" course_id");
         //stringBuilder.append(" ORDER BY");
         //stringBuilder.append(" gmt_modify DESC");
+        return stringBuilder.toString();
+    }
+
+
+    public String selectQuestionBaseById(@Param(value = "questionBaseId") Long questionBaseId){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT");
+        stringBuilder.append(" *");
+        stringBuilder.append(" FROM");
+        stringBuilder.append(" v_essay_question_base t");
+        stringBuilder.append(" WHERE");
+        stringBuilder.append(" t.id = ").append(questionBaseId);
+        return stringBuilder.toString();
+    }
+
+    public String selectPaperBaseById(@Param(value = "paperBaseId") Long paperBaseId){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT");
+        stringBuilder.append(" *");
+        stringBuilder.append(" FROM");
+        stringBuilder.append(" v_essay_paper_base");
+        stringBuilder.append(" WHERE");
+        stringBuilder.append(" id = ").append(paperBaseId);
+        return stringBuilder.toString();
+    }
+
+    /**
+     * 根据 id 查询 question_detail
+     * @param detailId
+     * @return
+     */
+    public String selectQuestionDetailById(@Param(value = "detailId") Long detailId){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT");
+        stringBuilder.append(" *");
+        stringBuilder.append(" FROM");
+        stringBuilder.append(" v_essay_question_detail");
+        stringBuilder.append(" WHERE");
+        stringBuilder.append(" id = ").append(detailId);
         return stringBuilder.toString();
     }
 }
