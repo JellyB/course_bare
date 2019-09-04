@@ -130,7 +130,7 @@ public class EssayExercisesAnswerMetaManager {
      * @param defaultCardInfo
      * @param map
      */
-    private void dealSingleQuestionOrPaperOrMultiQuestions(int userId, EssayAnswerCardInfo defaultCardInfo, Map map){
+    public void dealSingleQuestionOrPaperOrMultiQuestions(int userId, EssayAnswerCardInfo defaultCardInfo, Map map){
         int courseType = MapUtils.getIntValue(map, SyllabusInfo.VideoType, 0);
         long courseWareId = MapUtils.getLongValue(map, SyllabusInfo.CourseWareId, 0);
 

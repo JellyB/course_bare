@@ -4,11 +4,7 @@ import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.vo.EssayAnswerCardInfo;
 import com.huatu.tiku.course.bean.vo.EssayCourseWorkSyllabusInfo;
 import com.huatu.tiku.course.bean.vo.LiveRecordInfo;
-import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
-
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * 描述：
@@ -36,7 +32,7 @@ public interface UserCourseBizV7Service {
      * @param uName
      * @throws BizException
      */
-    long allReadByType(long userId, String type, String uName) throws BizException;
+    long allReadByType(int userId, String type, String uName) throws BizException;
 
     /**
      * 单条已读
@@ -58,7 +54,7 @@ public interface UserCourseBizV7Service {
      * @return
      * @throws BizException
      */
-    Object courseWorkList(long userId, int type, int page, int size) throws BizException;
+    Object courseWorkList(int userId, int type, int page, int size) throws BizException;
 
 
     /**
@@ -68,7 +64,7 @@ public interface UserCourseBizV7Service {
      * @return
      * @throws BizException
      */
-    Map<String, Integer> getCountByType(long userId, String userName) throws BizException;
+    Map<String, Integer> getCountByType(int userId, String userName) throws BizException;
 
 
     /**
