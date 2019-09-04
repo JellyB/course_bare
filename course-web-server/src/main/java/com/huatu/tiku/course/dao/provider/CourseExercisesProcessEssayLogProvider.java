@@ -127,4 +127,24 @@ public class CourseExercisesProcessEssayLogProvider {
         stringBuilder.append(" id = ").append(id);
         return stringBuilder.toString();
     }
+
+
+    /**
+     * 根据 questionBaseId 查询 similarId
+     * @param questionBaseId
+     * @return
+     */
+    public String selectByQuestionBaseId(@Param(value = "questionBaseId") Long questionBaseId){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT");
+        stringBuilder.append(" *");
+        stringBuilder.append(" FROM");
+        stringBuilder.append(" v_essay_similar_question");
+        stringBuilder.append(" WHERE");
+        stringBuilder.append(" question_base_id = ").append(questionBaseId);
+        return stringBuilder.toString();
+    }
+
+
+
 }

@@ -130,7 +130,7 @@ public class EssayExercisesAnswerMetaManager {
      * @param defaultCardInfo
      * @param map
      */
-    private void dealSingleQuestionOrPaperOrMultiQuestions(int userId, EssayAnswerCardInfo defaultCardInfo, Map map){
+    public void dealSingleQuestionOrPaperOrMultiQuestions(int userId, EssayAnswerCardInfo defaultCardInfo, Map map){
         int courseType = MapUtils.getIntValue(map, SyllabusInfo.VideoType, 0);
         long courseWareId = MapUtils.getLongValue(map, SyllabusInfo.CourseWareId, 0);
 
@@ -215,10 +215,10 @@ public class EssayExercisesAnswerMetaManager {
             return;
         }
         defaultCardInfo.setId(MapUtils.getLongValue(questionAnswer, "id", 0));
-        defaultCardInfo.setQuestionBaseId(MapUtils.getLongValue(questionAnswer, "questionBaseId", 0));
-        defaultCardInfo.setExamScore(MapUtils.getDoubleValue(questionAnswer, "examScore"));
+        defaultCardInfo.setQuestionBaseId(MapUtils.getLongValue(questionAnswer, "question_base_id", 0));
+        defaultCardInfo.setExamScore(MapUtils.getDoubleValue(questionAnswer, "exam_score"));
         defaultCardInfo.setScore(MapUtils.getDoubleValue(questionAnswer, "score"));
-        defaultCardInfo.setStatus(MapUtils.getIntValue(questionAnswer, "bizStatus"));
+        defaultCardInfo.setStatus(MapUtils.getIntValue(questionAnswer, "biz_status"));
         defaultCardInfo.setCorrectNum(essayExercisesAnswerMeta.getCorrectNum());
 
         Example exampleQuestion = new Example(EssaySimilarQuestion.class);
@@ -234,7 +234,7 @@ public class EssayExercisesAnswerMetaManager {
             throw new BizException(ErrorResult.create(100010, "试题不存在"));
         }
         defaultCardInfo.setQuestionType(MapUtils.getIntValue(detailMap, "type"));
-        if(MapUtils.getIntValue(questionAnswer, "bizStatus") == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()){
+        if(MapUtils.getIntValue(questionAnswer, "biz_status") == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()){
             dealCorrectReturnMemo(defaultCardInfo, essayExercisesAnswerMeta);
         }
     }
@@ -258,13 +258,13 @@ public class EssayExercisesAnswerMetaManager {
             return;
         }
         defaultCardInfo.setId(MapUtils.getLongValue(paperMap, "id"));
-        defaultCardInfo.setPaperId(MapUtils.getLongValue(paperMap, "paperBaseId"));
-        defaultCardInfo.setExamScore(MapUtils.getDoubleValue(paperMap, "examScore"));
+        defaultCardInfo.setPaperId(MapUtils.getLongValue(paperMap, "paper_base_id"));
+        defaultCardInfo.setExamScore(MapUtils.getDoubleValue(paperMap, "exam_score"));
         defaultCardInfo.setScore(MapUtils.getDoubleValue(paperMap, "score"));
         defaultCardInfo.setStatus(MapUtils.getIntValue(paperMap, "status"));
         defaultCardInfo.setCorrectNum(essayExercisesAnswerMeta.getCorrectNum());
 
-        if(MapUtils.getIntValue(paperMap, "bizStatus") == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()){
+        if(MapUtils.getIntValue(paperMap, "biz_status") == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()){
             dealCorrectReturnMemo(defaultCardInfo, essayExercisesAnswerMeta);
         }
     }

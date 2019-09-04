@@ -12,12 +12,13 @@ import com.huatu.tiku.course.bean.vo.*;
 import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.common.SubjectEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
+import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.dao.essay.*;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
+import com.huatu.tiku.course.service.manager.EssayExercisesAnswerMetaManager;
 import com.huatu.tiku.course.service.v7.UserCourseBizV7Service;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
-import com.huatu.tiku.essay.entity.EssaySimilarQuestion;
 import com.huatu.tiku.essay.entity.correct.CorrectOrder;
 import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
 import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
@@ -61,6 +62,9 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
     @Autowired
     private CourseExercisesProcessLogManager courseExercisesProcessLogManager;
+
+    @Autowired
+    private EssayExercisesAnswerMetaManager essayExercisesAnswerMetaManager;
 
     @Autowired
     private EssayExercisesAnswerMetaMapper essayExercisesAnswerMetaMapper;
@@ -121,7 +125,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
      * @throws BizException
      */
     @Override
-    public long allReadByType(long userId, String type, String uName) throws BizException {
+    public long allReadByType(int userId, String type, String uName) throws BizException {
         long updateCount = 0;
         try{
             updateCount = courseExercisesProcessLogManager.allReadByType(userId, type, uName);
@@ -178,7 +182,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
      * @throws BizException
      */
     @Override
-    public Object courseWorkList(long userId, int type, int page, int size) throws BizException {
+    public Object courseWorkList(int userId, int type, int page, int size) throws BizException {
         SubjectEnum subjectEnum = SubjectEnum.create(type);
         Map<String,Object> result = Maps.newHashMap();
         List<CourseWorkCourseVo> list = Lists.newArrayList();
@@ -212,7 +216,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
             try{
                 // 处理答题卡 info
                 List<EssayExercisesAnswerMeta> metaList = essayExercisesAnswerMetaMapper.selectByExample(example);
-                Map<Long, EssayAnswerCardInfo> essayAnswerCardInfoMap = dealEssayCardInfo(metaList);
+                Map<Long, EssayExercisesAnswerMeta> syllabusMetas = metaList.stream().collect(Collectors.toMap(item -> item.getSyllabusId(), item -> item));
 
                 Map<Long, EssayExercisesAnswerMeta> essayExercisesAnswerMetaHashMap = Maps.newHashMap();
                 for (EssayExercisesAnswerMeta essayExercisesAnswerMeta : metaList) {
@@ -247,8 +251,15 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                                 null !=  essayExercisesAnswerMetaHashMap.get(Long.valueOf(syllabusId_)))
                             .map(syllabusId_ -> {
                                 Long syllabusId = Long.valueOf(syllabusId_);
+                                EssayAnswerCardInfo essayAnswerCardInfo = new EssayAnswerCardInfo();
                                 SyllabusWareInfo syllabusWareInfo = syllabusWareInfoTable.get(CourseExercisesProcessLogManager.LESSON_LABEL, syllabusId);
                                 EssayExercisesAnswerMeta essayExercisesAnswerMeta = essayExercisesAnswerMetaHashMap.get(Long.valueOf(syllabusId_));
+                                Map map = new HashMap();
+                                map.put(SyllabusInfo.VideoType, essayExercisesAnswerMeta.getCourseType());
+                                map.put(SyllabusInfo.CourseWareId, essayExercisesAnswerMeta.getCourseWareId());
+                                map.put(SyllabusInfo.SyllabusId, essayExercisesAnswerMeta.getSyllabusId());
+
+                                essayExercisesAnswerMetaManager.dealSingleQuestionOrPaperOrMultiQuestions(userId, essayAnswerCardInfo, map);
                                 CourseWorkWareVo courseWorkWareVo = new CourseWorkWareVo();
 
                                 courseWorkWareVo.setSyllabusId(syllabusId);
@@ -265,11 +276,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                                 }
                                 courseWorkWareVo.setQuestionIds("");
                                 courseWorkWareVo.setIsAlert(setOperations.isMember(key, syllabusId) ? YesNoEnum.YES.getValue() : YesNoEnum.NO.getValue());
-                                if(essayAnswerCardInfoMap.containsKey(essayExercisesAnswerMeta.getAnswerId())){
-                                    courseWorkWareVo.setAnswerCardInfo(essayAnswerCardInfoMap.get(essayExercisesAnswerMeta.getAnswerId()));
-                                }else{
-                                    courseWorkWareVo.setAnswerCardInfo(new EssayAnswerCardInfo());
-                                }
+                                courseWorkWareVo.setAnswerCardInfo(essayAnswerCardInfo);
                                 return courseWorkWareVo;
                             }).collect(Collectors.toList());
 
@@ -281,16 +288,6 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                 log.error("获取课后练习列表异常:{},{}",userId, e);
                 return result;
             }
-
-            /*list.addAll((List<CourseWorkCourseVo>) courseExercisesProcessLogManager.courseWorkList(userId, page, size));
-            list.forEach(item -> {
-                List<CourseWorkWareVo> courseWorkWareVos = item.getWareInfoList();
-                for (CourseWorkWareVo courseWorkWareVo : courseWorkWareVos) {
-                    courseWorkWareVo.setQuestionType(0);
-                    courseWorkWareVo.setSyllabusId(141324L);
-                    courseWorkWareVo.getAnswerCardInfo().setType(SubjectEnum.SL.getCode());
-                }
-            });*/
         }
         return result;
     }
@@ -337,7 +334,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
      * @param userId
      * @return
      */
-    private long obtainEssayCourseWorkUnReadCount (long userId){
+    private long obtainEssayCourseWorkUnReadCount (int userId){
         String key = CourseCacheKey.getCourseWorkEssayIsAlert(userId);
         SetOperations<String, Long> setOperations = redisTemplate.opsForSet();
         return setOperations.size(key);
@@ -354,7 +351,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
      * @throws BizException
      */
     @Override
-    public Map<String, Integer> getCountByType(long userId, String userName) throws BizException {
+    public Map<String, Integer> getCountByType(int userId, String userName) throws BizException {
         Map<String, Integer> result = courseExercisesProcessLogManager.getCountByType(userId, userName);
         //todo 通过 redis 查询申论课后作业数目
         int essay = 0;
@@ -408,19 +405,17 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
              * 如果为单题
              */
             if(essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.QUESTION.getType()){
-                Example exampleQuestion = new Example(EssaySimilarQuestion.class);
-                exampleQuestion.and()
-                        .andEqualTo("questionBaseId", essayCourseExercisesQuestion.getPQid());
-                EssaySimilarQuestion essaySimilarQuestion = essaySimilarQuestionMapper.selectOneByExample(exampleQuestion);
-                if(null == essaySimilarQuestion){
+
+                Map<String,Object> similarQuestionMap = essaySimilarQuestionMapper.selectByQuestionBaseId(essayCourseExercisesQuestion.getPQid());
+                if(similarQuestionMap.isEmpty()){
                     throw new BizException(ErrorResult.create(100010, "试题不存在"));
                 }
 
                 Map<String, Object> questionBaseMap = essayQuestionBaseMapper.selectQuestionBaseById(essayCourseExercisesQuestion.getPQid());
-                Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionBaseMap, "detailId", 0));
-                essayCourseWorkSyllabusInfo.setSimilarId(essaySimilarQuestion.getSimilarId());
+                Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionBaseMap, "detail_id", 0));
+                essayCourseWorkSyllabusInfo.setSimilarId(MapUtils.getLongValue(similarQuestionMap, "similar_id"));
                 essayCourseWorkSyllabusInfo.setQuestionId(essayCourseExercisesQuestion.getPQid());
-                essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(questionBaseMap, "areaName", ""));
+                essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(questionBaseMap, "area_name", ""));
                 essayCourseWorkSyllabusInfo.setQuestionType(MapUtils.getIntValue(detailMap, "type", 0));
                 essayCourseWorkSyllabusInfo.setPaperName(StringUtils.EMPTY);
                 essayCourseWorkSyllabusInfo.setPaperId(0l);
@@ -436,7 +431,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                 }
                 essayCourseWorkSyllabusInfo.setSimilarId(0l);
                 essayCourseWorkSyllabusInfo.setQuestionId(0l);
-                essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(paperBaseMap, "areaName"));
+                essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(paperBaseMap, "area_name"));
                 essayCourseWorkSyllabusInfo.setQuestionType(0);
                 essayCourseWorkSyllabusInfo.setPaperName(MapUtils.getString(paperBaseMap, "name", ""));
                 essayCourseWorkSyllabusInfo.setPaperId(essayCourseExercisesQuestion.getPQid());
