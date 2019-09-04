@@ -99,7 +99,7 @@ public class UserCourseControllerV7 {
      * @return
      */
     @GetMapping(value = "courseWork/{type}/detailList")
-    public Object studyList(@Token UserSession userSession,
+    public Object courseWorkList(@Token UserSession userSession,
                             @PathVariable(value = "type") int type,
                             @RequestParam(value = "page", defaultValue = "1")int page,
                             @RequestParam(value = "size", defaultValue = "20") int size){
