@@ -216,7 +216,6 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
             try{
                 // 处理答题卡 info
                 List<EssayExercisesAnswerMeta> metaList = essayExercisesAnswerMetaMapper.selectByExample(example);
-                Map<Long, EssayExercisesAnswerMeta> syllabusMetas = metaList.stream().collect(Collectors.toMap(item -> item.getSyllabusId(), item -> item));
 
                 Map<Long, EssayExercisesAnswerMeta> essayExercisesAnswerMetaHashMap = Maps.newHashMap();
                 for (EssayExercisesAnswerMeta essayExercisesAnswerMeta : metaList) {
@@ -279,6 +278,8 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                                 }
                                 courseWorkWareVo.setQuestionIds("");
                                 courseWorkWareVo.setIsAlert(setOperations.isMember(key, syllabusId) ? YesNoEnum.YES.getValue() : YesNoEnum.NO.getValue());
+                                // 设置申论的questionType
+                                courseWorkWareVo.setQuestionType(essayAnswerCardInfo.getQuestionType());
                                 courseWorkWareVo.setAnswerCardInfo(essayAnswerCardInfo);
                                 return courseWorkWareVo;
                             }).collect(Collectors.toList());
