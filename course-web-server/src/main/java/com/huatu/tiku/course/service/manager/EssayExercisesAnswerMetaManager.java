@@ -7,9 +7,6 @@ import com.huatu.tiku.course.common.SubjectEnum;
 import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.dao.essay.*;
 import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
-import com.huatu.tiku.essay.entity.EssayPaperAnswer;
-import com.huatu.tiku.essay.entity.EssayQuestionAnswer;
-import com.huatu.tiku.essay.entity.EssayQuestionDetail;
 import com.huatu.tiku.essay.entity.EssaySimilarQuestion;
 import com.huatu.tiku.essay.entity.correct.CorrectOrder;
 import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
@@ -212,16 +209,16 @@ public class EssayExercisesAnswerMetaManager {
         if(null == essayExercisesAnswerMeta){
             return;
         }
-        EssayQuestionAnswer essayQuestionAnswer = essayQuestionAnswerMapper.selectByPrimaryKey(essayExercisesAnswerMeta.getAnswerId());
-        if(null == essayQuestionAnswer){
+        Map<String, Object> questionAnswer = essayQuestionAnswerMapper.selectQuestionAnswerById(essayExercisesAnswerMeta.getAnswerId());
+        if(questionAnswer.isEmpty()){
             log.error("buildEssayAnswerCardInfo.essayQuestionAnswer is null:{}", essayExercisesAnswerMeta.getAnswerId());
             return;
         }
-        defaultCardInfo.setId(essayQuestionAnswer.getId());
-        defaultCardInfo.setQuestionBaseId(essayQuestionAnswer.getQuestionBaseId());
-        defaultCardInfo.setExamScore(essayQuestionAnswer.getExamScore());
-        defaultCardInfo.setScore(essayQuestionAnswer.getScore());
-        defaultCardInfo.setStatus(essayQuestionAnswer.getBizStatus());
+        defaultCardInfo.setId(MapUtils.getLongValue(questionAnswer, "id", 0));
+        defaultCardInfo.setQuestionBaseId(MapUtils.getLongValue(questionAnswer, "questionBaseId", 0));
+        defaultCardInfo.setExamScore(MapUtils.getDoubleValue(questionAnswer, "examScore"));
+        defaultCardInfo.setScore(MapUtils.getDoubleValue(questionAnswer, "score"));
+        defaultCardInfo.setStatus(MapUtils.getIntValue(questionAnswer, "bizStatus"));
         defaultCardInfo.setCorrectNum(essayExercisesAnswerMeta.getCorrectNum());
 
         Example exampleQuestion = new Example(EssaySimilarQuestion.class);
@@ -232,12 +229,12 @@ public class EssayExercisesAnswerMetaManager {
             throw new BizException(ErrorResult.create(100010, "试题不存在"));
         }
         defaultCardInfo.setSimilarId(essaySimilarQuestion.getSimilarId());
-        EssayQuestionDetail essayQuestionDetail = essayQuestionDetailMapper.selectByPrimaryKey(essayQuestionAnswer.getQuestionDetailId());
-        if(null == essayQuestionDetail){
+        Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionAnswer, "questionDetailId"));
+        if(detailMap.isEmpty()){
             throw new BizException(ErrorResult.create(100010, "试题不存在"));
         }
-        defaultCardInfo.setQuestionType(essayQuestionDetail.getType());
-        if(essayQuestionAnswer.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()){
+        defaultCardInfo.setQuestionType(MapUtils.getIntValue(detailMap, "type"));
+        if(MapUtils.getIntValue(questionAnswer, "bizStatus") == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()){
             dealCorrectReturnMemo(defaultCardInfo, essayExercisesAnswerMeta);
         }
     }
@@ -255,43 +252,22 @@ public class EssayExercisesAnswerMetaManager {
         if(null == essayExercisesAnswerMeta){
             return;
         }
-        EssayPaperAnswer essayPaperAnswer = essayPaperAnswerMapper.selectByPrimaryKey(essayExercisesAnswerMeta.getAnswerId());
-        if(null == essayPaperAnswer){
+        Map<String, Object> paperMap = essayPaperAnswerMapper.selectPaperAnswerById(essayExercisesAnswerMeta.getAnswerId());
+        if(paperMap.isEmpty()){
             log.error("buildEssayAnswerCardInfo.essayQuestionAnswer is null:{}", essayExercisesAnswerMeta.getAnswerId());
             return;
         }
-        defaultCardInfo.setId(essayPaperAnswer.getId());
-        defaultCardInfo.setPaperId(essayPaperAnswer.getPaperBaseId());
-        defaultCardInfo.setExamScore(essayPaperAnswer.getExamScore());
-        defaultCardInfo.setScore(essayPaperAnswer.getScore());
-        defaultCardInfo.setStatus(essayPaperAnswer.getBizStatus());
+        defaultCardInfo.setId(MapUtils.getLongValue(paperMap, "id"));
+        defaultCardInfo.setPaperId(MapUtils.getLongValue(paperMap, "paperBaseId"));
+        defaultCardInfo.setExamScore(MapUtils.getDoubleValue(paperMap, "examScore"));
+        defaultCardInfo.setScore(MapUtils.getDoubleValue(paperMap, "score"));
+        defaultCardInfo.setStatus(MapUtils.getIntValue(paperMap, "status"));
         defaultCardInfo.setCorrectNum(essayExercisesAnswerMeta.getCorrectNum());
 
-        if(essayPaperAnswer.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()){
+        if(MapUtils.getIntValue(paperMap, "bizStatus") == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()){
             dealCorrectReturnMemo(defaultCardInfo, essayExercisesAnswerMeta);
         }
     }
-
-    /**
-     * 多道单题处理
-     * @param userId
-     * @param questionIds
-     * @param defaultCardInfo
-     * @param map
-     */
-    /*private void dealMultiQuestion(int userId, List<Long> questionIds, EssayAnswerCardInfo defaultCardInfo, Map map){
-        for (Long questionId : questionIds) {
-            EssayExercisesAnswerMeta essayExercisesAnswerMeta = obtainUserAnswerMetas(userId, EssayAnswerCardEnum.TypeEnum.QUESTION.getType(), questionId, map);
-            if(null == essayExercisesAnswerMeta){
-                continue;
-            }
-            EssayQuestionAnswer essayQuestionAnswer = essayQuestionAnswerMapper.selectByPrimaryKey(essayExercisesAnswerMeta.getAnswerId());
-            if(null == essayQuestionAnswer){
-                log.error("buildEssayAnswerCardInfo.essayQuestionAnswer is null:{}", essayExercisesAnswerMeta.getAnswerId());
-                return;
-            }
-        }
-    }*/
 
 
     /**
