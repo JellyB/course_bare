@@ -12,6 +12,4 @@ import tk.mybatis.mapper.common.Mapper;
  **/
 @Repository
 public interface EssayQuestionDetailMapper extends Mapper<EssayQuestionDetail>{
-
-
 }
