@@ -1226,7 +1226,7 @@ public class CourseExercisesProcessLogManager {
         Example example = new Example(CourseExercisesProcessLog.class);
         example.and().andEqualTo("userId", userId)
                 .andEqualTo("status", YesOrNoStatus.YES.getCode())
-                .andEqualTo("isAlert",YesOrNoStatus.NO.getCode());
+                .andEqualTo("isAlert",YesOrNoStatus.YES.getCode());
 
         return courseExercisesProcessLogMapper.selectCountByExample(example);
     }
