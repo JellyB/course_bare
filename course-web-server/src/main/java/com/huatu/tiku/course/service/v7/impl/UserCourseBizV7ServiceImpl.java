@@ -400,10 +400,13 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                     .andEqualTo("courseType", courseType)
                     .andEqualTo("courseWareId", courseWareId)
                     .andEqualTo("status", EssayStatusEnum.NORMAL.getCode());
-            EssayCourseExercisesQuestion essayCourseExercisesQuestion = essayCourseExercisesQuestionMapper.selectOneByExample(example);
-            if(null == essayCourseExercisesQuestion){
+
+
+            List<EssayCourseExercisesQuestion> essayCourseExercisesQuestions = essayCourseExercisesQuestionMapper.selectByExample(example);
+            if(CollectionUtils.isEmpty(essayCourseExercisesQuestions) || essayCourseExercisesQuestions.size() > 1){
                 throw new BizException(ErrorResult.create(100010, "数据错误"));
             }
+            EssayCourseExercisesQuestion essayCourseExercisesQuestion = essayCourseExercisesQuestions.get(0);
             /**
              * 如果为单题
              */
