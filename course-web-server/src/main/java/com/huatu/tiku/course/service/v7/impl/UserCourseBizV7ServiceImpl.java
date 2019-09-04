@@ -391,7 +391,6 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
         if(redisTemplate.hasKey(key)){
             String value = valueOperations.get(key);
             essayCourseWorkSyllabusInfo = JSONObject.parseObject(value, EssayCourseWorkSyllabusInfo.class);
-            redisTemplate.delete(key);
             return essayCourseWorkSyllabusInfo;
         }else{
             essayCourseWorkSyllabusInfo = new EssayCourseWorkSyllabusInfo();
