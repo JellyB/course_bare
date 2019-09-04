@@ -252,6 +252,9 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                             .map(syllabusId_ -> {
                                 Long syllabusId = Long.valueOf(syllabusId_);
                                 EssayAnswerCardInfo essayAnswerCardInfo = new EssayAnswerCardInfo();
+
+                                essayAnswerCardInfo.setType(type);
+                                essayAnswerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
                                 SyllabusWareInfo syllabusWareInfo = syllabusWareInfoTable.get(CourseExercisesProcessLogManager.LESSON_LABEL, syllabusId);
                                 EssayExercisesAnswerMeta essayExercisesAnswerMeta = essayExercisesAnswerMetaHashMap.get(Long.valueOf(syllabusId_));
                                 Map map = new HashMap();
