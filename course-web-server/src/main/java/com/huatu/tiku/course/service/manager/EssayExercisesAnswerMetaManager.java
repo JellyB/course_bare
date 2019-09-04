@@ -214,6 +214,7 @@ public class EssayExercisesAnswerMetaManager {
             log.error("buildEssayAnswerCardInfo.essayQuestionAnswer is null:{}", essayExercisesAnswerMeta.getAnswerId());
             return;
         }
+        defaultCardInfo.setQcount(1);
         defaultCardInfo.setId(MapUtils.getLongValue(questionAnswer, "id", 0));
         defaultCardInfo.setQuestionBaseId(MapUtils.getLongValue(questionAnswer, "question_base_id", 0));
         defaultCardInfo.setExamScore(MapUtils.getDoubleValue(questionAnswer, "exam_score"));
@@ -255,6 +256,7 @@ public class EssayExercisesAnswerMetaManager {
             log.error("buildEssayAnswerCardInfo.essayQuestionAnswer is null:{}", essayExercisesAnswerMeta.getAnswerId());
             return;
         }
+        defaultCardInfo.setQcount(1);
         defaultCardInfo.setId(MapUtils.getLongValue(paperMap, "id"));
         defaultCardInfo.setPaperId(MapUtils.getLongValue(paperMap, "paper_base_id"));
         defaultCardInfo.setExamScore(MapUtils.getDoubleValue(paperMap, "exam_score"));
