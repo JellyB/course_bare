@@ -7,7 +7,7 @@ import com.huatu.tiku.course.common.SubjectEnum;
 import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.dao.essay.*;
 import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
-import com.huatu.tiku.essay.entity.EssaySimilarQuestion;
+import com.huatu.tiku.essay.constant.status.QuestionTypeConstant;
 import com.huatu.tiku.essay.entity.correct.CorrectOrder;
 import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
 import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
@@ -232,7 +232,13 @@ public class EssayExercisesAnswerMetaManager {
         if(detailMap.isEmpty()){
             throw new BizException(ErrorResult.create(100010, "试题不存在"));
         }
-        defaultCardInfo.setQuestionType(MapUtils.getIntValue(detailMap, "type"));
+        int type = MapUtils.getIntValue(detailMap, "type");
+        //判断单题是否为议论文
+        if(type == 5){
+            defaultCardInfo.setQuestionType(QuestionTypeConstant.ARGUMENTATION);
+        }else{
+            defaultCardInfo.setQuestionType(QuestionTypeConstant.SINGLE_QUESTION);
+        }
         if(MapUtils.getIntValue(questionAnswer, "biz_status") == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()){
             dealCorrectReturnMemo(defaultCardInfo, essayExercisesAnswerMeta);
         }
@@ -263,7 +269,7 @@ public class EssayExercisesAnswerMetaManager {
         defaultCardInfo.setScore(MapUtils.getDoubleValue(paperMap, "score"));
         defaultCardInfo.setStatus(MapUtils.getIntValue(paperMap, "status"));
         defaultCardInfo.setCorrectNum(essayExercisesAnswerMeta.getCorrectNum());
-
+        defaultCardInfo.setQuestionType(QuestionTypeConstant.PAPER);
         if(MapUtils.getIntValue(paperMap, "biz_status") == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()){
             dealCorrectReturnMemo(defaultCardInfo, essayExercisesAnswerMeta);
         }
