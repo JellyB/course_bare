@@ -221,14 +221,12 @@ public class EssayExercisesAnswerMetaManager {
         defaultCardInfo.setStatus(MapUtils.getIntValue(questionAnswer, "biz_status"));
         defaultCardInfo.setCorrectNum(essayExercisesAnswerMeta.getCorrectNum());
 
-        Example exampleQuestion = new Example(EssaySimilarQuestion.class);
-        exampleQuestion.and()
-                .andEqualTo("questionBaseId", essayExercisesAnswerMeta.getPQid());
-        EssaySimilarQuestion essaySimilarQuestion = essaySimilarQuestionMapper.selectOneByExample(exampleQuestion);
-        if(null == essaySimilarQuestion){
+
+        Map<String, Object> essaySimilarQuestionMap = essaySimilarQuestionMapper.selectByQuestionBaseId(essayExercisesAnswerMeta.getPQid());
+        if(null == essaySimilarQuestionMap){
             throw new BizException(ErrorResult.create(100010, "试题不存在"));
         }
-        defaultCardInfo.setSimilarId(essaySimilarQuestion.getSimilarId());
+        defaultCardInfo.setSimilarId(MapUtils.getLongValue(essaySimilarQuestionMap, "similar_id"));
         Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionAnswer, "questionDetailId"));
         if(detailMap.isEmpty()){
             throw new BizException(ErrorResult.create(100010, "试题不存在"));
