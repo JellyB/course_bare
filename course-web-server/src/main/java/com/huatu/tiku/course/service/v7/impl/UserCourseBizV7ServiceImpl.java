@@ -17,7 +17,6 @@ import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.service.v7.UserCourseBizV7Service;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
-import com.huatu.tiku.essay.entity.EssaySimilarQuestion;
 import com.huatu.tiku.essay.entity.correct.CorrectOrder;
 import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
 import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
@@ -392,6 +391,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
         if(redisTemplate.hasKey(key)){
             String value = valueOperations.get(key);
             essayCourseWorkSyllabusInfo = JSONObject.parseObject(value, EssayCourseWorkSyllabusInfo.class);
+            redisTemplate.delete(key);
             return essayCourseWorkSyllabusInfo;
         }else{
             essayCourseWorkSyllabusInfo = new EssayCourseWorkSyllabusInfo();
@@ -408,19 +408,17 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
              * 如果为单题
              */
             if(essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.QUESTION.getType()){
-                Example exampleQuestion = new Example(EssaySimilarQuestion.class);
-                exampleQuestion.and()
-                        .andEqualTo("questionBaseId", essayCourseExercisesQuestion.getPQid());
-                EssaySimilarQuestion essaySimilarQuestion = essaySimilarQuestionMapper.selectOneByExample(exampleQuestion);
-                if(null == essaySimilarQuestion){
+
+                Map<String,Object> similarQuestionMap = essaySimilarQuestionMapper.selectByQuestionBaseId(essayCourseExercisesQuestion.getPQid());
+                if(similarQuestionMap.isEmpty()){
                     throw new BizException(ErrorResult.create(100010, "试题不存在"));
                 }
 
                 Map<String, Object> questionBaseMap = essayQuestionBaseMapper.selectQuestionBaseById(essayCourseExercisesQuestion.getPQid());
-                Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionBaseMap, "detailId", 0));
-                essayCourseWorkSyllabusInfo.setSimilarId(essaySimilarQuestion.getSimilarId());
+                Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionBaseMap, "detail_id", 0));
+                essayCourseWorkSyllabusInfo.setSimilarId(MapUtils.getLongValue(similarQuestionMap, "similar_id"));
                 essayCourseWorkSyllabusInfo.setQuestionId(essayCourseExercisesQuestion.getPQid());
-                essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(questionBaseMap, "areaName", ""));
+                essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(questionBaseMap, "area_name", ""));
                 essayCourseWorkSyllabusInfo.setQuestionType(MapUtils.getIntValue(detailMap, "type", 0));
                 essayCourseWorkSyllabusInfo.setPaperName(StringUtils.EMPTY);
                 essayCourseWorkSyllabusInfo.setPaperId(0l);
@@ -436,7 +434,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                 }
                 essayCourseWorkSyllabusInfo.setSimilarId(0l);
                 essayCourseWorkSyllabusInfo.setQuestionId(0l);
-                essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(paperBaseMap, "areaName"));
+                essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(paperBaseMap, "area_name"));
                 essayCourseWorkSyllabusInfo.setQuestionType(0);
                 essayCourseWorkSyllabusInfo.setPaperName(MapUtils.getString(paperBaseMap, "name", ""));
                 essayCourseWorkSyllabusInfo.setPaperId(essayCourseExercisesQuestion.getPQid());
