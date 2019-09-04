@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
 import com.huatu.tiku.essay.essayEnum.EssayStatusEnum;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.SelectProvider;
 
 import java.util.List;
 
@@ -93,6 +92,39 @@ public class CourseExercisesProcessEssayLogProvider {
         stringBuilder.append(" v_essay_question_detail");
         stringBuilder.append(" WHERE");
         stringBuilder.append(" id = ").append(detailId);
+        return stringBuilder.toString();
+    }
+
+    /**
+     * 查询单题 答题卡
+     * @param id
+     * @return
+     */
+    public String selectQuestionAnswerById(@Param(value = "id") Long id){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT");
+        stringBuilder.append(" *");
+        stringBuilder.append(" FROM");
+        stringBuilder.append(" v_essay_question_answer");
+        stringBuilder.append(" WHERE");
+        stringBuilder.append(" id = ").append(id);
+        return stringBuilder.toString();
+    }
+
+
+    /**
+     * 查询套题 答题卡
+     * @param id
+     * @return
+     */
+    public String selectPaperAnswerById(@Param(value = "id") Long id){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT");
+        stringBuilder.append(" *");
+        stringBuilder.append(" FROM");
+        stringBuilder.append(" v_essay_paper_answer");
+        stringBuilder.append(" WHERE");
+        stringBuilder.append(" id = ").append(id);
         return stringBuilder.toString();
     }
 }
