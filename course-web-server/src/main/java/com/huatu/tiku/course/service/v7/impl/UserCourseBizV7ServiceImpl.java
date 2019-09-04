@@ -185,6 +185,9 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
         SubjectEnum subjectEnum = SubjectEnum.create(type);
         Map<String,Object> result = Maps.newHashMap();
         List<CourseWorkCourseVo> list = Lists.newArrayList();
+        result.put("list", list);
+        result.put("civilUnRead", courseExercisesProcessLogManager.obtainCivilCourseWorkUnReadCount(userId));
+        result.put("essayUnRead", obtainEssayCourseWorkUnReadCount(userId));
         if(subjectEnum == SubjectEnum.XC){
             list.addAll((List<CourseWorkCourseVo>) courseExercisesProcessLogManager.courseWorkList(userId, page, size));
         }
@@ -200,7 +203,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
             Table<String, Long, SyllabusWareInfo> syllabusWareInfoTable = courseExercisesProcessLogManager.dealSyllabusInfo(allSyllabusIds);
             if(syllabusWareInfoTable.isEmpty()){
-                return list;
+                return result;
             }
 
             Example example = new Example(EssayExercisesAnswerMeta.class);
@@ -279,10 +282,10 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                 });
             }catch (Exception e){
                 log.error("获取课后练习列表异常:{},{}",userId, e);
-                return list;
+                return result;
             }
 
-            list.addAll((List<CourseWorkCourseVo>) courseExercisesProcessLogManager.courseWorkList(userId, page, size));
+            /*list.addAll((List<CourseWorkCourseVo>) courseExercisesProcessLogManager.courseWorkList(userId, page, size));
             list.forEach(item -> {
                 List<CourseWorkWareVo> courseWorkWareVos = item.getWareInfoList();
                 for (CourseWorkWareVo courseWorkWareVo : courseWorkWareVos) {
@@ -290,11 +293,8 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                     courseWorkWareVo.setSyllabusId(141324L);
                     courseWorkWareVo.getAnswerCardInfo().setType(SubjectEnum.SL.getCode());
                 }
-            });
+            });*/
         }
-        result.put("list", list);
-        result.put("civilUnRead", courseExercisesProcessLogManager.obtainCivilCourseWorkUnReadCount(userId));
-        result.put("essayUnRead", obtainEssayCourseWorkUnReadCount(userId));
         return result;
     }
 
@@ -418,7 +418,9 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                 if(null == essaySimilarQuestion){
                     throw new BizException(ErrorResult.create(100010, "试题不存在"));
                 }
-                EssayQuestionBase essayQuestionBase = essayQuestionBaseMapper.selectByPrimaryKey(essayCourseExercisesQuestion.getPQid());
+                Example questionBaseExample = new Example(EssayQuestionBase.class);
+                questionBaseExample.and().andEqualTo("id", essayCourseExercisesQuestion.getPQid());
+                EssayQuestionBase essayQuestionBase = essayQuestionBaseMapper.selectOneByExample(questionBaseExample);
                 EssayQuestionDetail essayQuestionDetail = essayQuestionDetailMapper.selectByPrimaryKey(essayQuestionBase.getDetailId());
                 essayCourseWorkSyllabusInfo.setSimilarId(essaySimilarQuestion.getSimilarId());
                 essayCourseWorkSyllabusInfo.setQuestionId(essayCourseExercisesQuestion.getPQid());
@@ -432,7 +434,9 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
              * 如果为套题
              */
             if(essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.PAPER.getType()){
-                EssayPaperBase essayPaperBase = essayPaperBaseMapper.selectByPrimaryKey(essayCourseExercisesQuestion.getPQid());
+                Example paperBaseExample = new Example(EssayPaperBase.class);
+                paperBaseExample.and().andEqualTo("id", essayCourseExercisesQuestion.getPQid());
+                EssayPaperBase essayPaperBase = essayPaperBaseMapper.selectOneByExample(paperBaseExample);
                 if(null == essayPaperBase){
                     throw new BizException(ErrorResult.create(100010, "套卷不存在"));
                 }
