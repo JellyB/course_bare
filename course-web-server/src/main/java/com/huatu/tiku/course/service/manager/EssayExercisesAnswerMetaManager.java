@@ -214,6 +214,8 @@ public class EssayExercisesAnswerMetaManager {
             return;
         }
         defaultCardInfo.setQcount(1);
+        defaultCardInfo.setAreaId(MapUtils.getIntValue(questionAnswer, "area_id"));
+        defaultCardInfo.setAreaName(MapUtils.getString(questionAnswer, "area_name"));
         defaultCardInfo.setId(MapUtils.getLongValue(questionAnswer, "id", 0));
         defaultCardInfo.setQuestionBaseId(MapUtils.getLongValue(questionAnswer, "question_base_id", 0));
         defaultCardInfo.setExamScore(MapUtils.getDoubleValue(questionAnswer, "exam_score"));
@@ -262,6 +264,8 @@ public class EssayExercisesAnswerMetaManager {
             return;
         }
         defaultCardInfo.setQcount(1);
+        defaultCardInfo.setAreaId(MapUtils.getIntValue(paperMap, "area_id"));
+        defaultCardInfo.setAreaName(MapUtils.getString(paperMap, "area_name"));
         defaultCardInfo.setId(MapUtils.getLongValue(paperMap, "id"));
         defaultCardInfo.setPaperId(MapUtils.getLongValue(paperMap, "paper_base_id"));
         defaultCardInfo.setExamScore(MapUtils.getDoubleValue(paperMap, "exam_score"));
