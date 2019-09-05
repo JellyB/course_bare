@@ -18,51 +18,19 @@ import lombok.Setter;
 @NoArgsConstructor
 public class EssayAnswerCardInfo extends AnswerCardInfo{
 
-    /* 第几次作答 */
-    private int correctNum;
     /* 学员所得分数 */
     private double examScore;
     /*  试题总分 */
     private double score;
-    /* 单题组id */
-    private long similarId;
-    /* 单题 type */
-    private int questionType;
-    /* 单题 id */
-    private Long questionBaseId;
-    /* 套卷 id */
-    private Long paperId;
-    private Integer areaId;
-    /* 地区name */
-    private String areaName;
 
-    /* 退回原因（退回学员原因,其他类型原因均在操作日志表中查询）*/
-    private String correctMemo;
-
-    public EssayAnswerCardInfo(int correctNum, double examScore, double score, long similarId, int questionType, Long questionBaseId, Long paperId, Integer areaId, String areaName, String correctMemo) {
-        this.correctNum = correctNum;
+    public EssayAnswerCardInfo(double examScore, double score) {
         this.examScore = examScore;
         this.score = score;
-        this.similarId = similarId;
-        this.questionType = questionType;
-        this.questionBaseId = questionBaseId;
-        this.paperId = paperId;
-        this.areaId = areaId;
-        this.areaName = areaName;
-        this.correctMemo = correctMemo;
     }
 
-    public EssayAnswerCardInfo(int type, int status, int wcount, int ucount, int rcount, int qcount, long id, int correctNum, double examScore, double score, long similarId, int questionType, Long questionBaseId, Long paperId, Integer areaId, String areaName, String correctMemo) {
-        super(type, status, wcount, ucount, rcount, qcount, id);
-        this.correctNum = correctNum;
+    public EssayAnswerCardInfo(int status, int wcount, int ucount, int rcount, int qcount, long id, double examScore, double score) {
+        super(status, wcount, ucount, rcount, qcount, id);
         this.examScore = examScore;
         this.score = score;
-        this.similarId = similarId;
-        this.questionType = questionType;
-        this.questionBaseId = questionBaseId;
-        this.paperId = paperId;
-        this.areaId = areaId;
-        this.areaName = areaName;
-        this.correctMemo = correctMemo;
     }
 }

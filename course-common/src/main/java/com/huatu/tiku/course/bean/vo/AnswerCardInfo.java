@@ -20,7 +20,6 @@ public class AnswerCardInfo {
     /**
      * 1 行测 2 申论
      */
-    private int type;
     private int status;
     private int wcount;
     private int ucount;
@@ -29,8 +28,7 @@ public class AnswerCardInfo {
     private long  id;
 
     @Builder
-    public AnswerCardInfo(int type, int status, int wcount, int ucount, int rcount, int qcount, long id) {
-        this.type = type;
+    public AnswerCardInfo(int status, int wcount, int ucount, int rcount, int qcount, long id) {
         this.status = status;
         this.wcount = wcount;
         this.ucount = ucount;
