@@ -441,13 +441,9 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
      * @param answerCardType
      */
     private void dealCorrectReturnMemo(EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo, long answerCardId, int answerCardType){
-        Example example = new Example(CorrectOrder.class);
-        example.and()
-                .andEqualTo("status", EssayStatusEnum.NORMAL.getCode())
-                .andEqualTo("answerCardType", answerCardType)
-                .andEqualTo("answerCardId", answerCardId);
-        CorrectOrder correctOrder = correctOrderMapper.selectOneByExample(example);
-        essayCourseWorkSyllabusInfo.setCorrectMemo(null != correctOrder ? correctOrder.getCorrectMemo() : StringUtils.EMPTY);
+        Map<String, Object> result = correctOrderMapper.selectByAnswerCardIdAndType(answerCardType, answerCardId);
+        String correctMemo = MapUtils.getString(result, "correct_memo", StringUtils.EMPTY);
+        essayCourseWorkSyllabusInfo.setCorrectMemo(correctMemo);
     }
 
     /**

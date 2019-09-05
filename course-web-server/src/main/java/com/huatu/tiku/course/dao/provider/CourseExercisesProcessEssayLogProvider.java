@@ -182,4 +182,22 @@ public class CourseExercisesProcessEssayLogProvider {
         return stringBuilder.toString();
     }
 
+    /**
+     * 获取被退回信息
+     * @param answerCardType
+     * @param answerCardId
+     * @return
+     */
+    public String selectByAnswerCardIdAndType(int answerCardType, long answerCardId){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT");
+        stringBuilder.append(" *");
+        stringBuilder.append(" FROM");
+        stringBuilder.append(" v_essay_correct_order");
+        stringBuilder.append(" WHERE");
+        stringBuilder.append(" answer_card_type = ").append(answerCardType);
+        stringBuilder.append(" AND answer_card_id = ").append(answerCardId);
+        stringBuilder.append(" AND status = ").append(EssayStatusEnum.NORMAL.getCode());
+        return stringBuilder.toString();
+    }
 }
