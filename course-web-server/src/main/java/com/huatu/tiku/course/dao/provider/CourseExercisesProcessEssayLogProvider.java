@@ -163,5 +163,23 @@ public class CourseExercisesProcessEssayLogProvider {
         return stringBuilder.toString();
     }
 
+    /**
+     * 获取用户未做完课后作业练习数
+     * @param userId
+     * @param syllabusId
+     * @return
+     */
+    public String selectUnDoQuestionCountBySyllabusId(int userId, long syllabusId){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT");
+        stringBuilder.append(" count(id) as cnt ");
+        stringBuilder.append(" FROM");
+        stringBuilder.append(" v_essay_exercises_answer_meta");
+        stringBuilder.append(" WHERE");
+        stringBuilder.append(" user_id = ").append(userId);
+        stringBuilder.append(" AND syllabus_id = ").append(syllabusId);
+        stringBuilder.append(" AND biz_status != ").append(EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT.getBizStatus());
+        return stringBuilder.toString();
+    }
 
 }
