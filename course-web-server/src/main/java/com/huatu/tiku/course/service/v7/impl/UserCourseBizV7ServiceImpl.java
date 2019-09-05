@@ -395,16 +395,10 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
             if (null == detailMap || detailMap.isEmpty()) {
                 throw new BizException(ErrorResult.create(100010, "试题不存在"));
             }
-            int type = MapUtils.getIntValue(detailMap, "type", 0);
-            if(type == 5){
-                type = QuestionTypeConstant.ARGUMENTATION;
-            }else{
-                type = QuestionTypeConstant.SINGLE_QUESTION;
-            }
             essayCourseWorkSyllabusInfo.setSimilarId(MapUtils.getLongValue(similarQuestionMap, "similar_id"));
             essayCourseWorkSyllabusInfo.setQuestionId(essayCourseExercisesQuestion.getPQid());
             essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(questionBaseMap, "area_name", ""));
-            essayCourseWorkSyllabusInfo.setQuestionType(type);
+            essayCourseWorkSyllabusInfo.setQuestionType(MapUtils.getIntValue(detailMap, "type", 0));
             essayCourseWorkSyllabusInfo.setPaperName(StringUtils.EMPTY);
             essayCourseWorkSyllabusInfo.setPaperId(0l);
         }
@@ -420,7 +414,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
             essayCourseWorkSyllabusInfo.setSimilarId(0l);
             essayCourseWorkSyllabusInfo.setQuestionId(0l);
             essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(paperBaseMap, "area_name"));
-            essayCourseWorkSyllabusInfo.setQuestionType(QuestionTypeConstant.PAPER);
+            essayCourseWorkSyllabusInfo.setQuestionType(0);
             essayCourseWorkSyllabusInfo.setPaperName(MapUtils.getString(paperBaseMap, "name", ""));
             essayCourseWorkSyllabusInfo.setPaperId(essayCourseExercisesQuestion.getPQid());
         }
