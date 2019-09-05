@@ -270,7 +270,7 @@ public class EssayExercisesAnswerMetaManager {
         defaultCardInfo.setPaperId(MapUtils.getLongValue(paperMap, "paper_base_id"));
         defaultCardInfo.setExamScore(MapUtils.getDoubleValue(paperMap, "exam_score"));
         defaultCardInfo.setScore(MapUtils.getDoubleValue(paperMap, "score"));
-        defaultCardInfo.setStatus(MapUtils.getIntValue(paperMap, "status"));
+        defaultCardInfo.setStatus(MapUtils.getIntValue(paperMap, "biz_status"));
         defaultCardInfo.setCorrectNum(essayExercisesAnswerMeta.getCorrectNum());
         defaultCardInfo.setQuestionType(QuestionTypeConstant.PAPER);
         if(MapUtils.getIntValue(paperMap, "biz_status") == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()){
