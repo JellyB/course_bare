@@ -366,11 +366,8 @@ public class CourseUtil {
             return;
         }
         List<Map> mapList = (List<Map>) response.get("list");
-        Set<Long> syllabusIds = Sets.newHashSet();
         for(Map map : mapList){
-            if(!check(map)){
-                continue;
-            }else{
+            if(check(map)){
                 EssayAnswerCardInfo essayAnswerCardInfo = essayExercisesAnswerMetaManager.buildEssayAnswerCardInfo(userId, map);
                 map.put("answerCard", essayAnswerCardInfo);
             }
