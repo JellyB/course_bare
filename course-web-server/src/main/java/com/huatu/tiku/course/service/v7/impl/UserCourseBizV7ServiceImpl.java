@@ -395,6 +395,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
             if (null == detailMap || detailMap.isEmpty()) {
                 throw new BizException(ErrorResult.create(100010, "试题不存在"));
             }
+            essayCourseWorkSyllabusInfo.setPaperName(MapUtils.getString(detailMap, "stem", 0));
             essayCourseWorkSyllabusInfo.setSimilarId(MapUtils.getLongValue(similarQuestionMap, "similar_id"));
             essayCourseWorkSyllabusInfo.setQuestionId(essayCourseExercisesQuestion.getPQid());
             essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(questionBaseMap, "area_name", ""));
