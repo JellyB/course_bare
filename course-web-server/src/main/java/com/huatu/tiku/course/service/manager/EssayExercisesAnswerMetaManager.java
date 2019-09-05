@@ -143,25 +143,23 @@ public class EssayExercisesAnswerMetaManager {
         questionExample.orderBy("sort").asc();
 
         List<EssayCourseExercisesQuestion> questions = essayCourseExercisesQuestionMapper.selectByExample(questionExample);
-
+        if(questions.size() > CORRECT_COUNT_ONE){
+            log.error("单题或套题绑定有效题目数大于 1,{},{}", courseType, courseWareId);
+            return;
+        }
         //单题处理
         if(CollectionUtils.isEmpty(questions)){
+            defaultCardInfo.setQcount(0);
             log.error("dealSingleQuestionOrPaperOrMultiQuestions.questions is empty:{},{}", courseType, courseWareId);
             return;
         }
-        if(questions.size() == CORRECT_COUNT_ONE){
-            EssayCourseExercisesQuestion essayCourseExercisesQuestion = questions.get(0);
-            if(essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.QUESTION.getType()){
-                dealSingleQuestion(userId, essayCourseExercisesQuestion.getPQid(), defaultCardInfo, map);
-            }
-            if(essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.PAPER.getType()){
-                dealSinglePaper(userId, essayCourseExercisesQuestion.getPQid(), defaultCardInfo, map);
-            }
+        EssayCourseExercisesQuestion essayCourseExercisesQuestion = questions.get(0);
+        if(essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.QUESTION.getType()){
+            dealSingleQuestion(userId, essayCourseExercisesQuestion.getPQid(), defaultCardInfo, map);
         }
-        /*else{
-            List<Long> questionIds = questions.stream().map(EssayCourseExercisesQuestion::getPQid).collect(Collectors.toList());
-            dealMultiQuestion(userId, questionIds, defaultCardInfo, map);
-        }*/
+        if(essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.PAPER.getType()){
+            dealSinglePaper(userId, essayCourseExercisesQuestion.getPQid(), defaultCardInfo, map);
+        }
     }
 
     /**
@@ -228,7 +226,7 @@ public class EssayExercisesAnswerMetaManager {
             throw new BizException(ErrorResult.create(100010, "试题不存在"));
         }
         defaultCardInfo.setSimilarId(MapUtils.getLongValue(essaySimilarQuestionMap, "similar_id"));
-        Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionAnswer, "questionDetailId"));
+        Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionAnswer, "question_detail_id"));
         if(null == detailMap || detailMap.isEmpty()){
             throw new BizException(ErrorResult.create(100010, "试题不存在"));
         }
