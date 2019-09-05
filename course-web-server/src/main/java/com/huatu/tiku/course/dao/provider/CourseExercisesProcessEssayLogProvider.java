@@ -146,5 +146,22 @@ public class CourseExercisesProcessEssayLogProvider {
     }
 
 
+    /**
+     * 获取meta表答题卡状态
+     * @param answerCardId
+     * @return
+     */
+    public String getBizStatusByCardId(@Param(value = "answerCardId") long answerCardId){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT");
+        stringBuilder.append(" * ");
+        stringBuilder.append(" FROM");
+        stringBuilder.append(" v_essay_exercises_answer_meta");
+        stringBuilder.append(" WHERE");
+        stringBuilder.append(" answer_id = ").append(answerCardId);
+
+        return stringBuilder.toString();
+    }
+
 
 }

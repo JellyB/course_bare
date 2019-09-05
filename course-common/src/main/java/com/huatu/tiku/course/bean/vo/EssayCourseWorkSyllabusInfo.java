@@ -32,14 +32,17 @@ public class EssayCourseWorkSyllabusInfo implements Serializable{
 
     private String paperName;
 
+    private Integer bizStatus;
+
 
     @Builder
-    public EssayCourseWorkSyllabusInfo(Long questionId, Long paperId, Integer questionType, Long similarId, String areaName, String paperName) {
+    public EssayCourseWorkSyllabusInfo(Long questionId, Long paperId, Integer questionType, Long similarId, String areaName, String paperName, Integer bizStatus) {
         this.questionId = questionId;
         this.paperId = paperId;
         this.questionType = questionType;
         this.similarId = similarId;
         this.areaName = areaName;
         this.paperName = paperName;
+        this.bizStatus = bizStatus;
     }
 }

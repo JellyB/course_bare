@@ -2,6 +2,7 @@ package com.huatu.tiku.course.dao.essay;
 
 import com.huatu.tiku.course.dao.provider.CourseExercisesProcessEssayLogProvider;
 import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.springframework.stereotype.Repository;
 import tk.mybatis.mapper.common.Mapper;
@@ -28,5 +29,14 @@ public interface EssayExercisesAnswerMetaMapper extends Mapper<EssayExercisesAns
      */
     @SelectProvider(type = CourseExercisesProcessEssayLogProvider.class, method = "getEssayCoursePageInfo")
     List<HashMap<String, Object>> getEssayCoursePageInfo(long userId, int page, int size);
+
+    /**
+     *
+     * @param answerCardId
+     * @return
+     */
+    @SelectProvider(type = CourseExercisesProcessEssayLogProvider.class, method = "getBizStatusByCardId")
+    HashMap<String, Object> getBizStatusByCardId(@Param(value = "answerCardId") long answerCardId);
+
 
 }

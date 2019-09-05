@@ -76,13 +76,13 @@ public interface UserCourseBizV7Service {
     void dealEssayCourseWork(String type, String message) throws BizException;
 
     /**
-     * 获取申论课后作业大纲信息
+     * 获取申论课后作业大纲信息 & 答题卡状态
      * @param courseType
      * @param courseWareId
      * @return
      * @throws BizException
      */
-    EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(Integer courseType, Long courseWareId) throws BizException;
+    EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(Integer courseType, Long courseWareId, Long cardId) throws BizException;
 
 
     /**
