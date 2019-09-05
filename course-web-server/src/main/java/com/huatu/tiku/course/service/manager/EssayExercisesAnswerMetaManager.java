@@ -170,7 +170,7 @@ public class EssayExercisesAnswerMetaManager {
      * @param map
      * @return
      */
-    private EssayExercisesAnswerMeta obtainUserAnswerMetas(int userId, int answerType, long pQid, Map map) throws BizException{
+    private EssayExercisesAnswerMeta obtainUserCurrentUsefulAnswerMetas(int userId, int answerType, long pQid, Map map) throws BizException{
         int courseType = MapUtils.getIntValue(map, SyllabusInfo.VideoType, 0);
         long courseWareId = MapUtils.getLongValue(map, SyllabusInfo.CourseWareId, 0);
         long syllabusId = MapUtils.getLongValue(map, SyllabusInfo.SyllabusId, 0);
@@ -184,14 +184,15 @@ public class EssayExercisesAnswerMetaManager {
                 .andEqualTo("courseType", courseType)
                 .andEqualTo("courseWareId", courseWareId)
                 .andEqualTo("status", EssayStatusEnum.NORMAL.getCode());
-
         example.orderBy("correctNum").desc();
         List<EssayExercisesAnswerMeta> metas = essayExercisesAnswerMetaMapper.selectByExample(example);
         if(CollectionUtils.isEmpty(metas)){
             return null;
         }else if(metas.size() == CORRECT_COUNT_ONE){
             return metas.get(0);
-        }else{
+        }else if(metas.size() == CORRECT_COUNT_TWO){
+            return metas.get(0);
+        }{
             throw new BizException(ErrorResult.create(100010, "数据错误"));
         }
     }
@@ -203,7 +204,7 @@ public class EssayExercisesAnswerMetaManager {
      * @param map
      */
     private void dealSingleQuestion(int userId, long questionId, EssayAnswerCardInfo defaultCardInfo, Map map) throws BizException{
-        EssayExercisesAnswerMeta essayExercisesAnswerMeta = obtainUserAnswerMetas(userId, EssayAnswerCardEnum.TypeEnum.QUESTION.getType(), questionId, map);
+        EssayExercisesAnswerMeta essayExercisesAnswerMeta = obtainUserCurrentUsefulAnswerMetas(userId, EssayAnswerCardEnum.TypeEnum.QUESTION.getType(), questionId, map);
         if(null == essayExercisesAnswerMeta){
             return;
         }
@@ -251,7 +252,7 @@ public class EssayExercisesAnswerMetaManager {
      * @param map
      */
     private void dealSinglePaper(int userId, long paperId, EssayAnswerCardInfo defaultCardInfo, Map map){
-        EssayExercisesAnswerMeta essayExercisesAnswerMeta = obtainUserAnswerMetas(userId, EssayAnswerCardEnum.TypeEnum.PAPER.getType(), paperId, map);
+        EssayExercisesAnswerMeta essayExercisesAnswerMeta = obtainUserCurrentUsefulAnswerMetas(userId, EssayAnswerCardEnum.TypeEnum.PAPER.getType(), paperId, map);
         if(null == essayExercisesAnswerMeta){
             return;
         }
