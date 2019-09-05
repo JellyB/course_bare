@@ -114,7 +114,8 @@ public class UserCourseControllerV7 {
      */
     @GetMapping(value = "courseWork/questionInfo/{videoType}/{courseWareId}")
     public EssayCourseWorkSyllabusInfo questionInfo(@PathVariable(value = "videoType") Integer courseType,
-                                                    @PathVariable(value = "courseWareId") Long courseWareId){
-        return userCourseBizV7Service.essayCourseWorkSyllabusInfo(courseType, courseWareId);
+                                                    @PathVariable(value = "courseWareId") Long courseWareId,
+                                                    @RequestParam(value = "answerCardId", defaultValue = "0") Long answerCardId){
+        return userCourseBizV7Service.essayCourseWorkSyllabusInfo(courseType, courseWareId, answerCardId);
     }
 }

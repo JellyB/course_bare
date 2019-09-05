@@ -210,7 +210,7 @@ public class EssayExercisesAnswerMetaManager {
             return;
         }
         Map<String, Object> questionAnswer = essayQuestionAnswerMapper.selectQuestionAnswerById(essayExercisesAnswerMeta.getAnswerId());
-        if(questionAnswer.isEmpty()){
+        if(null == questionAnswer || questionAnswer.isEmpty()){
             log.error("buildEssayAnswerCardInfo.essayQuestionAnswer is null:{}", essayExercisesAnswerMeta.getAnswerId());
             return;
         }
@@ -224,12 +224,12 @@ public class EssayExercisesAnswerMetaManager {
 
 
         Map<String, Object> essaySimilarQuestionMap = essaySimilarQuestionMapper.selectByQuestionBaseId(essayExercisesAnswerMeta.getPQid());
-        if(null == essaySimilarQuestionMap){
+        if(null == essaySimilarQuestionMap || essaySimilarQuestionMap.isEmpty()){
             throw new BizException(ErrorResult.create(100010, "试题不存在"));
         }
         defaultCardInfo.setSimilarId(MapUtils.getLongValue(essaySimilarQuestionMap, "similar_id"));
         Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionAnswer, "questionDetailId"));
-        if(detailMap.isEmpty()){
+        if(null == detailMap || detailMap.isEmpty()){
             throw new BizException(ErrorResult.create(100010, "试题不存在"));
         }
         int type = MapUtils.getIntValue(detailMap, "type");
@@ -258,7 +258,7 @@ public class EssayExercisesAnswerMetaManager {
             return;
         }
         Map<String, Object> paperMap = essayPaperAnswerMapper.selectPaperAnswerById(essayExercisesAnswerMeta.getAnswerId());
-        if(paperMap.isEmpty()){
+        if(null == paperMap || paperMap.isEmpty()){
             log.error("buildEssayAnswerCardInfo.essayQuestionAnswer is null:{}", essayExercisesAnswerMeta.getAnswerId());
             return;
         }

@@ -194,6 +194,9 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
         }
         if(subjectEnum == SubjectEnum.SL){
             List<HashMap<String, Object>> essayCoursePageInfo = essayExercisesAnswerMetaMapper.getEssayCoursePageInfo(userId, page, size);
+            if(null == essayCoursePageInfo || CollectionUtils.isEmpty(essayCoursePageInfo)){
+                return result;
+            }
             log.info("查询数据库获取用户未完成申论课后练习数据列表: essayCoursePageInfo.list:{}", essayCoursePageInfo);
             Set<Long> allSyllabusIds = Sets.newHashSet();
             essayCoursePageInfo.forEach(item -> {
@@ -386,9 +389,9 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
      * @throws BizException
      */
     @Override
-    public EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(Integer courseType, Long courseWareId) throws BizException {
+    public EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(Integer courseType, Long courseWareId, Long cardId) throws BizException {
         EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo = null;
-        String key = CourseCacheKey.getEssayCourseWorkSyllabusInfo(courseType, courseWareId);
+        String key = CourseCacheKey.getEssayCourseWorkSyllabusInfo(courseType, courseWareId, cardId.longValue());
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
         if(redisTemplate.hasKey(key)){
             String value = valueOperations.get(key);
@@ -396,6 +399,14 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
             return essayCourseWorkSyllabusInfo;
         }else{
             essayCourseWorkSyllabusInfo = new EssayCourseWorkSyllabusInfo();
+            essayCourseWorkSyllabusInfo.setBizStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
+            if(cardId.longValue() > 0){
+                Map<String, Object> metaMap = essayExercisesAnswerMetaMapper.getBizStatusByCardId(cardId);
+                if(null != metaMap){
+                    essayCourseWorkSyllabusInfo.setBizStatus(MapUtils.getIntValue(metaMap, "biz_status", 0));
+                }
+            }
+
             Example example = new Example(EssayCourseExercisesQuestion.class);
             example.and()
                     .andEqualTo("courseType", courseType)
@@ -414,12 +425,18 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
             if(essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.QUESTION.getType()){
 
                 Map<String,Object> similarQuestionMap = essaySimilarQuestionMapper.selectByQuestionBaseId(essayCourseExercisesQuestion.getPQid());
-                if(similarQuestionMap.isEmpty()){
+                if(null == similarQuestionMap || similarQuestionMap.isEmpty()){
                     throw new BizException(ErrorResult.create(100010, "试题不存在"));
                 }
 
                 Map<String, Object> questionBaseMap = essayQuestionBaseMapper.selectQuestionBaseById(essayCourseExercisesQuestion.getPQid());
+                if(null == questionBaseMap || questionBaseMap.isEmpty()){
+                    throw new BizException(ErrorResult.create(100010, "试题不存在"));
+                }
                 Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionBaseMap, "detail_id", 0));
+                if(null == detailMap || detailMap.isEmpty()){
+                    throw new BizException(ErrorResult.create(100010, "试题不存在"));
+                }
                 essayCourseWorkSyllabusInfo.setSimilarId(MapUtils.getLongValue(similarQuestionMap, "similar_id"));
                 essayCourseWorkSyllabusInfo.setQuestionId(essayCourseExercisesQuestion.getPQid());
                 essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(questionBaseMap, "area_name", ""));
@@ -433,7 +450,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
              */
             if(essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.PAPER.getType()){
                 Map<String, Object> paperBaseMap = essayPaperBaseMapper.selectPaperBaseById(essayCourseExercisesQuestion.getPQid().longValue());
-                if(paperBaseMap.isEmpty()){
+                if(null == paperBaseMap || paperBaseMap.isEmpty()){
                     throw new BizException(ErrorResult.create(100010, "套卷不存在"));
                 }
                 essayCourseWorkSyllabusInfo.setSimilarId(0l);
