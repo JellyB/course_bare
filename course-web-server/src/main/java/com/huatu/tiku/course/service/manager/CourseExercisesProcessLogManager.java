@@ -599,7 +599,6 @@ public class CourseExercisesProcessLogManager {
                     AnswerCardInfo dataInfo = new AnswerCardInfo();
                     try{
                         org.apache.commons.beanutils.BeanUtils.populate(dataInfo, item);
-                        dataInfo.setType(SubjectEnum.XC.getCode());
                         return dataInfo;
                     }catch (Exception e) {
                         log.error("答题卡信息转换异常:{}", e);
