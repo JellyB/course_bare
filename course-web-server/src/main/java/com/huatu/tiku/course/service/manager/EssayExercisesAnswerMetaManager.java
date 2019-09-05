@@ -145,12 +145,17 @@ public class EssayExercisesAnswerMetaManager {
             log.error("dealSingleQuestionOrPaperOrMultiQuestions.questions is empty:{},{}", courseType, courseWareId);
             return;
         }
-        EssayCourseExercisesQuestion essayCourseExercisesQuestion = questions.get(0);
-        if(essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.QUESTION.getType()){
-            dealSingleQuestion(userId, essayCourseExercisesQuestion.getPQid(), defaultCardInfo, map);
-        }
-        if(essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.PAPER.getType()){
-            dealSinglePaper(userId, essayCourseExercisesQuestion.getPQid(), defaultCardInfo, map);
+        // 单题或套题处理
+        if(questions.size() == CORRECT_COUNT_ONE){
+            EssayCourseExercisesQuestion essayCourseExercisesQuestion = questions.get(0);
+            if(essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.QUESTION.getType()){
+                dealSingleQuestion(userId, essayCourseExercisesQuestion.getPQid(), defaultCardInfo, map);
+            }
+            if(essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.PAPER.getType()){
+                dealSinglePaper(userId, essayCourseExercisesQuestion.getPQid(), defaultCardInfo, map);
+            }
+        }else{
+            dealMultiQuestion(userId, defaultCardInfo, map);
         }
     }
 
@@ -265,6 +270,22 @@ public class EssayExercisesAnswerMetaManager {
         }else{
             defaultCardInfo.setScore(MapUtils.getDoubleValue(paperMap, "score"));
             defaultCardInfo.setExamScore(MapUtils.getDoubleValue(paperMap, "exam_score"));
+        }
+    }
+
+    /**
+     * 多个单题处理
+     * @param userId
+     * @param defaultCardInfo
+     * @param map
+     */
+    private void dealMultiQuestion(int userId,  EssayAnswerCardInfo defaultCardInfo, Map map){
+        long syllabusId = MapUtils.getIntValue(map, SyllabusInfo.SyllabusId, 0);
+        Map<String, Object> result = essayExercisesAnswerMetaMapper.selectUnDoQuestionCountBySyllabusId(userId, syllabusId);
+        if(null == result){
+            defaultCardInfo.setUcount(0);
+        }else{
+            defaultCardInfo.setUcount(MapUtils.getIntValue(result, "cnt", 0));
         }
     }
 }

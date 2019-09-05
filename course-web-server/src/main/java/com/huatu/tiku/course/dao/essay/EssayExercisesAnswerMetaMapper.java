@@ -9,6 +9,7 @@ import tk.mybatis.mapper.common.Mapper;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 描述：
@@ -38,5 +39,10 @@ public interface EssayExercisesAnswerMetaMapper extends Mapper<EssayExercisesAns
     @SelectProvider(type = CourseExercisesProcessEssayLogProvider.class, method = "getBizStatusByCardId")
     HashMap<String, Object> getBizStatusByCardId(@Param(value = "answerCardId") long answerCardId);
 
-
+    /**
+     * 获取用户多道未做完单题数
+     * @return
+     */
+    @SelectProvider(type = CourseExercisesProcessEssayLogProvider.class, method = "selectUnDoQuestionCountBySyllabusId")
+    Map<String,Object> selectUnDoQuestionCountBySyllabusId(int userId, long syllabusId);
 }
