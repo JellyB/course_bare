@@ -368,69 +368,68 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                 if (null != metaMap) {
                     essayCourseWorkSyllabusInfo.setBizStatus(MapUtils.getIntValue(metaMap, "biz_status", 0));
                 }
-
-                Example example = new Example(EssayCourseExercisesQuestion.class);
-                example.and()
-                        .andEqualTo("courseType", courseType)
-                        .andEqualTo("courseWareId", courseWareId)
-                        .andEqualTo("status", EssayStatusEnum.NORMAL.getCode());
-
-
-                List<EssayCourseExercisesQuestion> essayCourseExercisesQuestions = essayCourseExercisesQuestionMapper.selectByExample(example);
-                if (CollectionUtils.isEmpty(essayCourseExercisesQuestions) || essayCourseExercisesQuestions.size() > 1) {
-                    throw new BizException(ErrorResult.create(100010, "数据错误"));
-                }
-                EssayCourseExercisesQuestion essayCourseExercisesQuestion = essayCourseExercisesQuestions.get(0);
-
-                //处理被退回原因
-                if (essayCourseWorkSyllabusInfo.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()) {
-                    dealCorrectReturnMemo(essayCourseWorkSyllabusInfo, cardId, essayCourseExercisesQuestion.getType());
-                }
-
-                /**
-                 * 如果为单题
-                 */
-                if (essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.QUESTION.getType()) {
-
-                    Map<String, Object> similarQuestionMap = essaySimilarQuestionMapper.selectByQuestionBaseId(essayCourseExercisesQuestion.getPQid());
-                    if (null == similarQuestionMap || similarQuestionMap.isEmpty()) {
-                        throw new BizException(ErrorResult.create(100010, "试题不存在"));
-                    }
-
-                    Map<String, Object> questionBaseMap = essayQuestionBaseMapper.selectQuestionBaseById(essayCourseExercisesQuestion.getPQid());
-                    if (null == questionBaseMap || questionBaseMap.isEmpty()) {
-                        throw new BizException(ErrorResult.create(100010, "试题不存在"));
-                    }
-                    Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionBaseMap, "detail_id", 0));
-                    if (null == detailMap || detailMap.isEmpty()) {
-                        throw new BizException(ErrorResult.create(100010, "试题不存在"));
-                    }
-                    essayCourseWorkSyllabusInfo.setSimilarId(MapUtils.getLongValue(similarQuestionMap, "similar_id"));
-                    essayCourseWorkSyllabusInfo.setQuestionId(essayCourseExercisesQuestion.getPQid());
-                    essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(questionBaseMap, "area_name", ""));
-                    essayCourseWorkSyllabusInfo.setQuestionType(MapUtils.getIntValue(detailMap, "type", 0));
-                    essayCourseWorkSyllabusInfo.setPaperName(StringUtils.EMPTY);
-                    essayCourseWorkSyllabusInfo.setPaperId(0l);
-                }
-
-                /**
-                 * 如果为套题
-                 */
-                if (essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.PAPER.getType()) {
-                    Map<String, Object> paperBaseMap = essayPaperBaseMapper.selectPaperBaseById(essayCourseExercisesQuestion.getPQid().longValue());
-                    if (null == paperBaseMap || paperBaseMap.isEmpty()) {
-                        throw new BizException(ErrorResult.create(100010, "套卷不存在"));
-                    }
-                    essayCourseWorkSyllabusInfo.setSimilarId(0l);
-                    essayCourseWorkSyllabusInfo.setQuestionId(0l);
-                    essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(paperBaseMap, "area_name"));
-                    essayCourseWorkSyllabusInfo.setQuestionType(0);
-                    essayCourseWorkSyllabusInfo.setPaperName(MapUtils.getString(paperBaseMap, "name", ""));
-                    essayCourseWorkSyllabusInfo.setPaperId(essayCourseExercisesQuestion.getPQid());
-                }
-
-                valueOperations.set(key, JSONObject.toJSONString(essayCourseWorkSyllabusInfo), 1, TimeUnit.MINUTES);
             }
+            Example example = new Example(EssayCourseExercisesQuestion.class);
+            example.and()
+                    .andEqualTo("courseType", courseType)
+                    .andEqualTo("courseWareId", courseWareId)
+                    .andEqualTo("status", EssayStatusEnum.NORMAL.getCode());
+
+
+            List<EssayCourseExercisesQuestion> essayCourseExercisesQuestions = essayCourseExercisesQuestionMapper.selectByExample(example);
+            if (CollectionUtils.isEmpty(essayCourseExercisesQuestions) || essayCourseExercisesQuestions.size() > 1) {
+                throw new BizException(ErrorResult.create(100010, "数据错误"));
+            }
+            EssayCourseExercisesQuestion essayCourseExercisesQuestion = essayCourseExercisesQuestions.get(0);
+
+            //处理被退回原因
+            if (essayCourseWorkSyllabusInfo.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()) {
+                dealCorrectReturnMemo(essayCourseWorkSyllabusInfo, cardId, essayCourseExercisesQuestion.getType());
+            }
+
+            /**
+             * 如果为单题
+             */
+            if (essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.QUESTION.getType()) {
+
+                Map<String, Object> similarQuestionMap = essaySimilarQuestionMapper.selectByQuestionBaseId(essayCourseExercisesQuestion.getPQid());
+                if (null == similarQuestionMap || similarQuestionMap.isEmpty()) {
+                    throw new BizException(ErrorResult.create(100010, "试题不存在"));
+                }
+
+                Map<String, Object> questionBaseMap = essayQuestionBaseMapper.selectQuestionBaseById(essayCourseExercisesQuestion.getPQid());
+                if (null == questionBaseMap || questionBaseMap.isEmpty()) {
+                    throw new BizException(ErrorResult.create(100010, "试题不存在"));
+                }
+                Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionBaseMap, "detail_id", 0));
+                if (null == detailMap || detailMap.isEmpty()) {
+                    throw new BizException(ErrorResult.create(100010, "试题不存在"));
+                }
+                essayCourseWorkSyllabusInfo.setSimilarId(MapUtils.getLongValue(similarQuestionMap, "similar_id"));
+                essayCourseWorkSyllabusInfo.setQuestionId(essayCourseExercisesQuestion.getPQid());
+                essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(questionBaseMap, "area_name", ""));
+                essayCourseWorkSyllabusInfo.setQuestionType(MapUtils.getIntValue(detailMap, "type", 0));
+                essayCourseWorkSyllabusInfo.setPaperName(StringUtils.EMPTY);
+                essayCourseWorkSyllabusInfo.setPaperId(0l);
+            }
+
+            /**
+             * 如果为套题
+             */
+            if (essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.PAPER.getType()) {
+                Map<String, Object> paperBaseMap = essayPaperBaseMapper.selectPaperBaseById(essayCourseExercisesQuestion.getPQid().longValue());
+                if (null == paperBaseMap || paperBaseMap.isEmpty()) {
+                    throw new BizException(ErrorResult.create(100010, "套卷不存在"));
+                }
+                essayCourseWorkSyllabusInfo.setSimilarId(0l);
+                essayCourseWorkSyllabusInfo.setQuestionId(0l);
+                essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(paperBaseMap, "area_name"));
+                essayCourseWorkSyllabusInfo.setQuestionType(0);
+                essayCourseWorkSyllabusInfo.setPaperName(MapUtils.getString(paperBaseMap, "name", ""));
+                essayCourseWorkSyllabusInfo.setPaperId(essayCourseExercisesQuestion.getPQid());
+            }
+
+            valueOperations.set(key, JSONObject.toJSONString(essayCourseWorkSyllabusInfo), 1, TimeUnit.MINUTES);
             return essayCourseWorkSyllabusInfo;
         }
     }
