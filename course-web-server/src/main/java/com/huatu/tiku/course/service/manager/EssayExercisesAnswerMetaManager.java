@@ -222,11 +222,14 @@ public class EssayExercisesAnswerMetaManager {
             ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setQuestionBaseId(MapUtils.getLongValue(questionAnswer, "question_base_id", 0));
             ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setCorrectNum(essayExercisesAnswerMeta.getCorrectNum());
 
-            Map<String, Object> essaySimilarQuestionMap = essaySimilarQuestionMapper.selectByQuestionBaseId(essayExercisesAnswerMeta.getPQid());
+
+            // 单题组处理为 0
+            /*Map<String, Object> essaySimilarQuestionMap = essaySimilarQuestionMapper.selectByQuestionBaseId(essayExercisesAnswerMeta.getPQid());
             if(null == essaySimilarQuestionMap || essaySimilarQuestionMap.isEmpty()){
                 throw new BizException(ErrorResult.create(100010, "试题不存在"));
-            }
-            ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setSimilarId(MapUtils.getLongValue(essaySimilarQuestionMap, "similar_id"));
+            }*/
+            //((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setSimilarId(MapUtils.getLongValue(essaySimilarQuestionMap, "similar_id"));
+            ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setSimilarId(0L);
             Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionAnswer, "question_detail_id"));
             if(null == detailMap || detailMap.isEmpty()){
                 throw new BizException(ErrorResult.create(100010, "试题不存在"));
