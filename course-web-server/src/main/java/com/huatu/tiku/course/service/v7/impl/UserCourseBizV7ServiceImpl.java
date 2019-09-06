@@ -262,6 +262,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                                 map.put(SyllabusInfo.SyllabusId, essayExercisesAnswerMeta.getSyllabusId());
 
                                 essayExercisesAnswerMetaManager.dealSingleQuestionOrPaperOrMultiQuestions(userId, essayAnswerCardInfo, map);
+                                essayAnswerCardInfo.setQcount(1);
                                 CourseWorkWareVo courseWorkWareVo = new CourseWorkWareVo();
 
                                 courseWorkWareVo.setSyllabusId(syllabusId);
