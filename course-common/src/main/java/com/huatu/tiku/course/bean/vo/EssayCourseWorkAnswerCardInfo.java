@@ -25,7 +25,7 @@ public class EssayCourseWorkAnswerCardInfo extends EssayAnswerCardInfo{
     private int correctNum;
     /* 单题组id */
     private long similarId;
-    /* 单题 type */
+    /* 单题 type 0 单题 1 试卷 2 议论文 */
     private int questionType;
     /* 单题 id */
     private Long questionBaseId;

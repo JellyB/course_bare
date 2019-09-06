@@ -747,6 +747,7 @@ public class CourseExercisesProcessLogManager {
                 return syllabusWareInfo;
             }catch (Exception e){
                 redisTemplate.delete(key);
+                return null;
             }
         }
         HashMap<String, Object> params = HashMapBuilder.<String,Object>newBuilder().put("syllabusIds", syllabusId).build();

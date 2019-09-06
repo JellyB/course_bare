@@ -27,13 +27,13 @@ public class CourseWorkWareVo {
      * paper 或 question id
      */
     private String questionIds;
-    private int questionType;
+    private int buildType;
     private AnswerCardInfo answerCardInfo;
     private int isAlert;
     private Long syllabusId;
 
     @Builder
-    public CourseWorkWareVo(String courseWareTitle, long courseWareId, int videoType, String videoLength, int serialNumber, long answerCardId, String questionIds, int questionType, AnswerCardInfo answerCardInfo, int isAlert, Long syllabusId) {
+    public CourseWorkWareVo(String courseWareTitle, long courseWareId, int videoType, String videoLength, int serialNumber, long answerCardId, String questionIds, int buildType, AnswerCardInfo answerCardInfo, int isAlert, Long syllabusId) {
         this.courseWareTitle = courseWareTitle;
         this.courseWareId = courseWareId;
         this.videoType = videoType;
@@ -41,7 +41,7 @@ public class CourseWorkWareVo {
         this.serialNumber = serialNumber;
         this.answerCardId = answerCardId;
         this.questionIds = questionIds;
-        this.questionType = questionType;
+        this.buildType = buildType;
         this.answerCardInfo = answerCardInfo;
         this.isAlert = isAlert;
         this.syllabusId = syllabusId;

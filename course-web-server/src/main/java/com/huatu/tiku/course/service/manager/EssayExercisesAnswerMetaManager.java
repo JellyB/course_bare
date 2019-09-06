@@ -11,6 +11,7 @@ import com.huatu.tiku.essay.constant.status.QuestionTypeConstant;
 import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
 import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
 import com.huatu.tiku.essay.essayEnum.EssayAnswerCardEnum;
+import com.huatu.tiku.essay.essayEnum.EssayQuestionTypeEnum;
 import com.huatu.tiku.essay.essayEnum.EssayStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -145,6 +146,7 @@ public class EssayExercisesAnswerMetaManager {
             log.error("dealSingleQuestionOrPaperOrMultiQuestions.questions is empty:{},{}", courseType, courseWareId);
             return;
         }
+        defaultCardInfo.setQcount(questions.size());
         // 单题或套题处理
         if(questions.size() == CORRECT_COUNT_ONE){
             EssayCourseExercisesQuestion essayCourseExercisesQuestion = questions.get(0);
@@ -285,6 +287,7 @@ public class EssayExercisesAnswerMetaManager {
         if(null == result){
             defaultCardInfo.setUcount(0);
         }else{
+            defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
             defaultCardInfo.setUcount(MapUtils.getIntValue(result, "cnt", 0));
         }
     }
