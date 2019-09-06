@@ -269,7 +269,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                                 courseWorkWareVo.setVideoLength(syllabusWareInfo.getLength());
                                 courseWorkWareVo.setSerialNumber(syllabusWareInfo.getSerialNumber());
                                 courseWorkWareVo.setAnswerCardId(essayExercisesAnswerMeta.getAnswerId());
-                                if(syllabusWareInfo.getVideoType() == CourseWareTypeEnum.LIVE_PLAY_BACK.getVideoType()){
+                                if(syllabusWareInfo.getVideoType() == CourseWareTypeEnum.VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
                                     courseWorkWareVo.setCourseWareId(essayExercisesAnswerMeta.getCourseWareId());
                                     courseWorkWareVo.setVideoType(essayExercisesAnswerMeta.getCourseType());
                                 }else{
