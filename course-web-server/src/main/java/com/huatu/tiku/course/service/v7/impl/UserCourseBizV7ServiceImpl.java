@@ -262,7 +262,6 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                                 map.put(SyllabusInfo.SyllabusId, essayExercisesAnswerMeta.getSyllabusId());
 
                                 essayExercisesAnswerMetaManager.dealSingleQuestionOrPaperOrMultiQuestions(userId, essayAnswerCardInfo, map);
-                                essayAnswerCardInfo.setQcount(1);
                                 CourseWorkWareVo courseWorkWareVo = new CourseWorkWareVo();
 
                                 courseWorkWareVo.setSyllabusId(syllabusId);
@@ -280,7 +279,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                                 courseWorkWareVo.setQuestionIds("");
                                 courseWorkWareVo.setIsAlert(setOperations.isMember(key, syllabusId) ? YesNoEnum.YES.getValue() : YesNoEnum.NO.getValue());
                                 // 设置申论的questionType
-                                courseWorkWareVo.setQuestionType(essayAnswerCardInfo.getQuestionType());
+                                courseWorkWareVo.setBuildType(essayAnswerCardInfo.getQuestionType());
                                 courseWorkWareVo.setAnswerCardInfo(essayAnswerCardInfo);
                                 return courseWorkWareVo;
                             }).collect(Collectors.toList());
