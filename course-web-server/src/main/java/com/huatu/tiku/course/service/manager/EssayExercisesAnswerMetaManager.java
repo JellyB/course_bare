@@ -10,6 +10,7 @@ import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
 import com.huatu.tiku.essay.constant.status.QuestionTypeConstant;
 import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
 import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
+import com.huatu.tiku.essay.essayEnum.CourseWareTypeEnum;
 import com.huatu.tiku.essay.essayEnum.EssayAnswerCardEnum;
 import com.huatu.tiku.essay.essayEnum.EssayQuestionTypeEnum;
 import com.huatu.tiku.essay.essayEnum.EssayStatusEnum;
@@ -129,7 +130,8 @@ public class EssayExercisesAnswerMetaManager {
      * @param map
      */
     public void dealSingleQuestionOrPaperOrMultiQuestions(int userId, EssayAnswerCardInfo defaultCardInfo, Map map){
-        int courseType = MapUtils.getIntValue(map, SyllabusInfo.VideoType, 0);
+        int videoType = MapUtils.getIntValue(map, SyllabusInfo.VideoType, 0);
+        int courseType = CourseWareTypeEnum.changeVideoType2TableCourseType(videoType);
         long courseWareId = MapUtils.getLongValue(map, SyllabusInfo.CourseWareId, 0);
 
         Example questionExample = new Example(EssayCourseExercisesQuestion.class);

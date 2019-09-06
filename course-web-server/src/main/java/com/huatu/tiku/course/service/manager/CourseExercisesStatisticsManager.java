@@ -360,8 +360,8 @@ public class CourseExercisesStatisticsManager {
         for (Map<String, Object> param : params) {
             int courseType = MapUtils.getIntValue(param, "courseType");
             long courseId = MapUtils.getLongValue(param, "courseId");
-            CourseWareTypeEnum courseTypeEnum = CourseWareTypeEnum.create(courseType);
-            if(courseTypeEnum == CourseWareTypeEnum.LIVE_PLAY_BACK){
+            CourseWareTypeEnum.VideoTypeEnum courseTypeEnum = CourseWareTypeEnum.VideoTypeEnum.create(courseType);
+            if(courseTypeEnum == CourseWareTypeEnum.VideoTypeEnum.LIVE_PLAY_BACK){
                 Long bjyRoomId = MapUtils.getLong(param,"bjyRoomId");
                 if(null == bjyRoomId || bjyRoomId.longValue() == 0){
                     param.putAll(defaultResult);
@@ -375,7 +375,7 @@ public class CourseExercisesStatisticsManager {
                         continue;
                     }else{
                         courseId = courseLiveBackLog.getLiveCoursewareId();
-                        courseType = CourseWareTypeEnum.LIVE.getVideoType();
+                        courseType = CourseWareTypeEnum.VideoTypeEnum.LIVE.getVideoType();
                     }
                 }
             }

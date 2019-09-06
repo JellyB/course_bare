@@ -19,7 +19,6 @@ import com.huatu.tiku.course.service.manager.EssayExercisesAnswerMetaManager;
 import com.huatu.tiku.course.service.v7.UserCourseBizV7Service;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
-import com.huatu.tiku.essay.constant.status.QuestionTypeConstant;
 import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
 import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
 import com.huatu.tiku.essay.essayEnum.CourseWareTypeEnum;
@@ -269,7 +268,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                                 courseWorkWareVo.setVideoLength(syllabusWareInfo.getLength());
                                 courseWorkWareVo.setSerialNumber(syllabusWareInfo.getSerialNumber());
                                 courseWorkWareVo.setAnswerCardId(essayExercisesAnswerMeta.getAnswerId());
-                                if(syllabusWareInfo.getVideoType() == CourseWareTypeEnum.LIVE_PLAY_BACK.getVideoType()){
+                                if(syllabusWareInfo.getVideoType() == CourseWareTypeEnum.VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
                                     courseWorkWareVo.setCourseWareId(essayExercisesAnswerMeta.getCourseWareId());
                                     courseWorkWareVo.setVideoType(essayExercisesAnswerMeta.getCourseType());
                                 }else{
@@ -319,26 +318,16 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
      * @throws BizException
      */
     @Override
-    public Map<String, Integer> getCountByType(int userId, String userName) throws BizException {
-        Map<String, Integer> result = courseExercisesProcessLogManager.getCountByType(userId, userName);
-        //todo 通过 redis 查询申论课后作业数目
-        int essay = 0;
-        int origin = MapUtils.getIntValue(result, StudyTypeEnum.COURSE_WORK.getKey(), 0);
-        result.put(StudyTypeEnum.COURSE_WORK.getKey(), essay + origin);
+    public Map<String, Long> getCountByType(int userId, String userName) throws BizException {
+        Map<String, Integer> civilMap = courseExercisesProcessLogManager.getCountByType(userId, userName);
+        Map<String, Long> result = Maps.newHashMap();
+        String key = CourseCacheKey.getCourseWorkEssayIsAlert(userId);
+        SetOperations<String, Long> setOperations = redisTemplate.opsForSet();
+        setOperations.size(key);
+        long essayCount = setOperations.size(key);
+        int civilCount = MapUtils.getIntValue(civilMap, StudyTypeEnum.COURSE_WORK.getKey(), 0);
+        result.put(StudyTypeEnum.COURSE_WORK.getKey(), essayCount + civilCount);
         return result;
-    }
-
-
-    /**
-     * 申论课后作业处理队列
-     *
-     * @param type
-     * @param message
-     * @throws BizException
-     */
-    @Override
-    public void dealEssayCourseWork(String type, String message) throws BizException {
-
     }
 
     /**
