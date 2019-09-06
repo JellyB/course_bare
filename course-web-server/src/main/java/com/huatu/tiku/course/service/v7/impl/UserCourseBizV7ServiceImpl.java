@@ -372,10 +372,11 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
          */
         if (essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.QUESTION.getType()) {
 
-            Map<String, Object> similarQuestionMap = essaySimilarQuestionMapper.selectByQuestionBaseId(essayCourseExercisesQuestion.getPQid());
+            // 单题组 id 处理为 0
+            /*Map<String, Object> similarQuestionMap = essaySimilarQuestionMapper.selectByQuestionBaseId(essayCourseExercisesQuestion.getPQid());
             if (null == similarQuestionMap || similarQuestionMap.isEmpty()) {
                 throw new BizException(ErrorResult.create(100010, "试题不存在"));
-            }
+            }*/
 
             Map<String, Object> questionBaseMap = essayQuestionBaseMapper.selectQuestionBaseById(essayCourseExercisesQuestion.getPQid());
             if (null == questionBaseMap || questionBaseMap.isEmpty()) {
@@ -386,7 +387,8 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                 throw new BizException(ErrorResult.create(100010, "试题不存在"));
             }
             essayCourseWorkSyllabusInfo.setPaperName(MapUtils.getString(detailMap, "stem", StringUtils.EMPTY));
-            essayCourseWorkSyllabusInfo.setSimilarId(MapUtils.getLongValue(similarQuestionMap, "similar_id"));
+            //essayCourseWorkSyllabusInfo.setSimilarId(MapUtils.getLongValue(similarQuestionMap, "similar_id"));
+            essayCourseWorkSyllabusInfo.setSimilarId(0L);
             essayCourseWorkSyllabusInfo.setQuestionId(essayCourseExercisesQuestion.getPQid());
             essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(questionBaseMap, "area_name", ""));
             essayCourseWorkSyllabusInfo.setQuestionType(MapUtils.getIntValue(detailMap, "type", 0));
