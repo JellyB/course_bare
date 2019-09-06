@@ -42,8 +42,8 @@ public class EssayCourseWorkAnswerCardInfo extends EssayAnswerCardInfo{
         this.paperId = paperId;
     }
 
-    public EssayCourseWorkAnswerCardInfo(double examScore, double score, Integer areaId, String areaName, int correctNum, long similarId, int questionType, Long questionBaseId, Long paperId) {
-        super(examScore, score);
+    public EssayCourseWorkAnswerCardInfo(double examScore, double score, int fcount, Integer areaId, String areaName, int correctNum, long similarId, int questionType, Long questionBaseId, Long paperId) {
+        super(examScore, score, fcount);
         this.areaId = areaId;
         this.areaName = areaName;
         this.correctNum = correctNum;
@@ -53,8 +53,8 @@ public class EssayCourseWorkAnswerCardInfo extends EssayAnswerCardInfo{
         this.paperId = paperId;
     }
 
-    public EssayCourseWorkAnswerCardInfo(int status, int wcount, int ucount, int rcount, int qcount, long id, double examScore, double score, Integer areaId, String areaName, int correctNum, long similarId, int questionType, Long questionBaseId, Long paperId) {
-        super(status, wcount, ucount, rcount, qcount, id, examScore, score);
+    public EssayCourseWorkAnswerCardInfo(int status, int wcount, int ucount, int rcount, int qcount, long id, double examScore, double score, int fcount, Integer areaId, String areaName, int correctNum, long similarId, int questionType, Long questionBaseId, Long paperId) {
+        super(status, wcount, ucount, rcount, qcount, id, examScore, score, fcount);
         this.areaId = areaId;
         this.areaName = areaName;
         this.correctNum = correctNum;
