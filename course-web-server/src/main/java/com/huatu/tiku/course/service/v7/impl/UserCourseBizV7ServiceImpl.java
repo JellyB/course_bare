@@ -333,13 +333,14 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
     /**
      * 获取申论课后作业大纲信息
      *
-     * @param courseType
+     * @param videoType
      * @param courseWareId
      * @return
      * @throws BizException
      */
     @Override
-    public EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(Integer courseType, Long courseWareId, Long cardId) throws BizException {
+    public EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(Integer videoType, Long courseWareId, Long cardId) throws BizException {
+        int courseType = CourseWareTypeEnum.changeVideoType2TableCourseType(videoType);
         EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo = new EssayCourseWorkSyllabusInfo();
         essayCourseWorkSyllabusInfo.setBizStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
         if (cardId.longValue() > 0) {
