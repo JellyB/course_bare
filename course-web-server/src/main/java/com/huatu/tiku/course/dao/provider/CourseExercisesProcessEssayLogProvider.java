@@ -4,8 +4,10 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
 import com.huatu.tiku.essay.essayEnum.EssayStatusEnum;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 
+import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -14,6 +16,7 @@ import java.util.List;
  * @author biguodong
  * Create time 2019-03-06 5:48 PM
  **/
+@Slf4j
 public class CourseExercisesProcessEssayLogProvider {
 
     public String getEssayCoursePageInfo(long userId, int page, int size){
@@ -53,6 +56,7 @@ public class CourseExercisesProcessEssayLogProvider {
         stringBuilder.append(" course_id");
         //stringBuilder.append(" ORDER BY");
         //stringBuilder.append(" gmt_modify DESC");
+        log.info("getEssayCoursePageInfo.sql info: userId:{}", userId);
         return stringBuilder.toString();
     }
 
