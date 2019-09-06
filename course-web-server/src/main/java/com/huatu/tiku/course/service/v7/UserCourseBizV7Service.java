@@ -64,16 +64,8 @@ public interface UserCourseBizV7Service {
      * @return
      * @throws BizException
      */
-    Map<String, Integer> getCountByType(int userId, String userName) throws BizException;
+    Map<String, Long> getCountByType(int userId, String userName) throws BizException;
 
-
-    /**
-     * 申论课后作业处理队列
-     * @param type
-     * @param message
-     * @throws BizException
-     */
-    void dealEssayCourseWork(String type, String message) throws BizException;
 
     /**
      * 获取申论课后作业大纲信息 & 答题卡状态
