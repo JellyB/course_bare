@@ -182,7 +182,7 @@ public class CourseExercisesProcessEssayLogProvider {
         stringBuilder.append(" WHERE");
         stringBuilder.append(" user_id = ").append(userId);
         stringBuilder.append(" AND syllabus_id = ").append(syllabusId);
-        stringBuilder.append(" AND biz_status != ").append(EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT.getBizStatus());
+        stringBuilder.append(" AND biz_status = ").append(EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT.getBizStatus());
         return stringBuilder.toString();
     }
 

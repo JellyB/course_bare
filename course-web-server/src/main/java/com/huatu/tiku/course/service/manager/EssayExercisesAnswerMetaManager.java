@@ -287,10 +287,10 @@ public class EssayExercisesAnswerMetaManager {
         long syllabusId = MapUtils.getIntValue(map, SyllabusInfo.SyllabusId, 0);
         Map<String, Object> result = essayExercisesAnswerMetaMapper.selectUnDoQuestionCountBySyllabusId(userId, syllabusId);
         if(null == result){
-            defaultCardInfo.setUcount(0);
+            defaultCardInfo.setFcount(0);
         }else{
             defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
-            defaultCardInfo.setUcount(MapUtils.getIntValue(result, "cnt", 0));
+            defaultCardInfo.setFcount(MapUtils.getIntValue(result, "cnt", 0));
         }
     }
 }
