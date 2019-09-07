@@ -242,7 +242,7 @@ public class CourseExercisesProcessEssayLogProvider {
         stringBuilder.append(" AND syllabus_id = ").append(syllabusId);
         stringBuilder.append(" AND correct_num = ").append(correctNum);
         stringBuilder.append(" AND status = ").append(EssayStatusEnum.NORMAL.getCode());
-        stringBuilder.append( "GROUP BY (biz_status)");
+        stringBuilder.append(" GROUP BY (biz_status)");
         return stringBuilder.toString();
     }
 }
