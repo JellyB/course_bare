@@ -25,28 +25,16 @@ public class EssayAnswerCardInfo extends AnswerCardInfo{
     /* 已完成数量 */
     private int fcount;
 
-    private String clickContent;
-
-    private Integer afterCoreseNum;
-    // 0 单题 1 套题
-    private Integer buildType;
-
-    public EssayAnswerCardInfo(double examScore, double score, int fcount, String clickContent, Integer afterCoreseNum, Integer buildType) {
+    public EssayAnswerCardInfo(double examScore, double score, int fcount) {
         this.examScore = examScore;
         this.score = score;
         this.fcount = fcount;
-        this.clickContent = clickContent;
-        this.afterCoreseNum = afterCoreseNum;
-        this.buildType = buildType;
     }
 
-    public EssayAnswerCardInfo(int status, int wcount, int ucount, int rcount, int qcount, long id, double examScore, double score, int fcount, String clickContent, Integer afterCoreseNum, Integer buildType) {
+    public EssayAnswerCardInfo(int status, int wcount, int ucount, int rcount, int qcount, long id, double examScore, double score, int fcount) {
         super(status, wcount, ucount, rcount, qcount, id);
         this.examScore = examScore;
         this.score = score;
         this.fcount = fcount;
-        this.clickContent = clickContent;
-        this.afterCoreseNum = afterCoreseNum;
-        this.buildType = buildType;
     }
 }

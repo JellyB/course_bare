@@ -35,7 +35,13 @@ public class EssayCourseWorkAnswerCardInfo extends EssayAnswerCardInfo{
     /* 退回原因（退回学员原因,其他类型原因均在操作日志表中查询）*/
     private String correctMemo;
 
-    public EssayCourseWorkAnswerCardInfo(Integer areaId, String areaName, int correctNum, long similarId, int questionType, Long questionBaseId, Long paperId, String correctMemo) {
+    private String clickContent;
+
+    private Integer afterCoreseNum;
+    // 0 单题 1 套题
+    private Integer buildType;
+
+    public EssayCourseWorkAnswerCardInfo(Integer areaId, String areaName, int correctNum, long similarId, int questionType, Long questionBaseId, Long paperId, String correctMemo, String clickContent, Integer afterCoreseNum, Integer buildType) {
         this.areaId = areaId;
         this.areaName = areaName;
         this.correctNum = correctNum;
@@ -44,10 +50,13 @@ public class EssayCourseWorkAnswerCardInfo extends EssayAnswerCardInfo{
         this.questionBaseId = questionBaseId;
         this.paperId = paperId;
         this.correctMemo = correctMemo;
+        this.clickContent = clickContent;
+        this.afterCoreseNum = afterCoreseNum;
+        this.buildType = buildType;
     }
 
-    public EssayCourseWorkAnswerCardInfo(double examScore, double score, int fcount, String clickContent, Integer afterCoreseNum, Integer buildType, Integer areaId, String areaName, int correctNum, long similarId, int questionType, Long questionBaseId, Long paperId, String correctMemo) {
-        super(examScore, score, fcount, clickContent, afterCoreseNum, buildType);
+    public EssayCourseWorkAnswerCardInfo(double examScore, double score, int fcount, Integer areaId, String areaName, int correctNum, long similarId, int questionType, Long questionBaseId, Long paperId, String correctMemo, String clickContent, Integer afterCoreseNum, Integer buildType) {
+        super(examScore, score, fcount);
         this.areaId = areaId;
         this.areaName = areaName;
         this.correctNum = correctNum;
@@ -56,10 +65,13 @@ public class EssayCourseWorkAnswerCardInfo extends EssayAnswerCardInfo{
         this.questionBaseId = questionBaseId;
         this.paperId = paperId;
         this.correctMemo = correctMemo;
+        this.clickContent = clickContent;
+        this.afterCoreseNum = afterCoreseNum;
+        this.buildType = buildType;
     }
 
-    public EssayCourseWorkAnswerCardInfo(int status, int wcount, int ucount, int rcount, int qcount, long id, double examScore, double score, int fcount, String clickContent, Integer afterCoreseNum, Integer buildType, Integer areaId, String areaName, int correctNum, long similarId, int questionType, Long questionBaseId, Long paperId, String correctMemo) {
-        super(status, wcount, ucount, rcount, qcount, id, examScore, score, fcount, clickContent, afterCoreseNum, buildType);
+    public EssayCourseWorkAnswerCardInfo(int status, int wcount, int ucount, int rcount, int qcount, long id, double examScore, double score, int fcount, Integer areaId, String areaName, int correctNum, long similarId, int questionType, Long questionBaseId, Long paperId, String correctMemo, String clickContent, Integer afterCoreseNum, Integer buildType) {
+        super(status, wcount, ucount, rcount, qcount, id, examScore, score, fcount);
         this.areaId = areaId;
         this.areaName = areaName;
         this.correctNum = correctNum;
@@ -68,5 +80,8 @@ public class EssayCourseWorkAnswerCardInfo extends EssayAnswerCardInfo{
         this.questionBaseId = questionBaseId;
         this.paperId = paperId;
         this.correctMemo = correctMemo;
+        this.clickContent = clickContent;
+        this.afterCoreseNum = afterCoreseNum;
+        this.buildType = buildType;
     }
 }

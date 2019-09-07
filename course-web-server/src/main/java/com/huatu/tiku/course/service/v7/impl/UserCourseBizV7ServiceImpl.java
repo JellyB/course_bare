@@ -353,12 +353,12 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                 essayCourseWorkSyllabusInfo.setBizStatus(MapUtils.getIntValue(cardInfoMap, "biz_status", 0));
             }
         }
+        // 获取绑定试题信息
         Example example = new Example(EssayCourseExercisesQuestion.class);
         example.and()
                 .andEqualTo("courseType", courseType)
                 .andEqualTo("courseWareId", courseWareId)
                 .andEqualTo("status", EssayStatusEnum.NORMAL.getCode());
-
 
         List<EssayCourseExercisesQuestion> essayCourseExercisesQuestions = essayCourseExercisesQuestionMapper.selectByExample(example);
         if (CollectionUtils.isEmpty(essayCourseExercisesQuestions) || essayCourseExercisesQuestions.size() > 1) {
