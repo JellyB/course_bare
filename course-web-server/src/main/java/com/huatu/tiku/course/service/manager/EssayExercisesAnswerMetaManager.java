@@ -307,9 +307,10 @@ public class EssayExercisesAnswerMetaManager {
             statusMap.putAll(objectMap);
         }
 
+        Integer unDoCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
+        Integer commitCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.COMMIT.getBizStatus());
         Integer correctCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT.getBizStatus());
         Integer returnCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
-        Integer unDoCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
         if(null != returnCount){
             defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
             return;
@@ -319,10 +320,13 @@ public class EssayExercisesAnswerMetaManager {
             defaultCardInfo.setFcount(0);
             return;
         }
+        if(null != commitCount){
+            defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
+            return;
+        }
         if(null != correctCount){
             defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
             defaultCardInfo.setFcount(correctCount);
-            return;
         }
     }
 }
