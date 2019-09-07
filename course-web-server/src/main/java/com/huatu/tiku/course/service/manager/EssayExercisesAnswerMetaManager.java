@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.service.manager;
 
+import com.google.common.collect.Maps;
 import com.huatu.common.ErrorResult;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.vo.EssayAnswerCardInfo;
@@ -22,6 +23,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 描述：
@@ -294,11 +296,17 @@ public class EssayExercisesAnswerMetaManager {
             return;
         }
         int correctNum = MapUtils.getIntValue(correctNumMap, "correct_num", 1);
-        Map<String, Object> statusMap = essayExercisesAnswerMetaMapper.selectMultiQuestionBizStatusCount(userId, syllabusId, correctNum);
-        if(null == statusMap || statusMap.isEmpty()){
+        List<Map<String, Object>> listMap = essayExercisesAnswerMetaMapper.selectMultiQuestionBizStatusCount(userId, syllabusId, correctNum);
+        if(CollectionUtils.isEmpty(listMap)){
             log.error("处理多题做题统计状态异常: userId:{}, syllabusId:{}, correctNum:{}", userId, syllabusId, correctNum);
             return;
         }
+
+        Map<String,Object> statusMap = Maps.newHashMap();
+        for (Map<String, Object> objectMap : listMap) {
+            statusMap.putAll(objectMap);
+        }
+
         Integer correctCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT.getBizStatus());
         Integer returnCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
         Integer unDoCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
