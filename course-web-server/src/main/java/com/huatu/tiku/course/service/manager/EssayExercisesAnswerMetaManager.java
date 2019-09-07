@@ -5,17 +5,13 @@ import com.huatu.common.ErrorResult;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.vo.EssayAnswerCardInfo;
 import com.huatu.tiku.course.bean.vo.EssayCourseWorkAnswerCardInfo;
-import com.huatu.tiku.course.bean.vo.EssayCourseWorkSyllabusInfo;
 import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.dao.essay.*;
 import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
 import com.huatu.tiku.essay.constant.status.QuestionTypeConstant;
-import com.huatu.tiku.essay.entity.correct.CorrectOrder;
 import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
 import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
-import com.huatu.tiku.essay.essayEnum.CourseWareTypeEnum;
-import com.huatu.tiku.essay.essayEnum.EssayAnswerCardEnum;
-import com.huatu.tiku.essay.essayEnum.EssayStatusEnum;
+import com.huatu.tiku.essay.essayEnum.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -26,7 +22,6 @@ import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 描述：
@@ -218,31 +213,36 @@ public class EssayExercisesAnswerMetaManager {
             log.error("buildEssayAnswerCardInfo.essayQuestionAnswer is null:{}", essayExercisesAnswerMeta.getAnswerId());
             return;
         }
+        int biz_status = MapUtils.getIntValue(questionAnswer, "biz_status");
         defaultCardInfo.setId(MapUtils.getLongValue(questionAnswer, "id", 0));
-        defaultCardInfo.setStatus(MapUtils.getIntValue(questionAnswer, "biz_status"));
-        if(MapUtils.getIntValue(questionAnswer, "biz_status") == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()){
+        defaultCardInfo.setStatus(biz_status);
+        if(biz_status == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()){
             ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setCorrectMemo(dealCorrectReturnMemo(defaultCardInfo.getId(), EssayAnswerCardEnum.TypeEnum.QUESTION.getType()));
 
         }
+
+        Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionAnswer, "question_detail_id"));
+        if(null == detailMap || detailMap.isEmpty()){
+            throw new BizException(ErrorResult.create(100010, "试题不存在"));
+        }
+
+        int type = MapUtils.getIntValue(detailMap, "type");
+        //批改中提示批改信息
+        if((biz_status == EssayAnswerConstant.EssayAnswerBizStatusEnum.COMMIT.getBizStatus())){
+            Map<String, Object> orderMap = correctOrderMapper.selectByAnswerCardIdAndType(EssayAnswerCardEnum.TypeEnum.QUESTION.getType(), defaultCardInfo.getId());
+            if (null == orderMap || orderMap.isEmpty()) {
+                defaultCardInfo.setClickContent(StringUtils.EMPTY);
+            }else{
+                defaultCardInfo.setClickContent(TeacherOrderTypeEnum.reportContent(TeacherOrderTypeEnum.convert(type), MapUtils.getIntValue(orderMap, "delay_status")));
+            }
+        }
+
         if(defaultCardInfo instanceof EssayCourseWorkAnswerCardInfo){
             ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setAreaId(MapUtils.getIntValue(questionAnswer, "area_id"));
             ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setAreaName(MapUtils.getString(questionAnswer, "area_name"));
             ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setQuestionBaseId(MapUtils.getLongValue(questionAnswer, "question_base_id", 0));
             ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setCorrectNum(essayExercisesAnswerMeta.getCorrectNum());
-
-
-            // 单题组处理为 0
-            /*Map<String, Object> essaySimilarQuestionMap = essaySimilarQuestionMapper.selectByQuestionBaseId(essayExercisesAnswerMeta.getPQid());
-            if(null == essaySimilarQuestionMap || essaySimilarQuestionMap.isEmpty()){
-                throw new BizException(ErrorResult.create(100010, "试题不存在"));
-            }*/
-            //((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setSimilarId(MapUtils.getLongValue(essaySimilarQuestionMap, "similar_id"));
             ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setSimilarId(0L);
-            Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionAnswer, "question_detail_id"));
-            if(null == detailMap || detailMap.isEmpty()){
-                throw new BizException(ErrorResult.create(100010, "试题不存在"));
-            }
-            int type = MapUtils.getIntValue(detailMap, "type");
             //判断单题是否为议论文
             if(type == 5){
                 ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setQuestionType(QuestionTypeConstant.ARGUMENTATION);
@@ -274,9 +274,19 @@ public class EssayExercisesAnswerMetaManager {
             return;
         }
         defaultCardInfo.setId(MapUtils.getLongValue(paperMap, "id"));
-        defaultCardInfo.setStatus(MapUtils.getIntValue(paperMap, "biz_status"));
-        if(MapUtils.getIntValue(paperMap, "biz_status") == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()){
+        int biz_status = MapUtils.getIntValue(paperMap, "biz_status");
+        defaultCardInfo.setStatus(biz_status);
+        if(biz_status == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()){
             ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setCorrectMemo(dealCorrectReturnMemo(defaultCardInfo.getId(), EssayAnswerCardEnum.TypeEnum.PAPER.getType()));
+        }
+        //批改中提示批改信息
+        if((biz_status == EssayAnswerConstant.EssayAnswerBizStatusEnum.COMMIT.getBizStatus())){
+            Map<String, Object> orderMap = correctOrderMapper.selectByAnswerCardIdAndType(EssayAnswerCardEnum.TypeEnum.PAPER.getType(), defaultCardInfo.getId());
+            if (null == orderMap || orderMap.isEmpty()) {
+                defaultCardInfo.setClickContent(StringUtils.EMPTY);
+            }else{
+                defaultCardInfo.setClickContent(TeacherOrderTypeEnum.reportContent(TeacherOrderTypeEnum.SET_QUESTION, MapUtils.getIntValue(orderMap, "delay_status")));
+            }
         }
         if(defaultCardInfo instanceof EssayCourseWorkAnswerCardInfo){
             ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setAreaId(MapUtils.getIntValue(paperMap, "area_id"));
