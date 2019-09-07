@@ -214,7 +214,7 @@ public class CourseExercisesProcessEssayLogProvider {
     public String selectCurrentCorrectNum(int userId, long syllabusId){
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(" SELECT");
-        stringBuilder.append(" max(correct_num)");
+        stringBuilder.append(" max(correct_num) as correct_num");
         stringBuilder.append(" FROM");
         stringBuilder.append(" v_essay_exercises_answer_meta");
         stringBuilder.append(" WHERE");

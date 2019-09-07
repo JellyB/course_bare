@@ -62,5 +62,6 @@ public interface EssayExercisesAnswerMetaMapper extends Mapper<EssayExercisesAns
      * @param correctNum
      * @return
      */
+    @SelectProvider(type = CourseExercisesProcessEssayLogProvider.class, method = "selectMultiQuestionBizStatusCount")
     Map<String, Object> selectMultiQuestionBizStatusCount(int userId, long syllabusId, int correctNum);
 }
