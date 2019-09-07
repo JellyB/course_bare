@@ -69,12 +69,15 @@ public interface UserCourseBizV7Service {
 
     /**
      * 获取申论课后作业大纲信息 & 答题卡状态
+     * @param userId
      * @param videoType
      * @param courseWareId
+     * @param syllabusId
+     * @param cardId
      * @return
      * @throws BizException
      */
-    EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(Integer videoType, Long courseWareId, Long cardId) throws BizException;
+    EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(int userId, Integer videoType, Long courseWareId, Long syllabusId, Long cardId) throws BizException;
 
 
     /**

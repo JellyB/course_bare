@@ -168,6 +168,29 @@ public class CourseExercisesProcessEssayLogProvider {
     }
 
     /**
+     * 获取用户当前的答题卡信息
+     * @param userId
+     * @param syllabusId
+     * @return
+     */
+    public String getAnswerCardInfoBySyllabusId(int userId, long syllabusId){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT");
+        stringBuilder.append(" answer_id, biz_status");
+        stringBuilder.append(" FROM");
+        stringBuilder.append(" v_essay_exercises_answer_meta");
+        stringBuilder.append(" WHERE");
+        stringBuilder.append(" user_id = ").append(userId);
+        stringBuilder.append(" syllabus_id = ").append(syllabusId);
+        stringBuilder.append(" status = ").append(EssayStatusEnum.NORMAL.getCode());
+        stringBuilder.append(" order by correct_num DESC limit 1");
+
+
+
+        return stringBuilder.toString();
+    }
+
+    /**
      * 获取用户未做完课后作业练习数
      * @param userId
      * @param syllabusId

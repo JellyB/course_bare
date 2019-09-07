@@ -34,6 +34,8 @@ public class EssayCourseWorkSyllabusInfo implements Serializable{
 
     private String questionName;
 
+    private Long answerCardId;
+
     private Integer bizStatus;
 
     /* 退回原因（退回学员原因,其他类型原因均在操作日志表中查询）*/
@@ -41,8 +43,7 @@ public class EssayCourseWorkSyllabusInfo implements Serializable{
 
 
     @Builder
-
-    public EssayCourseWorkSyllabusInfo(Long questionId, Long paperId, Integer questionType, Long similarId, String areaName, String paperName, String questionName, Integer bizStatus, String correctMemo) {
+    public EssayCourseWorkSyllabusInfo(Long questionId, Long paperId, Integer questionType, Long similarId, String areaName, String paperName, String questionName, Long answerCardId, Integer bizStatus, String correctMemo) {
         this.questionId = questionId;
         this.paperId = paperId;
         this.questionType = questionType;
@@ -50,6 +51,7 @@ public class EssayCourseWorkSyllabusInfo implements Serializable{
         this.areaName = areaName;
         this.paperName = paperName;
         this.questionName = questionName;
+        this.answerCardId = answerCardId;
         this.bizStatus = bizStatus;
         this.correctMemo = correctMemo;
     }

@@ -113,9 +113,11 @@ public class UserCourseControllerV7 {
      * @return
      */
     @GetMapping(value = "courseWork/questionInfo/{videoType}/{courseWareId}")
-    public EssayCourseWorkSyllabusInfo questionInfo(@PathVariable(value = "videoType") Integer videoType,
+    public EssayCourseWorkSyllabusInfo questionInfo(@Token UserSession userSession,
+                                                    @PathVariable(value = "videoType") Integer videoType,
                                                     @PathVariable(value = "courseWareId") Long courseWareId,
+                                                    @RequestParam(value = "syllabusId") Long syllabusId,
                                                     @RequestParam(value = "answerCardId", defaultValue = "0") Long answerCardId){
-        return userCourseBizV7Service.essayCourseWorkSyllabusInfo(videoType, courseWareId, answerCardId);
+        return userCourseBizV7Service.essayCourseWorkSyllabusInfo(userSession.getId(), videoType, courseWareId, syllabusId, answerCardId);
     }
 }

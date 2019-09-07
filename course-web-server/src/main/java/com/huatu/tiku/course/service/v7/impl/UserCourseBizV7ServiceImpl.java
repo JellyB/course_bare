@@ -339,14 +339,24 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
      * @throws BizException
      */
     @Override
-    public EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(Integer videoType, Long courseWareId, Long cardId) throws BizException {
+    public EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo(int userId, Integer videoType, Long courseWareId, Long syllabusId, Long cardId) throws BizException {
+        if(null == syllabusId || syllabusId == 0){
+            throw new BizException(ErrorResult.create(100010, "非法参数"));
+        }
         int courseType = CourseWareTypeEnum.changeVideoType2TableCourseType(videoType);
         EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo = new EssayCourseWorkSyllabusInfo();
+        essayCourseWorkSyllabusInfo.setAnswerCardId(cardId);
         essayCourseWorkSyllabusInfo.setBizStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
         if (cardId.longValue() > 0) {
             Map<String, Object> metaMap = essayExercisesAnswerMetaMapper.getBizStatusByCardId(cardId);
             if (null != metaMap) {
-                essayCourseWorkSyllabusInfo.setBizStatus(MapUtils.getIntValue(metaMap, "biz_status", 0));
+                essayCourseWorkSyllabusInfo.setBizStatus(MapUtils.getIntValue(metaMap, "biz_status", EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus()));
+            }
+        }else{
+            Map<String,Object> cardInfoMap = essayExercisesAnswerMetaMapper.getAnswerCardInfoBySyllabusId(userId, syllabusId);
+            if(null != cardInfoMap){
+                essayCourseWorkSyllabusInfo.setAnswerCardId(MapUtils.getLongValue(cardInfoMap, "answer_id", 0));
+                essayCourseWorkSyllabusInfo.setBizStatus(MapUtils.getIntValue(cardInfoMap, "biz_status", 0));
             }
         }
         Example example = new Example(EssayCourseExercisesQuestion.class);

@@ -40,6 +40,14 @@ public interface EssayExercisesAnswerMetaMapper extends Mapper<EssayExercisesAns
     HashMap<String, Object> getBizStatusByCardId(@Param(value = "answerCardId") long answerCardId);
 
     /**
+     *
+     * @param syllabusId
+     * @return
+     */
+    @SelectProvider(type = CourseExercisesProcessEssayLogProvider.class, method = "getAnswerCardInfoBySyllabusId")
+    HashMap<String, Object> getAnswerCardInfoBySyllabusId(int userId, long syllabusId);
+
+    /**
      * 获取用户多道未做完单题数
      * @return
      */
