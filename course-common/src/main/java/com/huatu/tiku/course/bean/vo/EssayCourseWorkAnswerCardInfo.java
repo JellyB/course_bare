@@ -32,6 +32,9 @@ public class EssayCourseWorkAnswerCardInfo extends EssayAnswerCardInfo{
     /* 套卷 id */
     private Long paperId;
 
+    /* 退回原因（退回学员原因,其他类型原因均在操作日志表中查询）*/
+    private String correctMemo;
+
     public EssayCourseWorkAnswerCardInfo(Integer areaId, String areaName, int correctNum, long similarId, int questionType, Long questionBaseId, Long paperId) {
         this.areaId = areaId;
         this.areaName = areaName;

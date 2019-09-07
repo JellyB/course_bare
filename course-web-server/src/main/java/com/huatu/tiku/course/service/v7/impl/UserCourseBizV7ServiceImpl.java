@@ -70,9 +70,6 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
     private EssayCourseExercisesQuestionMapper essayCourseExercisesQuestionMapper;
 
     @Autowired
-    private EssaySimilarQuestionMapper essaySimilarQuestionMapper;
-
-    @Autowired
     private EssayQuestionBaseMapper essayQuestionBaseMapper;
 
     @Autowired
@@ -80,9 +77,6 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
     @Autowired
     private EssayPaperBaseMapper essayPaperBaseMapper;
-
-    @Autowired
-    private CorrectOrderMapper correctOrderMapper;
 
 
     /**
@@ -374,7 +368,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
         //处理被退回原因
         if (essayCourseWorkSyllabusInfo.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()) {
-            dealCorrectReturnMemo(essayCourseWorkSyllabusInfo, cardId, essayCourseExercisesQuestion.getType());
+            essayCourseWorkSyllabusInfo.setCorrectMemo(essayExercisesAnswerMetaManager.dealCorrectReturnMemo(cardId, essayCourseExercisesQuestion.getType()));
         }
 
         /**
@@ -424,17 +418,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
         return essayCourseWorkSyllabusInfo;
     }
 
-    /**
-     * 处理被退回原因
-     * @param essayCourseWorkSyllabusInfo
-     * @param answerCardId
-     * @param answerCardType
-     */
-    private void dealCorrectReturnMemo(EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo, long answerCardId, int answerCardType){
-        Map<String, Object> result = correctOrderMapper.selectByAnswerCardIdAndType(answerCardType, answerCardId);
-        String correctMemo = MapUtils.getString(result, "correct_memo", StringUtils.EMPTY);
-        essayCourseWorkSyllabusInfo.setCorrectMemo(correctMemo);
-    }
+
 
     /**
      * 使用 syllabusId 构建申论课后作业答题卡信息

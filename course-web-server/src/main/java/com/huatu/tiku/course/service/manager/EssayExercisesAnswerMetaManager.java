@@ -5,10 +5,12 @@ import com.huatu.common.ErrorResult;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.vo.EssayAnswerCardInfo;
 import com.huatu.tiku.course.bean.vo.EssayCourseWorkAnswerCardInfo;
+import com.huatu.tiku.course.bean.vo.EssayCourseWorkSyllabusInfo;
 import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.dao.essay.*;
 import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
 import com.huatu.tiku.essay.constant.status.QuestionTypeConstant;
+import com.huatu.tiku.essay.entity.correct.CorrectOrder;
 import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
 import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
 import com.huatu.tiku.essay.essayEnum.CourseWareTypeEnum;
@@ -17,6 +19,7 @@ import com.huatu.tiku.essay.essayEnum.EssayStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import tk.mybatis.mapper.entity.Example;
@@ -217,6 +220,10 @@ public class EssayExercisesAnswerMetaManager {
         }
         defaultCardInfo.setId(MapUtils.getLongValue(questionAnswer, "id", 0));
         defaultCardInfo.setStatus(MapUtils.getIntValue(questionAnswer, "biz_status"));
+        if(MapUtils.getIntValue(questionAnswer, "biz_status") == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()){
+            ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setCorrectMemo(dealCorrectReturnMemo(defaultCardInfo.getId(), EssayAnswerCardEnum.TypeEnum.QUESTION.getType()));
+
+        }
         if(defaultCardInfo instanceof EssayCourseWorkAnswerCardInfo){
             ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setAreaId(MapUtils.getIntValue(questionAnswer, "area_id"));
             ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setAreaName(MapUtils.getString(questionAnswer, "area_name"));
@@ -268,7 +275,9 @@ public class EssayExercisesAnswerMetaManager {
         }
         defaultCardInfo.setId(MapUtils.getLongValue(paperMap, "id"));
         defaultCardInfo.setStatus(MapUtils.getIntValue(paperMap, "biz_status"));
-
+        if(MapUtils.getIntValue(paperMap, "biz_status") == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()){
+            ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setCorrectMemo(dealCorrectReturnMemo(defaultCardInfo.getId(), EssayAnswerCardEnum.TypeEnum.PAPER.getType()));
+        }
         if(defaultCardInfo instanceof EssayCourseWorkAnswerCardInfo){
             ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setAreaId(MapUtils.getIntValue(paperMap, "area_id"));
             ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setAreaName(MapUtils.getString(paperMap, "area_name"));
@@ -328,5 +337,15 @@ public class EssayExercisesAnswerMetaManager {
             defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
             defaultCardInfo.setFcount(correctCount);
         }
+    }
+
+    /**
+     * 处理被退回原因
+     * @param answerCardId
+     * @param answerCardType
+     */
+    public String dealCorrectReturnMemo(long answerCardId, int answerCardType){
+        Map<String, Object> result = correctOrderMapper.selectByAnswerCardIdAndType(answerCardType, answerCardId);
+        return MapUtils.getString(result, "correct_memo", StringUtils.EMPTY);
     }
 }
