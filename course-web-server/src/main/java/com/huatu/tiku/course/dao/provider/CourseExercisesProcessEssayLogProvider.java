@@ -204,4 +204,45 @@ public class CourseExercisesProcessEssayLogProvider {
         stringBuilder.append(" AND status = ").append(EssayStatusEnum.NORMAL.getCode());
         return stringBuilder.toString();
     }
+
+    /**
+     * 查询用户当前 correctNum
+     * @param userId
+     * @param syllabusId
+     * @return
+     */
+    public String selectCurrentCorrectNum(int userId, long syllabusId){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT");
+        stringBuilder.append(" max(correct_num)");
+        stringBuilder.append(" FROM");
+        stringBuilder.append(" v_essay_exercises_answer_meta");
+        stringBuilder.append(" WHERE");
+        stringBuilder.append(" user_id = ").append(userId);
+        stringBuilder.append(" AND syllabus_id = ").append(syllabusId);
+        stringBuilder.append(" AND status = ").append(EssayStatusEnum.NORMAL.getCode());
+        return stringBuilder.toString();
+    }
+
+    /**
+     * 获取不同答题卡状态 count
+     * @param userId
+     * @param syllabusId
+     * @param correctNum
+     * @return
+     */
+    public String selectMultiQuestionBizStatusCount(int userId, long syllabusId, int correctNum){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT");
+        stringBuilder.append(" biz_status, count(biz_status) AS cnt ");
+        stringBuilder.append(" FROM");
+        stringBuilder.append(" v_essay_exercises_answer_meta");
+        stringBuilder.append(" WHERE");
+        stringBuilder.append(" user_id = ").append(userId);
+        stringBuilder.append(" AND syllabus_id = ").append(syllabusId);
+        stringBuilder.append(" AND correct_num = ").append(correctNum);
+        stringBuilder.append(" AND status = ").append(EssayStatusEnum.NORMAL.getCode());
+        stringBuilder.append( "GROUP BY (biz_status)");
+        return stringBuilder.toString();
+    }
 }

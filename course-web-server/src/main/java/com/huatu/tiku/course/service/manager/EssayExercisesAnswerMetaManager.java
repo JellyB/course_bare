@@ -12,7 +12,6 @@ import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
 import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
 import com.huatu.tiku.essay.essayEnum.CourseWareTypeEnum;
 import com.huatu.tiku.essay.essayEnum.EssayAnswerCardEnum;
-import com.huatu.tiku.essay.essayEnum.EssayQuestionTypeEnum;
 import com.huatu.tiku.essay.essayEnum.EssayStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -288,12 +287,34 @@ public class EssayExercisesAnswerMetaManager {
      */
     private void dealMultiQuestion(int userId,  EssayAnswerCardInfo defaultCardInfo, Map map){
         long syllabusId = MapUtils.getIntValue(map, SyllabusInfo.SyllabusId, 0);
-        Map<String, Object> result = essayExercisesAnswerMetaMapper.selectUnDoQuestionCountBySyllabusId(userId, syllabusId);
-        if(null == result){
+        Map<String, Object> correctNumMap = essayExercisesAnswerMetaMapper.selectCurrentCorrectNum(userId, syllabusId);
+        defaultCardInfo.setFcount(0);
+        defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
+        if(null == correctNumMap || correctNumMap.isEmpty()){
+            return;
+        }
+        int correctNum = MapUtils.getIntValue(correctNumMap, "correct_num", 1);
+        Map<String, Object> statusMap = essayExercisesAnswerMetaMapper.selectMultiQuestionBizStatusCount(userId, syllabusId, correctNum);
+        if(null == statusMap || statusMap.isEmpty()){
+            log.error("处理多题做题统计状态异常: userId:{}, syllabusId:{}, correctNum:{}", userId, syllabusId, correctNum);
+            return;
+        }
+        Integer correctCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT.getBizStatus());
+        Integer returnCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
+        Integer unDoCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
+        if(null != returnCount){
+            defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
+            return;
+        }
+        if(null != unDoCount && unDoCount == defaultCardInfo.getQcount()){
+            defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
             defaultCardInfo.setFcount(0);
-        }else{
+            return;
+        }
+        if(null != correctCount){
             defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
-            defaultCardInfo.setFcount(MapUtils.getIntValue(result, "cnt", 0));
+            defaultCardInfo.setFcount(correctCount);
+            return;
         }
     }
 }

@@ -43,6 +43,24 @@ public interface EssayExercisesAnswerMetaMapper extends Mapper<EssayExercisesAns
      * 获取用户多道未做完单题数
      * @return
      */
+    @Deprecated
     @SelectProvider(type = CourseExercisesProcessEssayLogProvider.class, method = "selectUnDoQuestionCountBySyllabusId")
     Map<String,Object> selectUnDoQuestionCountBySyllabusId(int userId, long syllabusId);
+
+
+    /**
+     * 查询当前用户 correct num
+     * @return
+     */
+    @SelectProvider(type = CourseExercisesProcessEssayLogProvider.class, method = "selectCurrentCorrectNum")
+    Map<String, Object> selectCurrentCorrectNum(int userId, long syllabusId);
+
+    /**
+     * 获取不同答题卡 status count
+     * @param userId
+     * @param syllabusId
+     * @param correctNum
+     * @return
+     */
+    Map<String, Object> selectMultiQuestionBizStatusCount(int userId, long syllabusId, int correctNum);
 }
