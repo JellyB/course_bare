@@ -181,8 +181,8 @@ public class CourseExercisesProcessEssayLogProvider {
         stringBuilder.append(" v_essay_exercises_answer_meta");
         stringBuilder.append(" WHERE");
         stringBuilder.append(" user_id = ").append(userId);
-        stringBuilder.append(" syllabus_id = ").append(syllabusId);
-        stringBuilder.append(" status = ").append(EssayStatusEnum.NORMAL.getCode());
+        stringBuilder.append(" AND syllabus_id = ").append(syllabusId);
+        stringBuilder.append(" AND status = ").append(EssayStatusEnum.NORMAL.getCode());
         stringBuilder.append(" order by correct_num DESC limit 1");
 
 
