@@ -168,6 +168,29 @@ public class CourseExercisesProcessEssayLogProvider {
     }
 
     /**
+     * 获取用户当前的答题卡信息
+     * @param userId
+     * @param syllabusId
+     * @return
+     */
+    public String getAnswerCardInfoBySyllabusId(int userId, long syllabusId){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT");
+        stringBuilder.append(" answer_id, biz_status");
+        stringBuilder.append(" FROM");
+        stringBuilder.append(" v_essay_exercises_answer_meta");
+        stringBuilder.append(" WHERE");
+        stringBuilder.append(" user_id = ").append(userId);
+        stringBuilder.append(" syllabus_id = ").append(syllabusId);
+        stringBuilder.append(" status = ").append(EssayStatusEnum.NORMAL.getCode());
+        stringBuilder.append(" order by correct_num DESC limit 1");
+
+
+
+        return stringBuilder.toString();
+    }
+
+    /**
      * 获取用户未做完课后作业练习数
      * @param userId
      * @param syllabusId
@@ -202,6 +225,47 @@ public class CourseExercisesProcessEssayLogProvider {
         stringBuilder.append(" answer_card_type = ").append(answerCardType);
         stringBuilder.append(" AND answer_card_id = ").append(answerCardId);
         stringBuilder.append(" AND status = ").append(EssayStatusEnum.NORMAL.getCode());
+        return stringBuilder.toString();
+    }
+
+    /**
+     * 查询用户当前 correctNum
+     * @param userId
+     * @param syllabusId
+     * @return
+     */
+    public String selectCurrentCorrectNum(int userId, long syllabusId){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT");
+        stringBuilder.append(" max(correct_num) as correct_num");
+        stringBuilder.append(" FROM");
+        stringBuilder.append(" v_essay_exercises_answer_meta");
+        stringBuilder.append(" WHERE");
+        stringBuilder.append(" user_id = ").append(userId);
+        stringBuilder.append(" AND syllabus_id = ").append(syllabusId);
+        stringBuilder.append(" AND status = ").append(EssayStatusEnum.NORMAL.getCode());
+        return stringBuilder.toString();
+    }
+
+    /**
+     * 获取不同答题卡状态 count
+     * @param userId
+     * @param syllabusId
+     * @param correctNum
+     * @return
+     */
+    public String selectMultiQuestionBizStatusCount(int userId, long syllabusId, int correctNum){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT");
+        stringBuilder.append(" biz_status, count(biz_status) AS cnt ");
+        stringBuilder.append(" FROM");
+        stringBuilder.append(" v_essay_exercises_answer_meta");
+        stringBuilder.append(" WHERE");
+        stringBuilder.append(" user_id = ").append(userId);
+        stringBuilder.append(" AND syllabus_id = ").append(syllabusId);
+        stringBuilder.append(" AND correct_num = ").append(correctNum);
+        stringBuilder.append(" AND status = ").append(EssayStatusEnum.NORMAL.getCode());
+        stringBuilder.append(" GROUP BY (biz_status)");
         return stringBuilder.toString();
     }
 }

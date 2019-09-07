@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.service.manager;
 
+import com.google.common.collect.Maps;
 import com.huatu.common.ErrorResult;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.vo.EssayAnswerCardInfo;
@@ -12,7 +13,6 @@ import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
 import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
 import com.huatu.tiku.essay.essayEnum.CourseWareTypeEnum;
 import com.huatu.tiku.essay.essayEnum.EssayAnswerCardEnum;
-import com.huatu.tiku.essay.essayEnum.EssayQuestionTypeEnum;
 import com.huatu.tiku.essay.essayEnum.EssayStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -23,6 +23,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 描述：
@@ -288,12 +289,44 @@ public class EssayExercisesAnswerMetaManager {
      */
     private void dealMultiQuestion(int userId,  EssayAnswerCardInfo defaultCardInfo, Map map){
         long syllabusId = MapUtils.getIntValue(map, SyllabusInfo.SyllabusId, 0);
-        Map<String, Object> result = essayExercisesAnswerMetaMapper.selectUnDoQuestionCountBySyllabusId(userId, syllabusId);
-        if(null == result){
+        Map<String, Object> correctNumMap = essayExercisesAnswerMetaMapper.selectCurrentCorrectNum(userId, syllabusId);
+        defaultCardInfo.setFcount(0);
+        defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
+        if(null == correctNumMap || correctNumMap.isEmpty()){
+            return;
+        }
+        int correctNum = MapUtils.getIntValue(correctNumMap, "correct_num", 1);
+        List<Map<String, Object>> listMap = essayExercisesAnswerMetaMapper.selectMultiQuestionBizStatusCount(userId, syllabusId, correctNum);
+        if(CollectionUtils.isEmpty(listMap)){
+            log.error("处理多题做题统计状态异常: userId:{}, syllabusId:{}, correctNum:{}", userId, syllabusId, correctNum);
+            return;
+        }
+
+        Map<String,Object> statusMap = Maps.newHashMap();
+        for (Map<String, Object> objectMap : listMap) {
+            statusMap.putAll(objectMap);
+        }
+
+        Integer unDoCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
+        Integer commitCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.COMMIT.getBizStatus());
+        Integer correctCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT.getBizStatus());
+        Integer returnCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
+        if(null != returnCount){
+            defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
+            return;
+        }
+        if(null != unDoCount && unDoCount == defaultCardInfo.getQcount()){
+            defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
             defaultCardInfo.setFcount(0);
-        }else{
+            return;
+        }
+        if(null != commitCount){
             defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
-            defaultCardInfo.setFcount(MapUtils.getIntValue(result, "cnt", 0));
+            return;
+        }
+        if(null != correctCount){
+            defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
+            defaultCardInfo.setFcount(correctCount);
         }
     }
 }
