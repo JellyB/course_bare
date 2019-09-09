@@ -3,6 +3,7 @@ package com.huatu.tiku.course.service.manager;
 import com.google.common.collect.Maps;
 import com.huatu.common.ErrorResult;
 import com.huatu.common.exception.BizException;
+import com.huatu.tiku.course.bean.vo.AnswerCardInfo;
 import com.huatu.tiku.course.bean.vo.EssayAnswerCardInfo;
 import com.huatu.tiku.course.bean.vo.EssayCourseWorkAnswerCardInfo;
 import com.huatu.tiku.course.consts.SyllabusInfo;
@@ -160,7 +161,10 @@ public class EssayExercisesAnswerMetaManager {
                 dealSinglePaper(userId, essayCourseExercisesQuestion.getPQid(), defaultCardInfo, map);
             }
         }else{
-            dealMultiQuestion(userId, defaultCardInfo, map);
+            long syllabusId = MapUtils.getIntValue(map, SyllabusInfo.SyllabusId, 0);
+            EssayAnswerCardInfo essayAnswerCardInfo = dealMultiQuestionAnswerCardInfo(userId, syllabusId);
+            defaultCardInfo.setFcount(essayAnswerCardInfo.getStatus());
+            defaultCardInfo.setStatus(essayAnswerCardInfo.getFcount());
         }
     }
 
@@ -287,25 +291,25 @@ public class EssayExercisesAnswerMetaManager {
         }
     }
 
+
     /**
      * 多个单题处理
      * @param userId
-     * @param defaultCardInfo
-     * @param map
+     * @param syllabusId
      */
-    private void dealMultiQuestion(int userId,  EssayAnswerCardInfo defaultCardInfo, Map map){
-        long syllabusId = MapUtils.getIntValue(map, SyllabusInfo.SyllabusId, 0);
+    public EssayAnswerCardInfo dealMultiQuestionAnswerCardInfo(int userId, long syllabusId){
+        EssayAnswerCardInfo answerCardInfo = new EssayAnswerCardInfo();
         Map<String, Object> correctNumMap = essayExercisesAnswerMetaMapper.selectCurrentCorrectNum(userId, syllabusId);
-        defaultCardInfo.setFcount(0);
-        defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
+        answerCardInfo.setFcount(0);
+        answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
         if(null == correctNumMap || correctNumMap.isEmpty()){
-            return;
+            return answerCardInfo;
         }
         int correctNum = MapUtils.getIntValue(correctNumMap, "correct_num", 1);
         List<Map<String, Object>> listMap = essayExercisesAnswerMetaMapper.selectMultiQuestionBizStatusCount(userId, syllabusId, correctNum);
         if(CollectionUtils.isEmpty(listMap)){
             log.error("处理多题做题统计状态异常: userId:{}, syllabusId:{}, correctNum:{}", userId, syllabusId, correctNum);
-            return;
+            return answerCardInfo;
         }
 
         Map<String,Object> statusMap = Maps.newHashMap();
@@ -318,23 +322,27 @@ public class EssayExercisesAnswerMetaManager {
         Integer correctCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT.getBizStatus());
         Integer returnCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
         if(null != returnCount){
-            defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
-            return;
+            answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
+            return answerCardInfo;
         }
-        if(null != unDoCount && unDoCount == defaultCardInfo.getQcount()){
-            defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
-            defaultCardInfo.setFcount(0);
-            return;
+        if(null != unDoCount && unDoCount == answerCardInfo.getQcount()){
+            answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
+            answerCardInfo.setFcount(0);
+            return answerCardInfo;
         }
         if(null != commitCount){
-            defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
-            return;
+            answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
+            return answerCardInfo;
         }
         if(null != correctCount){
-            defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
-            defaultCardInfo.setFcount(correctCount);
+            answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
+            answerCardInfo.setFcount(correctCount);
         }
+        return answerCardInfo;
     }
+
+
+
 
     /**
      * 处理被退回原因

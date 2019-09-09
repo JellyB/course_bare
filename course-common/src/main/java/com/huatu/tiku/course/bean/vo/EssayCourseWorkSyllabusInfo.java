@@ -46,6 +46,8 @@ public class EssayCourseWorkSyllabusInfo implements Serializable{
     private Integer afterCoreseNum;
     // 0 单题 1 套题
     private Integer buildType;
+    // 完成数量
+    private int fcount;
 
 
     @Builder

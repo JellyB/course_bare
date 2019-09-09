@@ -359,77 +359,86 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
         essayCourseWorkSyllabusInfo.setAfterCoreseNum(essayCourseExercisesQuestions.size());
         essayCourseWorkSyllabusInfo.setBuildType(essayCourseExercisesQuestions.get(0).getType());
-        if (CollectionUtils.isEmpty(essayCourseExercisesQuestions) || essayCourseExercisesQuestions.size() > 1) {
+
+        if (CollectionUtils.isEmpty(essayCourseExercisesQuestions)) {
             throw new BizException(ErrorResult.create(100010, "数据错误"));
         }
-        EssayCourseExercisesQuestion essayCourseExercisesQuestion = essayCourseExercisesQuestions.get(0);
+        // 多道单题,处理多题的 bizStatus
+        if(essayCourseExercisesQuestions.size() > 1){
+            essayCourseWorkSyllabusInfo.setAnswerCardId(0l);
 
-        //处理被退回原因
-        if (essayCourseWorkSyllabusInfo.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()) {
-            essayCourseWorkSyllabusInfo.setCorrectMemo(essayExercisesAnswerMetaManager.dealCorrectReturnMemo(cardId, essayCourseExercisesQuestion.getType()));
-        }
+            EssayAnswerCardInfo essayAnswerCardInfo = essayExercisesAnswerMetaManager.dealMultiQuestionAnswerCardInfo(userId, syllabusId);
+            essayCourseWorkSyllabusInfo.setBizStatus(essayAnswerCardInfo.getStatus());
+            essayCourseWorkSyllabusInfo.setFcount(essayAnswerCardInfo.getFcount());
+        }else{
+            EssayCourseExercisesQuestion essayCourseExercisesQuestion = essayCourseExercisesQuestions.get(0);
+            //处理被退回原因
+            if (essayCourseWorkSyllabusInfo.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()) {
+                essayCourseWorkSyllabusInfo.setCorrectMemo(essayExercisesAnswerMetaManager.dealCorrectReturnMemo(cardId, essayCourseExercisesQuestion.getType()));
+            }
 
-        /**
-         * 如果为单题
-         */
-        if (essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.QUESTION.getType()) {
+            /**
+             * 如果为单题
+             */
+            if (essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.QUESTION.getType()) {
 
-            // 单题组 id 处理为 0
+                // 单题组 id 处理为 0
             /*Map<String, Object> similarQuestionMap = essaySimilarQuestionMapper.selectByQuestionBaseId(essayCourseExercisesQuestion.getPQid());
             if (null == similarQuestionMap || similarQuestionMap.isEmpty()) {
                 throw new BizException(ErrorResult.create(100010, "试题不存在"));
             }*/
 
-            Map<String, Object> questionBaseMap = essayQuestionBaseMapper.selectQuestionBaseById(essayCourseExercisesQuestion.getPQid());
-            if (null == questionBaseMap || questionBaseMap.isEmpty()) {
-                throw new BizException(ErrorResult.create(100010, "试题不存在"));
-            }
-            Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionBaseMap, "detail_id", 0));
-            if (null == detailMap || detailMap.isEmpty()) {
-                throw new BizException(ErrorResult.create(100010, "试题不存在"));
-            }
-            essayCourseWorkSyllabusInfo.setQuestionName(MapUtils.getString(detailMap, "stem", StringUtils.EMPTY));
-            //essayCourseWorkSyllabusInfo.setSimilarId(MapUtils.getLongValue(similarQuestionMap, "similar_id"));
-            essayCourseWorkSyllabusInfo.setSimilarId(0L);
-            essayCourseWorkSyllabusInfo.setQuestionId(essayCourseExercisesQuestion.getPQid());
-            essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(questionBaseMap, "area_name", ""));
-            essayCourseWorkSyllabusInfo.setQuestionType(MapUtils.getIntValue(detailMap, "type", 0));
-            essayCourseWorkSyllabusInfo.setPaperName(StringUtils.EMPTY);
-            essayCourseWorkSyllabusInfo.setPaperId(0l);
+                Map<String, Object> questionBaseMap = essayQuestionBaseMapper.selectQuestionBaseById(essayCourseExercisesQuestion.getPQid());
+                if (null == questionBaseMap || questionBaseMap.isEmpty()) {
+                    throw new BizException(ErrorResult.create(100010, "试题不存在"));
+                }
+                Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionBaseMap, "detail_id", 0));
+                if (null == detailMap || detailMap.isEmpty()) {
+                    throw new BizException(ErrorResult.create(100010, "试题不存在"));
+                }
+                essayCourseWorkSyllabusInfo.setQuestionName(MapUtils.getString(detailMap, "stem", StringUtils.EMPTY));
+                //essayCourseWorkSyllabusInfo.setSimilarId(MapUtils.getLongValue(similarQuestionMap, "similar_id"));
+                essayCourseWorkSyllabusInfo.setSimilarId(0L);
+                essayCourseWorkSyllabusInfo.setQuestionId(essayCourseExercisesQuestion.getPQid());
+                essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(questionBaseMap, "area_name", ""));
+                essayCourseWorkSyllabusInfo.setQuestionType(MapUtils.getIntValue(detailMap, "type", 0));
+                essayCourseWorkSyllabusInfo.setPaperName(StringUtils.EMPTY);
+                essayCourseWorkSyllabusInfo.setPaperId(0l);
 
-            //处理批改中提示信息
-            if(essayCourseWorkSyllabusInfo.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.COMMIT.getBizStatus()){
-                Map<String, Object> orderMap = correctOrderMapper.selectByAnswerCardIdAndType(EssayAnswerCardEnum.TypeEnum.QUESTION.getType(), essayCourseWorkSyllabusInfo.getAnswerCardId());
-                if (null == orderMap || orderMap.isEmpty()) {
-                    essayCourseWorkSyllabusInfo.setClickContent(StringUtils.EMPTY);
-                }else{
-                    essayCourseWorkSyllabusInfo.setClickContent(TeacherOrderTypeEnum.reportContent(TeacherOrderTypeEnum.convert(MapUtils.getIntValue(detailMap, "type", 0)), MapUtils.getIntValue(orderMap, "delay_status")));
+                //处理批改中提示信息
+                if(essayCourseWorkSyllabusInfo.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.COMMIT.getBizStatus()){
+                    Map<String, Object> orderMap = correctOrderMapper.selectByAnswerCardIdAndType(EssayAnswerCardEnum.TypeEnum.QUESTION.getType(), essayCourseWorkSyllabusInfo.getAnswerCardId());
+                    if (null == orderMap || orderMap.isEmpty()) {
+                        essayCourseWorkSyllabusInfo.setClickContent(StringUtils.EMPTY);
+                    }else{
+                        essayCourseWorkSyllabusInfo.setClickContent(TeacherOrderTypeEnum.reportContent(TeacherOrderTypeEnum.convert(MapUtils.getIntValue(detailMap, "type", 0)), MapUtils.getIntValue(orderMap, "delay_status")));
+                    }
                 }
             }
-        }
 
-        /**
-         * 如果为套题
-         */
-        if (essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.PAPER.getType()) {
-            Map<String, Object> paperBaseMap = essayPaperBaseMapper.selectPaperBaseById(essayCourseExercisesQuestion.getPQid().longValue());
-            if (null == paperBaseMap || paperBaseMap.isEmpty()) {
-                throw new BizException(ErrorResult.create(100010, "套卷不存在"));
-            }
-            essayCourseWorkSyllabusInfo.setSimilarId(0l);
-            essayCourseWorkSyllabusInfo.setQuestionId(0l);
-            essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(paperBaseMap, "area_name"));
-            essayCourseWorkSyllabusInfo.setQuestionType(0);
-            essayCourseWorkSyllabusInfo.setPaperName(MapUtils.getString(paperBaseMap, "name", ""));
-            essayCourseWorkSyllabusInfo.setPaperId(essayCourseExercisesQuestion.getPQid());
+            /**
+             * 如果为套题
+             */
+            if (essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.PAPER.getType()) {
+                Map<String, Object> paperBaseMap = essayPaperBaseMapper.selectPaperBaseById(essayCourseExercisesQuestion.getPQid().longValue());
+                if (null == paperBaseMap || paperBaseMap.isEmpty()) {
+                    throw new BizException(ErrorResult.create(100010, "套卷不存在"));
+                }
+                essayCourseWorkSyllabusInfo.setSimilarId(0l);
+                essayCourseWorkSyllabusInfo.setQuestionId(0l);
+                essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(paperBaseMap, "area_name"));
+                essayCourseWorkSyllabusInfo.setQuestionType(0);
+                essayCourseWorkSyllabusInfo.setPaperName(MapUtils.getString(paperBaseMap, "name", ""));
+                essayCourseWorkSyllabusInfo.setPaperId(essayCourseExercisesQuestion.getPQid());
 
-            //处理批改中提示信息
-            if(essayCourseWorkSyllabusInfo.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.COMMIT.getBizStatus()){
-                Map<String, Object> orderMap = correctOrderMapper.selectByAnswerCardIdAndType(EssayAnswerCardEnum.TypeEnum.QUESTION.getType(), essayCourseWorkSyllabusInfo.getAnswerCardId());
-                if (null == orderMap || orderMap.isEmpty()) {
-                    essayCourseWorkSyllabusInfo.setClickContent(StringUtils.EMPTY);
-                }else{
-                    essayCourseWorkSyllabusInfo.setClickContent(TeacherOrderTypeEnum.reportContent(TeacherOrderTypeEnum.SET_QUESTION, MapUtils.getIntValue(orderMap, "delay_status")));
+                //处理批改中提示信息
+                if(essayCourseWorkSyllabusInfo.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.COMMIT.getBizStatus()){
+                    Map<String, Object> orderMap = correctOrderMapper.selectByAnswerCardIdAndType(EssayAnswerCardEnum.TypeEnum.QUESTION.getType(), essayCourseWorkSyllabusInfo.getAnswerCardId());
+                    if (null == orderMap || orderMap.isEmpty()) {
+                        essayCourseWorkSyllabusInfo.setClickContent(StringUtils.EMPTY);
+                    }else{
+                        essayCourseWorkSyllabusInfo.setClickContent(TeacherOrderTypeEnum.reportContent(TeacherOrderTypeEnum.SET_QUESTION, MapUtils.getIntValue(orderMap, "delay_status")));
+                    }
                 }
             }
         }
