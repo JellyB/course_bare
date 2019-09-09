@@ -1,13 +1,29 @@
 package com.huatu.tiku.course.service.manager;
 
-import com.google.common.collect.Maps;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.huatu.common.ErrorResult;
 import com.huatu.common.exception.BizException;
-import com.huatu.tiku.course.bean.vo.AnswerCardInfo;
 import com.huatu.tiku.course.bean.vo.EssayAnswerCardInfo;
 import com.huatu.tiku.course.bean.vo.EssayCourseWorkAnswerCardInfo;
 import com.huatu.tiku.course.consts.SyllabusInfo;
-import com.huatu.tiku.course.dao.essay.*;
+import com.huatu.tiku.course.dao.essay.CorrectOrderMapper;
+import com.huatu.tiku.course.dao.essay.EssayCourseExercisesQuestionMapper;
+import com.huatu.tiku.course.dao.essay.EssayExercisesAnswerMetaMapper;
+import com.huatu.tiku.course.dao.essay.EssayPaperAnswerMapper;
+import com.huatu.tiku.course.dao.essay.EssayQuestionAnswerMapper;
+import com.huatu.tiku.course.dao.essay.EssayQuestionDetailMapper;
+import com.huatu.tiku.course.dao.essay.EssaySimilarQuestionMapper;
 import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
 import com.huatu.tiku.essay.constant.status.QuestionTypeConstant;
 import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
@@ -15,17 +31,9 @@ import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
 import com.huatu.tiku.essay.essayEnum.CourseWareTypeEnum;
 import com.huatu.tiku.essay.essayEnum.EssayAnswerCardEnum;
 import com.huatu.tiku.essay.essayEnum.EssayStatusEnum;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import tk.mybatis.mapper.entity.Example;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
+import tk.mybatis.mapper.entity.Example;
 
 /**
  * 描述：
@@ -173,8 +181,8 @@ public class EssayExercisesAnswerMetaManager {
         }else{
             long syllabusId = MapUtils.getIntValue(map, SyllabusInfo.SyllabusId, 0);
             EssayAnswerCardInfo essayAnswerCardInfo = dealMultiQuestionAnswerCardInfo(userId, syllabusId);
-            defaultCardInfo.setFcount(essayAnswerCardInfo.getStatus());
-            defaultCardInfo.setStatus(essayAnswerCardInfo.getFcount());
+            defaultCardInfo.setFcount(essayAnswerCardInfo.getFcount());
+            defaultCardInfo.setStatus(essayAnswerCardInfo.getStatus());
         }
     }
 
@@ -307,49 +315,57 @@ public class EssayExercisesAnswerMetaManager {
      * @param userId
      * @param syllabusId
      */
-    public EssayAnswerCardInfo dealMultiQuestionAnswerCardInfo(int userId, long syllabusId){
-        EssayAnswerCardInfo answerCardInfo = new EssayAnswerCardInfo();
-        Map<String, Object> correctNumMap = essayExercisesAnswerMetaMapper.selectCurrentCorrectNum(userId, syllabusId);
-        answerCardInfo.setFcount(0);
-        answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
-        if(null == correctNumMap || correctNumMap.isEmpty()){
-            return answerCardInfo;
-        }
-        int correctNum = MapUtils.getIntValue(correctNumMap, "correct_num", 1);
-        List<Map<String, Object>> listMap = essayExercisesAnswerMetaMapper.selectMultiQuestionBizStatusCount(userId, syllabusId, correctNum);
-        if(CollectionUtils.isEmpty(listMap)){
-            log.error("处理多题做题统计状态异常: userId:{}, syllabusId:{}, correctNum:{}", userId, syllabusId, correctNum);
-            return answerCardInfo;
-        }
+	public EssayAnswerCardInfo dealMultiQuestionAnswerCardInfo(int userId, long syllabusId) {
+		EssayAnswerCardInfo answerCardInfo = new EssayAnswerCardInfo();
+		answerCardInfo.setFcount(0);
+		answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
+		List<Map<String, Object>> metaListMap = essayExercisesAnswerMetaMapper.selectMultiBizStatusCount(userId,
+				syllabusId);
+		if (CollectionUtils.isEmpty(metaListMap)) {
+			log.error("处理多题做题统计状态异常: userId:{}, syllabusId:{}, correctNum:{}", userId, syllabusId);
+			return answerCardInfo;
+		}
+		Map<Long, Object> answerMetaListMap = metaListMap.stream()
+				.collect(Collectors.toMap(answerMeta -> (Long) answerMeta.get("p_qid"),
+						answerMeta -> answerMeta, (answerMeta1, answerMeta2) -> {
+							if (MapUtils.getInteger((Map) answerMeta1, "correct_num", 0) > MapUtils
+									.getInteger((Map) answerMeta2, "correct_num", 0)) {
+								return answerMeta1;
+							}
+							return answerMeta2;
 
-        Map<String,Object> statusMap = Maps.newHashMap();
-        for (Map<String, Object> objectMap : listMap) {
-            statusMap.putAll(objectMap);
-        }
-
-        Integer unDoCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
-        Integer commitCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.COMMIT.getBizStatus());
-        Integer correctCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT.getBizStatus());
-        Integer returnCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
-        if(null != returnCount){
-            answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
-            return answerCardInfo;
-        }
-        if(null != unDoCount && unDoCount == answerCardInfo.getQcount()){
-            answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
-            answerCardInfo.setFcount(0);
-            return answerCardInfo;
-        }
-        if(null != commitCount){
-            answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
-            return answerCardInfo;
-        }
-        if(null != correctCount){
-            answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
-            answerCardInfo.setFcount(correctCount);
-        }
-        return answerCardInfo;
-    }
+						}));
+		List<Integer> statusList = answerMetaListMap.entrySet().stream()
+				.map(meta -> MapUtils.getInteger((Map) meta.getValue(), "biz_status")).collect(Collectors.toList());
+		Map<Integer, Long> bizStatusMap = statusList.stream()
+				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+		Integer unDoCount = MapUtils.getInteger(bizStatusMap,
+				EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
+		Integer commitCount = MapUtils.getInteger(bizStatusMap,
+				EssayAnswerConstant.EssayAnswerBizStatusEnum.COMMIT.getBizStatus());
+		Integer correctCount = MapUtils.getInteger(bizStatusMap,
+				EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT.getBizStatus());
+		Integer returnCount = MapUtils.getInteger(bizStatusMap,
+				EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
+		if (null != returnCount) {
+			answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
+			return answerCardInfo;
+		}
+		if (null != unDoCount && unDoCount == answerCardInfo.getQcount()) {
+			answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
+			answerCardInfo.setFcount(0);
+			return answerCardInfo;
+		}
+		if (null != commitCount) {
+			answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
+			return answerCardInfo;
+		}
+		if (null != correctCount) {
+			answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
+			answerCardInfo.setFcount(correctCount);
+		}
+		return answerCardInfo;
+	}
 
 
 

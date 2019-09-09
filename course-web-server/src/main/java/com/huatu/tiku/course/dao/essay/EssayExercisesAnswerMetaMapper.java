@@ -72,4 +72,14 @@ public interface EssayExercisesAnswerMetaMapper extends Mapper<EssayExercisesAns
      */
     @SelectProvider(type = CourseExercisesProcessEssayLogProvider.class, method = "selectMultiQuestionBizStatusCount")
     List<Map<String, Object>> selectMultiQuestionBizStatusCount(int userId, long syllabusId, int correctNum);
+    
+    /**
+     * 获取多题答题卡 status count
+     * @param userId
+     * @param syllabusId
+     * @param correctNum
+     * @return
+     */
+    @SelectProvider(type = CourseExercisesProcessEssayLogProvider.class, method = "selectMultiBizStatusCount")
+    List<Map<String, Object>> selectMultiBizStatusCount(int userId, long syllabusId);
 }
