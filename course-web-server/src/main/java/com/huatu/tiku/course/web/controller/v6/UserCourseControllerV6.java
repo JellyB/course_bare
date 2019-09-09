@@ -9,6 +9,7 @@ import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.vo.One2OneFormDTOV2;
+import com.huatu.tiku.course.bean.vo.RecordProcess;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.service.v6.CourseBizV6Service;
@@ -448,5 +449,15 @@ public class UserCourseControllerV6 {
         params.put("rid",courseId);
         NetSchoolResponse netSchoolResponse = userCourseService.obtainOne2One(RequestUtil.encrypt(params), terminal);
         return ResponseUtil.build(netSchoolResponse);
+    }
+
+    @PostMapping("playBackV2")
+    public Object playBack(@Token UserSession userSession,
+                           @RequestBody RecordProcess recordProcess){
+        recordProcess.setUserId(userSession.getId());
+        recordProcess.setSubject(1);
+        recordProcess.setUserName(userSession.getUname());
+        courseExercisesProcessLogManager.dealRecordProcess(recordProcess);
+        return "success";
     }
 }

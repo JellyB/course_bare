@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -74,7 +75,7 @@ public class EssayExercisesAnswerMetaManager {
      * @param syllabusId
      * @throws BizException
      */
-    public void createEssayInitUserMeta(int userId, long syllabusId) throws BizException {
+    public void createEssayInitUserMeta(int userId, long syllabusId, int courseType, long courseWareId, long courseId) throws BizException {
         Example example = new Example(EssayExercisesAnswerMeta.class);
         example.and().andEqualTo("syllabusId", syllabusId)
                 .andEqualTo("userId", userId)
@@ -86,7 +87,8 @@ public class EssayExercisesAnswerMetaManager {
         }
         Example example_ = new Example(EssayCourseExercisesQuestion.class);
         example_.and()
-                .andEqualTo("syllabusId", syllabusId)
+                .andEqualTo("courseType", courseType)
+                .andEqualTo("courseWareId", courseWareId)
                 .andEqualTo("status", EssayStatusEnum.NORMAL.getCode());
 
         List<EssayCourseExercisesQuestion> essayCourseExercisesQuestions = essayCourseExercisesQuestionMapper.selectByExample(example_);
@@ -98,10 +100,18 @@ public class EssayExercisesAnswerMetaManager {
             EssayExercisesAnswerMeta exercisesAnswerMeta = EssayExercisesAnswerMeta.builder()
                     .answerType(essayCourseExercisesQuestion.getType())
                     .courseWareId(essayCourseExercisesQuestion.getCourseWareId())
+                    .courseType(essayCourseExercisesQuestion.getCourseType())
+                    .courseId(courseId)
+                    .syllabusId(syllabusId)
+                    .correctNum(1)
+                    .submitTime(new Date())
                     .pQid(essayCourseExercisesQuestion.getPQid())
                     .userId(userId)
                     .build();
 
+            exercisesAnswerMeta.setGmtCreate(new Date());
+            exercisesAnswerMeta.setGmtModify(new Date());
+            exercisesAnswerMeta.setStatus(EssayStatusEnum.NORMAL.getCode());
             exercisesAnswerMeta.setBizStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
             essayExercisesAnswerMetaMapper.insertSelective(exercisesAnswerMeta);
         }

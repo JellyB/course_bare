@@ -262,7 +262,8 @@ public class CourseExercisesProcessLogManager {
         }
         // 申论创建课后作业
         if(null != syllabusWareInfo.getSubjectType() && syllabusWareInfo.getSubjectType() == SubjectEnum.SL.getCode()){
-            essayExercisesAnswerMetaManager.createEssayInitUserMeta(recordProcess.getUserId(), recordProcess.getSyllabusId());
+            int courseType = CourseWareTypeEnum.changeVideoType2TableCourseType(syllabusWareInfo.getVideoType());
+            essayExercisesAnswerMetaManager.createEssayInitUserMeta(recordProcess.getUserId(), recordProcess.getSyllabusId(), courseType, syllabusWareInfo.getCoursewareId(), syllabusWareInfo.getClassId());
         }else{
             this.createCourseWorkAnswerCardEntranceV2(syllabusWareInfo.getClassId(),
                     recordProcess.getSyllabusId(),
@@ -838,7 +839,8 @@ public class CourseExercisesProcessLogManager {
         }
         log.info("直播创建或更新课后作业答题卡:大纲id{}", syllabusId);
         if(null != syllabusWareInfo.getSubjectType() && syllabusWareInfo.getSubjectType() == SubjectEnum.SL.getCode()){
-            essayExercisesAnswerMetaManager.createEssayInitUserMeta(userId, syllabusId);
+            int courseType = CourseWareTypeEnum.changeVideoType2TableCourseType(syllabusWareInfo.getVideoType());
+            essayExercisesAnswerMetaManager.createEssayInitUserMeta(userId, syllabusId, courseType, syllabusWareInfo.getSyllabusId(), syllabusWareInfo.getClassId());
         }else{
             createCourseWorkAnswerCardEntranceV2(syllabusWareInfo.getClassId(), syllabusWareInfo.getSyllabusId(), syllabusWareInfo.getVideoType(), syllabusWareInfo.getCoursewareId(), subject, terminal, cv, userId);
         }
