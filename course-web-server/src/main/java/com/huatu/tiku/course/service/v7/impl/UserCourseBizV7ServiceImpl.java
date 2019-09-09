@@ -482,12 +482,4 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
     public EssayAnswerCardInfo buildEssayAnswerCardInfo(int userId, long syllabusId) throws BizException {
         return null;
     }
-
-    @AllArgsConstructor
-    @Getter
-    @Setter
-    static class Build{
-        private BuildTypeEnum buildTypeEnum;
-        private int courseNum;
-     }
 }
