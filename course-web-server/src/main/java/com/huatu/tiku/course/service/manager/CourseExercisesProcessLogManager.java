@@ -1225,10 +1225,12 @@ public class CourseExercisesProcessLogManager {
      * @return
      */
     public int obtainCivilCourseWorkUnReadCount(long userId){
+        List<Integer> list = Lists.newArrayList(AnswerCardStatus.CREATE, AnswerCardStatus.UNDONE);
         Example example = new Example(CourseExercisesProcessLog.class);
         example.and().andEqualTo("userId", userId)
                 .andEqualTo("status", YesOrNoStatus.YES.getCode())
-                .andEqualTo("isAlert",YesOrNoStatus.YES.getCode());
+                .andEqualTo("isAlert",YesOrNoStatus.YES.getCode())
+                .andIn("bizStatus", list);
 
         return courseExercisesProcessLogMapper.selectCountByExample(example);
     }
