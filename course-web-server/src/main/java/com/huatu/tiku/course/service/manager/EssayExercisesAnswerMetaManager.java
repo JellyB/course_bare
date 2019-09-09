@@ -10,6 +10,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Component;
 
 import com.huatu.common.ErrorResult;
@@ -23,7 +25,7 @@ import com.huatu.tiku.course.dao.essay.EssayExercisesAnswerMetaMapper;
 import com.huatu.tiku.course.dao.essay.EssayPaperAnswerMapper;
 import com.huatu.tiku.course.dao.essay.EssayQuestionAnswerMapper;
 import com.huatu.tiku.course.dao.essay.EssayQuestionDetailMapper;
-import com.huatu.tiku.course.dao.essay.EssaySimilarQuestionMapper;
+import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
 import com.huatu.tiku.essay.constant.status.QuestionTypeConstant;
 import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
@@ -54,7 +56,7 @@ public class EssayExercisesAnswerMetaManager {
     private EssayCourseExercisesQuestionMapper essayCourseExercisesQuestionMapper;
 
     @Autowired
-    private EssaySimilarQuestionMapper essaySimilarQuestionMapper;
+    private RedisTemplate redisTemplate;
 
     @Autowired
     private EssayQuestionDetailMapper essayQuestionDetailMapper;
@@ -123,6 +125,10 @@ public class EssayExercisesAnswerMetaManager {
             exercisesAnswerMeta.setBizStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
             essayExercisesAnswerMetaMapper.insertSelective(exercisesAnswerMeta);
         }
+
+        String key = CourseCacheKey.getCourseWorkEssayIsAlert(userId);
+        SetOperations<String, Long> setOperations = redisTemplate.opsForSet();
+        setOperations.add(key, syllabusId);
     }
 
 
