@@ -31,6 +31,7 @@ public class PlayBackProcessListener {
     @RabbitListener(queues = RabbitMqConstants.PLAY_BACK_DEAL_INFO)
     public void onMessage(String message){
         try{
+            log.info("录播观看到 85% 创建课后作业答题卡v7:{}", message);
             RecordProcess recordProcess = JSONObject.parseObject(message, RecordProcess.class);
             if(null != recordProcess){
                 courseExercisesProcessLogManager.dealRecordProcess(recordProcess);
