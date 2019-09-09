@@ -9,6 +9,7 @@ import com.huatu.common.ErrorResult;
 import com.huatu.common.SuccessMessage;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.vo.*;
+import com.huatu.tiku.course.common.BuildTypeEnum;
 import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.common.SubjectEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
@@ -21,10 +22,10 @@ import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
 import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
 import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
-import com.huatu.tiku.essay.essayEnum.CourseWareTypeEnum;
-import com.huatu.tiku.essay.essayEnum.EssayAnswerCardEnum;
-import com.huatu.tiku.essay.essayEnum.EssayStatusEnum;
-import com.huatu.tiku.essay.essayEnum.YesNoEnum;
+import com.huatu.tiku.essay.essayEnum.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -77,6 +78,9 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
     @Autowired
     private EssayPaperBaseMapper essayPaperBaseMapper;
+
+    @Autowired
+    private CorrectOrderMapper correctOrderMapper;
 
 
     /**
@@ -326,6 +330,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
     /**
      * 获取申论课后作业大纲信息
+     * 调用场景 单题 、套题 、 多个单题
      *
      * @param videoType
      * @param courseWareId
@@ -341,18 +346,8 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
         EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo = new EssayCourseWorkSyllabusInfo();
         essayCourseWorkSyllabusInfo.setAnswerCardId(cardId);
         essayCourseWorkSyllabusInfo.setBizStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
-        if (cardId.longValue() > 0) {
-            Map<String, Object> metaMap = essayExercisesAnswerMetaMapper.getBizStatusByCardId(cardId);
-            if (null != metaMap) {
-                essayCourseWorkSyllabusInfo.setBizStatus(MapUtils.getIntValue(metaMap, "biz_status", EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus()));
-            }
-        }else{
-            Map<String,Object> cardInfoMap = essayExercisesAnswerMetaMapper.getAnswerCardInfoBySyllabusId(userId, syllabusId);
-            if(null != cardInfoMap){
-                essayCourseWorkSyllabusInfo.setAnswerCardId(MapUtils.getLongValue(cardInfoMap, "answer_id", 0));
-                essayCourseWorkSyllabusInfo.setBizStatus(MapUtils.getIntValue(cardInfoMap, "biz_status", 0));
-            }
-        }
+
+        essayCourseWorkSyllabusInfo_AnswerInfo(userId, syllabusId, cardId, essayCourseWorkSyllabusInfo);
         // 获取绑定试题信息
         Example example = new Example(EssayCourseExercisesQuestion.class);
         example.and()
@@ -361,6 +356,9 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                 .andEqualTo("status", EssayStatusEnum.NORMAL.getCode());
 
         List<EssayCourseExercisesQuestion> essayCourseExercisesQuestions = essayCourseExercisesQuestionMapper.selectByExample(example);
+
+        essayCourseWorkSyllabusInfo.setAfterCoreseNum(essayCourseExercisesQuestions.size());
+        essayCourseWorkSyllabusInfo.setBuildType(essayCourseExercisesQuestions.get(0).getType());
         if (CollectionUtils.isEmpty(essayCourseExercisesQuestions) || essayCourseExercisesQuestions.size() > 1) {
             throw new BizException(ErrorResult.create(100010, "数据错误"));
         }
@@ -398,6 +396,16 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
             essayCourseWorkSyllabusInfo.setQuestionType(MapUtils.getIntValue(detailMap, "type", 0));
             essayCourseWorkSyllabusInfo.setPaperName(StringUtils.EMPTY);
             essayCourseWorkSyllabusInfo.setPaperId(0l);
+
+            //处理批改中提示信息
+            if(essayCourseWorkSyllabusInfo.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.COMMIT.getBizStatus()){
+                Map<String, Object> orderMap = correctOrderMapper.selectByAnswerCardIdAndType(EssayAnswerCardEnum.TypeEnum.QUESTION.getType(), essayCourseWorkSyllabusInfo.getAnswerCardId());
+                if (null == orderMap || orderMap.isEmpty()) {
+                    essayCourseWorkSyllabusInfo.setClickContent(StringUtils.EMPTY);
+                }else{
+                    essayCourseWorkSyllabusInfo.setClickContent(TeacherOrderTypeEnum.reportContent(TeacherOrderTypeEnum.convert(MapUtils.getIntValue(detailMap, "type", 0)), MapUtils.getIntValue(orderMap, "delay_status")));
+                }
+            }
         }
 
         /**
@@ -414,10 +422,41 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
             essayCourseWorkSyllabusInfo.setQuestionType(0);
             essayCourseWorkSyllabusInfo.setPaperName(MapUtils.getString(paperBaseMap, "name", ""));
             essayCourseWorkSyllabusInfo.setPaperId(essayCourseExercisesQuestion.getPQid());
+
+            //处理批改中提示信息
+            if(essayCourseWorkSyllabusInfo.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.COMMIT.getBizStatus()){
+                Map<String, Object> orderMap = correctOrderMapper.selectByAnswerCardIdAndType(EssayAnswerCardEnum.TypeEnum.QUESTION.getType(), essayCourseWorkSyllabusInfo.getAnswerCardId());
+                if (null == orderMap || orderMap.isEmpty()) {
+                    essayCourseWorkSyllabusInfo.setClickContent(StringUtils.EMPTY);
+                }else{
+                    essayCourseWorkSyllabusInfo.setClickContent(TeacherOrderTypeEnum.reportContent(TeacherOrderTypeEnum.SET_QUESTION, MapUtils.getIntValue(orderMap, "delay_status")));
+                }
+            }
         }
         return essayCourseWorkSyllabusInfo;
     }
 
+    /**
+     * 处理答题卡信息、单题、多题、套题
+     * @param userId
+     * @param syllabusId
+     * @param cardId
+     * @param essayCourseWorkSyllabusInfo
+     */
+    private void essayCourseWorkSyllabusInfo_AnswerInfo(int userId, Long syllabusId, Long cardId, EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo) {
+        if (cardId.longValue() > 0) {
+            Map<String, Object> metaMap = essayExercisesAnswerMetaMapper.getBizStatusByCardId(cardId);
+            if (null != metaMap) {
+                essayCourseWorkSyllabusInfo.setBizStatus(MapUtils.getIntValue(metaMap, "biz_status", EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus()));
+            }
+        }else{
+            Map<String,Object> cardInfoMap = essayExercisesAnswerMetaMapper.getAnswerCardInfoBySyllabusId(userId, syllabusId);
+            if(null != cardInfoMap){
+                essayCourseWorkSyllabusInfo.setAnswerCardId(MapUtils.getLongValue(cardInfoMap, "answer_id", 0));
+                essayCourseWorkSyllabusInfo.setBizStatus(MapUtils.getIntValue(cardInfoMap, "biz_status", 0));
+            }
+        }
+    }
 
 
     /**
@@ -432,4 +471,12 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
     public EssayAnswerCardInfo buildEssayAnswerCardInfo(int userId, long syllabusId) throws BizException {
         return null;
     }
+
+    @AllArgsConstructor
+    @Getter
+    @Setter
+    static class Build{
+        private BuildTypeEnum buildTypeEnum;
+        private int courseNum;
+     }
 }
