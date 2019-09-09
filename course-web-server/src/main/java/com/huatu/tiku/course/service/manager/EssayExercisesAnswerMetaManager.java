@@ -362,13 +362,13 @@ public class EssayExercisesAnswerMetaManager {
 			answerCardInfo.setFcount(0);
 			return answerCardInfo;
 		}
-		if (null != commitCount) {
-			answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
-			return answerCardInfo;
-		}
 		if (null != correctCount) {
 			answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
 			answerCardInfo.setFcount(correctCount);
+		}
+		if (null != commitCount) {
+			answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
+			return answerCardInfo;
 		}
 		return answerCardInfo;
 	}
