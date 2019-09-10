@@ -33,7 +33,7 @@ public class CourseLiveReportLogListener {
 
     @RabbitListener(queues = RabbitMqConstants.COURSE_LIVE_REPORT_LOG)
     public void onMessage(String message){
-        log.info("save_record_v7, message content:{}", message);
+        log.info("直播观看到满足进度，创建课后作业答题卡v7:{}", message);
         LiveRecordInfoWithUserInfo liveRecordInfoWithUserId = JSONObject.parseObject(message, LiveRecordInfoWithUserInfo.class);
         LiveRecordInfo liveRecordInfo = liveRecordInfoWithUserId.getLiveRecordInfo();
 

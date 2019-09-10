@@ -1,12 +1,26 @@
 package com.huatu.tiku.course.service.manager;
 
-import com.google.common.collect.Maps;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import com.huatu.tiku.course.dao.essay.*;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
+import org.springframework.stereotype.Component;
+
 import com.huatu.common.ErrorResult;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.vo.EssayAnswerCardInfo;
 import com.huatu.tiku.course.bean.vo.EssayCourseWorkAnswerCardInfo;
 import com.huatu.tiku.course.consts.SyllabusInfo;
-import com.huatu.tiku.course.dao.essay.*;
+import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
 import com.huatu.tiku.essay.constant.status.QuestionTypeConstant;
 import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
@@ -14,16 +28,9 @@ import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
 import com.huatu.tiku.essay.essayEnum.CourseWareTypeEnum;
 import com.huatu.tiku.essay.essayEnum.EssayAnswerCardEnum;
 import com.huatu.tiku.essay.essayEnum.EssayStatusEnum;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import tk.mybatis.mapper.entity.Example;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import tk.mybatis.mapper.entity.Example;
 
 /**
  * 描述：
@@ -44,16 +51,16 @@ public class EssayExercisesAnswerMetaManager {
     private EssayCourseExercisesQuestionMapper essayCourseExercisesQuestionMapper;
 
     @Autowired
-    private EssaySimilarQuestionMapper essaySimilarQuestionMapper;
+    private RedisTemplate redisTemplate;
 
     @Autowired
     private EssayQuestionDetailMapper essayQuestionDetailMapper;
 
     @Autowired
-    private EssayPaperAnswerMapper essayPaperAnswerMapper;
+    private EssayPaperBaseMapper essayPaperBaseMapper;
 
     @Autowired
-    private EssayQuestionAnswerMapper essayQuestionAnswerMapper;
+    private EssayQuestionBaseMapper essayQuestionBaseMapper;
 
     @Autowired
     private CorrectOrderMapper correctOrderMapper;
@@ -73,7 +80,7 @@ public class EssayExercisesAnswerMetaManager {
      * @param syllabusId
      * @throws BizException
      */
-    public void createEssayInitUserMeta(int userId, long syllabusId) throws BizException {
+    public void createEssayInitUserMeta(int userId, long syllabusId, int courseType, long courseWareId, long courseId) throws BizException {
         Example example = new Example(EssayExercisesAnswerMeta.class);
         example.and().andEqualTo("syllabusId", syllabusId)
                 .andEqualTo("userId", userId)
@@ -85,7 +92,8 @@ public class EssayExercisesAnswerMetaManager {
         }
         Example example_ = new Example(EssayCourseExercisesQuestion.class);
         example_.and()
-                .andEqualTo("syllabusId", syllabusId)
+                .andEqualTo("courseType", courseType)
+                .andEqualTo("courseWareId", courseWareId)
                 .andEqualTo("status", EssayStatusEnum.NORMAL.getCode());
 
         List<EssayCourseExercisesQuestion> essayCourseExercisesQuestions = essayCourseExercisesQuestionMapper.selectByExample(example_);
@@ -97,13 +105,25 @@ public class EssayExercisesAnswerMetaManager {
             EssayExercisesAnswerMeta exercisesAnswerMeta = EssayExercisesAnswerMeta.builder()
                     .answerType(essayCourseExercisesQuestion.getType())
                     .courseWareId(essayCourseExercisesQuestion.getCourseWareId())
+                    .courseType(essayCourseExercisesQuestion.getCourseType())
+                    .courseId(courseId)
+                    .syllabusId(syllabusId)
+                    .correctNum(1)
+                    .submitTime(new Date())
                     .pQid(essayCourseExercisesQuestion.getPQid())
                     .userId(userId)
                     .build();
 
+            exercisesAnswerMeta.setGmtCreate(new Date());
+            exercisesAnswerMeta.setGmtModify(new Date());
+            exercisesAnswerMeta.setStatus(EssayStatusEnum.NORMAL.getCode());
             exercisesAnswerMeta.setBizStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
             essayExercisesAnswerMetaMapper.insertSelective(exercisesAnswerMeta);
         }
+
+        String key = CourseCacheKey.getCourseWorkEssayIsAlert(userId);
+        SetOperations<String, Long> setOperations = redisTemplate.opsForSet();
+        setOperations.add(key, syllabusId);
     }
 
 
@@ -160,7 +180,10 @@ public class EssayExercisesAnswerMetaManager {
                 dealSinglePaper(userId, essayCourseExercisesQuestion.getPQid(), defaultCardInfo, map);
             }
         }else{
-            dealMultiQuestion(userId, defaultCardInfo, map);
+            long syllabusId = MapUtils.getIntValue(map, SyllabusInfo.SyllabusId, 0);
+            EssayAnswerCardInfo essayAnswerCardInfo = dealMultiQuestionAnswerCardInfo(userId, syllabusId);
+            defaultCardInfo.setFcount(essayAnswerCardInfo.getFcount());
+            defaultCardInfo.setStatus(essayAnswerCardInfo.getStatus());
         }
     }
 
@@ -210,41 +233,33 @@ public class EssayExercisesAnswerMetaManager {
         if(null == essayExercisesAnswerMeta){
             return;
         }
-        Map<String, Object> questionAnswer = essayQuestionAnswerMapper.selectQuestionAnswerById(essayExercisesAnswerMeta.getAnswerId());
-        if(null == questionAnswer || questionAnswer.isEmpty()){
-            log.error("buildEssayAnswerCardInfo.essayQuestionAnswer is null:{}", essayExercisesAnswerMeta.getAnswerId());
-            return;
+        Map<String, Object> questionBaseMap = essayQuestionBaseMapper.selectQuestionBaseById(essayExercisesAnswerMeta.getPQid());
+        if(null == questionBaseMap || questionBaseMap.isEmpty()){
+            log.error("buildEssayAnswerCardInfo.paperBaseMap is null:{}", essayExercisesAnswerMeta.getPQid());
+            throw new BizException(ErrorResult.create(10010, "试题不存在"));
         }
-        defaultCardInfo.setId(MapUtils.getLongValue(questionAnswer, "id", 0));
-        defaultCardInfo.setStatus(MapUtils.getIntValue(questionAnswer, "biz_status"));
+
+        defaultCardInfo.setId(null != essayExercisesAnswerMeta.getAnswerId() ? essayExercisesAnswerMeta.getAnswerId() : 0l);
+        defaultCardInfo.setStatus(essayExercisesAnswerMeta.getBizStatus());
+        Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionBaseMap, "detail_id"));
+        if(null == detailMap || detailMap.isEmpty()){
+            throw new BizException(ErrorResult.create(100010, "试题不存在"));
+        }
+        int type = MapUtils.getIntValue(detailMap, "type");
         if(defaultCardInfo instanceof EssayCourseWorkAnswerCardInfo){
-            ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setAreaId(MapUtils.getIntValue(questionAnswer, "area_id"));
-            ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setAreaName(MapUtils.getString(questionAnswer, "area_name"));
-            ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setQuestionBaseId(MapUtils.getLongValue(questionAnswer, "question_base_id", 0));
+            ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setAreaId(MapUtils.getIntValue(questionBaseMap, "area_id"));
+            ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setAreaName(MapUtils.getString(questionBaseMap, "area_name"));
+            ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setQuestionBaseId(essayExercisesAnswerMeta.getPQid());
             ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setCorrectNum(essayExercisesAnswerMeta.getCorrectNum());
-
-
-            // 单题组处理为 0
-            /*Map<String, Object> essaySimilarQuestionMap = essaySimilarQuestionMapper.selectByQuestionBaseId(essayExercisesAnswerMeta.getPQid());
-            if(null == essaySimilarQuestionMap || essaySimilarQuestionMap.isEmpty()){
-                throw new BizException(ErrorResult.create(100010, "试题不存在"));
-            }*/
-            //((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setSimilarId(MapUtils.getLongValue(essaySimilarQuestionMap, "similar_id"));
             ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setSimilarId(0L);
-            Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionAnswer, "question_detail_id"));
-            if(null == detailMap || detailMap.isEmpty()){
-                throw new BizException(ErrorResult.create(100010, "试题不存在"));
-            }
-            int type = MapUtils.getIntValue(detailMap, "type");
             //判断单题是否为议论文
-            if(type == 5){
-                ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setQuestionType(QuestionTypeConstant.ARGUMENTATION);
-            }else{
-                ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setQuestionType(QuestionTypeConstant.SINGLE_QUESTION);
+            ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setQuestionType(type == 5 ? QuestionTypeConstant.ARGUMENTATION : QuestionTypeConstant.SINGLE_QUESTION);
+            if(essayExercisesAnswerMeta.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()){
+                ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setCorrectMemo(dealCorrectReturnMemo(defaultCardInfo.getId(), EssayAnswerCardEnum.TypeEnum.QUESTION.getType()));
             }
         }else{
-            defaultCardInfo.setExamScore(MapUtils.getDoubleValue(questionAnswer, "exam_score"));
-            defaultCardInfo.setScore(MapUtils.getDoubleValue(questionAnswer, "score"));
+            defaultCardInfo.setExamScore(null != essayExercisesAnswerMeta.getExamScore() ? essayExercisesAnswerMeta.getExamScore() : 0d);
+            defaultCardInfo.setScore(MapUtils.getIntValue(detailMap, "score"));
         }
     }
 
@@ -261,72 +276,100 @@ public class EssayExercisesAnswerMetaManager {
         if(null == essayExercisesAnswerMeta){
             return;
         }
-        Map<String, Object> paperMap = essayPaperAnswerMapper.selectPaperAnswerById(essayExercisesAnswerMeta.getAnswerId());
-        if(null == paperMap || paperMap.isEmpty()){
-            log.error("buildEssayAnswerCardInfo.essayQuestionAnswer is null:{}", essayExercisesAnswerMeta.getAnswerId());
-            return;
+        Map<String, Object> paperBaseMap = essayPaperBaseMapper.selectPaperBaseById(essayExercisesAnswerMeta.getPQid());
+        if(null == paperBaseMap || paperBaseMap.isEmpty()){
+            log.error("buildEssayAnswerCardInfo.paperBaseMap is null:{}", essayExercisesAnswerMeta.getPQid());
+            throw new BizException(ErrorResult.create(10010, "试题不存在"));
         }
-        defaultCardInfo.setId(MapUtils.getLongValue(paperMap, "id"));
-        defaultCardInfo.setStatus(MapUtils.getIntValue(paperMap, "biz_status"));
-
+        defaultCardInfo.setId(null != essayExercisesAnswerMeta.getAnswerId() ? essayExercisesAnswerMeta.getAnswerId() : 0l);
+        defaultCardInfo.setStatus(essayExercisesAnswerMeta.getBizStatus());
         if(defaultCardInfo instanceof EssayCourseWorkAnswerCardInfo){
-            ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setAreaId(MapUtils.getIntValue(paperMap, "area_id"));
-            ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setAreaName(MapUtils.getString(paperMap, "area_name"));
-            ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setPaperId(MapUtils.getLongValue(paperMap, "paper_base_id"));
+            ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setAreaId(MapUtils.getIntValue(paperBaseMap, "area_id"));
+            ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setAreaName(MapUtils.getString(paperBaseMap, "area_name"));
+            ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setPaperId(essayExercisesAnswerMeta.getPQid());
             ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setCorrectNum(essayExercisesAnswerMeta.getCorrectNum());
             ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setQuestionType(QuestionTypeConstant.PAPER);
+            if(essayExercisesAnswerMeta.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()){
+                ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setCorrectMemo(dealCorrectReturnMemo(defaultCardInfo.getId(), EssayAnswerCardEnum.TypeEnum.PAPER.getType()));
+            }
         }else{
-            defaultCardInfo.setScore(MapUtils.getDoubleValue(paperMap, "score"));
-            defaultCardInfo.setExamScore(MapUtils.getDoubleValue(paperMap, "exam_score"));
+            defaultCardInfo.setScore(MapUtils.getDoubleValue(paperBaseMap, "score"));
+            defaultCardInfo.setExamScore(null != essayExercisesAnswerMeta.getExamScore() ? essayExercisesAnswerMeta.getExamScore() : 0D);
         }
     }
+
 
     /**
      * 多个单题处理
      * @param userId
-     * @param defaultCardInfo
-     * @param map
+     * @param syllabusId
      */
-    private void dealMultiQuestion(int userId,  EssayAnswerCardInfo defaultCardInfo, Map map){
-        long syllabusId = MapUtils.getIntValue(map, SyllabusInfo.SyllabusId, 0);
-        Map<String, Object> correctNumMap = essayExercisesAnswerMetaMapper.selectCurrentCorrectNum(userId, syllabusId);
-        defaultCardInfo.setFcount(0);
-        defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
-        if(null == correctNumMap || correctNumMap.isEmpty()){
-            return;
-        }
-        int correctNum = MapUtils.getIntValue(correctNumMap, "correct_num", 1);
-        List<Map<String, Object>> listMap = essayExercisesAnswerMetaMapper.selectMultiQuestionBizStatusCount(userId, syllabusId, correctNum);
-        if(CollectionUtils.isEmpty(listMap)){
-            log.error("处理多题做题统计状态异常: userId:{}, syllabusId:{}, correctNum:{}", userId, syllabusId, correctNum);
-            return;
-        }
+	public EssayAnswerCardInfo dealMultiQuestionAnswerCardInfo(int userId, long syllabusId) {
+		EssayAnswerCardInfo answerCardInfo = new EssayAnswerCardInfo();
+		answerCardInfo.setFcount(0);
+		answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
+		List<Map<String, Object>> metaListMap = essayExercisesAnswerMetaMapper.selectMultiBizStatusCount(userId,
+				syllabusId);
+		if (CollectionUtils.isEmpty(metaListMap)) {
+			log.error("处理多题做题统计状态异常: userId:{}, syllabusId:{}, correctNum:{}", userId, syllabusId);
+			return answerCardInfo;
+		}
+		Map<Long, Object> answerMetaListMap = metaListMap.stream()
+				.collect(Collectors.toMap(answerMeta -> (Long) answerMeta.get("p_qid"),
+						answerMeta -> answerMeta, (answerMeta1, answerMeta2) -> {
+							if (MapUtils.getInteger((Map) answerMeta1, "correct_num", 0) > MapUtils
+									.getInteger((Map) answerMeta2, "correct_num", 0)) {
+								return answerMeta1;
+							}
+							return answerMeta2;
 
-        Map<String,Object> statusMap = Maps.newHashMap();
-        for (Map<String, Object> objectMap : listMap) {
-            statusMap.putAll(objectMap);
-        }
+						}));
+		List<Integer> statusList = answerMetaListMap.entrySet().stream()
+				.map(meta -> MapUtils.getInteger((Map) meta.getValue(), "biz_status")).collect(Collectors.toList());
+		Map<Integer, Long> bizStatusMap = statusList.stream()
+				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+		Integer unDoCount = MapUtils.getInteger(bizStatusMap,
+				EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
+		Integer unFinishCount = MapUtils.getInteger(bizStatusMap,
+				EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
+		Integer commitCount = MapUtils.getInteger(bizStatusMap,
+				EssayAnswerConstant.EssayAnswerBizStatusEnum.COMMIT.getBizStatus());
+		Integer correctCount = MapUtils.getInteger(bizStatusMap,
+				EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT.getBizStatus());
+		Integer returnCount = MapUtils.getInteger(bizStatusMap,
+				EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
+		if (null != returnCount) {
+			answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
+			return answerCardInfo;
+		}
+		if (null != unDoCount && unDoCount == answerCardInfo.getQcount()) {
+			answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
+			answerCardInfo.setFcount(0);
+			return answerCardInfo;
+		}
+		if (null != correctCount) {
+			answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
+			answerCardInfo.setFcount(correctCount);
+		}
+		if (null != commitCount || null != unFinishCount) {
+			answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
+			return answerCardInfo;
+		}
+		return answerCardInfo;
+	}
 
-        Integer unDoCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
-        Integer commitCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.COMMIT.getBizStatus());
-        Integer correctCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT.getBizStatus());
-        Integer returnCount = MapUtils.getInteger(statusMap, EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
-        if(null != returnCount){
-            defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
-            return;
-        }
-        if(null != unDoCount && unDoCount == defaultCardInfo.getQcount()){
-            defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
-            defaultCardInfo.setFcount(0);
-            return;
-        }
-        if(null != commitCount){
-            defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
-            return;
-        }
-        if(null != correctCount){
-            defaultCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
-            defaultCardInfo.setFcount(correctCount);
-        }
+
+
+
+    /**
+     * 处理被退回原因
+     * @param answerCardId
+     * @param answerCardType
+     */
+    public String dealCorrectReturnMemo(long answerCardId, int answerCardType){
+        String baseReturn = "本次人工批改申请因『%s』被驳回，如需继续申请批改请修改后重新提交。";
+        Map<String, Object> result = correctOrderMapper.selectByAnswerCardIdAndType(answerCardType, answerCardId);
+        String correctMemo =  MapUtils.getString(result, "correct_memo", StringUtils.EMPTY);
+        return String.format(baseReturn, correctMemo);
     }
 }

@@ -9,6 +9,7 @@ import com.huatu.common.ErrorResult;
 import com.huatu.common.SuccessMessage;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.vo.*;
+import com.huatu.tiku.course.common.BuildTypeEnum;
 import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.common.SubjectEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
@@ -21,10 +22,10 @@ import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
 import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
 import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
-import com.huatu.tiku.essay.essayEnum.CourseWareTypeEnum;
-import com.huatu.tiku.essay.essayEnum.EssayAnswerCardEnum;
-import com.huatu.tiku.essay.essayEnum.EssayStatusEnum;
-import com.huatu.tiku.essay.essayEnum.YesNoEnum;
+import com.huatu.tiku.essay.essayEnum.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -68,9 +69,6 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
     @Autowired
     private EssayCourseExercisesQuestionMapper essayCourseExercisesQuestionMapper;
-
-    @Autowired
-    private EssaySimilarQuestionMapper essaySimilarQuestionMapper;
 
     @Autowired
     private EssayQuestionBaseMapper essayQuestionBaseMapper;
@@ -133,7 +131,10 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                 SetOperations<String, Long> setOperations = redisTemplate.opsForSet();
                 updateCount = updateCount + setOperations.size(key);
                 Set<Long> members = setOperations.members(key);
-                setOperations.remove(key, members);
+                Long result = setOperations.remove(key, members);
+                if(result == 0 && members.size() > 0){
+                    redisTemplate.delete(key);
+                }
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -267,7 +268,9 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                                 courseWorkWareVo.setCourseWareTitle(syllabusWareInfo.getCoursewareName());
                                 courseWorkWareVo.setVideoLength(syllabusWareInfo.getLength());
                                 courseWorkWareVo.setSerialNumber(syllabusWareInfo.getSerialNumber());
-                                courseWorkWareVo.setAnswerCardId(essayExercisesAnswerMeta.getAnswerId());
+                                if(null != essayExercisesAnswerMeta.getAnswerId()){
+                                    courseWorkWareVo.setAnswerCardId(essayExercisesAnswerMeta.getAnswerId());
+                                }
                                 if(syllabusWareInfo.getVideoType() == CourseWareTypeEnum.VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
                                     courseWorkWareVo.setCourseWareId(essayExercisesAnswerMeta.getCourseWareId());
                                     courseWorkWareVo.setVideoType(essayExercisesAnswerMeta.getCourseType());
@@ -332,6 +335,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
     /**
      * 获取申论课后作业大纲信息
+     * 调用场景 单题 、套题 、 多个单题
      *
      * @param videoType
      * @param courseWareId
@@ -347,6 +351,113 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
         EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo = new EssayCourseWorkSyllabusInfo();
         essayCourseWorkSyllabusInfo.setAnswerCardId(cardId);
         essayCourseWorkSyllabusInfo.setBizStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
+
+        essayCourseWorkSyllabusInfo_AnswerInfo(userId, syllabusId, cardId, essayCourseWorkSyllabusInfo);
+        // 获取绑定试题信息
+        Example example = new Example(EssayCourseExercisesQuestion.class);
+        example.and()
+                .andEqualTo("courseType", courseType)
+                .andEqualTo("courseWareId", courseWareId)
+                .andEqualTo("status", EssayStatusEnum.NORMAL.getCode());
+
+        List<EssayCourseExercisesQuestion> essayCourseExercisesQuestions = essayCourseExercisesQuestionMapper.selectByExample(example);
+
+        essayCourseWorkSyllabusInfo.setAfterCoreseNum(essayCourseExercisesQuestions.size());
+        essayCourseWorkSyllabusInfo.setBuildType(essayCourseExercisesQuestions.get(0).getType());
+
+        if (CollectionUtils.isEmpty(essayCourseExercisesQuestions)) {
+            throw new BizException(ErrorResult.create(100010, "数据错误"));
+        }
+        // 多道单题,处理多题的 bizStatus
+        if(essayCourseExercisesQuestions.size() > 1){
+            essayCourseWorkSyllabusInfo.setAnswerCardId(0l);
+
+            EssayAnswerCardInfo essayAnswerCardInfo = essayExercisesAnswerMetaManager.dealMultiQuestionAnswerCardInfo(userId, syllabusId);
+            essayCourseWorkSyllabusInfo.setBizStatus(essayAnswerCardInfo.getStatus());
+            essayCourseWorkSyllabusInfo.setFcount(essayAnswerCardInfo.getFcount());
+        }else{
+            EssayCourseExercisesQuestion essayCourseExercisesQuestion = essayCourseExercisesQuestions.get(0);
+            //处理被退回原因
+            if (essayCourseWorkSyllabusInfo.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()) {
+                essayCourseWorkSyllabusInfo.setCorrectMemo(essayExercisesAnswerMetaManager.dealCorrectReturnMemo(cardId, essayCourseExercisesQuestion.getType()));
+            }
+
+            /**
+             * 如果为单题
+             */
+            if (essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.QUESTION.getType()) {
+
+                // 单题组 id 处理为 0
+            /*Map<String, Object> similarQuestionMap = essaySimilarQuestionMapper.selectByQuestionBaseId(essayCourseExercisesQuestion.getPQid());
+            if (null == similarQuestionMap || similarQuestionMap.isEmpty()) {
+                throw new BizException(ErrorResult.create(100010, "试题不存在"));
+            }*/
+
+                Map<String, Object> questionBaseMap = essayQuestionBaseMapper.selectQuestionBaseById(essayCourseExercisesQuestion.getPQid());
+                if (null == questionBaseMap || questionBaseMap.isEmpty()) {
+                    throw new BizException(ErrorResult.create(100010, "试题不存在"));
+                }
+                Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionBaseMap, "detail_id", 0));
+                if (null == detailMap || detailMap.isEmpty()) {
+                    throw new BizException(ErrorResult.create(100010, "试题不存在"));
+                }
+                essayCourseWorkSyllabusInfo.setQuestionName(MapUtils.getString(detailMap, "stem", StringUtils.EMPTY));
+                //essayCourseWorkSyllabusInfo.setSimilarId(MapUtils.getLongValue(similarQuestionMap, "similar_id"));
+                essayCourseWorkSyllabusInfo.setSimilarId(0L);
+                essayCourseWorkSyllabusInfo.setQuestionId(essayCourseExercisesQuestion.getPQid());
+                essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(questionBaseMap, "area_name", ""));
+                essayCourseWorkSyllabusInfo.setQuestionType(MapUtils.getIntValue(detailMap, "type", 0));
+                essayCourseWorkSyllabusInfo.setPaperName(StringUtils.EMPTY);
+                essayCourseWorkSyllabusInfo.setPaperId(0l);
+
+                //处理批改中提示信息
+                if(essayCourseWorkSyllabusInfo.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.COMMIT.getBizStatus()){
+                    Map<String, Object> orderMap = correctOrderMapper.selectByAnswerCardIdAndType(EssayAnswerCardEnum.TypeEnum.QUESTION.getType(), essayCourseWorkSyllabusInfo.getAnswerCardId());
+                    if (null == orderMap || orderMap.isEmpty()) {
+                        essayCourseWorkSyllabusInfo.setClickContent(StringUtils.EMPTY);
+                    }else{
+                        essayCourseWorkSyllabusInfo.setClickContent(TeacherOrderTypeEnum.reportContent(TeacherOrderTypeEnum.convert(MapUtils.getIntValue(detailMap, "type", 0)), MapUtils.getIntValue(orderMap, "delay_status")));
+                    }
+                }
+            }
+
+            /**
+             * 如果为套题
+             */
+            if (essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.PAPER.getType()) {
+                Map<String, Object> paperBaseMap = essayPaperBaseMapper.selectPaperBaseById(essayCourseExercisesQuestion.getPQid().longValue());
+                if (null == paperBaseMap || paperBaseMap.isEmpty()) {
+                    throw new BizException(ErrorResult.create(100010, "套卷不存在"));
+                }
+                essayCourseWorkSyllabusInfo.setSimilarId(0l);
+                essayCourseWorkSyllabusInfo.setQuestionId(0l);
+                essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(paperBaseMap, "area_name"));
+                essayCourseWorkSyllabusInfo.setQuestionType(0);
+                essayCourseWorkSyllabusInfo.setPaperName(MapUtils.getString(paperBaseMap, "name", ""));
+                essayCourseWorkSyllabusInfo.setPaperId(essayCourseExercisesQuestion.getPQid());
+
+                //处理批改中提示信息
+                if(essayCourseWorkSyllabusInfo.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.COMMIT.getBizStatus()){
+                    Map<String, Object> orderMap = correctOrderMapper.selectByAnswerCardIdAndType(EssayAnswerCardEnum.TypeEnum.QUESTION.getType(), essayCourseWorkSyllabusInfo.getAnswerCardId());
+                    if (null == orderMap || orderMap.isEmpty()) {
+                        essayCourseWorkSyllabusInfo.setClickContent(StringUtils.EMPTY);
+                    }else{
+                        essayCourseWorkSyllabusInfo.setClickContent(TeacherOrderTypeEnum.reportContent(TeacherOrderTypeEnum.SET_QUESTION, MapUtils.getIntValue(orderMap, "delay_status")));
+                    }
+                }
+            }
+        }
+        return essayCourseWorkSyllabusInfo;
+    }
+
+    /**
+     * 处理答题卡信息、单题、多题、套题
+     * @param userId
+     * @param syllabusId
+     * @param cardId
+     * @param essayCourseWorkSyllabusInfo
+     */
+    private void essayCourseWorkSyllabusInfo_AnswerInfo(int userId, Long syllabusId, Long cardId, EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo) {
         if (cardId.longValue() > 0) {
             Map<String, Object> metaMap = essayExercisesAnswerMetaMapper.getBizStatusByCardId(cardId);
             if (null != metaMap) {
@@ -359,82 +470,8 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                 essayCourseWorkSyllabusInfo.setBizStatus(MapUtils.getIntValue(cardInfoMap, "biz_status", 0));
             }
         }
-        Example example = new Example(EssayCourseExercisesQuestion.class);
-        example.and()
-                .andEqualTo("courseType", courseType)
-                .andEqualTo("courseWareId", courseWareId)
-                .andEqualTo("status", EssayStatusEnum.NORMAL.getCode());
-
-
-        List<EssayCourseExercisesQuestion> essayCourseExercisesQuestions = essayCourseExercisesQuestionMapper.selectByExample(example);
-        if (CollectionUtils.isEmpty(essayCourseExercisesQuestions) || essayCourseExercisesQuestions.size() > 1) {
-            throw new BizException(ErrorResult.create(100010, "数据错误"));
-        }
-        EssayCourseExercisesQuestion essayCourseExercisesQuestion = essayCourseExercisesQuestions.get(0);
-
-        //处理被退回原因
-        if (essayCourseWorkSyllabusInfo.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus()) {
-            dealCorrectReturnMemo(essayCourseWorkSyllabusInfo, cardId, essayCourseExercisesQuestion.getType());
-        }
-
-        /**
-         * 如果为单题
-         */
-        if (essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.QUESTION.getType()) {
-
-            // 单题组 id 处理为 0
-            /*Map<String, Object> similarQuestionMap = essaySimilarQuestionMapper.selectByQuestionBaseId(essayCourseExercisesQuestion.getPQid());
-            if (null == similarQuestionMap || similarQuestionMap.isEmpty()) {
-                throw new BizException(ErrorResult.create(100010, "试题不存在"));
-            }*/
-
-            Map<String, Object> questionBaseMap = essayQuestionBaseMapper.selectQuestionBaseById(essayCourseExercisesQuestion.getPQid());
-            if (null == questionBaseMap || questionBaseMap.isEmpty()) {
-                throw new BizException(ErrorResult.create(100010, "试题不存在"));
-            }
-            Map<String, Object> detailMap = essayQuestionDetailMapper.selectQuestionDetailById(MapUtils.getLongValue(questionBaseMap, "detail_id", 0));
-            if (null == detailMap || detailMap.isEmpty()) {
-                throw new BizException(ErrorResult.create(100010, "试题不存在"));
-            }
-            essayCourseWorkSyllabusInfo.setQuestionName(MapUtils.getString(detailMap, "stem", StringUtils.EMPTY));
-            //essayCourseWorkSyllabusInfo.setSimilarId(MapUtils.getLongValue(similarQuestionMap, "similar_id"));
-            essayCourseWorkSyllabusInfo.setSimilarId(0L);
-            essayCourseWorkSyllabusInfo.setQuestionId(essayCourseExercisesQuestion.getPQid());
-            essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(questionBaseMap, "area_name", ""));
-            essayCourseWorkSyllabusInfo.setQuestionType(MapUtils.getIntValue(detailMap, "type", 0));
-            essayCourseWorkSyllabusInfo.setPaperName(StringUtils.EMPTY);
-            essayCourseWorkSyllabusInfo.setPaperId(0l);
-        }
-
-        /**
-         * 如果为套题
-         */
-        if (essayCourseExercisesQuestion.getType() == EssayAnswerCardEnum.TypeEnum.PAPER.getType()) {
-            Map<String, Object> paperBaseMap = essayPaperBaseMapper.selectPaperBaseById(essayCourseExercisesQuestion.getPQid().longValue());
-            if (null == paperBaseMap || paperBaseMap.isEmpty()) {
-                throw new BizException(ErrorResult.create(100010, "套卷不存在"));
-            }
-            essayCourseWorkSyllabusInfo.setSimilarId(0l);
-            essayCourseWorkSyllabusInfo.setQuestionId(0l);
-            essayCourseWorkSyllabusInfo.setAreaName(MapUtils.getString(paperBaseMap, "area_name"));
-            essayCourseWorkSyllabusInfo.setQuestionType(0);
-            essayCourseWorkSyllabusInfo.setPaperName(MapUtils.getString(paperBaseMap, "name", ""));
-            essayCourseWorkSyllabusInfo.setPaperId(essayCourseExercisesQuestion.getPQid());
-        }
-        return essayCourseWorkSyllabusInfo;
     }
 
-    /**
-     * 处理被退回原因
-     * @param essayCourseWorkSyllabusInfo
-     * @param answerCardId
-     * @param answerCardType
-     */
-    private void dealCorrectReturnMemo(EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo, long answerCardId, int answerCardType){
-        Map<String, Object> result = correctOrderMapper.selectByAnswerCardIdAndType(answerCardType, answerCardId);
-        String correctMemo = MapUtils.getString(result, "correct_memo", StringUtils.EMPTY);
-        essayCourseWorkSyllabusInfo.setCorrectMemo(correctMemo);
-    }
 
     /**
      * 使用 syllabusId 构建申论课后作业答题卡信息

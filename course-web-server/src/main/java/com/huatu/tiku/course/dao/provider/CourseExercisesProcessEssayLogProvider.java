@@ -181,8 +181,8 @@ public class CourseExercisesProcessEssayLogProvider {
         stringBuilder.append(" v_essay_exercises_answer_meta");
         stringBuilder.append(" WHERE");
         stringBuilder.append(" user_id = ").append(userId);
-        stringBuilder.append(" syllabus_id = ").append(syllabusId);
-        stringBuilder.append(" status = ").append(EssayStatusEnum.NORMAL.getCode());
+        stringBuilder.append(" AND syllabus_id = ").append(syllabusId);
+        stringBuilder.append(" AND status = ").append(EssayStatusEnum.NORMAL.getCode());
         stringBuilder.append(" order by correct_num DESC limit 1");
 
 
@@ -268,4 +268,25 @@ public class CourseExercisesProcessEssayLogProvider {
         stringBuilder.append(" GROUP BY (biz_status)");
         return stringBuilder.toString();
     }
+    
+    /**
+     * 获取多题答题卡状态
+     * @param userId
+     * @param syllabusId
+     * @param correctNum
+     * @return
+     */
+    public String selectMultiBizStatusCount(int userId, long syllabusId){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT");
+        stringBuilder.append(" biz_status, id, answer_id, p_qid, correct_num");
+        stringBuilder.append(" FROM");
+        stringBuilder.append(" v_essay_exercises_answer_meta");
+        stringBuilder.append(" WHERE");
+        stringBuilder.append(" user_id = ").append(userId);
+        stringBuilder.append(" AND syllabus_id = ").append(syllabusId);
+        stringBuilder.append(" AND status = ").append(EssayStatusEnum.NORMAL.getCode());
+        return stringBuilder.toString();
+    }
+    
 }
