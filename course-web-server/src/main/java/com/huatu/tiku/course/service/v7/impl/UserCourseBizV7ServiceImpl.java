@@ -131,7 +131,10 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                 SetOperations<String, Long> setOperations = redisTemplate.opsForSet();
                 updateCount = updateCount + setOperations.size(key);
                 Set<Long> members = setOperations.members(key);
-                setOperations.remove(key, members);
+                Long result = setOperations.remove(key, members);
+                if(result == 0 && members.size() > 0){
+                    redisTemplate.delete(key);
+                }
             }
         }catch (Exception e){
             e.printStackTrace();
