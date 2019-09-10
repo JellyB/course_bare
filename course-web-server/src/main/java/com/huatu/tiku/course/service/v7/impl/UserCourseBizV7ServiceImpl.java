@@ -438,7 +438,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
                 //处理批改中提示信息
                 if(essayCourseWorkSyllabusInfo.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.COMMIT.getBizStatus()){
-                    Map<String, Object> orderMap = correctOrderMapper.selectByAnswerCardIdAndType(EssayAnswerCardEnum.TypeEnum.QUESTION.getType(), essayCourseWorkSyllabusInfo.getAnswerCardId());
+                    Map<String, Object> orderMap = correctOrderMapper.selectByAnswerCardIdAndType(EssayAnswerCardEnum.TypeEnum.PAPER.getType(), essayCourseWorkSyllabusInfo.getAnswerCardId());
                     if (null == orderMap || orderMap.isEmpty()) {
                         essayCourseWorkSyllabusInfo.setClickContent(StringUtils.EMPTY);
                     }else{
