@@ -365,7 +365,9 @@ public class EssayExercisesAnswerMetaManager {
      * @param answerCardType
      */
     public String dealCorrectReturnMemo(long answerCardId, int answerCardType){
+        String baseReturn = "本次人工批改申请因『%s』被驳回，如需继续申请批改请修改后重新提交。";
         Map<String, Object> result = correctOrderMapper.selectByAnswerCardIdAndType(answerCardType, answerCardId);
-        return MapUtils.getString(result, "correct_memo", StringUtils.EMPTY);
+        String correctMemo =  MapUtils.getString(result, "correct_memo", StringUtils.EMPTY);
+        return String.format(baseReturn, correctMemo);
     }
 }
