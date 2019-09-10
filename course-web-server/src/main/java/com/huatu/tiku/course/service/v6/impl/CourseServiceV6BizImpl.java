@@ -19,6 +19,7 @@ import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.common.PracticeStatusEnum;
 import com.huatu.tiku.course.common.SecKillCourseInfo;
 import com.huatu.tiku.course.dao.manual.CoursePracticeQuestionInfoMapper;
+import com.huatu.tiku.course.netschool.api.SearchServiceV1;
 import com.huatu.tiku.course.netschool.api.fall.FallbackCacheHolder;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.course.service.v1.practice.PracticeUserMetaService;
@@ -96,6 +97,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
     private static final String PAGE_SIZE = "pageSize";
 
     private static final String COURSE_LIST_FALLBACKCACHEHOLDER = "_course_list_static_data_v6";
+
+    @Autowired
+    private SearchServiceV1 searchServiceV1;
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -897,5 +901,16 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         }
         NetSchoolResponse netSchoolResponse = courseService.userCourseStatus(map);
         return netSchoolResponse.getData();
+    }
+
+    @Override
+    public Object upSetSearchKeyWord(String token, String keyWord) {
+        try{
+            log.debug("update key.word.offset:{}", keyWord);
+            searchServiceV1.upSetKeyWord(token, keyWord);
+        }catch (Exception e){
+            log.error("upset keyWord offset error");
+        }
+        return SuccessMessage.create("success");
     }
 }

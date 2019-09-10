@@ -95,4 +95,13 @@ public interface CourseServiceV6Biz {
      * @return
      */
     Object getUserCourseStatus(String uname, int netClassId, int collageActivityId);
+
+
+    /**
+     * upset search course keyWord
+     * @param token
+     * @param keyWord
+     * @return
+     */
+    Object upSetSearchKeyWord(String token, String keyWord);
 }
