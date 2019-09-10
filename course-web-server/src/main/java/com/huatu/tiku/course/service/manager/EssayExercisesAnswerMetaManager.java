@@ -259,7 +259,7 @@ public class EssayExercisesAnswerMetaManager {
             ((EssayCourseWorkAnswerCardInfo) defaultCardInfo).setQuestionType(type == 5 ? QuestionTypeConstant.ARGUMENTATION : QuestionTypeConstant.SINGLE_QUESTION);
         }else{
             defaultCardInfo.setExamScore(null != essayExercisesAnswerMeta.getExamScore() ? essayExercisesAnswerMeta.getExamScore() : 0d);
-            defaultCardInfo.setScore(MapUtils.getIntValue(questionBaseMap, "score"));
+            defaultCardInfo.setScore(MapUtils.getIntValue(detailMap, "score"));
         }
     }
 
