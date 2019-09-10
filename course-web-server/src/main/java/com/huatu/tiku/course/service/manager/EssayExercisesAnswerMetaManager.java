@@ -330,6 +330,8 @@ public class EssayExercisesAnswerMetaManager {
 				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 		Integer unDoCount = MapUtils.getInteger(bizStatusMap,
 				EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
+		Integer unFinishCount = MapUtils.getInteger(bizStatusMap,
+				EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
 		Integer commitCount = MapUtils.getInteger(bizStatusMap,
 				EssayAnswerConstant.EssayAnswerBizStatusEnum.COMMIT.getBizStatus());
 		Integer correctCount = MapUtils.getInteger(bizStatusMap,
@@ -349,7 +351,7 @@ public class EssayExercisesAnswerMetaManager {
 			answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
 			answerCardInfo.setFcount(correctCount);
 		}
-		if (null != commitCount) {
+		if (null != commitCount || null != unFinishCount) {
 			answerCardInfo.setStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus());
 			return answerCardInfo;
 		}
