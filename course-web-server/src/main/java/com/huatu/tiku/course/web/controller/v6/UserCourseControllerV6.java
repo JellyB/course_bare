@@ -425,6 +425,7 @@ public class UserCourseControllerV6 {
         Map<String,Object> params = ClassUtils.getBeanProperties(one2OneFormDTOV2);
         params.put("userName",userSession.getUname());
         params.put("rid",courseId);
+        params.put("terminal", terminal);
         log.info("one2One post params:{},terminal:{},cv:{}", params,terminal,cv);
         String p = RequestUtil.encrypt(params);
         NetSchoolResponse netSchoolResponse = userCourseService.one2One(p);

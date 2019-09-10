@@ -130,6 +130,11 @@ public class CourseServiceV6FallBack implements CourseServiceV6 {
         return NetSchoolResponse.DEFAULT;
     }
 
+    @Override
+    public NetSchoolResponse userCourseStatus(Map<String, Object> params) {
+        return NetSchoolResponse.DEFAULT;
+    }
+
     /**
      * 缓存日历详情接口数据
      * @param params
@@ -177,9 +182,4 @@ public class CourseServiceV6FallBack implements CourseServiceV6 {
             this.to = to;
         }
     }
-
-	@Override
-	public NetSchoolResponse userCourseStatus(Map<String, Object> params) {
-		 return NetSchoolResponse.DEFAULT;
-	}
 }

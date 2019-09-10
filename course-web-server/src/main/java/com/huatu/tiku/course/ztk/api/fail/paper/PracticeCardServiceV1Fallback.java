@@ -44,7 +44,7 @@ public class PracticeCardServiceV1Fallback implements Fallback<PracticeCardServi
 
 			@Override
 			public Object getCourseBreakPointCardInfo(long userId, List<HashMap<String, Object>> paramsList) {
-				log.error("PracticeCardServiceV1 getCourseBreakPointCardInfo failed:{}", throwable);
+				log.error("PracticeCardServiceV1 getCourseBreakPointCardInfo failed, userId:{}, paramsList:{}, fall back reason:{}",userId, paramsList, throwable);
 				return ZTKResponseUtil.defaultResult();
 			}
 
@@ -58,14 +58,14 @@ public class PracticeCardServiceV1Fallback implements Fallback<PracticeCardServi
 			 */
 			@Override
 			public NetSchoolResponse getAnswerCard(String token, int terminal, long id) {
-				log.error("PracticeCardServiceV1 getAnswerCard failed:{}", throwable);
+				log.error("PracticeCardServiceV1 getAnswerCard failed, token:{}, terminal:{}, id:{}", token, terminal, id, throwable);
 				return ResponseUtil.DEFAULT_PAGE_EMPTY;
 			}
 
 			@Override
 			public Object createAndSaveAnswerCoursePracticeCard(Integer uid, String name,
 																Integer courseType, Long courseId, String questionIds, String[] answers, int[] corrects, int[] times) {
-				log.error("PracticeCardServiceV1 createAndSaveAnswerCoursePracticeCard failed:{}", throwable);
+				log.error("PracticeCardServiceV1 createAndSaveAnswerCoursePracticeCard failed, uid:{},name:{}, courseType:{},courseId:{},questionIds:{},answers:{},corrects:{},times:{}", uid, name, courseType, courseId, questionIds, answers, corrects, times, throwable);
 				return ZTKResponseUtil.defaultResult();
 			}
 
@@ -78,7 +78,7 @@ public class PracticeCardServiceV1Fallback implements Fallback<PracticeCardServi
 			 */
 			@Override
 			public Object getClassExerciseStatus(int userId, List<HashMap<String, Object>> paramsList) {
-				log.error("PracticeCardServiceV1 getClassExerciseStatus failed:{}", throwable);
+				log.error("PracticeCardServiceV1 getClassExerciseStatus failed, userId:{}, paramsList:{}, fall back reason:{},", userId, paramsList, throwable);
 				return ResponseUtil.DEFAULT_PAGE_EMPTY;
 			}
 
@@ -105,7 +105,7 @@ public class PracticeCardServiceV1Fallback implements Fallback<PracticeCardServi
 			 */
 			@Override
 			public NetSchoolResponse getClassExerciseReport(long courseId, int playType, int userId) {
-				log.error("PracticeCardServiceV1 getClassExerciseReport failed:{}", throwable);
+				log.error("PracticeCardServiceV1 getClassExerciseReport failed: courseId:{}, playType:{}, userId:{}, fall back reason:{}", courseId, playType, userId, throwable);
 				return ResponseUtil.DEFAULT_PAGE_EMPTY;
 			}
 
@@ -116,7 +116,7 @@ public class PracticeCardServiceV1Fallback implements Fallback<PracticeCardServi
 			 */
 			@Override
 			public Object getCourseExercisesAllCardInfo(long userId) {
-				log.error("PracticeCardServiceV1 getCourseExercisesAllCardInfo failed:{}", throwable);
+				log.error("PracticeCardServiceV1 getCourseExercisesAllCardInfo failed: userId:{}, fall back reason:{}",userId, throwable);
 				return ResponseUtil.DEFAULT_PAGE_EMPTY;
 			}
 
