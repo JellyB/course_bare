@@ -6,6 +6,8 @@ import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -903,13 +905,24 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         return netSchoolResponse.getData();
     }
 
+    /**
+     * 更新 key word 排序
+     * @param token
+     * @param keyWord
+     * @return
+     */
     @Override
     public Object upSetSearchKeyWord(String token, String keyWord) {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
         try{
+            executorService.submit(() ->{
+                searchServiceV1.upSetKeyWord(token, keyWord);
+            });
             log.debug("update key.word.offset:{}", keyWord);
-            searchServiceV1.upSetKeyWord(token, keyWord);
         }catch (Exception e){
             log.error("upset keyWord offset error");
+        }finally {
+            executorService.shutdown();
         }
         return SuccessMessage.create("success");
     }
