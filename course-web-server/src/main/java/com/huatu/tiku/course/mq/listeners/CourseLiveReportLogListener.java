@@ -78,12 +78,12 @@ public class CourseLiveReportLogListener {
         if(null != syllabusWareInfo.getSubjectType() && syllabusWareInfo.getSubjectType() == SubjectEnum.SL.getCode()){
             int courseType = CourseWareTypeEnum.changeVideoType2TableCourseType(syllabusWareInfo.getVideoType());
             essayExercisesAnswerMetaManager.createEssayInitUserMeta(liveRecordInfoWithUserId.getUserId(), liveRecordInfo.getSyllabusId(), courseType, syllabusWareInfo.getCoursewareId(), syllabusWareInfo.getClassId());
+        }else{
+            courseExercisesProcessLogManager.saveLiveRecord(liveRecordInfoWithUserId.getUserId(),
+                    liveRecordInfoWithUserId.getSubject(),
+                    liveRecordInfoWithUserId.getTerminal(),
+                    liveRecordInfo.getSyllabusId(),
+                    liveRecordInfoWithUserId.getCv());
         }
-
-        courseExercisesProcessLogManager.saveLiveRecord(liveRecordInfoWithUserId.getUserId(),
-                liveRecordInfoWithUserId.getSubject(),
-                liveRecordInfoWithUserId.getTerminal(),
-                liveRecordInfo.getSyllabusId(),
-                liveRecordInfoWithUserId.getCv());
     }
 }
