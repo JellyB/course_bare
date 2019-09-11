@@ -352,10 +352,9 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
         }
         int courseType = CourseWareTypeEnum.changeVideoType2TableCourseType(videoType);
         EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo = new EssayCourseWorkSyllabusInfo();
-        essayCourseWorkSyllabusInfo.setAnswerCardId(cardId);
         essayCourseWorkSyllabusInfo.setBizStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
 
-        essayCourseWorkSyllabusInfo_AnswerInfo(userId, syllabusId, cardId, essayCourseWorkSyllabusInfo);
+        essayCourseWorkSyllabusInfo_AnswerInfo(userId, syllabusId, essayCourseWorkSyllabusInfo);
         // 获取绑定试题信息
         Example example = new Example(EssayCourseExercisesQuestion.class);
         example.and()
@@ -457,21 +456,13 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
      * 处理答题卡信息、单题、多题、套题
      * @param userId
      * @param syllabusId
-     * @param cardId
      * @param essayCourseWorkSyllabusInfo
      */
-    private void essayCourseWorkSyllabusInfo_AnswerInfo(int userId, Long syllabusId, Long cardId, EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo) {
-        if (cardId.longValue() > 0) {
-            Map<String, Object> metaMap = essayExercisesAnswerMetaMapper.getBizStatusByCardId(cardId);
-            if (null != metaMap) {
-                essayCourseWorkSyllabusInfo.setBizStatus(MapUtils.getIntValue(metaMap, "biz_status", EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus()));
-            }
-        }else{
-            Map<String,Object> cardInfoMap = essayExercisesAnswerMetaMapper.getAnswerCardInfoBySyllabusId(userId, syllabusId);
-            if(null != cardInfoMap){
-                essayCourseWorkSyllabusInfo.setAnswerCardId(MapUtils.getLongValue(cardInfoMap, "answer_id", 0));
-                essayCourseWorkSyllabusInfo.setBizStatus(MapUtils.getIntValue(cardInfoMap, "biz_status", 0));
-            }
+    private void essayCourseWorkSyllabusInfo_AnswerInfo(int userId, Long syllabusId, EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo) {
+        Map<String,Object> cardInfoMap = essayExercisesAnswerMetaMapper.getAnswerCardInfoBySyllabusId(userId, syllabusId);
+        if(null != cardInfoMap){
+            essayCourseWorkSyllabusInfo.setAnswerCardId(MapUtils.getLongValue(cardInfoMap, "answer_id", 0));
+            essayCourseWorkSyllabusInfo.setBizStatus(MapUtils.getIntValue(cardInfoMap, "biz_status", 0));
         }
     }
 
