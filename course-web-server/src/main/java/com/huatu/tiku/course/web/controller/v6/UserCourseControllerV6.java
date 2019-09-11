@@ -9,6 +9,7 @@ import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.vo.One2OneFormDTOV2;
+import com.huatu.tiku.course.bean.vo.RecordProcess;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.service.v6.CourseBizV6Service;
@@ -156,6 +157,18 @@ public class UserCourseControllerV6 {
     @PostMapping(value = "dataCorrect")
     public Object dataCorrect(@Token UserSession userSession, @RequestHeader("secret") String secret){
         courseExercisesProcessLogManager.dataCorrect(userSession.getId(), secret);
+        return SuccessMessage.create("操作成功！");
+    }
+
+    /**
+     * 数据纠正
+     * @param userSession
+     * @param secret
+     * @return
+     */
+    @PostMapping(value = "dataFix")
+    public Object dataFix(@Token UserSession userSession, @RequestHeader("secret") String secret){
+        courseExercisesProcessLogManager.dataFix(userSession.getId());
         return SuccessMessage.create("操作成功！");
     }
 
@@ -412,6 +425,7 @@ public class UserCourseControllerV6 {
         Map<String,Object> params = ClassUtils.getBeanProperties(one2OneFormDTOV2);
         params.put("userName",userSession.getUname());
         params.put("rid",courseId);
+        params.put("terminal", terminal);
         log.info("one2One post params:{},terminal:{},cv:{}", params,terminal,cv);
         String p = RequestUtil.encrypt(params);
         NetSchoolResponse netSchoolResponse = userCourseService.one2One(p);
@@ -429,11 +443,22 @@ public class UserCourseControllerV6 {
     @LocalMapParam
     @GetMapping(value = "/1v1/{courseId}")
     public Object get1V1Table(@RequestParam(value = "OrderNum") String OrderNum,
+                              @RequestHeader(value = "terminal") int terminal,
                               @PathVariable int courseId) throws BizException{
 
         Map<String,Object> params = LocalMapParamHandler.get();
         params.put("rid",courseId);
-        NetSchoolResponse netSchoolResponse = userCourseService.obtainOne2One(RequestUtil.encrypt(params));
+        NetSchoolResponse netSchoolResponse = userCourseService.obtainOne2One(RequestUtil.encrypt(params), terminal);
         return ResponseUtil.build(netSchoolResponse);
+    }
+
+    @PostMapping("playBackV2")
+    public Object playBack(@Token UserSession userSession,
+                           @RequestBody RecordProcess recordProcess){
+        recordProcess.setUserId(userSession.getId());
+        recordProcess.setSubject(1);
+        recordProcess.setUserName(userSession.getUname());
+        courseExercisesProcessLogManager.dealRecordProcess(recordProcess);
+        return "success";
     }
 }

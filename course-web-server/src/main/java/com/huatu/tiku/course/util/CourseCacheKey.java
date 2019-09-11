@@ -53,6 +53,8 @@ public class CourseCacheKey {
     private static final String PROCESS_REPORT_DELAY_QUEUE = "process_report_delay";
 
     private static final String PROCESS_LOG_SYLLABUS_INFO = "process_log_syllabus_v6$%s";
+    private static final String ESSAY_COURSE_WORK_SYLLABUS_INFO = "essay_course_work_syllabus_v7$$s_%s_%s";
+
     private static final String PROCESS_LOG_SYLLABUS_DEAL_LIST = "process_log_syllabus_list_v6";
     private static final String USER_ACCOUNT_INFO_KEY = "user_account_info_key";
 
@@ -62,6 +64,10 @@ public class CourseCacheKey {
     private static final String COURSE_WORK_DEAL_DATA = "course_work_deal_v1$%s$%s";
     private static final String COURSE_WORK_RANK_INFO = "course_work_rank_info_v1$%s$%s";
     private static final String COURSE_LIVE_BACK_LOG_INFO = "course_live_back_log_info_v1$%s$%s";
+    /**
+     * 申论课后作业 key
+     */
+    private static final String COURSE_WORK_ESSAY_ISALERT = "course_work_essay_isAlert_v1%s";
     /**
      * 已经处理完后的课后作业 redis key
      */
@@ -111,6 +117,11 @@ public class CourseCacheKey {
         return PROCESS_REPORT_DELAY_QUEUE;
     }
 
+    /**
+     * 获取 syllabusInfo cache key
+     * @param syllabusId
+     * @return
+     */
     public static String getProcessLogSyllabusInfo(Long syllabusId){return String.format(PROCESS_LOG_SYLLABUS_INFO, syllabusId);}
 
     public static String getUserAccountInfoKey(){
@@ -143,5 +154,27 @@ public class CourseCacheKey {
      */
     public static String findByRoomIdAndLiveCourseWareId(long roomId, long liveBackWareId){
         return String.format(COURSE_LIVE_BACK_LOG_INFO, roomId, liveBackWareId);
+    }
+
+    /**
+     * 获取申论课后作业未读数
+     * @param userId
+     * key userId
+     * values syllabusIds
+     * @return
+     */
+    public static String getCourseWorkEssayIsAlert(long userId){
+        return String.format(COURSE_WORK_ESSAY_ISALERT, userId);
+    }
+
+    /**
+     * 申论课后作业大纲信息
+     * @param courseType
+     * @param syllabusId
+     * @param answerCardId
+     * @return
+     */
+    public static String getEssayCourseWorkSyllabusInfo(Integer courseType, Long syllabusId, Long answerCardId){
+        return String.format(ESSAY_COURSE_WORK_SYLLABUS_INFO, courseType, syllabusId, answerCardId);
     }
 }

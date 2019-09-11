@@ -61,6 +61,7 @@ public class CourseExercisesController {
             return null;
         }
         result.computeIfPresent("id", (key, value) -> String.valueOf(value));
+        result.computeIfPresent("score", (key, value) -> new Double(Double.parseDouble(value.toString())).intValue());
         return result;
     }
 }

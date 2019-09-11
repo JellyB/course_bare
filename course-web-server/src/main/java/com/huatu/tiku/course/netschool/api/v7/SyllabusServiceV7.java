@@ -32,5 +32,31 @@ public interface SyllabusServiceV7 {
      * @return
      */
     @GetMapping(value = "/v5/c/class/syllabus_id_class_id_by_courseware_id")
+    @Deprecated
     NetSchoolResponse obtainSyllabusIdByCourseWareId(@RequestParam Map<String, Object> params);
+
+    /**
+     * 课程大纲-售前
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/v4/common/class/class_syllabus")
+    NetSchoolResponse classSyllabus(@RequestParam Map<String, Object> params);
+
+
+    /**
+     * 大纲 售后
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/v4/common/class/buy_after_syllabus")
+    NetSchoolResponse buyAfterSyllabus(@RequestParam Map<String, Object> params);
+
+    /**
+     * 分享音频课件列表
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/v5/c/syllabus/share_audio_syllabus")
+    NetSchoolResponse shareAudio(@RequestParam Map<String, Object> params);
 }

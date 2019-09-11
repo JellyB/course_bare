@@ -7,7 +7,6 @@ import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.practice.QuestionInfo;
 import com.huatu.tiku.course.bean.practice.QuestionInfoWithStatistics;
-import com.huatu.tiku.course.common.VideoTypeEnum;
 import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.dao.manual.CourseExercisesQuestionsStatisticsMapper;
 import com.huatu.tiku.course.dao.manual.CourseExercisesChoicesStatisticsMapper;
@@ -20,6 +19,7 @@ import com.huatu.tiku.entity.CourseExercisesChoicesStatistics;
 import com.huatu.tiku.entity.CourseExercisesQuestionsStatistics;
 import com.huatu.tiku.entity.CourseExercisesStatistics;
 import com.huatu.tiku.entity.CourseLiveBackLog;
+import com.huatu.tiku.essay.essayEnum.CourseWareTypeEnum;
 import com.huatu.ztk.paper.bean.PracticeCard;
 import com.huatu.ztk.paper.bean.PracticeForCoursePaper;
 import lombok.Builder;
@@ -360,22 +360,22 @@ public class CourseExercisesStatisticsManager {
         for (Map<String, Object> param : params) {
             int courseType = MapUtils.getIntValue(param, "courseType");
             long courseId = MapUtils.getLongValue(param, "courseId");
-            VideoTypeEnum courseTypeEnum = VideoTypeEnum.create(courseType);
-            if(courseTypeEnum == VideoTypeEnum.LIVE_PLAY_BACK){
+            CourseWareTypeEnum.VideoTypeEnum courseTypeEnum = CourseWareTypeEnum.VideoTypeEnum.create(courseType);
+            if(courseTypeEnum == CourseWareTypeEnum.VideoTypeEnum.LIVE_PLAY_BACK){
                 Long bjyRoomId = MapUtils.getLong(param,"bjyRoomId");
                 if(null == bjyRoomId || bjyRoomId.longValue() == 0){
                     param.putAll(defaultResult);
                     result.add(param);
                     continue;
                 }else{
-                    CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCoursewareId(bjyRoomId, courseId);
+                    CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(bjyRoomId, courseId);
                     if(null == courseLiveBackLog){
                         param.putAll(defaultResult);
                         result.add(param);
                         continue;
                     }else{
                         courseId = courseLiveBackLog.getLiveCoursewareId();
-                        courseType = VideoTypeEnum.LIVE.getVideoType();
+                        courseType = CourseWareTypeEnum.VideoTypeEnum.LIVE.getVideoType();
                     }
                 }
             }
@@ -555,23 +555,23 @@ public class CourseExercisesStatisticsManager {
                 return userRankInfo;
             }).collect(Collectors.toList()));
 
-            List<Long> userIds = userRankInfoArrayList.stream().map(UserRankInfo::getUid).collect(Collectors.toList());
+            /*List<Long> userIds = userRankInfoArrayList.stream().map(UserRankInfo::getUid).collect(Collectors.toList());
             UserRankInfo userRankInfo = UserRankInfo
                     .builder()
                     .uid(userId)
                     .submitTimeInfo(practiceCard.getCreateTime())
                     .rcount(practiceCard.getRcount())
                     .expendTime(Arrays.stream(practiceCard.getTimes()).sum())
-                    .build();
-
-            if(!userIds.contains(userId)) {
+                    .build();*/
+            //用户排名列表整理
+            /*if(!userIds.contains(userId)) {
                 if(userIds.size() < COUNT){
                     userRankInfoArrayList.add(userRankInfo);
                 }else{
                     userRankInfoArrayList.add(END, userRankInfo);
                     userRankInfoArrayList = userRankInfoArrayList.subList(START, COUNT);
                 }
-            }
+            }*/
 
             UserRankInfo top = userRankInfoArrayList.get(0);
             rankInfo.put("maxCorrect", top.getRcount());

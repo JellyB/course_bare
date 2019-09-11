@@ -26,10 +26,10 @@ public class VersionControlService {
      * @return
      */
     public boolean checkLearnReportShow(int terminal, String cv){
-        int versionCount = Integer.valueOf(StringUtils.rightPad(cv.replaceAll("\\.", ""), 3, '0'));
+        int versionCount = Integer.valueOf(StringUtils.rightPad(cv.replaceAll("\\.", ""), 4, '0'));
         if(terminal == AppVersionEnum.TerminalTypeEnum.IOS.getValue() && versionCount >= IosVersion){
             return true;
-        }else if(terminal == AppVersionEnum.TerminalTypeEnum.ANDROID.getValue() && versionCount >= AndroidVersion){
+        }else if((terminal == 4 || terminal == AppVersionEnum.TerminalTypeEnum.ANDROID.getValue()) && versionCount >= AndroidVersion){
             return true;
         }else {
             return false;

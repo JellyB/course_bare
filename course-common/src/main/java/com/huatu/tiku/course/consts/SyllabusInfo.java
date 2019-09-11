@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.consts;
 
+
 /**
  * 描述：
  *
@@ -25,9 +26,15 @@ public class SyllabusInfo {
 
     /**
      * 课件类型
-     * {@link com.huatu.tiku.course.common.VideoTypeEnum}
+     * CourseWareTypeEnum
      */
     public static String VideoType = "videoType";
+
+    /**
+     * 科目类型
+     * {@link com.huatu.tiku.course.common.SubjectEnum}
+     */
+    public static String SubjectType = "subjectType";
 
     /**
      * 查询paper服务所映射的 videoType 字段

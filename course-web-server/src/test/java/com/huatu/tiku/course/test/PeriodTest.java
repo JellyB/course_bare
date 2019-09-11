@@ -120,7 +120,7 @@ public class PeriodTest extends BaseWebTest {
 		courseLiveBackLogMapper.insertSelective(
 				CourseLiveBackLog.builder().liveBackCoursewareId(111L).liveCoursewareId(998l).roomId(888L).build());
 		CourseLiveBackLog findByRoomIdAndLiveCoursewareId = courseLiveBackLogService
-				.findByRoomIdAndLiveCoursewareId(888L, 998L);
+				.findByRoomIdAndLiveCourseWareIdV2(888L, 998L);
 		log.info("findByRoomIdAndLiveCoursewareId :{}", findByRoomIdAndLiveCoursewareId);
 	}
 

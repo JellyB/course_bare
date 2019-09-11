@@ -26,10 +26,15 @@ public class SyllabusWareInfo {
     private Integer videoType;
     private String length;
     private String roomId;
+    private Integer afterCoreseNum;
+    private Integer classExercisesNum;
+    // 1 行测 2 申论
+    private Integer subjectType;
+    // 0 单题 1 套题
+    private Integer buildType;
 
     @Builder
-
-    public SyllabusWareInfo(String className, Long classId, Long syllabusId, String coursewareName, Long coursewareId, Integer serialNumber, Integer videoType, String length, String roomId) {
+    public SyllabusWareInfo(String className, Long classId, Long syllabusId, String coursewareName, Long coursewareId, Integer serialNumber, Integer videoType, String length, String roomId, Integer afterCoreseNum, Integer classExercisesNum, Integer subjectType, Integer buildType) {
         this.className = className;
         this.classId = classId;
         this.syllabusId = syllabusId;
@@ -39,5 +44,9 @@ public class SyllabusWareInfo {
         this.videoType = videoType;
         this.length = length;
         this.roomId = roomId;
+        this.afterCoreseNum = afterCoreseNum;
+        this.classExercisesNum = classExercisesNum;
+        this.subjectType = subjectType;
+        this.buildType = buildType;
     }
 }

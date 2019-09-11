@@ -35,8 +35,43 @@ public class SyllabusServiceFallback implements SyllabusServiceV7{
      * @param params
      * @return
      */
+    @Deprecated
     @Override
     public NetSchoolResponse obtainSyllabusIdByCourseWareId(Map<String, Object> params) {
         return NetSchoolResponse.DEFAULT;
+    }
+
+
+    /**
+     * 课程大纲-售前
+     *
+     * @param params
+     * @return
+     */
+    @Override
+    public NetSchoolResponse classSyllabus(Map<String, Object> params) {
+        return null;
+    }
+
+    /**
+     * 大纲 售后
+     *
+     * @param params
+     * @return
+     */
+    @Override
+    public NetSchoolResponse buyAfterSyllabus(Map<String, Object> params) {
+        return null;
+    }
+
+    /**
+     * 分享音频课件列表
+     *
+     * @param params
+     * @return
+     */
+    @Override
+    public NetSchoolResponse shareAudio(Map<String, Object> params) {
+        return null;
     }
 }

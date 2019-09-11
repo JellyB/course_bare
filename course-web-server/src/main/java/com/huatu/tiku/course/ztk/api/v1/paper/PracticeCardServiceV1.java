@@ -64,6 +64,7 @@ public interface PracticeCardServiceV1 {
      * 查询指定用户所有答题卡信息
      */
     @PostMapping(value = "/v2/practices/{userId}/getCourseExercisesAllCardInfo")
+    @Deprecated
     Object getCourseExercisesAllCardInfo(
             @RequestHeader("userId") long userId);
 

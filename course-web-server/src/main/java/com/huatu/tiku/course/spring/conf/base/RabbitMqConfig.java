@@ -168,7 +168,7 @@ public class RabbitMqConfig {
 	 * 课后作业 mongo -> mysql 处理队列
 	 * @return
 	 */
-	@Bean
+	//@Bean
 	public Queue CourseWorkReportDealQueue(){
 		return new Queue(RabbitMqConstants.COURSE_WORK_REPORT_USERS_DEAL_QUEUE);
 	}

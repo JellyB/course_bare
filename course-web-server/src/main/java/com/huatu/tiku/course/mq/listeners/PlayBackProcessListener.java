@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import tk.mybatis.mapper.entity.Example;
 
 /**
  * 描述：
@@ -32,6 +31,7 @@ public class PlayBackProcessListener {
     @RabbitListener(queues = RabbitMqConstants.PLAY_BACK_DEAL_INFO)
     public void onMessage(String message){
         try{
+            log.info("录播观看到 85% 创建课后作业答题卡v7:{}", message);
             RecordProcess recordProcess = JSONObject.parseObject(message, RecordProcess.class);
             if(null != recordProcess){
                 courseExercisesProcessLogManager.dealRecordProcess(recordProcess);
@@ -41,6 +41,5 @@ public class PlayBackProcessListener {
         }catch (Exception e){
             log.error("大数据上报学习进度创建课后作业答题卡失败:{}", message);
         }
-
     }
 }
