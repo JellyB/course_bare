@@ -301,16 +301,9 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
      * @return
      */
     private long obtainEssayCourseWorkUnReadCount (int userId){
-        Set<Long> result = essayExercisesAnswerMetaMapper.selectDistinctSyllabusIdByUserId(userId);
-        if(CollectionUtils.isEmpty(result)){
-            return result.size();
-        }else{
-            String key = CourseCacheKey.getCourseWorkEssayIsAlert(userId);
-            SetOperations<String, Long> setOperations = redisTemplate.opsForSet();
-            redisTemplate.delete(key);
-            result.forEach(item -> setOperations.add(key, item));
-            return setOperations.size(key);
-        }
+        String key = CourseCacheKey.getCourseWorkEssayIsAlert(userId);
+        SetOperations<String, Long> setOperations = redisTemplate.opsForSet();
+        return setOperations.size(key);
     }
 
 
@@ -448,6 +441,12 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                     }
                 }
             }
+        }
+        //默认请求这个接口视为开始做题,减少未读次数
+        String key = CourseCacheKey.getCourseWorkEssayIsAlert(userId);
+        SetOperations<String, Long> setOperations = redisTemplate.opsForSet();
+        if(setOperations.isMember(key, syllabusId)){
+            setOperations.remove(key, syllabusId);
         }
         return essayCourseWorkSyllabusInfo;
     }
