@@ -42,7 +42,7 @@ public class SyllabusControllerV7 {
     /**
      * 大纲 售后
      */
-    @LocalMapParam
+    @LocalMapParam(checkToken = true)
     @GetMapping("{netClassId}/buyAfterSyllabus")
     public Object buyAfterSyllabus(
             @Token UserSession userSession,
@@ -121,7 +121,7 @@ public class SyllabusControllerV7 {
      * @return
      */
     @GetMapping("{netClassId}/shareAudio")
-    public Object buyAfterSyllabus(@RequestHeader(value = "terminal") int terminal,
+    public Object shareAudio(@RequestHeader(value = "terminal") int terminal,
                                    @RequestHeader(value = "cv") String cv,
                                    @PathVariable int netClassId,
                                    @RequestParam(value = "shareSyllabusId") int shareSyllabusId,

@@ -7,7 +7,6 @@ import com.huatu.tiku.essay.essayEnum.EssayStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 
-import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -26,7 +25,7 @@ public class CourseExercisesProcessEssayLogProvider {
                 .append(tempTable)
                 .append(" ) AS temp_table")
                 .append(" LIMIT ")
-                .append(page -1).append(",").append(size);
+                .append((page -1) * size).append(",").append(size);
         return stringBuilder.toString();
     }
 
@@ -273,7 +272,6 @@ public class CourseExercisesProcessEssayLogProvider {
      * 获取多题答题卡状态
      * @param userId
      * @param syllabusId
-     * @param correctNum
      * @return
      */
     public String selectMultiBizStatusCount(int userId, long syllabusId){
