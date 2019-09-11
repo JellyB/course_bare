@@ -59,6 +59,33 @@ public class CourseExercisesProcessEssayLogProvider {
         return stringBuilder.toString();
     }
 
+    /**
+     * 获取多题答题卡状态
+     * @param userId
+     * @param userId
+     * @return
+     */
+    public String selectDistinctSyllabusIdByUserId(@Param(value = "userId") int userId){
+
+        List<Integer> list = Lists.newArrayList(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus(),
+                EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus(),
+                EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
+
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT");
+        stringBuilder.append(" distinct syllabus_id");
+        stringBuilder.append(" FROM");
+        stringBuilder.append(" v_essay_exercises_answer_meta");
+        stringBuilder.append(" WHERE");
+        stringBuilder.append(" biz_status in (");
+        stringBuilder.append(Joiner.on(",").join(list));
+        stringBuilder.append(" )");
+        stringBuilder.append(" AND user_id = ").append(userId);
+        stringBuilder.append(" AND status = ").append(EssayStatusEnum.NORMAL.getCode());
+        log.info("selectDistinctSyllabusIdByUserId.sql info: userId:{}", userId);
+        return stringBuilder.toString();
+    }
+
 
     public String selectQuestionBaseById(@Param(value = "questionBaseId") Long questionBaseId){
         StringBuilder stringBuilder = new StringBuilder();
@@ -286,5 +313,4 @@ public class CourseExercisesProcessEssayLogProvider {
         stringBuilder.append(" AND status = ").append(EssayStatusEnum.NORMAL.getCode());
         return stringBuilder.toString();
     }
-    
 }

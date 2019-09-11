@@ -9,7 +9,6 @@ import com.huatu.common.ErrorResult;
 import com.huatu.common.SuccessMessage;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.vo.*;
-import com.huatu.tiku.course.common.BuildTypeEnum;
 import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.common.SubjectEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
@@ -23,9 +22,6 @@ import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
 import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
 import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
 import com.huatu.tiku.essay.essayEnum.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -305,9 +301,16 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
      * @return
      */
     private long obtainEssayCourseWorkUnReadCount (int userId){
-        String key = CourseCacheKey.getCourseWorkEssayIsAlert(userId);
-        SetOperations<String, Long> setOperations = redisTemplate.opsForSet();
-        return setOperations.size(key);
+        Set<Long> result = essayExercisesAnswerMetaMapper.selectDistinctSyllabusIdByUserId(userId);
+        if(CollectionUtils.isEmpty(result)){
+            return result.size();
+        }else{
+            String key = CourseCacheKey.getCourseWorkEssayIsAlert(userId);
+            SetOperations<String, Long> setOperations = redisTemplate.opsForSet();
+            redisTemplate.delete(key);
+            result.forEach(item -> setOperations.add(key, item));
+            return setOperations.size(key);
+        }
     }
 
 

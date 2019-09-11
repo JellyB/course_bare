@@ -10,6 +10,7 @@ import tk.mybatis.mapper.common.Mapper;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 描述：
@@ -30,6 +31,15 @@ public interface EssayExercisesAnswerMetaMapper extends Mapper<EssayExercisesAns
      */
     @SelectProvider(type = CourseExercisesProcessEssayLogProvider.class, method = "getEssayCoursePageInfo")
     List<HashMap<String, Object>> getEssayCoursePageInfo(long userId, int page, int size);
+
+
+    /**
+     * 查询学员未完成课后作业大纲id
+     * @param userId
+     * @return
+     */
+    @SelectProvider(type = CourseExercisesProcessEssayLogProvider.class, method = "selectDistinctSyllabusIdByUserId")
+    Set<Long> selectDistinctSyllabusIdByUserId(@Param(value = "userId") int userId);
 
     /**
      *
