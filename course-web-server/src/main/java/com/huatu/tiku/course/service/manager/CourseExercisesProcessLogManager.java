@@ -396,7 +396,7 @@ public class CourseExercisesProcessLogManager {
             if (MapUtils.isEmpty(result)) {
                 return null;
             }
-            //result.computeIfPresent("id", (key, value) -> String.valueOf(value));
+            result.computeIfPresent("id", (key, value) -> String.valueOf(value));
             result.computeIfPresent("score", (key, value) -> new Double(Double.parseDouble(value.toString())).intValue());
 
             createCourseWorkAnswerCard(userId, courseType, courseWareId, courseId, syllabusId, result, true);
