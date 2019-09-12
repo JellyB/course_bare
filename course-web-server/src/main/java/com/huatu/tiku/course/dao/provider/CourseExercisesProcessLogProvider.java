@@ -22,7 +22,7 @@ public class CourseExercisesProcessLogProvider {
                 .append(tempTable)
                 .append(" ) AS temp_table")
                 .append(" LIMIT ")
-                .append(page -1).append(",").append(size);
+                .append((page -1) * size).append(",").append(size);
         return stringBuilder.toString();
     }
 

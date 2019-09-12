@@ -113,13 +113,17 @@ public class CourseControllerV6 {
      */
     @LocalMapParam
     @GetMapping(value = "search")
-    public Object searchCourses(@RequestParam(value = "keyWord") String keyWord,
+    public Object searchCourses(@Token UserSession userSession,
+                                @RequestParam(value = "keyWord") String keyWord,
                                 @RequestParam(value = "cateId") int cateId,
                                 @RequestParam(value = "page", defaultValue = "1") int page,
                                 @RequestParam(value = "isHistory", defaultValue = "-1") int isHistory,
                                 @RequestParam(value = "isRecommend", defaultValue = "-1") int isRecommend) {
         Map<String, Object> params = LocalMapParamHandler.get();
         NetSchoolResponse netSchoolResponse = courseService.searchCourses(params);
+        if(isHistory > 0){
+            courseServiceV6Biz.upSetSearchKeyWord(userSession.getToken(), keyWord);
+        }
         return ResponseUtil.build(netSchoolResponse);
     }
 
