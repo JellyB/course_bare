@@ -1235,6 +1235,29 @@ public class CourseExercisesProcessLogManager {
         return courseExercisesProcessLogMapper.selectCountByExample(example);
     }
 
+    /**
+     * 课后作业是否完成 0 为完成 1 已完成
+     * @param userId
+     * @param syllabusId
+     * @return
+     * @throws BizException
+     */
+    public Object cardInfo(int userId, long syllabusId) throws BizException{
+        Map<String,Integer> result = Maps.newHashMap();
+        int status = YesOrNoStatus.NO.getCode();
+        Example example = new Example(CourseExercisesProcessLog.class);
+        example.and().andEqualTo("userId", userId)
+                .andEqualTo("syllabusId",syllabusId)
+                .andEqualTo("status", YesOrNoStatus.YES.getCode());
+        List<CourseExercisesProcessLog> list = courseExercisesProcessLogMapper.selectByExample(example);
+        if(CollectionUtils.isNotEmpty(list)){
+            CourseExercisesProcessLog courseExercisesProcessLog = list.get(0);
+            status = courseExercisesProcessLog.getBizStatus() == AnswerCardStatus.FINISH ? YesOrNoStatus.YES.getCode() : YesOrNoStatus.NO.getCode();
+        }
+        result.put("status", status);
+        return result;
+    }
+
 
     @Getter
     @Setter

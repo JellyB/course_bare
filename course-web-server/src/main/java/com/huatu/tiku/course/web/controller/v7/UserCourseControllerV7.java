@@ -120,4 +120,16 @@ public class UserCourseControllerV7 {
                                                     @RequestParam(value = "answerCardId", defaultValue = "0") Long answerCardId){
         return userCourseBizV7Service.essayCourseWorkSyllabusInfo(userSession.getId(), videoType, courseWareId, syllabusId, answerCardId);
     }
+
+    /**
+     * 获取申论课后做作业答题卡 id
+     * @param userSession
+     * @param syllabusId
+     * @return
+     */
+    @GetMapping(value = "card/id")
+    public Object cardId(@Token UserSession userSession,
+                         @RequestParam(value = "syllabusId") long syllabusId){
+        return userCourseBizV7Service.cardId(userSession.getId(), syllabusId);
+    }
 }

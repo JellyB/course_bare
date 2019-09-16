@@ -93,7 +93,7 @@ public class InterfaceDegradeTest extends BaseWebTest {
         log.info(">>>>>>>>>>>>>>>> :{}", current.get());
         int userId = MAX_USER_ID - current.get();
         RestTemplate restTemplate = new RestTemplate();
-        String tokenUri = "https://ns.huatu.com/u/v1/users/%s/token";
+        String tokenUri = "http://123.103.86.52/u/v1/users/%s/token";
         tokenUri = String.format(tokenUri, userId);
         HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
