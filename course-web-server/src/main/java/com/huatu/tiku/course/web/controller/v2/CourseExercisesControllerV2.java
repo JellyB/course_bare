@@ -66,7 +66,7 @@ public class CourseExercisesControllerV2 {
      * @param userSession
      * @return
      */
-    @GetMapping("card/status")
+    @GetMapping("card/info")
     public Object cardInfo(@Token UserSession userSession,
                            @RequestParam(value = "syllabusId") long syllabusId){
         return courseExercisesProcessLogManager.cardInfo(userSession.getId(), syllabusId);

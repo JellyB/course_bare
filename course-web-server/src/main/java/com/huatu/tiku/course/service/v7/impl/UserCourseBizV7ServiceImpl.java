@@ -482,35 +482,4 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
     public EssayAnswerCardInfo buildEssayAnswerCardInfo(int userId, long syllabusId) throws BizException {
         return null;
     }
-
-
-    /**
-     * 申论课后作业答题卡 id
-     *
-     * @param userId
-     * @param syllabusId
-     * @return
-     * @throws BizException
-     */
-    @Override
-    public Object cardId(int userId, long syllabusId) throws BizException {
-        Map<String, Long> result = Maps.newHashMap();
-        long cardId = 0l;
-        Example example = new Example(EssayExercisesAnswerMeta.class);
-        example.and()
-                .andEqualTo("userId", userId)
-                .andEqualTo("status", EssayStatusEnum.NORMAL.getCode())
-                .andEqualTo("syllabusId", syllabusId);
-
-        List<EssayExercisesAnswerMeta> metaList = essayExercisesAnswerMetaMapper.selectByExample(example);
-        if(metaList.size() == 1){
-            EssayExercisesAnswerMeta meta = metaList.get(0);
-            cardId = meta == null ? cardId : meta.getAnswerId();
-        }else{
-            EssayExercisesAnswerMeta meta = metaList.stream().filter(item -> item.getCorrectNum() == 2).findFirst().get();
-            cardId = meta.getAnswerId();
-        }
-        result.put("cardId", cardId);
-        return result;
-    }
 }

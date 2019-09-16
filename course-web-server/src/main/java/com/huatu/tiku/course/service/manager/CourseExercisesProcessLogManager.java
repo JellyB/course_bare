@@ -1243,8 +1243,9 @@ public class CourseExercisesProcessLogManager {
      * @throws BizException
      */
     public Object cardInfo(int userId, long syllabusId) throws BizException{
-        Map<String,Integer> result = Maps.newHashMap();
+        Map<String, Object> result = Maps.newHashMap();
         int status = YesOrNoStatus.NO.getCode();
+        long cardId = 0l;
         Example example = new Example(CourseExercisesProcessLog.class);
         example.and().andEqualTo("userId", userId)
                 .andEqualTo("syllabusId",syllabusId)
@@ -1253,8 +1254,10 @@ public class CourseExercisesProcessLogManager {
         if(CollectionUtils.isNotEmpty(list)){
             CourseExercisesProcessLog courseExercisesProcessLog = list.get(0);
             status = courseExercisesProcessLog.getBizStatus() == AnswerCardStatus.FINISH ? YesOrNoStatus.YES.getCode() : YesOrNoStatus.NO.getCode();
+            cardId = courseExercisesProcessLog.getCardId() == null ? cardId : courseExercisesProcessLog.getCardId();
         }
         result.put("status", status);
+        result.put("cardId", String.valueOf(cardId));
         return result;
     }
 

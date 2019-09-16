@@ -88,13 +88,4 @@ public interface UserCourseBizV7Service {
      * @throws BizException
      */
     EssayAnswerCardInfo buildEssayAnswerCardInfo(int userId, long syllabusId) throws BizException;
-
-    /**
-     * 申论课后作业答题卡 id
-     * @param userId
-     * @param syllabusId
-     * @return
-     * @throws BizException
-     */
-    Object cardId(int userId, long syllabusId) throws BizException;
 }
