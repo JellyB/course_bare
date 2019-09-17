@@ -12,6 +12,7 @@ import com.google.common.collect.*;
 import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.bean.vo.*;
 import com.huatu.tiku.course.common.SubjectEnum;
+import com.huatu.tiku.course.consts.NetschoolTerminalType;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
@@ -396,7 +397,9 @@ public class CourseExercisesProcessLogManager {
             if (MapUtils.isEmpty(result)) {
                 return null;
             }
-            result.computeIfPresent("id", (key, value) -> String.valueOf(value));
+            if(NetschoolTerminalType.needTrans2Str(terminal)){
+                result.computeIfPresent("id", (key, value) -> String.valueOf(value));
+            }
             result.computeIfPresent("score", (key, value) -> new Double(Double.parseDouble(value.toString())).intValue());
 
             createCourseWorkAnswerCard(userId, courseType, courseWareId, courseId, syllabusId, result, true);

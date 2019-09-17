@@ -25,4 +25,17 @@ public class NetschoolTerminalType {
         }
         return source;
     }
+
+    /**
+     * 答题卡id是否需要转换为 str
+     * @param terminal
+     * @return
+     */
+    public final static boolean needTrans2Str(int terminal){
+        if(terminal == TerminalType.IPHONE || terminal == TerminalType.IPHONE_IPAD){
+            return true;
+        }else{
+            return false;
+        }
+    }
 }
