@@ -33,9 +33,9 @@ public class NetschoolTerminalType {
      */
     public final static boolean needTrans2Str(int terminal){
         if(terminal == TerminalType.IPHONE || terminal == TerminalType.IPHONE_IPAD){
-            return true;
-        }else{
             return false;
+        }else{
+            return true;
         }
     }
 }
