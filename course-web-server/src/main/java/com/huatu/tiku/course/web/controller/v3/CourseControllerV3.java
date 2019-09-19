@@ -292,6 +292,29 @@ public class CourseControllerV3 {
      * @param rid
      * @return
      */
+    @GetMapping("/{rid}/secrinfo/pc")
+    public Object getCourseSecrInfo4Pc(@Token UserSession userSession,
+                                    @PathVariable int rid,
+                                    @RequestHeader("terminal") int terminal
+    ) {
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("rid", rid);
+        params.put("username", userSession.getUname());
+
+        NetSchoolResponse netSchoolResponse = courseServiceV3.getCourseSecrInfo(params);
+        Object response = ResponseUtil.build(netSchoolResponse, true);
+        //发布课程播放事件
+        courseUtil.pushPlayEvent(userSession, netSchoolResponse, response);
+        return response;
+    }
+
+    /**
+     * 课程播放接口
+     *
+     * @param userSession
+     * @param rid
+     * @return
+     */
     @GetMapping("/{rid}/teachers")
     public Object findCourseTeachers(@Token UserSession userSession,
                                      @PathVariable int rid) {
