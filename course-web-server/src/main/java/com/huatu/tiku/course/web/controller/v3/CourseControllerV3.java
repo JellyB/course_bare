@@ -268,7 +268,7 @@ public class CourseControllerV3 {
                                     @RequestParam(required = false, defaultValue = "0") int isTrial,
                                     @RequestParam(required = false, defaultValue = "0") int fatherId,
                                     @RequestHeader("terminal") int terminal,
-                                    @RequestHeader("cv") String cv
+                                    @RequestHeader(value = "cv", defaultValue = "0") String cv
     ) {
         Map<String, Object> params = Maps.newHashMap();
         params.put("rid", rid);
@@ -282,29 +282,6 @@ public class CourseControllerV3 {
         courseUtil.pushPlayEvent(userSession, netSchoolResponse, response);
         //添加课程进度
         courseUtil.addStudyProcessIntoSecrInfo(response, userSession.getToken(), cv, terminal);
-        return response;
-    }
-
-    /**
-     * 课程播放接口
-     *
-     * @param userSession
-     * @param rid
-     * @return
-     */
-    @GetMapping("/{rid}/secrinfo/pc")
-    public Object getCourseSecrInfo4Pc(@Token UserSession userSession,
-                                    @PathVariable int rid,
-                                    @RequestHeader("terminal") int terminal
-    ) {
-        Map<String, Object> params = Maps.newHashMap();
-        params.put("rid", rid);
-        params.put("username", userSession.getUname());
-
-        NetSchoolResponse netSchoolResponse = courseServiceV3.getCourseSecrInfo(params);
-        Object response = ResponseUtil.build(netSchoolResponse, true);
-        //发布课程播放事件
-        courseUtil.pushPlayEvent(userSession, netSchoolResponse, response);
         return response;
     }
 
