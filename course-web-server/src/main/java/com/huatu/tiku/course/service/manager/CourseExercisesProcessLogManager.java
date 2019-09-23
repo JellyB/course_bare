@@ -706,9 +706,13 @@ public class CourseExercisesProcessLogManager {
                 try{
                 String value = valueOperations.get(key);
                 SyllabusWareInfo syllabusWareInfo = JSONObject.parseObject(value, SyllabusWareInfo.class);
-                table.put(LESSON_LABEL, item, syllabusWareInfo);
-                table.put(COURSE_LABEL, syllabusWareInfo.getClassId(), syllabusWareInfo);
-                copy.remove(item);
+                if(SyllabusWareInfo.cacheCheck(syllabusWareInfo)){
+                    redisTemplate.delete(key);
+                }else{
+                    table.put(LESSON_LABEL, item, syllabusWareInfo);
+                    table.put(COURSE_LABEL, syllabusWareInfo.getClassId(), syllabusWareInfo);
+                    copy.remove(item);
+                }
                 /*if((syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE.getVideoType() || syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()) && StringUtils.isEmpty(syllabusWareInfo.getRoomId())){
                     redisTemplate.delete(key);
                 }*/
@@ -748,7 +752,12 @@ public class CourseExercisesProcessLogManager {
             String value = valueOperations.get(key);
             try{
                 SyllabusWareInfo syllabusWareInfo = JSONObject.parseObject(value, SyllabusWareInfo.class);
-                return syllabusWareInfo;
+                if(SyllabusWareInfo.cacheCheck(syllabusWareInfo)){
+                    return syllabusWareInfo;
+
+                }else{
+                    redisTemplate.delete(key);
+                }
             }catch (Exception e){
                 redisTemplate.delete(key);
                 return null;
@@ -792,7 +801,11 @@ public class CourseExercisesProcessLogManager {
                 LinkedHashMap<String, Object> map = item;
                 try{
                     SyllabusWareInfo syllabusWareInfo = objectMapper.convertValue(map, SyllabusWareInfo.class);
-                    return syllabusWareInfo;
+                    if(SyllabusWareInfo.cacheCheck(syllabusWareInfo)){
+                        return null;
+                    }else{
+                        return syllabusWareInfo;
+                    }
                 }catch (Exception e){
                     log.error("convert map 2 SyllabusWareInfo error! {}", e);
                     return null;
@@ -802,11 +815,13 @@ public class CourseExercisesProcessLogManager {
             if(CollectionUtils.isNotEmpty(list)){
                 ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
                 list.forEach(item -> {
-                    table.put(LESSON_LABEL, item.getSyllabusId(), item);
-                    table.put(COURSE_LABEL, item.getClassId(), item);
-                    String key = CourseCacheKey.getProcessLogSyllabusInfo(item.getSyllabusId());
-                    valueOperations.set(key, JSONObject.toJSONString(item));
-                    redisTemplate.expire(key, 20, TimeUnit.MINUTES);
+                    if(null != item.getSyllabusId() && !SyllabusWareInfo.cacheCheck(item)){
+                        String key = CourseCacheKey.getProcessLogSyllabusInfo(item.getSyllabusId());
+                        table.put(LESSON_LABEL, item.getSyllabusId(), item);
+                        table.put(COURSE_LABEL, item.getClassId(), item);
+                        valueOperations.set(key, JSONObject.toJSONString(item));
+                        redisTemplate.expire(key, 20, TimeUnit.MINUTES);
+                    }
                 });
             }
             stopwatch.stop();

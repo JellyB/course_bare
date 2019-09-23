@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.util.StringUtils;
 
 /**
  * 描述：
@@ -48,5 +49,18 @@ public class SyllabusWareInfo {
         this.classExercisesNum = classExercisesNum;
         this.subjectType = subjectType;
         this.buildType = buildType;
+    }
+
+    /**
+     * 新版大纲内容检查 - 课后作业提供
+     * @param syllabusWareInfo
+     * @return
+     */
+    public static boolean cacheCheck(SyllabusWareInfo syllabusWareInfo){
+        if(null == syllabusWareInfo.getSubjectType() || null == syllabusWareInfo.getBuildType() || StringUtils.isEmpty(syllabusWareInfo.getRoomId())){
+            return false;
+        }else{
+            return true;
+        }
     }
 }
