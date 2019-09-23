@@ -445,6 +445,21 @@ public class CourseUtil {
     }
 
     /**
+     * V6 之前接口不展示课后作业
+     * @param response
+     */
+    public void filterV5AndV6(LinkedHashMap response){
+        List<Map<String,Object>> list = (List<Map<String,Object>>) response.get("list");
+        for(int i = 0; i < list.size(); i ++) {
+            Map<String, Object> currentMap = list.get(i);
+            int subjectType = MapUtils.getIntValue(currentMap, SyllabusInfo.SubjectType, SubjectEnum.XC.getCode());
+            if(subjectType == SubjectEnum.SL.getCode()){
+                currentMap.put(SyllabusInfo.AfterCourseNum, 0);
+            }
+        }
+    }
+
+    /**
      * 课程大纲-售后-添加课后答题结果信息 - 处理直播回放课后作业信息
      * @param response
      * @param userId

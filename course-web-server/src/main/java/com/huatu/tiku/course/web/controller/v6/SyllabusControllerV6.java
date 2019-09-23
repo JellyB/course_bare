@@ -109,6 +109,7 @@ public class SyllabusControllerV6 {
         stopwatch.stop();
         //添加答题信息
         stopwatch.start("addExercisesCardInfo");
+        courseUtil.filterV5AndV6((LinkedHashMap) response);
         courseUtil.addExercisesCardInfoV3((LinkedHashMap) response, userSession.getId(), false);
         stopwatch.stop();
         if(versionControlService.checkLearnReportShow(terminal, cv)){

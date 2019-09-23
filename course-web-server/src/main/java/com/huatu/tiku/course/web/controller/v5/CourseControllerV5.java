@@ -203,7 +203,9 @@ public class CourseControllerV5 {
         stopwatch.stop();
         //添加答题信息
         stopwatch.start("addExercisesCardInfo");
-        courseUtil.addExercisesCardInfoV3((LinkedHashMap) purchasesTimetable, userSession.getId(), true);
+        //courseUtil.addExercisesCardInfoV3((LinkedHashMap) purchasesTimetable, userSession.getId(), true);
+        courseUtil.addExercisesCardInfoWithCivil((LinkedHashMap) purchasesTimetable, userSession.getId(), true);
+        courseUtil.addExercisesCardInfoWithEssay((LinkedHashMap) purchasesTimetable, userSession.getId());
         stopwatch.stop();
         stopwatch.start("addPeriodTestInfo");
         courseUtil.addPeriodTestInfo((LinkedHashMap) purchasesTimetable, userSession.getId());

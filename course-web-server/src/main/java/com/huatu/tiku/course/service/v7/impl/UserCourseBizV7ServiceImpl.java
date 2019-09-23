@@ -357,6 +357,10 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
         List<EssayCourseExercisesQuestion> essayCourseExercisesQuestions = essayCourseExercisesQuestionMapper.selectByExample(example);
 
+        if(CollectionUtils.isEmpty(essayCourseExercisesQuestions)){
+            log.error("essayCourseWorkSyllabusInfo.essayCourseExercisesQuestions is empty:courseType:{}, courseWareId:{}", courseType, courseWareId);
+            throw new BizException(ErrorResult.create(100010, "数据不存在"));
+        }
         essayCourseWorkSyllabusInfo.setAfterCoreseNum(essayCourseExercisesQuestions.size());
         essayCourseWorkSyllabusInfo.setBuildType(essayCourseExercisesQuestions.get(0).getType());
 

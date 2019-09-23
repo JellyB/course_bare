@@ -156,10 +156,13 @@ public class UserAccountControllerV3 {
      */
     @GetMapping("/balance")
     public Object getBalance(
-            @Token UserSession userSession,
+            @Token(check = false) UserSession userSession,
             @RequestHeader("cv") String terminal
 
     ) {
+    	if(userSession == null) {
+    		return null;
+    	}
         Map<String,Object> params = Maps.newHashMap();
         params.put("action",1);//
         params.put("username",userSession.getUname());

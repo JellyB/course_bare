@@ -12,6 +12,7 @@ import com.google.common.collect.*;
 import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.bean.vo.*;
 import com.huatu.tiku.course.common.SubjectEnum;
+import com.huatu.tiku.course.consts.NetschoolTerminalType;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
@@ -396,7 +397,9 @@ public class CourseExercisesProcessLogManager {
             if (MapUtils.isEmpty(result)) {
                 return null;
             }
-            result.computeIfPresent("id", (key, value) -> String.valueOf(value));
+            if(NetschoolTerminalType.needTrans2Str(terminal)){
+                result.computeIfPresent("id", (key, value) -> String.valueOf(value));
+            }
             result.computeIfPresent("score", (key, value) -> new Double(Double.parseDouble(value.toString())).intValue());
 
             createCourseWorkAnswerCard(userId, courseType, courseWareId, courseId, syllabusId, result, true);
@@ -703,9 +706,13 @@ public class CourseExercisesProcessLogManager {
                 try{
                 String value = valueOperations.get(key);
                 SyllabusWareInfo syllabusWareInfo = JSONObject.parseObject(value, SyllabusWareInfo.class);
-                table.put(LESSON_LABEL, item, syllabusWareInfo);
-                table.put(COURSE_LABEL, syllabusWareInfo.getClassId(), syllabusWareInfo);
-                copy.remove(item);
+                if(SyllabusWareInfo.cacheCheck(syllabusWareInfo)){
+                    redisTemplate.delete(key);
+                }else{
+                    table.put(LESSON_LABEL, item, syllabusWareInfo);
+                    table.put(COURSE_LABEL, syllabusWareInfo.getClassId(), syllabusWareInfo);
+                    copy.remove(item);
+                }
                 /*if((syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE.getVideoType() || syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()) && StringUtils.isEmpty(syllabusWareInfo.getRoomId())){
                     redisTemplate.delete(key);
                 }*/
@@ -745,7 +752,12 @@ public class CourseExercisesProcessLogManager {
             String value = valueOperations.get(key);
             try{
                 SyllabusWareInfo syllabusWareInfo = JSONObject.parseObject(value, SyllabusWareInfo.class);
-                return syllabusWareInfo;
+                if(SyllabusWareInfo.cacheCheck(syllabusWareInfo)){
+                    return syllabusWareInfo;
+
+                }else{
+                    redisTemplate.delete(key);
+                }
             }catch (Exception e){
                 redisTemplate.delete(key);
                 return null;
@@ -789,7 +801,11 @@ public class CourseExercisesProcessLogManager {
                 LinkedHashMap<String, Object> map = item;
                 try{
                     SyllabusWareInfo syllabusWareInfo = objectMapper.convertValue(map, SyllabusWareInfo.class);
-                    return syllabusWareInfo;
+                    if(SyllabusWareInfo.cacheCheck(syllabusWareInfo)){
+                        return null;
+                    }else{
+                        return syllabusWareInfo;
+                    }
                 }catch (Exception e){
                     log.error("convert map 2 SyllabusWareInfo error! {}", e);
                     return null;
@@ -799,11 +815,13 @@ public class CourseExercisesProcessLogManager {
             if(CollectionUtils.isNotEmpty(list)){
                 ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
                 list.forEach(item -> {
-                    table.put(LESSON_LABEL, item.getSyllabusId(), item);
-                    table.put(COURSE_LABEL, item.getClassId(), item);
-                    String key = CourseCacheKey.getProcessLogSyllabusInfo(item.getSyllabusId());
-                    valueOperations.set(key, JSONObject.toJSONString(item));
-                    redisTemplate.expire(key, 20, TimeUnit.MINUTES);
+                    if(null != item.getSyllabusId() && !SyllabusWareInfo.cacheCheck(item)){
+                        String key = CourseCacheKey.getProcessLogSyllabusInfo(item.getSyllabusId());
+                        table.put(LESSON_LABEL, item.getSyllabusId(), item);
+                        table.put(COURSE_LABEL, item.getClassId(), item);
+                        valueOperations.set(key, JSONObject.toJSONString(item));
+                        redisTemplate.expire(key, 20, TimeUnit.MINUTES);
+                    }
                 });
             }
             stopwatch.stop();
@@ -1233,6 +1251,32 @@ public class CourseExercisesProcessLogManager {
                 .andIn("bizStatus", list);
 
         return courseExercisesProcessLogMapper.selectCountByExample(example);
+    }
+
+    /**
+     * 课后作业是否完成 0 为完成 1 已完成
+     * @param userId
+     * @param syllabusId
+     * @return
+     * @throws BizException
+     */
+    public Object cardInfo(int userId, long syllabusId) throws BizException{
+        Map<String, Object> result = Maps.newHashMap();
+        int status = YesOrNoStatus.NO.getCode();
+        long cardId = 0l;
+        Example example = new Example(CourseExercisesProcessLog.class);
+        example.and().andEqualTo("userId", userId)
+                .andEqualTo("syllabusId",syllabusId)
+                .andEqualTo("status", YesOrNoStatus.YES.getCode());
+        List<CourseExercisesProcessLog> list = courseExercisesProcessLogMapper.selectByExample(example);
+        if(CollectionUtils.isNotEmpty(list)){
+            CourseExercisesProcessLog courseExercisesProcessLog = list.get(0);
+            status = courseExercisesProcessLog.getBizStatus() == AnswerCardStatus.FINISH ? YesOrNoStatus.YES.getCode() : YesOrNoStatus.NO.getCode();
+            cardId = courseExercisesProcessLog.getCardId() == null ? cardId : courseExercisesProcessLog.getCardId();
+        }
+        result.put("status", status);
+        result.put("cardId", String.valueOf(cardId));
+        return result;
     }
 
 
