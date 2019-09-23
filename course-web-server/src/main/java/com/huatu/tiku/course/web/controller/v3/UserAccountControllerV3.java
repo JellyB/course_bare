@@ -161,7 +161,11 @@ public class UserAccountControllerV3 {
 
     ) {
     	if(userSession == null) {
-    		return null;
+    		Map ret = Maps.newHashMap();
+    		Map userMoneyMap = Maps.newHashMap();
+    		userMoneyMap.put("UserMoney", 0);
+    		ret.put("userCountres", userMoneyMap);
+    		return ret;
     	}
         Map<String,Object> params = Maps.newHashMap();
         params.put("action",1);//
