@@ -291,7 +291,7 @@ public class CourseUtil {
                     //查询用户答题信息
                     List<Map> build = Lists.newArrayList();
                     log.info("获取课后练习的答题卡信息 v3,参数信息, userId = {}, paramsList = {}", userId, paramsList);
-                    if(CollectionUtils.isEmpty(paramsList)){
+                    if(CollectionUtils.isEmpty(paramsList) || userId == 0){
                         log.error("获取课后练习的答题卡信息 v3,参数信息 syllabusList is empty, userId:{}, response:{}",userId, response);
                         return buildResponseConstructCardInfo(need2Str, (List<Map>) value, build);
                     }
