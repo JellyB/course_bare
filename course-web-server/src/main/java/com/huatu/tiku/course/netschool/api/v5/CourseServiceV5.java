@@ -259,7 +259,7 @@ public interface CourseServiceV5 {
                     /**
                      * 可能存在大批量请求数据的情况，比如pageSize = 1000
                      */
-                    Map<String, Object> defaultMap = Maps.newHashMap();
+                    Map<String, Object> defaultMap = Maps.newLinkedHashMap();
                     defaultMap.put("list", Lists.newArrayList());
                     defaultMap.put("netClassName", "");
                     defaultMap.put("next", 0);
