@@ -134,7 +134,7 @@ public class CourseControllerV5 {
     @LocalMapParam
     @GetMapping("/{classId}/classSyllabus")
     public Object classSyllabus(
-            @Token(required = false, defaultValue = "") UserSession userSession,
+            @Token(check = false, defaultValue = "") UserSession userSession,
             @RequestHeader(required = false, defaultValue = "7.0.0") String cv,
             @PathVariable("classId") int classId,
             @RequestParam int parentId,
@@ -226,7 +226,7 @@ public class CourseControllerV5 {
      */
     @GetMapping("/{classId}/getClassDetailNotLive")
     public Object getClassDetailNotLive(
-            @Token(required = false, defaultValue = "") UserSession userSession,
+            @Token(check = false, defaultValue = "") UserSession userSession,
             @RequestHeader int terminal,
             @RequestHeader String cv,
             @PathVariable("classId") int classId,
