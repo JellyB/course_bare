@@ -249,7 +249,7 @@ public class CourseControllerV5 {
      */
     @GetMapping("/{classId}/getClassDetailLive")
     public Object getClassDetailLive(
-            @Token UserSession userSession,
+            @Token(check = false, defaultValue = "") UserSession userSession,
             @RequestHeader int terminal,
             @RequestHeader String cv,
             @PathVariable("classId") int classId,
@@ -262,7 +262,7 @@ public class CourseControllerV5 {
                 .put("collageActivityId", collageActivityId)
                 .put("cv", cv)
                 .build();
-        log.warn("4$${}$${}$${}$${}$${}$${}", classId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
+        log.warn("getClassDetailLive:{}, classId:{}, time:{}, cv:{}, terminal:{}", classId, String.valueOf(System.currentTimeMillis()), cv, terminal);
         return ResponseUtil.build(courseService.getClassDetailLive(map));
     }
 
