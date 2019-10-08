@@ -112,7 +112,7 @@ public class CourseControllerV6 {
      */
     @LocalMapParam
     @GetMapping(value = "search")
-    public Object searchCourses(@Token UserSession userSession,
+    public Object searchCourses(@Token(check = false, defaultValue = "") UserSession userSession,
                                 @RequestParam(value = "keyWord") String keyWord,
                                 @RequestParam(value = "cateId") int cateId,
                                 @RequestParam(value = "page", defaultValue = "1") int page,
