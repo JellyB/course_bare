@@ -240,7 +240,6 @@ public class CourseControllerV5 {
         if(null != userSession){
             map.put("userName", userSession.getUname());
         }
-        log.warn("4$${}$${}$${}$${}$${}$${}", classId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
         return ResponseUtil.build(courseService.getClassDetailNotLive(map));
     }
 
