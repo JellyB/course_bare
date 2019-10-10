@@ -439,13 +439,6 @@ public class CourseUtil {
     }
 
 
-    private void buildResponseConstructCardInfoWithEssay(List<Map> value, List<EssayExercisesAnswerMeta> metas) {
-
-        for (Map map : value) {
-            map.put("answerCard", JSONObject.toJSON(new EssayAnswerCardInfo()));
-        }
-    }
-
     /**
      * V6 之前接口不展示课后作业
      * @param response

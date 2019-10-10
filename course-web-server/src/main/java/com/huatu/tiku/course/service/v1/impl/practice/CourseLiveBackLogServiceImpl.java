@@ -202,6 +202,7 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 				 * @return
 				 */
 				private SimpleCourseLiveBackLog findFromPhp(){
+					log.info("new thread request live back info from php:{},{}", courseWareId, roomId);
 					Map<String,Object> params = Maps.newHashMap();
 					params.put("liveBackCoursewareId",courseWareId);
 					params.put("roomId", roomId);
