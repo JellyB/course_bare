@@ -26,6 +26,7 @@ import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.entity.CourseLiveBackLog;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StopWatch;
 import service.impl.BaseServiceHelperImpl;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.weekend.WeekendSqls;
@@ -202,6 +203,8 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 				 * @return
 				 */
 				private SimpleCourseLiveBackLog findFromPhp(){
+					StopWatch stopwatch = new StopWatch("调用 php 获取直播回放信息");
+					stopwatch.start("start");
 					log.info("new thread request live back info from php:{},{}", courseWareId, roomId);
 					Map<String,Object> params = Maps.newHashMap();
 					params.put("liveBackCoursewareId",courseWareId);
@@ -226,6 +229,8 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 							log.info("get live courseWareId from remote by rest:roomId:{}, coursewareId:{}", roomId, courseWareId);
 						}
 					}
+					stopwatch.stop();
+					log.info("调用 php 获取直播回放信息-结果:{}", JSONObject.toJSONString(simpleCourseLiveBackLog));
 					return simpleCourseLiveBackLog;
 				}
 			});
