@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.web.controller.v6;
 
 import com.huatu.common.SuccessMessage;
+import com.huatu.common.utils.collection.HashMapBuilder;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
@@ -198,5 +199,27 @@ public class CourseControllerV6 {
                                  @RequestParam(value = "limit") int limit){
         courseServiceV6Biz.addSecKillInfo(classId, limit);
         return SuccessMessage.create("ok");
+    }
+
+    /**
+     * 获取课程详情
+     */
+    @GetMapping("/{classId}/getClassDetail")
+    public Object getClassDetail(
+            @Token(check = false, defaultValue = "") UserSession userSession,
+            @RequestHeader int terminal,
+            @RequestHeader String cv,
+            @PathVariable("classId") int classId,
+            @RequestParam(defaultValue = "0") String collageActivityId
+    ) {
+        HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
+                .put("classId", classId)
+                .put("terminal", terminal)
+                .put("userName", "uname")
+                .put("collageActivityId", collageActivityId)
+                .put("cv", cv)
+                .build();
+        log.warn("getClassDetailLive:{}, classId:{}, time:{}, cv:{}, terminal:{}", classId, String.valueOf(System.currentTimeMillis()), cv, terminal);
+        return ResponseUtil.build(courseService.getClassDetail(map));
     }
 }

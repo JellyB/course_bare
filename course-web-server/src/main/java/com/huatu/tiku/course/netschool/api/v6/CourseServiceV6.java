@@ -84,4 +84,11 @@ public interface CourseServiceV6 {
      */
     @GetMapping(value = "v5/c/class/is_live_in_class")
     NetSchoolResponse userCourseStatus(@RequestParam Map<String, Object> params);
+
+
+    /**
+     * 查询课程详情
+     */
+    @GetMapping(value = "/v4/common/class/class_detail")
+    NetSchoolResponse getClassDetail(@RequestParam Map<String, Object> params);
 }
