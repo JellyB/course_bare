@@ -26,11 +26,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class InterfaceDegradeTest extends BaseWebTest {
 
-    private static final int REQUEST_TOTAL = 20000;
-    private static final int CONCURRENCY_FATAL = 20;
+    private static final int REQUEST_TOTAL = 2000000;
+    private static final int CONCURRENCY_FATAL = 99;
     private static final String FILE_PATH = "/Users/biguodong";
     private static final String FILE_NAME = "token";
-    private static final int MAX_USER_ID = 233982805;
+    //private static final int MAX_USER_ID = 233982805;
+    private static final int MAX_USER_ID = 234035396;
     private static final List<String> tokenList = Lists.newArrayList();
     private static final AtomicInteger current = new AtomicInteger(0);
 
