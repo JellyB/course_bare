@@ -20,12 +20,12 @@ import com.huatu.common.utils.web.RequestUtil;
 import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.common.PracticeStatusEnum;
 import com.huatu.tiku.course.common.SecKillCourseInfo;
+import com.huatu.tiku.course.consts.SimpleCourseLiveBackLog;
 import com.huatu.tiku.course.dao.manual.CoursePracticeQuestionInfoMapper;
 import com.huatu.tiku.course.netschool.api.SearchServiceV1;
 import com.huatu.tiku.course.netschool.api.fall.FallbackCacheHolder;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.course.service.v1.practice.PracticeUserMetaService;
-import com.huatu.tiku.entity.CourseLiveBackLog;
 import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
 import com.huatu.tiku.essay.essayEnum.CourseWareTypeEnum;
 import com.huatu.ztk.paper.common.AnswerCardStatus;
@@ -476,9 +476,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         //如果为录播回放，查看回放是否生成
         boolean playBackAvailable = false;
         if(videoTypeEnum == CourseWareTypeEnum.VideoTypeEnum.LIVE_PLAY_BACK){
-            CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(Long.valueOf(bjyRoomId), courseWareId);
-            if(null != courseLiveBackLog && null != courseLiveBackLog.getLiveCoursewareId()){
-                courseWareId = courseLiveBackLog.getLiveCoursewareId();
+            SimpleCourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(Long.valueOf(bjyRoomId), courseWareId);
+            if(null != courseLiveBackLog && null != courseLiveBackLog.getLiveCourseWareId()){
+                courseWareId = courseLiveBackLog.getLiveCourseWareId();
                 playBackAvailable = true;
             }
         }

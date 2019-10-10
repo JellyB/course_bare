@@ -399,7 +399,7 @@ public class CourseControllerV5 {
     /**
      * 试听列表
      */
-    @LocalMapParam(checkToken = true)
+    @LocalMapParam()
     @GetMapping("/{netClassId}/classAuditionList")
     public Object classAuditionList(@PathVariable int netClassId) throws BizException{
         HashMap<String, Object> map = LocalMapParamHandler.get();

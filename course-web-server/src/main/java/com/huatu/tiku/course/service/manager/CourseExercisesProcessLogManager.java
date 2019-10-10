@@ -14,9 +14,9 @@ import com.huatu.tiku.course.bean.vo.*;
 import com.huatu.tiku.course.common.SubjectEnum;
 import com.huatu.tiku.course.consts.NetschoolTerminalType;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
+import com.huatu.tiku.course.consts.SimpleCourseLiveBackLog;
 import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
-import com.huatu.tiku.entity.CourseLiveBackLog;
 import com.huatu.tiku.essay.essayEnum.CourseWareTypeEnum;
 import lombok.*;
 import org.apache.commons.collections.CollectionUtils;
@@ -305,12 +305,12 @@ public class CourseExercisesProcessLogManager {
                     log.error("直播回放创建课后作业答题卡失败，查询不到百家云信息:{}", syllabusId);
                     return null;
                 }
-                CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(Long.valueOf(syllabusWareInfo.getRoomId()), syllabusWareInfo.getCoursewareId());
-                if(null == courseLiveBackLog){
+                SimpleCourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(Long.valueOf(syllabusWareInfo.getRoomId()), syllabusWareInfo.getCoursewareId());
+                if(null == courseLiveBackLog || null == courseLiveBackLog.getLiveCourseWareId()){
                     log.error("直播回放数据查询不到roomId:{},课件id:{},终端信息:terminal:{},cv:{}",syllabusWareInfo.getRoomId(), syllabusWareInfo.getCoursewareId(),terminal, cv);
                     return null;
                 }else{
-                    coursewareId = courseLiveBackLog.getLiveCoursewareId();
+                    coursewareId = courseLiveBackLog.getLiveCourseWareId();
                     courseType = CourseWareTypeEnum.VideoTypeEnum.LIVE.getVideoType();
                 }
             }
@@ -371,12 +371,12 @@ public class CourseExercisesProcessLogManager {
                     log.error("直播回放创建课后作业答题卡失败，查询不到百家云信息V2:{}", syllabusId);
                     return null;
                 }
-                CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(Long.valueOf(syllabusWareInfo.getRoomId()), syllabusWareInfo.getCoursewareId());
-                if(null == courseLiveBackLog){
+                SimpleCourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(Long.valueOf(syllabusWareInfo.getRoomId()), syllabusWareInfo.getCoursewareId());
+                if(null == courseLiveBackLog || null == courseLiveBackLog.getLiveCourseWareId()){
                     log.error("直播回放数据查询不到roomId:{},课件id:{},终端信息V2:terminal:{},cv:{}",syllabusWareInfo.getRoomId(), syllabusWareInfo.getCoursewareId(),terminal, cv);
                     return null;
                 }else{
-                    courseWareId = courseLiveBackLog.getLiveCoursewareId();
+                    courseWareId = courseLiveBackLog.getLiveCourseWareId();
                     courseType = CourseWareTypeEnum.VideoTypeEnum.LIVE.getVideoType();
                 }
             }
@@ -924,12 +924,12 @@ public class CourseExercisesProcessLogManager {
              */
             if(syllabusWareInfo.getVideoType() == CourseWareTypeEnum.VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()){
                 String roomId = syllabusWareInfo.getRoomId();
-                CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(Long.valueOf(roomId), syllabusWareInfo.getCoursewareId());
-                if(null == courseLiveBackLog){
+                SimpleCourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(Long.valueOf(roomId), syllabusWareInfo.getCoursewareId());
+                if(null == courseLiveBackLog || null == courseLiveBackLog.getLiveCourseWareId()){
                     return;
                 }
                 courseType = CourseWareTypeEnum.VideoTypeEnum.LIVE.getVideoType();
-                lessonId = courseLiveBackLog.getLiveCoursewareId();
+                lessonId = courseLiveBackLog.getLiveCourseWareId();
             }else{
                 courseType = syllabusWareInfo.getVideoType();
                 lessonId = syllabusWareInfo.getCoursewareId();

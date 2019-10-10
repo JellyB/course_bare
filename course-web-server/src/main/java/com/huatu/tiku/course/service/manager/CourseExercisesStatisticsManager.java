@@ -8,6 +8,7 @@ import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.practice.QuestionInfo;
 import com.huatu.tiku.course.bean.practice.QuestionInfoWithStatistics;
 import com.huatu.tiku.course.common.YesOrNoStatus;
+import com.huatu.tiku.course.consts.SimpleCourseLiveBackLog;
 import com.huatu.tiku.course.dao.manual.CourseExercisesQuestionsStatisticsMapper;
 import com.huatu.tiku.course.dao.manual.CourseExercisesChoicesStatisticsMapper;
 import com.huatu.tiku.course.dao.manual.CourseExercisesStatisticsMapper;
@@ -18,7 +19,6 @@ import com.huatu.tiku.course.ztk.api.v4.user.UserServiceV4;
 import com.huatu.tiku.entity.CourseExercisesChoicesStatistics;
 import com.huatu.tiku.entity.CourseExercisesQuestionsStatistics;
 import com.huatu.tiku.entity.CourseExercisesStatistics;
-import com.huatu.tiku.entity.CourseLiveBackLog;
 import com.huatu.tiku.essay.essayEnum.CourseWareTypeEnum;
 import com.huatu.ztk.paper.bean.PracticeCard;
 import com.huatu.ztk.paper.bean.PracticeForCoursePaper;
@@ -368,13 +368,13 @@ public class CourseExercisesStatisticsManager {
                     result.add(param);
                     continue;
                 }else{
-                    CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(bjyRoomId, courseId);
-                    if(null == courseLiveBackLog){
+                    SimpleCourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(bjyRoomId, courseId);
+                    if(null == courseLiveBackLog || null == courseLiveBackLog.getLiveCourseWareId()){
                         param.putAll(defaultResult);
                         result.add(param);
                         continue;
                     }else{
-                        courseId = courseLiveBackLog.getLiveCoursewareId();
+                        courseId = courseLiveBackLog.getLiveCourseWareId();
                         courseType = CourseWareTypeEnum.VideoTypeEnum.LIVE.getVideoType();
                     }
                 }

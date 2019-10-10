@@ -77,4 +77,6 @@ public class SyllabusInfo {
      */
     public static final String AfterCourseNum = "afterCoreseNum";
 
+    public static final String NetClassId = "netClassId";
+
 }

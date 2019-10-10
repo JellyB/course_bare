@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.service.v1.practice;
 
+import com.huatu.tiku.course.consts.SimpleCourseLiveBackLog;
 import com.huatu.tiku.entity.CourseLiveBackLog;
 
 import service.BaseServiceHelper;
@@ -22,5 +23,5 @@ public interface CourseLiveBackLogService extends BaseServiceHelper<CourseLiveBa
 	/**
 	 * 根据 roomId 直播课件id 查询绑定关系 v2
 	 */
-	CourseLiveBackLog findByRoomIdAndLiveCourseWareIdV2(Long roomId, Long courseWareId);
+	SimpleCourseLiveBackLog findByRoomIdAndLiveCourseWareIdV2(Long roomId, Long courseWareId);
 }
