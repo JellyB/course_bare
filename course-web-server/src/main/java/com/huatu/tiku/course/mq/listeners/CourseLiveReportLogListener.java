@@ -63,7 +63,7 @@ public class CourseLiveReportLogListener {
         userCourseService.saveLiveRecord(params);
         //创建课后作业
 
-        Table<String, Long, SyllabusWareInfo> syllabusWareInfoTable = courseExercisesProcessLogManager.dealSyllabusInfo(Sets.newHashSet(liveRecordInfo.getSyllabusId()));
+        Table<String, Long, SyllabusWareInfo> syllabusWareInfoTable = courseExercisesProcessLogManager.dealSyllabusInfo2Table(Sets.newHashSet(liveRecordInfo.getSyllabusId()));
         SyllabusWareInfo syllabusWareInfo = syllabusWareInfoTable.get(CourseExercisesProcessLogManager.LESSON_LABEL, liveRecordInfo.getSyllabusId());
         if(null == syllabusWareInfo){
             return;

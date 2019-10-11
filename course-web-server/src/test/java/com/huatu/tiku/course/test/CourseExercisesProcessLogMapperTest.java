@@ -78,7 +78,7 @@ public class CourseExercisesProcessLogMapperTest extends BaseWebTest {
         syllabusId.add(8361564L);
         syllabusId.add(8361562L);
         syllabusId.add(8361565L);
-        Table<String, Long, SyllabusWareInfo> table =  courseExercisesProcessLogManager.dealSyllabusInfo(syllabusId);
+        Table<String, Long, SyllabusWareInfo> table =  courseExercisesProcessLogManager.dealSyllabusInfo2Table(syllabusId);
 
         table.row("lesson").values().forEach(item -> {
             log.info("SyllabusWareInfo:{}", JSONObject.toJSONString(item));
@@ -126,7 +126,7 @@ public class CourseExercisesProcessLogMapperTest extends BaseWebTest {
         List<CourseExercisesProcessLog> workList = courseExercisesProcessLogMapper.selectByExample(example);
         Set<Long> syllabusIds = workList.stream().map(CourseExercisesProcessLog::getSyllabusId).collect(Collectors.toSet());
         Map<Long, SyllabusWareInfo> syllabusWareInfoMap = syllabusIds.stream().collect(Collectors.toMap(i -> i, i ->{
-            SyllabusWareInfo syllabusWareInfo = courseExercisesProcessLogManager.requestSingleSyllabusInfoWithCache(i);
+            SyllabusWareInfo syllabusWareInfo = courseExercisesProcessLogManager.dealSyllabusInfo2Info(i);
             return syllabusWareInfo;
         }));
         for (CourseExercisesProcessLog courseExercisesProcessLog : workList) {
@@ -173,7 +173,7 @@ public class CourseExercisesProcessLogMapperTest extends BaseWebTest {
     @Test
     public void testRequestSingleSyllabusInfoWithCache(){
         long syllabusId = 5476937L;
-        SyllabusWareInfo syllabusWareInfo = courseExercisesProcessLogManager.requestSingleSyllabusInfoWithCache(syllabusId);
+        SyllabusWareInfo syllabusWareInfo = courseExercisesProcessLogManager.dealSyllabusInfo2Info(syllabusId);
         log.error("syllabusWareInfo:{}", JSONObject.toJSONString(syllabusWareInfo));
 
     }

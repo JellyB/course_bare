@@ -199,7 +199,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                 allSyllabusIds.addAll(temp);
             });
 
-            Table<String, Long, SyllabusWareInfo> syllabusWareInfoTable = courseExercisesProcessLogManager.dealSyllabusInfo(allSyllabusIds);
+            Table<String, Long, SyllabusWareInfo> syllabusWareInfoTable = courseExercisesProcessLogManager.dealSyllabusInfo2Table(allSyllabusIds);
             if(syllabusWareInfoTable.isEmpty()){
                 return result;
             }
