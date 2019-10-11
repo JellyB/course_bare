@@ -707,11 +707,11 @@ public class CourseExercisesProcessLogManager {
                 String value = valueOperations.get(key);
                 SyllabusWareInfo syllabusWareInfo = JSONObject.parseObject(value, SyllabusWareInfo.class);
                 if(SyllabusWareInfo.cacheCheck(syllabusWareInfo)){
-                    redisTemplate.delete(key);
+                    table.put(LESSON_LABEL, item, syllabusWareInfo);
+                    table.put(COURSE_LABEL, syllabusWareInfo.getClassId(), syllabusWareInfo);
+                    copy.remove(item);
                 }else{
-                table.put(LESSON_LABEL, item, syllabusWareInfo);
-                table.put(COURSE_LABEL, syllabusWareInfo.getClassId(), syllabusWareInfo);
-                copy.remove(item);
+                    redisTemplate.delete(key);
                 }
                 /*if((syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE.getVideoType() || syllabusWareInfo.getVideoType() == VideoTypeEnum.LIVE_PLAY_BACK.getVideoType()) && StringUtils.isEmpty(syllabusWareInfo.getRoomId())){
                     redisTemplate.delete(key);
@@ -753,8 +753,7 @@ public class CourseExercisesProcessLogManager {
             try{
                 SyllabusWareInfo syllabusWareInfo = JSONObject.parseObject(value, SyllabusWareInfo.class);
                 if(SyllabusWareInfo.cacheCheck(syllabusWareInfo)){
-                return syllabusWareInfo;
-
+                    return syllabusWareInfo;
                 }else{
                     redisTemplate.delete(key);
                 }
@@ -802,9 +801,9 @@ public class CourseExercisesProcessLogManager {
                 try{
                     SyllabusWareInfo syllabusWareInfo = objectMapper.convertValue(map, SyllabusWareInfo.class);
                     if(SyllabusWareInfo.cacheCheck(syllabusWareInfo)){
-                        return null;
+                        return syllabusWareInfo;
                     }else{
-                    return syllabusWareInfo;
+                        return null;
                     }
                 }catch (Exception e){
                     log.error("convert map 2 SyllabusWareInfo error! {}", e);
@@ -815,13 +814,11 @@ public class CourseExercisesProcessLogManager {
             if(CollectionUtils.isNotEmpty(list)){
                 ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
                 list.forEach(item -> {
-                    if(null != item.getSyllabusId() && !SyllabusWareInfo.cacheCheck(item)){
-                        String key = CourseCacheKey.getProcessLogSyllabusInfo(item.getSyllabusId());
+                    String key = CourseCacheKey.getProcessLogSyllabusInfo(item.getSyllabusId());
                     table.put(LESSON_LABEL, item.getSyllabusId(), item);
                     table.put(COURSE_LABEL, item.getClassId(), item);
                     valueOperations.set(key, JSONObject.toJSONString(item));
                     redisTemplate.expire(key, 20, TimeUnit.MINUTES);
-                    }
                 });
             }
             stopwatch.stop();

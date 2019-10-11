@@ -225,6 +225,7 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 							courseLiveBackLog.setLiveBackCoursewareId(courseWareId);
 							courseLiveBackLog.setCreatorId(10L);
 							insert(courseLiveBackLog);
+							logCache.put(key, simpleCourseLiveBackLog);
 							simpleCourseLiveBackLog.setLiveCourseWareId(liveCourseWareId);
 							log.info("get live courseWareId from remote by rest:roomId:{}, coursewareId:{}", roomId, courseWareId);
 						}
@@ -236,7 +237,8 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 			});
 		} catch (Exception e) {
 			log.error("课后作业数据修正---  guava 获取直播课件信息异常:roomId:{}, wareId:{}, error:{}", roomId, courseWareId, e.getMessage());
-			return null;
+			return SimpleCourseLiveBackLog.builder()
+					.liveBackCourseWareId(courseWareId).liveCourseWareId(null).roomId(roomId).build();
 		}
 	}
 }
