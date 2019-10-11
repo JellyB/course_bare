@@ -541,7 +541,7 @@ public class CourseExercisesStatisticsManager {
                 myRank = zSetOperations.rank(rankKey, String.valueOf(practiceCard.getUserId())) + 1;
             }catch (Exception e){
                 myRank = 0L;
-                log.error("课后作业统计排名异常 rankKey:{}, value:{}, errorMsg:{}", rankKey, practiceCard.getUserId(), e);
+                log.error("课后作业统计排名异常 rankKey:{}, value:{}, errorMsg:{}", rankKey, JSONObject.toJSONString(practiceCard), e);
             }
 
             Set<String> userIdRanks = zSetOperations.range(rankKey, START, END);

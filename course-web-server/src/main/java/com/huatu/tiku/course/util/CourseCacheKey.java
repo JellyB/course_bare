@@ -128,6 +128,7 @@ public class CourseCacheKey {
         return USER_ACCOUNT_INFO_KEY;
     }
 
+    @Deprecated
     public static String getProcessLogSyllabusDealList(){return PROCESS_LOG_SYLLABUS_DEAL_LIST;}
 
     /**

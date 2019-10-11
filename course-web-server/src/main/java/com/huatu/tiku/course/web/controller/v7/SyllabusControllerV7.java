@@ -64,7 +64,7 @@ public class SyllabusControllerV7 {
     ) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         map.put("cv", cv);
-        StopWatch stopwatch = new StopWatch("app 端售后大纲请求时间统计");
+        StopWatch stopwatch = new StopWatch("app 端售后大纲请求时间统计, classID=" + netClassId);
         stopwatch.start("buyAfterSyllabus.7");
         Object response = ResponseUtil.build(syllabusService.buyAfterSyllabus(map));
         stopwatch.stop();
@@ -84,7 +84,7 @@ public class SyllabusControllerV7 {
         stopwatch.stop();
         log.info("buyAfterSyllabus.7 - 阶段测试-学习报告-课后练习状态统计耗时汇总:{}", stopwatch.prettyPrint());
         //添加答题信息
-        log.info("app 端请求课后作业超时时间统计.7, 耗时:{}", stopwatch.prettyPrint());
+        log.info("app 端请求课后作业超时时间统计.7, classId:{}耗时:{}", netClassId, stopwatch.prettyPrint());
         return response;
     }
 
