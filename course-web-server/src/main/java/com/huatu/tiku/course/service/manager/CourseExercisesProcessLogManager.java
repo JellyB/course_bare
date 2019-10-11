@@ -825,7 +825,7 @@ public class CourseExercisesProcessLogManager {
             log.debug(">>>>>>>> 请求大纲ids耗费时间:{}", stopwatch.prettyPrint());
             return table;
         }catch (Exception e) {
-            log.error("request syllabusInfo error!:{}", e);
+            log.error("request syllabusInfo error!:{}", e.getMessage());
             return table;
         }
     }
