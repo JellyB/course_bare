@@ -67,5 +67,18 @@ public class ActivityController {
 						 @RequestHeader(value = "day") String day){
 		return activityService.report(userSession.getUname(), terminal, cv, day);
 	}
+	
+	/**
+	 * app评价送图币
+	 * @param userSession
+	 * @param terminal
+	 * @param cv
+	 * @return
+	 */
+	@PostMapping(value = "appStoreEvalution")
+	public Object appStoreEvalution(@Token UserSession userSession, @RequestHeader(value = "terminal") Integer terminal,
+			@RequestHeader(value = "cv") String cv) {
+		return activityService.appStoreEvalution(userSession.getId(),userSession.getUname(), terminal, cv);
+	}
 
 }
