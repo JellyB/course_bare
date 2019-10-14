@@ -206,8 +206,6 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 					StopWatch stopwatch = new StopWatch("调用 php 获取直播回放信息");
 					stopwatch.start("start");
 					log.info("new thread request live back info from php:{},{}", courseWareId, roomId);
-				private SimpleCourseLiveBackLog findFromPhp(){
-					log.info("new thread request live back info from php:{},{}", courseWareId, roomId);
 					Map<String,Object> params = Maps.newHashMap();
 					params.put("liveBackCoursewareId",courseWareId);
 					params.put("roomId", roomId);
@@ -235,7 +233,6 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 					}
 					stopwatch.stop();
 					log.info("调用 php 获取直播回放信息-结果:{}", JSONObject.toJSONString(simpleCourseLiveBackLog));
-					return simpleCourseLiveBackLog;
 					return simpleCourseLiveBackLog;
 				}
 			});
