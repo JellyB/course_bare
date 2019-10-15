@@ -78,6 +78,7 @@ public class CourseBizV6Service {
             if(null != netSchoolResponse && null != netSchoolResponse.getData()){
                 userCourseServiceV6FallBack.setCalendarLearnStaticData(params, netSchoolResponse);
             }
+            log.info("result={}",new Gson().toJson(netSchoolResponse));
             return ResponseUtil.build(netSchoolResponse);
         }catch (Exception e){
             log.error("param = {}", new Gson().toJson(params));
