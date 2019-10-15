@@ -3,6 +3,7 @@ package com.huatu.tiku.course.service.v6;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gson.Gson;
 import com.huatu.common.Result;
 import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
@@ -14,6 +15,7 @@ import com.huatu.tiku.course.service.v1.AccessLimitService;
 import com.huatu.tiku.course.util.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
+import org.apache.logging.log4j.core.util.JsonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -78,6 +80,7 @@ public class CourseBizV6Service {
             }
             return ResponseUtil.build(netSchoolResponse);
         }catch (Exception e){
+            log.error("param = {}", new Gson().toJson(params));
             log.error("obtainLearnCalender caught an exception and return from fallBack:{}", e);
             NetSchoolResponse netSchoolResponse = userCourseServiceV6FallBack.obtainLearnCalender(params);
             return ResponseUtil.build(netSchoolResponse);
