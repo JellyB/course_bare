@@ -1168,6 +1168,9 @@ public class CourseExercisesProcessLogManager {
      */
     public List<Long> obtainCardIdsBySyllabusIds(long userId, List<Long> syllabusIds){
         try{
+            if(userId == 0){
+               return Lists.newArrayList();
+            }
             Example example = new Example(CourseExercisesProcessLog.class);
             example.and()
                     .andEqualTo("userId", userId)

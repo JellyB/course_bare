@@ -1,12 +1,10 @@
 package com.huatu.tiku.course.web.controller.v5;
 
-import com.google.common.collect.Maps;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
-import com.huatu.tiku.course.consts.SyllabusInfo;
-import com.huatu.tiku.course.netschool.api.v4.CommonServiceV4;
 import com.huatu.tiku.course.service.v5.CommonServiceV5Biz;
-import com.huatu.tiku.course.util.ResponseUtil;
+import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
+import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.springboot.users.support.Token;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -37,6 +35,7 @@ public class CommonControllerV5 {
      * @param videoType
      * @return
      */
+    @LocalMapParam()
     @GetMapping(value = "/class/token")
     public Object classToken(
             @RequestHeader(value = "terminal") int terminal,
@@ -47,14 +46,15 @@ public class CommonControllerV5 {
             @RequestParam(value = "syllabusNodeId") long syllabsusId,
             @RequestParam(value = "subjectType") int subjectType,
             @RequestParam(value = "buildType") int buildType,
+            @RequestParam(value = "roomID") String roomID,
+            @RequestParam(value = "syllabusNodeId") long syllabusNodeId,
+            @RequestParam(value = "userAvatar") String userAvatar,
+            @RequestParam(value = "userNick") String userNick,
+            @RequestParam(value = "userNumber") int userNumber,
+            @RequestParam(value = "userRole") int userRole,
             @RequestParam(value = "afterCoreseNum") int afterCoreseNum){
 
-        HashMap<String, Object> params = Maps.newHashMap();
-        params.put("terminal", terminal);
-        params.put(SyllabusInfo.CourseWareId, coursewareId);
-        params.put(SyllabusInfo.NetClassId, netClassId);
-        params.put(SyllabusInfo.VideoType, videoType);
-        params.put("userName", userSession.getUname());
+        HashMap<String, Object> params = LocalMapParamHandler.get();
         return commonServiceV5Biz.classToken(params, userSession.getId(), syllabsusId, subjectType, buildType, afterCoreseNum);
     }
 }
