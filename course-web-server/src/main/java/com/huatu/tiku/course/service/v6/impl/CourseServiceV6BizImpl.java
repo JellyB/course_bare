@@ -407,7 +407,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         paperInfo.put("questions", practiceCard.getPaper().getQuestions());
         data.put("paper", paperInfo);
         data.put("points", points_);
-        data.putAll(courseExercisesStatisticsManager.obtainCourseRankInfo(practiceCard));
+        data.putAll(courseExercisesStatisticsManager.obtainCourseRankInfo(practiceCard, terminal));
         data.put("tcount", practiceForCoursePaper.getQcount());
         data.put("rcount", practiceCard.getRcount());
         data.put("wcount", practiceCard.getWcount());
