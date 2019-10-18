@@ -227,7 +227,6 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 							insert(courseLiveBackLog);
 							logCache.put(key, simpleCourseLiveBackLog);
 							simpleCourseLiveBackLog.setLiveCourseWareId(liveCourseWareId);
-							simpleCourseLiveBackLog.setLiveCourseWareId(liveCourseWareId);
 							log.info("get live courseWareId from remote by rest:roomId:{}, coursewareId:{}", roomId, courseWareId);
 						}
 					}
