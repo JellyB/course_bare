@@ -518,12 +518,7 @@ public class CourseExercisesProcessLogManager {
      * @throws BizException
      */
     public void submitCourseWorkAnswerCard(final PracticeCard answerCard)throws BizException{
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        //异步处理统计信息
-        executorService.execute(() -> {
-            courseExercisesStatisticsManager.dealCourseExercisesStatistics(answerCard);
-        });
-        executorService.shutdown();
+        courseExercisesStatisticsManager.dealCourseExercisesStatistics(answerCard);
         //更新 mysql 答题卡数据状态
         Example example = new Example(CourseExercisesProcessLog.class);
         example.and()

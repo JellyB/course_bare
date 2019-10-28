@@ -88,7 +88,7 @@ public class CourseExercisesStatisticsManager {
      * @param answerCard
      * @throws BizException
      */
-    public synchronized void dealCourseExercisesStatistics(final PracticeCard answerCard) throws BizException{
+    public void dealCourseExercisesStatistics(final PracticeCard answerCard) throws BizException{
         try{
             PracticeForCoursePaper practiceForCoursePaper = (PracticeForCoursePaper)answerCard.getPaper();
             String existsKey = CourseCacheKey.getCourseWorkDealData(practiceForCoursePaper.getCourseType(), practiceForCoursePaper.getCourseId());
@@ -100,6 +100,7 @@ public class CourseExercisesStatisticsManager {
              * 如果用户已经提交过不处理
              */
             if(existsHash.hasKey(existsKey, String.valueOf(answerCard.getUserId()))){
+                log.info("not first deal course work info :type:{},courseId:{},cardId:{}",practiceForCoursePaper.getCourseType(), practiceForCoursePaper.getCourseId(), answerCard.getIdStr());
                 return;
             }
 
@@ -125,6 +126,7 @@ public class CourseExercisesStatisticsManager {
                     .andEqualTo("status", YesOrNoStatus.YES.getCode())
                     //默认为0 课后作业
                     .andEqualTo("type", YesOrNoStatus.NO.getCode());
+            example.setForUpdate(true);
             CourseExercisesStatistics courseExercisesStatistics = courseExercisesStatisticsMapper.selectOneByExample(example);
 
             if(null == courseExercisesStatistics){
@@ -151,10 +153,8 @@ public class CourseExercisesStatisticsManager {
             }
 
             // 异步处理详细统计信息
-            ExecutorService executorService = Executors.newSingleThreadExecutor();
             final CourseExercisesStatistics detailStatistics = courseExercisesStatistics;
-            executorService.execute(() -> dealCourseExercisesDetailStatistics(detailStatistics.getId(), answerCard));
-            executorService.shutdown();
+            new Thread(() -> dealCourseExercisesDetailStatistics(detailStatistics.getId(), answerCard)).start();
         }catch (Exception e){
             log.error("处理课后作业统计信息异常!:{}", e);
         }
