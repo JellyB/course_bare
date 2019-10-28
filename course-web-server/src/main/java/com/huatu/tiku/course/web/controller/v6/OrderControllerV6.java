@@ -77,16 +77,16 @@ public class OrderControllerV6 {
                             @RequestHeader int terminal,
                             @RequestHeader String cv,
                             @RequestParam(value = "classId") int classId,
-                            @RequestParam(value = "source") int source,
-                            @RequestParam(value = "actualPrice") int actualPrice,
+                            @RequestParam(value = "source", defaultValue = "0") int source,
+                            @RequestParam(value = "actualPrice") String actualPrice,
                             @RequestParam(value = "addressId", defaultValue = "0") int addressId,
                             @RequestParam(value = "code", defaultValue = "0") int code,
                             @RequestParam(value = "p") String p,
-                            @RequestParam(value = "pageSource") String pageSource,
-                            @RequestParam(value = "payment") String payment,
-                            @RequestParam(value = "tjCode") int tjCode,
-                            @RequestParam(value = "unionData") String unionData,
-                            @RequestParam(value = "wxH5") int wxH5){
+                            @RequestParam(value = "pageSource", defaultValue = "") String pageSource,
+                            @RequestParam(value = "payment", defaultValue = "") String payment,
+                            @RequestParam(value = "tjCode", defaultValue = "0") int tjCode,
+                            @RequestParam(value = "unionData", defaultValue = "") String unionData,
+                            @RequestParam(value = "wxH5", defaultValue = "0") int wxH5){
         Map<String,Object> params = LocalMapParamHandler.get();
         return ResponseUtil.build(orderService.createOrder(params));
     }
