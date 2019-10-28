@@ -153,7 +153,7 @@ public class OrderControllerV6 {
                             @RequestHeader int terminal,
                             @RequestHeader String cv,
                             @RequestParam(value = "classId") int classId,
-                            @RequestParam(value = "pageSource") int pageSource){
+                            @RequestParam(value = "pageSource") String pageSource){
         Map<String,Object> params = LocalMapParamHandler.get();
         return ResponseUtil.build(orderService.placeOrder(params));
     }
