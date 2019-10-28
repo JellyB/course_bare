@@ -45,9 +45,9 @@ public class OrderControllerV6 {
     public Object zeroOrder(@Token UserSession userSession,
                             @RequestHeader int terminal,
                             @RequestHeader String cv,
-                            @RequestParam(value = "classId") int classId,
+                            @RequestParam(value = "classId") Integer classId,
                             @RequestParam(value = "pageSource") String pageSource,
-                            @RequestParam(value = "source") int source){
+                            @RequestParam(value = "source") Integer source){
         Map<String,Object> params = LocalMapParamHandler.get();
         return ResponseUtil.build(orderService.zeroOrder(params));
     }
@@ -76,17 +76,17 @@ public class OrderControllerV6 {
     public Object createOrder(@Token UserSession userSession,
                             @RequestHeader int terminal,
                             @RequestHeader String cv,
-                            @RequestParam(value = "classId") int classId,
-                            @RequestParam(value = "source", defaultValue = "0") int source,
+                            @RequestParam(value = "classId") Integer classId,
+                            @RequestParam(value = "source", required = false) Integer source,
                             @RequestParam(value = "actualPrice") String actualPrice,
-                            @RequestParam(value = "addressId", defaultValue = "0") int addressId,
-                            @RequestParam(value = "code", defaultValue = "0") int code,
+                            @RequestParam(value = "addressId", required = false) Integer addressId,
+                            @RequestParam(value = "code", required = false) Integer code,
                             @RequestParam(value = "p") String p,
-                            @RequestParam(value = "pageSource", defaultValue = "") String pageSource,
-                            @RequestParam(value = "payment", defaultValue = "") String payment,
-                            @RequestParam(value = "tjCode", defaultValue = "0") int tjCode,
-                            @RequestParam(value = "unionData", defaultValue = "") String unionData,
-                            @RequestParam(value = "wxH5", defaultValue = "0") int wxH5){
+                            @RequestParam(value = "pageSource", required = false) String pageSource,
+                            @RequestParam(value = "payment", required = false) String payment,
+                            @RequestParam(value = "tjCode", required = false) Integer tjCode,
+                            @RequestParam(value = "unionData", required = false) String unionData,
+                            @RequestParam(value = "wxH5", required = false) Integer wxH5){
         Map<String,Object> params = LocalMapParamHandler.get();
         return ResponseUtil.build(orderService.createOrder(params));
     }
@@ -105,7 +105,7 @@ public class OrderControllerV6 {
     public Object orderStatus(@Token UserSession userSession,
                             @RequestHeader int terminal,
                             @RequestHeader String cv,
-                            @RequestParam(value = "orderNum") int orderNum){
+                            @RequestParam(value = "orderNum") Integer orderNum){
         Map<String,Object> params = LocalMapParamHandler.get();
         return ResponseUtil.build(orderService.orderStatus(params));
     }
@@ -129,10 +129,10 @@ public class OrderControllerV6 {
                             @RequestHeader int terminal,
                             @RequestHeader String cv,
                             @RequestParam(value = "code") String code,
-                            @RequestParam(value = "orderId") int orderId,
-                            @RequestParam(value = "payment") int payment,
-                            @RequestParam(value = "source") int source,
-                            @RequestParam(value = "wxH5") int wxH5){
+                            @RequestParam(value = "orderId") Integer orderId,
+                            @RequestParam(value = "payment") Integer payment,
+                            @RequestParam(value = "source") Integer source,
+                            @RequestParam(value = "wxH5") Integer wxH5){
         Map<String,Object> params = LocalMapParamHandler.get();
         return ResponseUtil.build(orderService.continuePay(params));
     }
@@ -152,7 +152,7 @@ public class OrderControllerV6 {
     public Object placeOrder(@Token UserSession userSession,
                             @RequestHeader int terminal,
                             @RequestHeader String cv,
-                            @RequestParam(value = "classId") int classId,
+                            @RequestParam(value = "classId") Integer classId,
                             @RequestParam(value = "pageSource") String pageSource){
         Map<String,Object> params = LocalMapParamHandler.get();
         return ResponseUtil.build(orderService.placeOrder(params));
