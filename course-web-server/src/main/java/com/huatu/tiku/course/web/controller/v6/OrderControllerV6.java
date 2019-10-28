@@ -155,6 +155,6 @@ public class OrderControllerV6 {
                             @RequestParam(value = "classId") int classId,
                             @RequestParam(value = "pageSource") int pageSource){
         Map<String,Object> params = LocalMapParamHandler.get();
-        return ResponseUtil.build(orderService.zeroOrder(params));
+        return ResponseUtil.build(orderService.placeOrder(params));
     }
 }
