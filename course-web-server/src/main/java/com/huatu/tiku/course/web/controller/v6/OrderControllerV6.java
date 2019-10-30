@@ -157,4 +157,25 @@ public class OrderControllerV6 {
         Map<String,Object> params = LocalMapParamHandler.get();
         return ResponseUtil.build(orderService.placeOrder(params));
     }
+
+
+    /**
+     * 学习金币充值
+     * @param userSession
+     * @param terminal
+     * @param cv
+     * @param amount
+     * @param payType
+     * @return
+     */
+    @LocalMapParam
+    @PostMapping(value = "reCharge")
+    public Object rechargeGold(@Token UserSession userSession,
+                               @RequestHeader int terminal,
+                               @RequestHeader String cv,
+                               @RequestParam(value = "amount") Integer amount,
+                               @RequestParam(value = "payType") Integer payType){
+        Map<String,Object> params = LocalMapParamHandler.get();
+        return ResponseUtil.build(orderService.reCharge(params));
+    }
 }
