@@ -71,10 +71,10 @@ public class CourseServiceV5BizImpl implements CourseServiceV5Biz {
     }
 
     @Override
-    public Object appClassActivityDetails(int classId) {
+    public Object appClassActivityDetails(int classId, int terminal) {
         Supplier key = () -> CourseCacheKey.appClassActivityDetailsKeyV5(classId);
         Supplier<Object> value = () -> {
-            NetSchoolResponse response = courseService.appClassActivityDetails(classId);
+            NetSchoolResponse response = courseService.appClassActivityDetails(classId, terminal);
             return ResponseUtil.build(response);
         };
         return cacheUtil.getCacheStringValue(key, value, 30, TimeUnit.SECONDS);

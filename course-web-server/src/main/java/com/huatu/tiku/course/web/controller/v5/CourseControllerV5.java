@@ -395,8 +395,8 @@ public class CourseControllerV5 {
      * 获取课程促销详情
      */
     @GetMapping("{classId}/appClassActivityDetails")
-    public Object appClassActivityDetails(@PathVariable int classId) throws BizException{
-        return courseServiceBiz.appClassActivityDetails(classId);
+    public Object appClassActivityDetails(@PathVariable int classId, @RequestHeader(defaultValue = "1") int terminal) throws BizException{
+        return courseServiceBiz.appClassActivityDetails(classId, terminal);
     }
 
     /**

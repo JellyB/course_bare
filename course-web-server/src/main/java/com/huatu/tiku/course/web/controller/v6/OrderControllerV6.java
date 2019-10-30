@@ -128,11 +128,11 @@ public class OrderControllerV6 {
     public Object continuePay(@Token UserSession userSession,
                             @RequestHeader int terminal,
                             @RequestHeader String cv,
-                            @RequestParam(value = "code") String code,
+                            @RequestParam(value = "code", required = false) String code,
                             @RequestParam(value = "orderId") Integer orderId,
                             @RequestParam(value = "payment") Integer payment,
-                            @RequestParam(value = "source") Integer source,
-                            @RequestParam(value = "wxH5") Integer wxH5){
+                            @RequestParam(value = "source", required = false) Integer source,
+                            @RequestParam(value = "wxH5", required = false) Integer wxH5){
         Map<String,Object> params = LocalMapParamHandler.get();
         return ResponseUtil.build(orderService.continuePay(params));
     }

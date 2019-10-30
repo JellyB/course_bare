@@ -26,6 +26,6 @@ public interface CourseServiceV5Biz {
     /**
      * 课程详情活动促销
      */
-    Object appClassActivityDetails(int classId);
+    Object appClassActivityDetails(int classId, int terminal);
 
 }
