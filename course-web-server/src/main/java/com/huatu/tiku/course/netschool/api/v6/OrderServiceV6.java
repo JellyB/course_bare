@@ -57,7 +57,7 @@ public interface OrderServiceV6 {
     @GetMapping(value = "/v5/c/order/place_order")
     NetSchoolResponse placeOrder(@RequestParam Map<String, Object> params);
 
-    @GetMapping(value = "/v5/c/order/recharge_gold")
+    @PostMapping(value = "/v5/c/order/recharge_gold")
     NetSchoolResponse reCharge(@RequestParam Map<String, Object> params);
 
     @Component
