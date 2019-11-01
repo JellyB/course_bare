@@ -120,4 +120,15 @@ public class UserCourseControllerV7 {
                                                     @RequestParam(value = "answerCardId", defaultValue = "0") Long answerCardId){
         return userCourseBizV7Service.essayCourseWorkSyllabusInfo(userSession.getId(), videoType, courseWareId, syllabusId, answerCardId);
     }
+
+    /**
+     * 数据导出
+     * @return
+     */
+    @GetMapping(value = "courseWork/export")
+    public Object export(){
+
+        userCourseBizV7Service.exportData();
+        return "ok";
+    }
 }

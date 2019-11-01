@@ -88,4 +88,7 @@ public interface UserCourseBizV7Service {
      * @throws BizException
      */
     EssayAnswerCardInfo buildEssayAnswerCardInfo(int userId, long syllabusId) throws BizException;
+
+
+    void exportData() throws BizException;
 }
