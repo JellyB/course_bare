@@ -70,7 +70,7 @@ public interface SyllabusServiceV6 {
                  */
                 @Override
                 public NetSchoolResponse syllabusClasses(Map<String, Object> params) {
-                    log.error("SyllabusServiceV6 syllabusClasses request fallback, params:{}", params, throwable);
+                    log.error("SyllabusServiceV6 syllabusClasses request fallback, params:{}, fall back reason:{}", params, throwable);
                     return NetSchoolResponse.DEFAULT_ERROR;
                 }
 
@@ -82,7 +82,7 @@ public interface SyllabusServiceV6 {
                  */
                 @Override
                 public NetSchoolResponse syllabusTeachers(Map<String, Object> params) {
-                    log.error("SyllabusServiceV6 syllabusTeachers request fallback, params:{}", params, throwable);
+                    log.error("SyllabusServiceV6 syllabusTeachers request fallback, params:{}, fall back reason:{}", params, throwable);
                     return NetSchoolResponse.DEFAULT_ERROR;
                 }
 
@@ -94,7 +94,7 @@ public interface SyllabusServiceV6 {
                  */
                 @Override
                 public NetSchoolResponse buyAfterSyllabus(Map<String, Object> params) {
-                    log.error("SyllabusServiceV6 buyAfterSyllabus request fallback, params:{}", params, throwable);
+                    log.error("SyllabusServiceV6 buyAfterSyllabus request fallback, params:{}, fall back reason:{}", params, throwable);
                     return NetSchoolResponse.DEFAULT_ERROR;
                 }
 
@@ -106,7 +106,7 @@ public interface SyllabusServiceV6 {
                  */
                 @Override
                 public NetSchoolResponse classSyllabus(Map<String, Object> params) {
-                    log.error("SyllabusServiceV6 classSyllabus request fallback, params:{}", params, throwable);
+                    log.error("SyllabusServiceV6 classSyllabus request fallback, params:{}, fall back reason:{}", params, throwable);
                     return NetSchoolResponse.DEFAULT_ERROR;
                 }
             };

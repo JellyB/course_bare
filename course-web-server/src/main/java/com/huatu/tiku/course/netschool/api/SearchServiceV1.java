@@ -48,7 +48,7 @@ public interface SearchServiceV1 {
                  */
                 @Override
                 public NetSchoolResponse upSetKeyWord(String token, String keyWord) {
-                    log.error("search service v1 upSetKeyWord fallback,params: token:{}, keyWord:{}, fall back reason: ", token, keyWord, throwable);
+                    log.error("search service v1 upSetKeyWord fallback,params: token:{}, keyWord:{}, fall back reason: {}", token, keyWord, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
             };

@@ -282,7 +282,7 @@ public class ActivityServiceImpl implements ActivityService {
 		if (count <= 0) {
 			// 未评价过
 			RewardMessage msg = RewardMessage.builder().gold(APP_STORE_GIVE_COINS)
-					.action(RewardAction.ActionType.ACTIVTY.name()).experience(1).bizId(uid + "").uname(uname)
+					.action(RewardAction.ActionType.APP_STORE_EVALUTION.name()).experience(1).bizId(uid + "").uname(uname)
 					.timestamp(System.currentTimeMillis()).build();
 			rabbitTemplate.convertAndSend("", RabbitConsts.QUEUE_REWARD_ACTION, msg);
 

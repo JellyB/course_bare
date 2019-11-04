@@ -61,7 +61,7 @@ public interface UserCourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse getMyDeletedClasses(Map<String, Object> params) {
-                    log.error("user course service v5 getMyDeletedClasses fallback,params: {}, fall back reason: ", params, throwable);
+                    log.error("user course service v5 getMyDeletedClasses fallback,params: {}, fall back reason: {}", params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -72,7 +72,7 @@ public interface UserCourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse getMyNotDeletedClasses(Map<String, Object> params) {
-                    log.error("user course service v5 getMyNotDeletedClasses fallback,params: {}, fall back reason: ", params, throwable);
+                    log.error("user course service v5 getMyNotDeletedClasses fallback,params: {}, fall back reason: {}", params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -83,7 +83,7 @@ public interface UserCourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse liveCalendar(String userName) {
-                    log.error("user course service v5 liveCalendar fallback,params: {}, fall back reason: ", userName, throwable);
+                    log.error("user course service v5 liveCalendar fallback,params: {}, fall back reason: {}", userName, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -94,7 +94,7 @@ public interface UserCourseServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse liveCalendarDetail(String idList) {
-                    log.error("user course service v5 liveCalendarDetail fallback,params: {}, fall back reason: ", idList, throwable);
+                    log.error("user course service v5 liveCalendarDetail fallback,params: {}, fall back reason: {}", idList, throwable);
                     Map<String,Object> data = Maps.newHashMap();
                     data.putAll(ResponseUtil.DEFAULT_PHP_PAGE);
                     data.put("date", "1990-01-01");

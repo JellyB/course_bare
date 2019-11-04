@@ -18,7 +18,7 @@ public class HtmlServiceV1FallbackFactory implements Fallback<HtmlServiceV1> {
         return new HtmlServiceV1() {
             @Override
             public String courseDetail(int rid) {
-                log.error("html service v1 fallback,params: {}, fall back reason: ",rid,cause);
+                log.error("html service v1 fallback,params: {}, fall back reason: {}",rid,cause);
                 return "服务器人太多了....";
             }
         };

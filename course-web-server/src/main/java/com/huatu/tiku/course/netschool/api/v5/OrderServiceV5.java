@@ -103,73 +103,73 @@ public interface OrderServiceV5 {
             return new OrderServiceV5() {
                 @Override
                 public NetSchoolResponse getOrderLogistics(int orderId) {
-                    log.error("order service v5 getOrderLogistics fallback,params: {}, fall back reason: ",orderId, throwable);
+                    log.error("order service v5 getOrderLogistics fallback,params: {}, fall back reason: {}",orderId, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
                 @Override
                 public NetSchoolResponse getLastOrderLogistics(int orderId) {
-                    log.error("order service v5 getLastOrderLogistics fallback,params: {}, fall back reason: ",orderId, throwable);
+                    log.error("order service v5 getLastOrderLogistics fallback,params: {}, fall back reason: {}",orderId, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
                 @Override
                 public NetSchoolResponse cancelOrder(Map<String, Object> params) {
-                    log.error("order service v5 cancelOrder fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("order service v5 cancelOrder fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
                 @Override
                 public NetSchoolResponse deleteOrder(Map<String, Object> params) {
-                    log.error("order service v5 deleteOrder fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("order service v5 deleteOrder fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
                 @Override
                 public NetSchoolResponse detail(Map<String, Object> params) {
-                    log.error("order service v5 detail fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("order service v5 detail fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
                 @Override
                 public NetSchoolResponse detailWeChat(Map<String, Object> params) {
-                    log.error("order service v5 detailWeChat fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("order service v5 detailWeChat fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
                 @Override
                 public NetSchoolResponse userOrderListZTK(HashMap<String, Object> params) {
-                    log.error("order service v5 userOrderListZTK fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("order service v5 userOrderListZTK fallback,params: {}, fall back reason: {}",params, throwable);
                     return ResponseUtil.DEFAULT_PHP_PAGE_RESPONSE;
                 }
 
                 @Override
                 public NetSchoolResponse userOrderListIC(HashMap<String, Object> params) {
-                    log.error("order service v5 userOrderListIC fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("order service v5 userOrderListIC fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
                 @Override
                 public NetSchoolResponse zeroOrder(Map<String, Object> params) {
-                    log.error("order service v5 zeroOrder fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("order service v5 zeroOrder fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
                 @Override
                 public NetSchoolResponse batchZeroOrder(Map<String, Object> params) {
-                    log.error("order service v5 batchZeroOrder fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("order service v5 batchZeroOrder fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
                 @Override
                 public NetSchoolResponse hasGetBigGiftOrder(Map<String, Object> params) {
-                    log.error("order service v5 hasGetBigGiftOrder fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("order service v5 hasGetBigGiftOrder fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
                 @Override
                 public NetSchoolResponse activityAll(Map<String, Object> params) {
-                    log.error("order service v5 activityAll fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("order service v5 activityAll fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
             };

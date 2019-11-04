@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.service.v7.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.crab2died.ExcelUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -14,10 +15,12 @@ import com.huatu.tiku.course.common.SubjectEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.dao.essay.*;
+import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.service.manager.EssayExercisesAnswerMetaManager;
 import com.huatu.tiku.course.service.v7.UserCourseBizV7Service;
 import com.huatu.tiku.course.util.CourseCacheKey;
+import com.huatu.tiku.course.util.ExportData;
 import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
 import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
 import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
@@ -33,6 +36,7 @@ import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -53,6 +57,9 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private CourseExercisesProcessLogMapper courseExercisesProcessLogMapper;
 
     @Autowired
     private CourseExercisesProcessLogManager courseExercisesProcessLogManager;
@@ -481,5 +488,43 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
     @Override
     public EssayAnswerCardInfo buildEssayAnswerCardInfo(int userId, long syllabusId) throws BizException {
         return null;
+    }
+
+
+    @Override
+    public void exportData() throws BizException {
+        final String file_path = "/app/logs/course-work/summary.xlsx";
+        List<ExportData> list = Lists.newArrayList();
+        List<Integer> courses =  courseExercisesProcessLogMapper.distinctCourseId();
+        if(CollectionUtils.isEmpty(courses)){
+            return;
+        }
+        for(Integer course : courses){
+            List<HashMap<Integer, Integer>> summarty = courseExercisesProcessLogMapper.summaryData(course);
+            if(CollectionUtils.isEmpty(summarty)){
+                continue;
+            }
+            int count = 0;
+            for(HashMap map : summarty){
+                Integer lessonId = MapUtils.getInteger(map, "lesson_id");
+                Integer cnt = MapUtils.getInteger(map, "cnt");
+                list.add(ExportData.builder().courseId(count > 0 ? "" : String.valueOf(course)).lessonId(lessonId).cnt(cnt).build());
+                count ++;
+            }
+        }
+        try{
+            File tokenFile = new File(file_path);
+            if (!tokenFile.getParentFile().exists()) {
+                tokenFile.getParentFile().mkdirs();
+            }
+            if (tokenFile.exists()) {
+                tokenFile.delete();
+            }
+            tokenFile = new File(file_path);
+            ExcelUtils.getInstance().exportObjects2Excel(list, ExportData.class, file_path);
+        }catch (Exception e){
+            log.error("数据文件导出失败:{}", e.getMessage());
+        }
+
     }
 }

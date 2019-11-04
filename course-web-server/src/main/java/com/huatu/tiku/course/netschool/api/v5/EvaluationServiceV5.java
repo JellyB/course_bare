@@ -58,7 +58,7 @@ public interface EvaluationServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse getClassEvaluation(Map<String, Object> params) {
-                    log.error("evaluation service v5 getClassEvaluation fallback,params: {}, fall back reason: ", params, throwable);
+                    log.error("evaluation service v5 getClassEvaluation fallback,params: {}, fall back reason: {}", params, throwable);
                     return ResponseUtil.DEFAULT_PHP_SIMPLE_PAGE_RESPONSE;
                 }
 
@@ -69,7 +69,7 @@ public interface EvaluationServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse getTeacherEvaluation(Map<String, Object> params) {
-                    log.error("evaluation service v5 getTeacherEvaluation fallback,params: {}, fall back reason: ", params, throwable);
+                    log.error("evaluation service v5 getTeacherEvaluation fallback,params: {}, fall back reason: {}", params, throwable);
                     return ResponseUtil.DEFAULT_PHP_SIMPLE_PAGE_RESPONSE;
                 }
 
@@ -80,7 +80,7 @@ public interface EvaluationServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse getClickEvaluation(Map<String, Object> params) {
-                    log.error("evaluation service v5 getClickEvaluation fallback,params: {}, fall back reason: ", params, throwable);
+                    log.error("evaluation service v5 getClickEvaluation fallback,params: {}, fall back reason: {}", params, throwable);
                     return new NetSchoolResponse(com.huatu.common.Result.SUCCESS_CODE, "", Maps.newHashMap());
                 }
 
@@ -91,7 +91,7 @@ public interface EvaluationServiceV5 {
                  */
                 @Override
                 public NetSchoolResponse submit(Map<String, Object> params) {
-                    log.error("evaluation service v5 submit fallback,params: {}, fall back reason: ", params, throwable);
+                    log.error("evaluation service v5 submit fallback,params: {}, fall back reason: {}", params, throwable);
                     return new NetSchoolResponse(com.huatu.common.Result.SUCCESS_CODE, "", "");
                 }
             };
