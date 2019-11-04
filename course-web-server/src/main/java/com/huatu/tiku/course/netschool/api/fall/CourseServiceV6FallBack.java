@@ -158,6 +158,11 @@ public class CourseServiceV6FallBack implements CourseServiceV6 {
         return NetSchoolResponse.DEFAULT;
     }
 
+    @Override
+    public NetSchoolResponse getBaseClassInfo(Map<String, Object> params) {
+        return NetSchoolResponse.DEFAULT;
+    }
+
     @Getter
     @Setter
     @NoArgsConstructor
