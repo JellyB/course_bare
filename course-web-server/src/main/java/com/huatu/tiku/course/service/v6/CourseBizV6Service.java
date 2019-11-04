@@ -12,14 +12,17 @@ import com.huatu.tiku.course.netschool.api.fall.UserCourseServiceV6FallBack;
 import com.huatu.tiku.course.netschool.api.v6.CourseServiceV6;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.service.v1.AccessLimitService;
+import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.logging.log4j.core.util.JsonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 描述：
@@ -45,6 +48,9 @@ public class CourseBizV6Service {
 
     @Autowired
     private AccessLimitService accessLimitService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     /**
      * 课程日历详情接口
@@ -181,6 +187,40 @@ public class CourseBizV6Service {
         result.put("total", 0);
         result.put("from", 0);
         result.put("to", 0);
+        return result;
+    }
+
+    public List<Map> getBaseClassInfo(List<Integer> classIds) {
+        List<Map> result = Lists.newArrayList();
+        for (Integer classId : classIds) {
+            String baseCourseInfoKey = CourseCacheKey.getBaseCourseInfoKey(classId);
+            Map hashMap = (Map)redisTemplate.opsForValue().get(baseCourseInfoKey);
+            try {
+                if(null == hashMap){
+                    Map params = new HashMap(){
+                        {
+                            put("classId",classId);
+                        }
+                    };
+                    NetSchoolResponse baseClassInfo = courseService.getBaseClassInfo(params);
+                    Map data = (Map)baseClassInfo.getData();
+                    data.put("id",classId);
+                    redisTemplate.opsForValue().set(baseClassInfo,data,1, TimeUnit.DAYS);
+                    result.add(data);
+                }else{
+                    result.add(hashMap);
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+                Map map = new HashMap(){
+                    {
+                        put("id",classId);
+                    }
+                };
+                result.add(map);
+            }
+
+        }
         return result;
     }
 }

@@ -178,4 +178,8 @@ public class CourseCacheKey {
     public static String getEssayCourseWorkSyllabusInfo(Integer courseType, Long syllabusId, Long answerCardId){
         return String.format(ESSAY_COURSE_WORK_SYLLABUS_INFO, courseType, syllabusId, answerCardId);
     }
+
+    public static String getBaseCourseInfoKey(Integer classId) {
+        return String.format("estimate_course_base_info_%s",classId);
+    }
 }

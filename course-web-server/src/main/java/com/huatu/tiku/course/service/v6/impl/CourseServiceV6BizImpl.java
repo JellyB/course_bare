@@ -902,7 +902,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             map.put("collageActivityId",collageActivityId);
         }
         NetSchoolResponse netSchoolResponse = courseService.userCourseStatus(map);
-        return netSchoolResponse.getData();
+        Map data = (Map)netSchoolResponse.getData();
+        data.put("id",netClassId);
+        return data;
     }
 
     /**
