@@ -85,6 +85,7 @@ public class OrderControllerV6 {
                             @RequestParam(value = "pageSource", required = false) String pageSource,
                             @RequestParam(value = "payment", required = false) String payment,
                             @RequestParam(value = "tjCode", required = false) Integer tjCode,
+                            @RequestParam(value = "treatyId", required = false) Integer treatyId,
                             @RequestParam(value = "unionData", required = false) String unionData,
                             @RequestParam(value = "wxH5", required = false) Integer wxH5){
         Map<String,Object> params = LocalMapParamHandler.get();
