@@ -34,7 +34,7 @@ public class ErrorLogReportListener implements ChannelAwareMessageListener {
 	public void onMessage(Message message, Channel channel) throws Exception {
 		ExceptionReportMessage msg = objectMapper.readValue(message.getBody(), ExceptionReportMessage.class);
 		if (msg != null) {
-
+			log.error("error data report:{}", msg.toString());
 			sendMsg("主机:" + msg.getHost() + "\r\n" + "应用名称:" + msg.getApplication() + "\r\n" + "方法名:" + msg.getMethod()
 					+ "\r\n" + msg.getStacktrace());
 		}
