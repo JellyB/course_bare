@@ -895,6 +895,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
     
     @Override
     public Object getUserCourseStatus(String uname, int netClassId, int collageActivityId) {
+        if(StringUtils.isBlank(uname)){     //游客模式直接返回
+            return new HashMap() {{put("id",netClassId);}};
+        }
         HashMap<String, Object> map = Maps.newHashMap();
         map.put("userName",uname);
         map.put("netClassId",netClassId);

@@ -246,17 +246,21 @@ public class CourseControllerV6 {
      */
     @LogPrint
     @GetMapping(value = "baseInfo")
-    public Object getClassInfoForEstimate(@Token UserSession userSession,
+    public Object getClassInfoForEstimate(@Token(check = false) UserSession userSession,
                                           @RequestHeader(value = "terminal") int terminal,
                                           @RequestHeader(value = "cv") String cv,
                                           @RequestParam String classIds) {
         List<Integer> ids = Arrays.stream(classIds.split(",")).filter(NumberUtils::isDigits)
                 .map(Integer::parseInt)
+                .distinct()
                 .collect(Collectors.toList());
         ExecutorService executor = Executors.newCachedThreadPool();
         ArrayList<Future<Map>> list = Lists.newArrayList();
         for (Integer classId : ids) {
-            Future<Map> submit = executor.submit(() -> (Map) courseServiceV6Biz.getUserCourseStatus(userSession.getUname(), classId, -1));
+            Future<Map> submit = executor.submit(() -> (Map) courseServiceV6Biz.getUserCourseStatus(
+                    Optional.ofNullable(userSession).map(UserSession::getUname).orElse(Strings.EMPTY),
+                    classId,
+                    -1));
             list.add(submit);
         }
         List<Map> classInfo = courseBizV6Service.getBaseClassInfo(ids);
@@ -266,8 +270,13 @@ public class CourseControllerV6 {
         List<Map> classStatus = getClassInfo(list);
         for (Map map : classInfo) {
             String id = MapUtils.getString(map, "id");
-            classStatus.stream().filter(i->MapUtils.getString(i,"id", Strings.EMPTY).equalsIgnoreCase(id))
-                    .findAny().ifPresent(i->{
+            map.put("isHaveLive",0);
+            map.put("isBuy",0);
+            map.put("actualPrice",0);
+            classStatus.stream()
+                    .filter(i->MapUtils.getString(i,"id", Strings.EMPTY).equalsIgnoreCase(id))
+                    .findAny()
+                    .ifPresent(i->{
                         map.putAll(i);
             });
         }
