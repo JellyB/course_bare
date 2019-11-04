@@ -23,6 +23,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -254,39 +255,58 @@ public class CourseControllerV6 {
                 .map(Integer::parseInt)
                 .distinct()
                 .collect(Collectors.toList());
-        ExecutorService executor = Executors.newCachedThreadPool();
-        ArrayList<Future<Map>> list = Lists.newArrayList();
-        for (Integer classId : ids) {
-            Future<Map> submit = executor.submit(() -> (Map) courseServiceV6Biz.getUserCourseStatus(
-                    Optional.ofNullable(userSession).map(UserSession::getUname).orElse(Strings.EMPTY),
-                    classId,
-                    -1));
-            list.add(submit);
-        }
-        List<Map> classInfo = courseBizV6Service.getBaseClassInfo(ids);
-        if(CollectionUtils.isEmpty(classInfo)){
+        StopWatch stopwatch = new StopWatch("getClassInfoForEstimate");
+        try {
+            ExecutorService executor = Executors.newCachedThreadPool();
+            ArrayList<Future<Map>> list = Lists.newArrayList();
+            for (Integer classId : ids) {
+                stopwatch.start("submit"+classIds);
+                Future<Map> submit = executor.submit(() -> (Map) courseServiceV6Biz.getUserCourseStatus(
+                        Optional.ofNullable(userSession).map(UserSession::getUname).orElse(Strings.EMPTY),
+                        classId,
+                        -1));
+                list.add(submit);
+                stopwatch.stop();
+            }
+            stopwatch.start("getBaseClassInfo");
+            List<Map> classInfo = courseBizV6Service.getBaseClassInfo(ids);
+            stopwatch.stop();
+            if(CollectionUtils.isEmpty(classInfo)){
+                return classInfo;
+            }
+            stopwatch.start("getClassInfo");
+            List<Map> classStatus = getClassInfo(list);
+            stopwatch.stop();
+            stopwatch.start("convert");
+            for (Map map : classInfo) {
+                String id = MapUtils.getString(map, "id");
+                map.put("isHaveLive",0);
+                map.put("isBuy",0);
+                map.put("actualPrice",0);
+                classStatus.stream()
+                        .filter(i->MapUtils.getString(i,"id", Strings.EMPTY).equalsIgnoreCase(id))
+                        .findAny()
+                        .ifPresent(i->{
+                            map.putAll(i);
+                        });
+            }
+            stopwatch.stop();
             return classInfo;
+
+        }finally {
+            if(stopwatch.isRunning()){
+                stopwatch.stop();
+            }
+            log.info(stopwatch.prettyPrint());
         }
-        List<Map> classStatus = getClassInfo(list);
-        for (Map map : classInfo) {
-            String id = MapUtils.getString(map, "id");
-            map.put("isHaveLive",0);
-            map.put("isBuy",0);
-            map.put("actualPrice",0);
-            classStatus.stream()
-                    .filter(i->MapUtils.getString(i,"id", Strings.EMPTY).equalsIgnoreCase(id))
-                    .findAny()
-                    .ifPresent(i->{
-                        map.putAll(i);
-            });
-        }
-        return classInfo;
 
     }
 
     private List<Map> getClassInfo(ArrayList<Future<Map>> list) {
         return list.parallelStream()
                 .map(future -> {
+                    StopWatch stopWatch = new StopWatch("future");
+                    stopWatch.start("1");
                     try {
                         return future.get(2, TimeUnit.SECONDS);
                     } catch (ExecutionException ee) { // 计算抛出一个异常
@@ -295,6 +315,11 @@ public class CourseControllerV6 {
                         ie.printStackTrace();
                     } catch (TimeoutException te) { // 在Future对象完成之前超过已过期
                         te.printStackTrace();
+                    }finally {
+                        if(stopWatch.isRunning()){
+                            stopWatch.stop();
+                        }
+                        log.info(stopWatch.prettyPrint());
                     }
                     return Maps.newHashMap();
                 })
