@@ -205,7 +205,7 @@ public class CourseBizV6Service {
                     NetSchoolResponse baseClassInfo = courseService.getBaseClassInfo(params);
                     Map data = (Map)baseClassInfo.getData();
                     data.put("id",classId);
-                    redisTemplate.opsForValue().set(baseClassInfo,data,1, TimeUnit.DAYS);
+                    redisTemplate.opsForValue().set(baseCourseInfoKey,data,1, TimeUnit.DAYS);
                     result.add(data);
                 }else{
                     result.add(hashMap);
