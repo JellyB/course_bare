@@ -29,6 +29,7 @@ import com.huatu.tiku.course.service.v1.practice.PracticeUserMetaService;
 import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
 import com.huatu.tiku.essay.essayEnum.CourseWareTypeEnum;
 import com.huatu.ztk.paper.common.AnswerCardStatus;
+import javafx.scene.paint.Stop;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -67,6 +68,7 @@ import com.huatu.ztk.paper.bean.PracticeCard;
 import com.huatu.ztk.paper.bean.PracticeForCoursePaper;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StopWatch;
 import tk.mybatis.mapper.entity.Example;
 
 
@@ -895,6 +897,11 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
     
     @Override
     public Object getUserCourseStatus(String uname, int netClassId, int collageActivityId) {
+        if(StringUtils.isBlank(uname)){     //游客模式直接返回
+            return new HashMap() {{put("id",netClassId);}};
+        }
+        StopWatch stopWatch = new StopWatch("getUserCourseStatus:"+netClassId);
+        stopWatch.start("1");
         HashMap<String, Object> map = Maps.newHashMap();
         map.put("userName",uname);
         map.put("netClassId",netClassId);
@@ -902,7 +909,11 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             map.put("collageActivityId",collageActivityId);
         }
         NetSchoolResponse netSchoolResponse = courseService.userCourseStatus(map);
-        return netSchoolResponse.getData();
+        Map data = (Map)netSchoolResponse.getData();
+        data.put("id",netClassId);
+        stopWatch.stop();
+        log.info(stopWatch.prettyPrint());
+        return data;
     }
 
     /**

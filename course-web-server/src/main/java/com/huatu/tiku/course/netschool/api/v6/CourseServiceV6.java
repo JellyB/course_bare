@@ -91,4 +91,8 @@ public interface CourseServiceV6 {
      */
     @GetMapping(value = "/v4/common/class/class_detail")
     NetSchoolResponse getClassDetail(@RequestParam Map<String, Object> params);
+
+
+    @GetMapping(value = "v5/c/class/share_class_details")
+    NetSchoolResponse getBaseClassInfo(@RequestParam Map<String, Object> params);
 }

@@ -90,14 +90,14 @@ public class CommonControllerV4 {
     @PostMapping("/protocol/userProtocolInfo")
     public Object getUserProtocolInfo(
             @Token UserSession userSession,
-            @RequestParam("examCertifacteNo") String examCertifacteNo,
+            @RequestParam(value = "examCertifacteNo",required = false) String examCertifacteNo,
             @RequestParam(value = "feeAccountName",required = false) String feeAccountName,
             @RequestParam(value = "feeAccountNo",required = false) String feeAccountNo,
             @RequestParam(value = "feeBank",required = false) String feeBank,
             @RequestParam("idCard") String idCard,
             @RequestParam("studentName") String studentName,
             @RequestParam("telNo") String telNo,
-            @RequestParam("forExam") String forExam,
+            @RequestParam(value = "forExam",required = false) String forExam,
             @RequestParam(value = "nation",required = false) String nation,
             @RequestParam("protocolId") Long protocolId,
             @RequestParam(value = "rid",required = false) Long rid,
