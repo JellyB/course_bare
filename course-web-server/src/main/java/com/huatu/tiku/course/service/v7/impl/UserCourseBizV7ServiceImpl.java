@@ -366,7 +366,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
         if(CollectionUtils.isEmpty(essayCourseExercisesQuestions)){
             log.error("essayCourseWorkSyllabusInfo.essayCourseExercisesQuestions is empty:courseType:{}, courseWareId:{}", courseType, courseWareId);
-            throw new BizException(ErrorResult.create(100010, "数据不存在"));
+            throw new BizException(ErrorResult.create(100010, "直播转回放中,请稍后重试"));
         }
         essayCourseWorkSyllabusInfo.setAfterCoreseNum(essayCourseExercisesQuestions.size());
         essayCourseWorkSyllabusInfo.setBuildType(essayCourseExercisesQuestions.get(0).getType());

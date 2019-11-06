@@ -827,29 +827,18 @@ public class CourseExercisesProcessLogManager {
      * @param subject
      * @param terminal
      * @param userId
-     * @param syllabusId
+     * @param syllabusWareInfo
      * @param cv
      */
-    @Async
-    public void saveLiveRecord(int userId, int subject, int terminal, long syllabusId, String cv) {
-        SyllabusWareInfo syllabusWareInfo = dealSyllabusInfo2Info(syllabusId);
-        if (null == syllabusWareInfo) {
-            return;
-        }
+    public void createCivilInitUserMeta(int userId, int subject, int terminal, SyllabusWareInfo syllabusWareInfo, String cv) {
         if(syllabusWareInfo.getAfterCoreseNum() == 0){
             return;
         }
         if(CourseWareTypeEnum.VideoTypeEnum.LIVE.getVideoType() != syllabusWareInfo.getVideoType()){
-            log.error("直播上报数据与大纲数据不一致:{}", JSONObject.toJSONString(syllabusWareInfo));
             return;
         }
-        log.info("直播创建或更新课后作业答题卡:大纲id{}", syllabusId);
-        if(null != syllabusWareInfo.getSubjectType() && syllabusWareInfo.getSubjectType() == SubjectEnum.SL.getCode()){
-            int courseType = CourseWareTypeEnum.changeVideoType2TableCourseType(syllabusWareInfo.getVideoType());
-            essayExercisesAnswerMetaManager.createEssayInitUserMeta(userId, syllabusId, courseType, syllabusWareInfo.getSyllabusId(), syllabusWareInfo.getClassId());
-        }else{
-            createCourseWorkAnswerCardEntranceV2(syllabusWareInfo.getClassId(), syllabusWareInfo.getSyllabusId(), syllabusWareInfo.getVideoType(), syllabusWareInfo.getCoursewareId(), subject, terminal, cv, userId);
-        }
+        log.info("直播创建或更新课后作业答题卡:大纲id{}", syllabusWareInfo.getSyllabusId());
+        createCourseWorkAnswerCardEntranceV2(syllabusWareInfo.getClassId(), syllabusWareInfo.getSyllabusId(), syllabusWareInfo.getVideoType(), syllabusWareInfo.getCoursewareId(), subject, terminal, cv, userId);
     }
 
     /**
