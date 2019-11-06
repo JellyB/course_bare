@@ -88,7 +88,7 @@ public class CourseLiveReportLogListener {
             log.error("当前请求的任务过多:{}", key);
             return;
         }
-        // 创建课后作业
+        log.info("直播创建课后作业答题卡信息:userId:{}, syllabusId:{}", liveRecordInfoWithUserId.getUserId(), syllabusWareInfo.getSyllabusId());
         if(null != syllabusWareInfo.getSubjectType() && syllabusWareInfo.getSubjectType() == SubjectEnum.SL.getCode()){
             int courseType = CourseWareTypeEnum.changeVideoType2TableCourseType(syllabusWareInfo.getVideoType());
             essayExercisesAnswerMetaManager.createEssayInitUserMeta(liveRecordInfoWithUserId.getUserId(), liveRecordInfo.getSyllabusId(), courseType, syllabusWareInfo.getCoursewareId(), syllabusWareInfo.getClassId());
