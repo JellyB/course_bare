@@ -366,7 +366,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
         if(CollectionUtils.isEmpty(essayCourseExercisesQuestions)){
             log.error("essayCourseWorkSyllabusInfo.essayCourseExercisesQuestions is empty:courseType:{}, courseWareId:{}", courseType, courseWareId);
-            throw new BizException(ErrorResult.create(100010, "数据不存在"));
+            throw new BizException(ErrorResult.create(100010, "直播转回放中,请稍后重试"));
         }
         essayCourseWorkSyllabusInfo.setAfterCoreseNum(essayCourseExercisesQuestions.size());
         essayCourseWorkSyllabusInfo.setBuildType(essayCourseExercisesQuestions.get(0).getType());
@@ -505,9 +505,11 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                 continue;
             }
             int count = 0;
+            log.info("select data to export.size{}", summarty.size());
             for(HashMap map : summarty){
                 Integer lessonId = MapUtils.getInteger(map, "lesson_id");
                 Integer cnt = MapUtils.getInteger(map, "cnt");
+                log.info("select info data:{}, {}", lessonId, cnt);
                 list.add(ExportData.builder().courseId(count > 0 ? "" : String.valueOf(course)).lessonId(lessonId).cnt(cnt).build());
                 count ++;
             }

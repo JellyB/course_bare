@@ -498,7 +498,7 @@ public class CourseExercisesStatisticsManager {
      * @return
      * @throws BizException
      */
-    public Map<String, Object> obtainCourseRankInfo(PracticeCard practiceCard)throws BizException{
+    public Map<String, Object> obtainCourseRankInfo(PracticeCard practiceCard, int terminal)throws BizException{
         Map<String, Object> rankInfo = Maps.newHashMap();
         rankInfo.put("avgTimeCost", 0);
         rankInfo.put("avgCorrect", 0);
@@ -541,7 +541,7 @@ public class CourseExercisesStatisticsManager {
                 myRank = zSetOperations.rank(rankKey, String.valueOf(practiceCard.getUserId())) + 1;
             }catch (Exception e){
                 myRank = 0L;
-                log.error("课后作业统计排名异常 rankKey:{}, value:{}, errorMsg:{}", rankKey, JSONObject.toJSONString(practiceCard), e);
+                log.error("课后作业统计排名异常 rankKey:{}, terminal:{}, value:{}, errorMsg:{}", rankKey, terminal, JSONObject.toJSONString(practiceCard), e);
             }
 
             Set<String> userIdRanks = zSetOperations.range(rankKey, START, END);
