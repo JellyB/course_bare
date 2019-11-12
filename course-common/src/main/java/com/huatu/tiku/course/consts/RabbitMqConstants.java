@@ -42,7 +42,7 @@ public class RabbitMqConstants {
      * 直播随堂练上报到神策
      */
     public static final String COURSE_PRACTICE_REPORT_SENSORS_QUEUE = "course_practice_report_sensors_queue";
-    
+
     /**
      * 录播随堂练信息持久化
      */
@@ -52,6 +52,11 @@ public class RabbitMqConstants {
      * 课后作业处理队列
      */
     public static final String COURSE_WORK_REPORT_USERS_DEAL_QUEUE = "course_work_report_users_queue";
+
+    /**
+     * 直播结束后定时任务通知
+     */
+    public static final String LIVE_COURSE_END_NOTICE = "live.course.end.notice";
     
     /**
      * error log 日志

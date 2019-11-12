@@ -11,8 +11,6 @@ import com.huatu.tiku.course.common.SubjectEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.netschool.api.v6.UserCourseServiceV6;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
-import com.huatu.tiku.course.service.manager.EssayExercisesAnswerMetaManager;
-import com.huatu.tiku.course.util.RedisLockHelper;
 import com.huatu.tiku.essay.essayEnum.CourseWareTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -20,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 描述：
@@ -37,13 +34,12 @@ public class CourseLiveReportLogListener {
     private CourseExercisesProcessLogManager courseExercisesProcessLogManager;
 
     @Autowired
-    private EssayExercisesAnswerMetaManager essayExercisesAnswerMetaManager;
-
-    @Autowired
     private UserCourseServiceV6 userCourseService;
 
-    @Autowired
-    private RedisLockHelper redisLockHelper;
+    /**
+     * 创建行测课后作业答题卡
+     * @param message
+     */
 
     @RabbitListener(queues = RabbitMqConstants.COURSE_LIVE_REPORT_LOG)
     public void onMessage(String message){
@@ -82,19 +78,9 @@ public class CourseLiveReportLogListener {
         if(syllabusWareInfo.getAfterCoreseNum() == 0){
             return;
         }
-        String key = liveRecordInfoWithUserId.getUserId() + "" + syllabusWareInfo.getSyllabusId();
-        long time = System.currentTimeMillis() + 5 * 1000;
-        if(!redisLockHelper.lock(key, String.valueOf(time), 5, TimeUnit.MINUTES)){
-            log.error("当前请求的任务过多:{}", key);
-            return;
-        }
-        log.info("直播创建课后作业答题卡信息:userId:{}, syllabusId:{}", liveRecordInfoWithUserId.getUserId(), syllabusWareInfo.getSyllabusId());
-        if(null != syllabusWareInfo.getSubjectType() && syllabusWareInfo.getSubjectType() == SubjectEnum.SL.getCode()){
-            int courseType = CourseWareTypeEnum.changeVideoType2TableCourseType(syllabusWareInfo.getVideoType());
-            essayExercisesAnswerMetaManager.createEssayInitUserMeta(liveRecordInfoWithUserId.getUserId(), liveRecordInfo.getSyllabusId(), courseType, syllabusWareInfo.getCoursewareId(), syllabusWareInfo.getClassId());
-        }else{
+        log.info("直播创建行测课后作业答题卡信息:userId:{}, syllabusId:{}", liveRecordInfoWithUserId.getUserId(), syllabusWareInfo.getSyllabusId());
+        if(null != syllabusWareInfo.getSubjectType() && syllabusWareInfo.getSubjectType() == SubjectEnum.XC.getCode()){
             courseExercisesProcessLogManager.createCourseWorkAnswerCardEntranceV2(syllabusWareInfo.getClassId(), syllabusWareInfo.getSyllabusId(), syllabusWareInfo.getVideoType(), syllabusWareInfo.getCoursewareId(), liveRecordInfoWithUserId.getSubject(), liveRecordInfoWithUserId.getTerminal(), liveRecordInfoWithUserId.getCv(), liveRecordInfoWithUserId.getUserId());
         }
-        redisLockHelper.unlock(key, String.valueOf(time));
     }
 }
