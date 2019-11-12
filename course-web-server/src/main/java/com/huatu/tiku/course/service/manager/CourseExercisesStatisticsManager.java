@@ -542,6 +542,7 @@ public class CourseExercisesStatisticsManager {
             }catch (Exception e){
                 myRank = 0L;
                 log.error("课后作业统计排名异常 rankKey:{}, terminal:{}, value:{}, errorMsg:{}", rankKey, terminal, JSONObject.toJSONString(practiceCard), e);
+                e.printStackTrace();
             }
 
             Set<String> userIdRanks = zSetOperations.range(rankKey, START, END);
