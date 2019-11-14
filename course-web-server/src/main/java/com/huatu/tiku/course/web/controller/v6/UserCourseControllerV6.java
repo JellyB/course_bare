@@ -366,7 +366,7 @@ public class UserCourseControllerV6 {
      */
     @LocalMapParam
     @GetMapping(value = "cateList")
-    public Object cateList(@Token UserSession userSession,
+    public Object cateList(@Token(check = false, defaultValue = "") UserSession userSession,
                            @RequestHeader(value = "cv") String cv,
                            @RequestHeader(value = "terminal") int terminal){
         Map<String,Object> params = LocalMapParamHandler.get();

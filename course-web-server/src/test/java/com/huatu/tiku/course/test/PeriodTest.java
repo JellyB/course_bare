@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import com.huatu.tiku.course.consts.SimpleCourseLiveBackLog;
 import org.junit.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,7 +120,7 @@ public class PeriodTest extends BaseWebTest {
 	public void testMapper() {
 		courseLiveBackLogMapper.insertSelective(
 				CourseLiveBackLog.builder().liveBackCoursewareId(111L).liveCoursewareId(998l).roomId(888L).build());
-		CourseLiveBackLog findByRoomIdAndLiveCoursewareId = courseLiveBackLogService
+		SimpleCourseLiveBackLog findByRoomIdAndLiveCoursewareId = courseLiveBackLogService
 				.findByRoomIdAndLiveCourseWareIdV2(888L, 998L);
 		log.info("findByRoomIdAndLiveCoursewareId :{}", findByRoomIdAndLiveCoursewareId);
 	}

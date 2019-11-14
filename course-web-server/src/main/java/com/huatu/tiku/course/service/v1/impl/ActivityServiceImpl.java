@@ -1,20 +1,17 @@
 package com.huatu.tiku.course.service.v1.impl;
 
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Lists;
-import com.huatu.common.SuccessMessage;
-import com.huatu.tiku.course.bean.NetSchoolResponse;
-import com.huatu.tiku.course.consts.ActivityUserInfo;
-import com.huatu.tiku.course.netschool.api.UserAccountServiceV1;
-import com.huatu.tiku.course.service.v6.SensorsService;
-import com.huatu.tiku.course.util.ResponseUtil;
-import com.huatu.tiku.course.ztk.api.v4.user.UserServiceV4;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,11 +27,21 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.huatu.common.SuccessMessage;
 import com.huatu.tiku.common.bean.reward.RewardMessage;
 import com.huatu.tiku.common.consts.RabbitConsts;
+import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.common.ActivityStatusEnum;
+import com.huatu.tiku.course.consts.ActivityUserInfo;
+import com.huatu.tiku.course.dao.manual.AppStoreEvaluationRecordMapper;
+import com.huatu.tiku.course.netschool.api.UserAccountServiceV1;
 import com.huatu.tiku.course.service.v1.ActivityService;
+import com.huatu.tiku.course.service.v6.SensorsService;
+import com.huatu.tiku.course.util.ResponseUtil;
+import com.huatu.tiku.course.ztk.api.v4.user.UserServiceV4;
+import com.huatu.tiku.entity.AppStoreEvaluationRecord;
 import com.huatu.tiku.springboot.basic.reward.RewardAction;
 
 import lombok.extern.slf4j.Slf4j;
@@ -65,12 +72,18 @@ public class ActivityServiceImpl implements ActivityService {
 
 	@Autowired
 	private UserServiceV4 userServiceV4;
+	
+	@Autowired
+	private AppStoreEvaluationRecordMapper appStoreEvaluationRecordMapper;
 
 	private String CACHENAME = "618";
 
 	private String CACHEPREFIX = "activity_618_";
 
 	private String CACHE_PREFIX_HASH_KEY = "activity_618_hash_key";
+	
+	//appstore 赠送金币数量
+	private int APP_STORE_GIVE_COINS = 30;
 
 	private LoadingCache<Object, JSONObject> configObjectCache = CacheBuilder.newBuilder().maximumSize(10)
 			.expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<Object, JSONObject>() {
@@ -261,5 +274,23 @@ public class ActivityServiceImpl implements ActivityService {
 			log.error("dealActivityUserInfo caught an exception:{}", e);
 			return activityUserInfos;
 		}
+	}
+
+	@Override
+	public Object appStoreEvalution(int uid, String uname, Integer terminal, String cv) {
+		int count = appStoreEvaluationRecordMapper.selectCount(AppStoreEvaluationRecord.builder().userId(uid).build());
+		if (count <= 0) {
+			// 未评价过
+			RewardMessage msg = RewardMessage.builder().gold(APP_STORE_GIVE_COINS)
+					.action(RewardAction.ActionType.APP_STORE_EVALUTION.name()).experience(1).bizId(uid + "").uname(uname)
+					.timestamp(System.currentTimeMillis()).build();
+			rabbitTemplate.convertAndSend("", RabbitConsts.QUEUE_REWARD_ACTION, msg);
+
+			AppStoreEvaluationRecord record = AppStoreEvaluationRecord.builder().userId(uid).userName(uname).build();
+			record.setGmtCreate(new Timestamp(System.currentTimeMillis()));
+			count = appStoreEvaluationRecordMapper.insert(record);
+			log.info("username:{},appStoreEvalution success");
+		}
+		return count;
 	}
 }

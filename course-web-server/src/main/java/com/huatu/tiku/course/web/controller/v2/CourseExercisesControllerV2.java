@@ -61,6 +61,19 @@ public class CourseExercisesControllerV2 {
         }
     }
 
+    /**
+     * 查询答题卡状态 0 未完成 1 已完成
+     * @param userSession
+     * @return
+     */
+    @GetMapping("card/info")
+    public Object cardInfo(@Token UserSession userSession,
+                           @RequestParam(value = "syllabusId") long syllabusId){
+        return courseExercisesProcessLogManager.cardInfo(userSession.getId(), syllabusId);
+    }
+
+
+
 
     /**
      * 课后作业统计信息

@@ -54,7 +54,7 @@ public class CollectionControllerV6 {
      * @param userSession
      * @return
      */
-    @LocalMapParam
+    @LocalMapParam(checkToken = true)
     @PutMapping(value = "cancel")
     public Object cancel( @Token UserSession userSession,
                           @RequestHeader(value = "terminal") int terminal,
@@ -71,7 +71,7 @@ public class CollectionControllerV6 {
      * @param userSession
      * @return
      */
-    @LocalMapParam
+    @LocalMapParam(checkToken = true)
     @PutMapping(value = "add")
     public Object add(@Token UserSession userSession,
                       @RequestHeader(value = "terminal") int terminal,

@@ -134,7 +134,7 @@ public class CourseControllerV5 {
     @LocalMapParam
     @GetMapping("/{classId}/classSyllabus")
     public Object classSyllabus(
-            @Token UserSession userSession,
+            @Token(check = false, defaultValue = "") UserSession userSession,
             @RequestHeader(required = false, defaultValue = "7.0.0") String cv,
             @PathVariable("classId") int classId,
             @RequestParam int parentId,
@@ -146,7 +146,7 @@ public class CourseControllerV5 {
         //添加答题信息
         Object timeTable = ResponseUtil.build(courseService.findTimetable(map));
         //添加答题信息
-        courseUtil.addExercisesCardInfoV3((LinkedHashMap) timeTable, userSession.getId(), false);
+        courseUtil.addExercisesCardInfoV3((LinkedHashMap) timeTable, null != userSession ? userSession.getId() : 0, false);
         return timeTable;
     }
 
@@ -203,7 +203,9 @@ public class CourseControllerV5 {
         stopwatch.stop();
         //添加答题信息
         stopwatch.start("addExercisesCardInfo");
-        courseUtil.addExercisesCardInfoV3((LinkedHashMap) purchasesTimetable, userSession.getId(), true);
+        //courseUtil.addExercisesCardInfoV3((LinkedHashMap) purchasesTimetable, userSession.getId(), true);
+        courseUtil.addExercisesCardInfoWithCivil((LinkedHashMap) purchasesTimetable, userSession.getId(), true);
+        courseUtil.addExercisesCardInfoWithEssay((LinkedHashMap) purchasesTimetable, userSession.getId());
         stopwatch.stop();
         stopwatch.start("addPeriodTestInfo");
         courseUtil.addPeriodTestInfo((LinkedHashMap) purchasesTimetable, userSession.getId());
@@ -220,10 +222,11 @@ public class CourseControllerV5 {
 
     /**
      * 获取课程详情-录播
+     *  + 游客
      */
     @GetMapping("/{classId}/getClassDetailNotLive")
     public Object getClassDetailNotLive(
-            @Token UserSession userSession,
+            @Token(check = false, defaultValue = "") UserSession userSession,
             @RequestHeader int terminal,
             @RequestHeader String cv,
             @PathVariable("classId") int classId,
@@ -232,10 +235,11 @@ public class CourseControllerV5 {
         HashMap<String, Object> map = HashMapBuilder.<String, Object>newBuilder()
                 .put("classId", classId)
                 .put("terminal", terminal)
-                .put("userName", userSession.getUname())
                 .put("collageActivityId", collageActivityId)
                 .build();
-        log.warn("4$${}$${}$${}$${}$${}$${}", classId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
+        if(null != userSession){
+            map.put("userName", userSession.getUname());
+        }
         return ResponseUtil.build(courseService.getClassDetailNotLive(map));
     }
 
@@ -244,7 +248,7 @@ public class CourseControllerV5 {
      */
     @GetMapping("/{classId}/getClassDetailLive")
     public Object getClassDetailLive(
-            @Token UserSession userSession,
+            @Token(check = false, defaultValue = "") UserSession userSession,
             @RequestHeader int terminal,
             @RequestHeader String cv,
             @PathVariable("classId") int classId,
@@ -257,14 +261,15 @@ public class CourseControllerV5 {
                 .put("collageActivityId", collageActivityId)
                 .put("cv", cv)
                 .build();
-        log.warn("4$${}$${}$${}$${}$${}$${}", classId, userSession.getId(), userSession.getUname(), String.valueOf(System.currentTimeMillis()), cv, terminal);
+        log.warn("getClassDetailLive:{}, classId:{}, time:{}, cv:{}, terminal:{}", classId, String.valueOf(System.currentTimeMillis()), cv, terminal);
         return ResponseUtil.build(courseService.getClassDetailLive(map));
     }
 
     /**
      * 获取课程介绍
+     * 游客登录
      */
-    @LocalMapParam(checkToken = true)
+    @LocalMapParam()
     @GetMapping("/{classId}/getCourseIntroduction")
     public Object getCourseIntroduction(
             @RequestParam(defaultValue = "0") String collageActivityId
@@ -390,14 +395,14 @@ public class CourseControllerV5 {
      * 获取课程促销详情
      */
     @GetMapping("{classId}/appClassActivityDetails")
-    public Object appClassActivityDetails(@PathVariable int classId) throws BizException{
-        return courseServiceBiz.appClassActivityDetails(classId);
+    public Object appClassActivityDetails(@PathVariable int classId, @RequestHeader(defaultValue = "1") int terminal) throws BizException{
+        return courseServiceBiz.appClassActivityDetails(classId, terminal);
     }
 
     /**
      * 试听列表
      */
-    @LocalMapParam(checkToken = true)
+    @LocalMapParam()
     @GetMapping("/{netClassId}/classAuditionList")
     public Object classAuditionList(@PathVariable int netClassId) throws BizException{
         HashMap<String, Object> map = LocalMapParamHandler.get();

@@ -49,6 +49,7 @@ public class SyllabusControllerV5 {
     ) {
         HashMap<String, Object> map = LocalMapParamHandler.get();
         Object response = ResponseUtil.build(syllabusService.buyAfterSyllabus(map));
+        courseUtil.filterV5AndV6((LinkedHashMap) response);
         //添加答题信息
         courseUtil.addExercisesCardInfoV3((LinkedHashMap) response, userSession.getId(), false);
         return response;

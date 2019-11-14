@@ -30,4 +30,14 @@ public interface ActivityService {
 	 * @return
 	 */
 	Object report(String userName, int terminal, String cv, String day);
+
+	/**
+	 * appstore评价送图币
+	 * @param id
+	 * @param uname
+	 * @param terminal
+	 * @param cv
+	 * @return
+	 */
+	Object appStoreEvalution(int uid, String uname, Integer terminal, String cv);
 }

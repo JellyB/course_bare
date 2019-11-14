@@ -2,9 +2,13 @@ package com.huatu.tiku.course.service.v1.impl.practice;
 
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONObject;
+import com.huatu.tiku.essay.constant.course.CallBack;
+import com.huatu.tiku.essay.constant.status.SystemConstant;
 import org.apache.commons.collections.CollectionUtils;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +21,6 @@ import com.huatu.tiku.course.common.YesOrNoStatus;
 import com.huatu.tiku.course.dao.manual.BjyCallbackLogMapper;
 import com.huatu.tiku.course.dao.manual.CourseLiveBackLogMapper;
 import com.huatu.tiku.course.service.v1.practice.LiveCallBackService;
-import com.huatu.tiku.course.service.v1.practice.TeacherService;
 import com.huatu.tiku.entity.BjyCallbackLog;
 import com.huatu.tiku.entity.CourseLiveBackLog;
 import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
@@ -37,18 +40,45 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
 
 	private final PracticeMetaComponent practiceMetaComponent;
 
-	private final TeacherService teacherService;
-
 	private final CoursePracticeQuestionInfoServiceImpl coursePracticeQuestionInfoServiceImpl;
 
 	private final CourseLiveBackLogMapper courseLiveBackLogMapper;
 	
 	private final BjyCallbackLogMapper bjyCallbackLogMapper;
 
+	private final RabbitTemplate rabbitTemplate;
+
 	@Override
-	@Async
-	public void liveCallBackAllInfo(Long roomId, List<LiveCallbackBo> liveCallbackBoList)
-			throws ExecutionException, InterruptedException {
+	public void liveCallBackAllInfo(Long roomId, List<LiveCallbackBo> liveCallbackBoList){
+		if(CollectionUtils.isEmpty(liveCallbackBoList)){
+			return;
+		}
+		CallBack callBack = new CallBack(roomId, liveCallbackBoList.stream().map(item ->{
+			CallBack.Meta meta = new CallBack.Meta(item.getLiveCourseId(), item.getRecordCourseId());
+			return meta;
+		}).collect(Collectors.toList()));
+		String message = JSONObject.toJSONString(callBack);
+		log.info("直播转回放 step 1:{}", roomId);
+		rabbitTemplate.convertAndSend(SystemConstant.CALL_BACK_FAN_OUT, "", message);
+	}
+
+
+	/**
+	 * civil 消费
+	 *
+	 * @param callBack
+	 */
+	@Override
+	public void liveCallBackAllInfo(CallBack callBack) {
+		log.info("直播转回放 step 2.1 civil:{}", JSONObject.toJSONString(callBack));
+		List<LiveCallbackBo> liveCallbackBoList = callBack.getMetaList().stream().map(item ->{
+			LiveCallbackBo liveCallbackBo = new LiveCallbackBo();
+			liveCallbackBo.setLiveCourseId(item.getLiveCourseId());
+			liveCallbackBo.setRecordCourseId(item.getRecordCourseId());
+			return liveCallbackBo;
+		}).collect(Collectors.toList());
+
+		Long roomId = callBack.getRoomId();
 		// 获取所有试题信息
 		liveCallbackBoList.forEach(callback -> {
 			WeekendSqls<CourseLiveBackLog> sql = WeekendSqls.<CourseLiveBackLog>custom()
@@ -68,7 +98,6 @@ public class LiveCallBackServiceImpl implements LiveCallBackService {
 				courseLiveBackLogMapper.updateByPrimaryKeySelective(backLog);
 			}
 		});
-
 	}
 
 	/**

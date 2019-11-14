@@ -7,6 +7,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.huatu.tiku.course.dao.essay.*;
+import com.huatu.tiku.course.util.RedisLockHelper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -65,8 +66,12 @@ public class EssayExercisesAnswerMetaManager {
     @Autowired
     private CorrectOrderMapper correctOrderMapper;
 
+    @Autowired
+    private RedisLockHelper redisLockHelper;
+
     private static Integer CORRECT_COUNT_ONE = 1;
     private static Integer CORRECT_COUNT_TWO = 2;
+    private static Integer TIME_OUT = 5 * 1000;
 
     /**
      * 创建申论课后作业空白答题卡
@@ -81,27 +86,29 @@ public class EssayExercisesAnswerMetaManager {
      * @throws BizException
      */
     public void createEssayInitUserMeta(int userId, long syllabusId, int courseType, long courseWareId, long courseId) throws BizException {
-        Example example = new Example(EssayExercisesAnswerMeta.class);
-        example.and().andEqualTo("syllabusId", syllabusId)
-                .andEqualTo("userId", userId)
-                .andEqualTo("status", EssayStatusEnum.NORMAL.getCode());
-
-        List<EssayExercisesAnswerMeta> list = essayExercisesAnswerMetaMapper.selectByExample(example);
-        if(CollectionUtils.isNotEmpty(list)){
-            return;
-        }
-        Example example_ = new Example(EssayCourseExercisesQuestion.class);
-        example_.and()
+        Example questionExample = new Example(EssayCourseExercisesQuestion.class);
+        questionExample.and()
                 .andEqualTo("courseType", courseType)
                 .andEqualTo("courseWareId", courseWareId)
                 .andEqualTo("status", EssayStatusEnum.NORMAL.getCode());
 
-        List<EssayCourseExercisesQuestion> essayCourseExercisesQuestions = essayCourseExercisesQuestionMapper.selectByExample(example_);
+        List<EssayCourseExercisesQuestion> essayCourseExercisesQuestions = essayCourseExercisesQuestionMapper.selectByExample(questionExample);
         if(CollectionUtils.isEmpty(essayCourseExercisesQuestions)){
+            log.info("申论课后作业配置为空:courseType:{}, courseWareId:{}", courseType, courseWareId);
             return;
         }
         //创建空白答题卡
+        int count = 0;
         for (EssayCourseExercisesQuestion essayCourseExercisesQuestion : essayCourseExercisesQuestions) {
+            Example createExample = new Example(EssayExercisesAnswerMeta.class);
+            createExample.and().andEqualTo("syllabusId", syllabusId)
+                    .andEqualTo("pQid", essayCourseExercisesQuestion.getPQid())
+                    .andEqualTo("userId", userId)
+                    .andEqualTo("status", EssayStatusEnum.NORMAL.getCode());
+            List<EssayExercisesAnswerMeta> metaList = essayExercisesAnswerMetaMapper.selectByExample(createExample);
+            if(CollectionUtils.isNotEmpty(metaList)){
+                continue;
+            }
             EssayExercisesAnswerMeta exercisesAnswerMeta = EssayExercisesAnswerMeta.builder()
                     .answerType(essayCourseExercisesQuestion.getType())
                     .courseWareId(essayCourseExercisesQuestion.getCourseWareId())
@@ -113,17 +120,19 @@ public class EssayExercisesAnswerMetaManager {
                     .pQid(essayCourseExercisesQuestion.getPQid())
                     .userId(userId)
                     .build();
-
+            exercisesAnswerMeta.setCreator("robot");
             exercisesAnswerMeta.setGmtCreate(new Date());
             exercisesAnswerMeta.setGmtModify(new Date());
             exercisesAnswerMeta.setStatus(EssayStatusEnum.NORMAL.getCode());
             exercisesAnswerMeta.setBizStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
             essayExercisesAnswerMetaMapper.insertSelective(exercisesAnswerMeta);
+            count ++;
         }
-
-        String key = CourseCacheKey.getCourseWorkEssayIsAlert(userId);
-        SetOperations<String, Long> setOperations = redisTemplate.opsForSet();
-        setOperations.add(key, syllabusId);
+        if(count > 0){
+            String key = CourseCacheKey.getCourseWorkEssayIsAlert(userId);
+            SetOperations<String, Long> setOperations = redisTemplate.opsForSet();
+            setOperations.add(key, syllabusId);
+        }
     }
 
 

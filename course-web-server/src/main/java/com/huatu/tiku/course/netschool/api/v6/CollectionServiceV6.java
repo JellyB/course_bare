@@ -63,7 +63,7 @@ public interface CollectionServiceV6 {
                  */
                 @Override
                 public NetSchoolResponse add(Map<String, Object> params) {
-                    log.error("collection service v6 add fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("collection service v6 add fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -75,7 +75,7 @@ public interface CollectionServiceV6 {
                  */
                 @Override
                 public NetSchoolResponse cancel(Map<String, Object> params) {
-                    log.error("collection service v6 cancel fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("collection service v6 cancel fallback,params: {}, fall back reason: {}",params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 
@@ -87,7 +87,7 @@ public interface CollectionServiceV6 {
                  */
                 @Override
                 public NetSchoolResponse list(Map<String, Object> params) {
-                    log.error("collection service v6 list fallback,params: {}, fall back reason: ",params, throwable);
+                    log.error("collection service v6 list fallback,params: {}, fall back reason: {}",params, throwable);
                     return ResponseUtil.DEFAULT_PHP_PAGE_RESPONSE;
                 }
             };

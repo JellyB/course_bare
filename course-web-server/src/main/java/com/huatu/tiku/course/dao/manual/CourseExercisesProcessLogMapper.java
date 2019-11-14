@@ -2,6 +2,7 @@ package com.huatu.tiku.course.dao.manual;
 
 import com.huatu.tiku.course.dao.provider.CourseExercisesProcessLogProvider;
 import com.huatu.tiku.entity.CourseExercisesProcessLog;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.springframework.stereotype.Repository;
 import tk.mybatis.mapper.common.Mapper;
@@ -35,4 +36,10 @@ public interface CourseExercisesProcessLogMapper extends Mapper<CourseExercisesP
      */
     @SelectProvider(type = CourseExercisesProcessLogProvider.class, method = "getDuplicateDate")
     List<HashMap<String, Object>> getDuplicateDate();
+
+    @SelectProvider(type = CourseExercisesProcessLogProvider.class, method = "distinctCourseId")
+    List<Integer> distinctCourseId();
+
+    @SelectProvider(type = CourseExercisesProcessLogProvider.class, method = "summaryData")
+    List<HashMap<Integer, Integer>> summaryData(@Param(value = "courseId") Integer courseId);
 }

@@ -12,6 +12,7 @@ import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.vo.EssayAnswerCardInfo;
 import com.huatu.tiku.course.common.*;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
+import com.huatu.tiku.course.consts.SimpleCourseLiveBackLog;
 import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.hbase.api.v1.VideoServiceV1;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
@@ -291,7 +292,7 @@ public class CourseUtil {
                     //查询用户答题信息
                     List<Map> build = Lists.newArrayList();
                     log.info("获取课后练习的答题卡信息 v3,参数信息, userId = {}, paramsList = {}", userId, paramsList);
-                    if(CollectionUtils.isEmpty(paramsList)){
+                    if(CollectionUtils.isEmpty(paramsList) || userId == 0){
                         log.error("获取课后练习的答题卡信息 v3,参数信息 syllabusList is empty, userId:{}, response:{}",userId, response);
                         return buildResponseConstructCardInfo(need2Str, (List<Map>) value, build);
                     }
@@ -313,7 +314,7 @@ public class CourseUtil {
 
 
     /**
-     * 课程大纲-售后-添加课后答题结果信息 with civil
+     * 课程大纲-售后-添加课后答题结果信息 with civil 直播 & 录播
      * 使用 大纲 id 获取
      * @param response 响应结果集
      * @param userId   用户ID
@@ -324,6 +325,7 @@ public class CourseUtil {
         response.computeIfPresent("list", (key, value) -> {
                     List<Long> civilParamsList = ((List<Map>) value).stream()
                             .filter(map -> null != map.get(SyllabusInfo.VideoType) && null != map.get(SyllabusInfo.CourseWareId))
+                            .filter(map -> MapUtils.getIntValue(map, SyllabusInfo.VideoType) != CourseWareTypeEnum.VideoTypeEnum.LIVE_PLAY_BACK.getVideoType())
                             .filter(map -> null != map.get(SyllabusInfo.SyllabusId))
                             .filter(map -> null != map.get(SyllabusInfo.SubjectType) && MapUtils.getIntValue(map, SyllabusInfo.SubjectType) == SubjectEnum.XC.getCode())
                             .map(map -> MapUtils.getLongValue(map, SyllabusInfo.SyllabusId))
@@ -437,10 +439,18 @@ public class CourseUtil {
     }
 
 
-    private void buildResponseConstructCardInfoWithEssay(List<Map> value, List<EssayExercisesAnswerMeta> metas) {
-
-        for (Map map : value) {
-            map.put("answerCard", JSONObject.toJSON(new EssayAnswerCardInfo()));
+    /**
+     * V6 之前接口不展示课后作业
+     * @param response
+     */
+    public void filterV5AndV6(LinkedHashMap response){
+        List<Map<String,Object>> list = (List<Map<String,Object>>) response.get("list");
+        for(int i = 0; i < list.size(); i ++) {
+            Map<String, Object> currentMap = list.get(i);
+            int subjectType = MapUtils.getIntValue(currentMap, SyllabusInfo.SubjectType, SubjectEnum.XC.getCode());
+            if(subjectType == SubjectEnum.SL.getCode()){
+                currentMap.put(SyllabusInfo.AfterCourseNum, 0);
+            }
         }
     }
 
@@ -470,18 +480,18 @@ public class CourseUtil {
                 continue;
             }
             long bjyRoomId = MapUtils.getLongValue(currentMap, SyllabusInfo.BjyRoomId);
-            CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(bjyRoomId, courseWareId);
-            if(null == courseLiveBackLog){
+            SimpleCourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(bjyRoomId, courseWareId);
+            if(null == courseLiveBackLog || null == courseLiveBackLog.getLiveCourseWareId()){
                 continue;
             }
             //课后作业数目处理
-            List<Map<String, Object>> listQuestionByCourseId = courseExercisesService.listQuestionByCourseId(CourseWareTypeEnum.VideoTypeEnum.LIVE.getVideoType(), courseLiveBackLog.getLiveCoursewareId());
+            List<Map<String, Object>> listQuestionByCourseId = courseExercisesService.listQuestionByCourseId(CourseWareTypeEnum.VideoTypeEnum.LIVE.getVideoType(), courseLiveBackLog.getLiveCourseWareId());
             if (CollectionUtils.isEmpty(listQuestionByCourseId)) {
                 continue;
             }
             currentMap.put(SyllabusInfo.AfterCourseNum, listQuestionByCourseId.size());
             //如果是直播回放 -> 查询直播回放的课后练习数据信息
-            Optional<CourseExercisesProcessLog> optionalCourseExercisesProcessLog = courseExercisesProcessLogManager.getCourseExercisesProcessLogByTypeAndWareId(userId, CourseWareTypeEnum.VideoTypeEnum.LIVE.getVideoType(), courseLiveBackLog.getLiveCoursewareId());
+            Optional<CourseExercisesProcessLog> optionalCourseExercisesProcessLog = courseExercisesProcessLogManager.getCourseExercisesProcessLogByTypeAndWareId(userId, CourseWareTypeEnum.VideoTypeEnum.LIVE.getVideoType(), courseLiveBackLog.getLiveCourseWareId());
             if(!optionalCourseExercisesProcessLog.isPresent()){
                 continue;
             }
@@ -515,24 +525,6 @@ public class CourseUtil {
             log.error("addLiveCardExercisesCardInfo caught an error!");
         }
     }
-
-
-    /**
-     * 核查直播回放是否由直播生成
-     * @param bjyRoomId
-     * @param liveBackCoursewareId
-     * @return
-     */
-    @Deprecated
-    private Optional<CourseLiveBackLog> checkLiveBackWithCourseWork(long bjyRoomId, long liveBackCoursewareId){
-        Example example = new Example(CourseLiveBackLog.class);
-        example.and()
-                .andEqualTo("roomId", bjyRoomId)
-                .andEqualTo("liveBackCoursewareId", liveBackCoursewareId);
-        CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(bjyRoomId, liveBackCoursewareId);
-        return Optional.of(courseLiveBackLog);
-    }
-
 
     /**
      * 处理阶段考试状态信息
@@ -698,8 +690,8 @@ public class CourseUtil {
                 .andEqualTo("liveBackCoursewareId", liveBackCoursewareId)
                 .andEqualTo("roomId", bjyRoomId);
         try{
-            CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(Long.valueOf(bjyRoomId), liveBackCoursewareId);
-            if(null == courseLiveBackLog){
+            SimpleCourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(Long.valueOf(bjyRoomId), liveBackCoursewareId);
+            if(null == courseLiveBackLog || null == courseLiveBackLog.getLiveCourseWareId()){
                 result.put(SyllabusInfo.ReportStatus, YesOrNoStatus.NO.getCode());
             }else{
                 result.put(SyllabusInfo.ReportStatus, YesOrNoStatus.YES.getCode());

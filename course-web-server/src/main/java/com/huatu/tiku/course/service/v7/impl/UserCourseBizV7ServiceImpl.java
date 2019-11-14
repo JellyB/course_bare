@@ -1,6 +1,7 @@
 package com.huatu.tiku.course.service.v7.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.crab2died.ExcelUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -9,23 +10,21 @@ import com.huatu.common.ErrorResult;
 import com.huatu.common.SuccessMessage;
 import com.huatu.common.exception.BizException;
 import com.huatu.tiku.course.bean.vo.*;
-import com.huatu.tiku.course.common.BuildTypeEnum;
 import com.huatu.tiku.course.common.StudyTypeEnum;
 import com.huatu.tiku.course.common.SubjectEnum;
 import com.huatu.tiku.course.consts.RabbitMqConstants;
 import com.huatu.tiku.course.consts.SyllabusInfo;
 import com.huatu.tiku.course.dao.essay.*;
+import com.huatu.tiku.course.dao.manual.CourseExercisesProcessLogMapper;
 import com.huatu.tiku.course.service.manager.CourseExercisesProcessLogManager;
 import com.huatu.tiku.course.service.manager.EssayExercisesAnswerMetaManager;
 import com.huatu.tiku.course.service.v7.UserCourseBizV7Service;
 import com.huatu.tiku.course.util.CourseCacheKey;
+import com.huatu.tiku.course.util.ExportData;
 import com.huatu.tiku.essay.constant.status.EssayAnswerConstant;
 import com.huatu.tiku.essay.entity.courseExercises.EssayCourseExercisesQuestion;
 import com.huatu.tiku.essay.entity.courseExercises.EssayExercisesAnswerMeta;
 import com.huatu.tiku.essay.essayEnum.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -37,6 +36,7 @@ import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -57,6 +57,9 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private CourseExercisesProcessLogMapper courseExercisesProcessLogMapper;
 
     @Autowired
     private CourseExercisesProcessLogManager courseExercisesProcessLogManager;
@@ -203,7 +206,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                 allSyllabusIds.addAll(temp);
             });
 
-            Table<String, Long, SyllabusWareInfo> syllabusWareInfoTable = courseExercisesProcessLogManager.dealSyllabusInfo(allSyllabusIds);
+            Table<String, Long, SyllabusWareInfo> syllabusWareInfoTable = courseExercisesProcessLogManager.dealSyllabusInfo2Table(allSyllabusIds);
             if(syllabusWareInfoTable.isEmpty()){
                 return result;
             }
@@ -349,10 +352,9 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
         }
         int courseType = CourseWareTypeEnum.changeVideoType2TableCourseType(videoType);
         EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo = new EssayCourseWorkSyllabusInfo();
-        essayCourseWorkSyllabusInfo.setAnswerCardId(cardId);
         essayCourseWorkSyllabusInfo.setBizStatus(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus());
 
-        essayCourseWorkSyllabusInfo_AnswerInfo(userId, syllabusId, cardId, essayCourseWorkSyllabusInfo);
+        essayCourseWorkSyllabusInfo_AnswerInfo(userId, syllabusId, essayCourseWorkSyllabusInfo);
         // 获取绑定试题信息
         Example example = new Example(EssayCourseExercisesQuestion.class);
         example.and()
@@ -362,6 +364,10 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
         List<EssayCourseExercisesQuestion> essayCourseExercisesQuestions = essayCourseExercisesQuestionMapper.selectByExample(example);
 
+        if(CollectionUtils.isEmpty(essayCourseExercisesQuestions)){
+            log.error("essayCourseWorkSyllabusInfo.essayCourseExercisesQuestions is empty:courseType:{}, courseWareId:{}", courseType, courseWareId);
+            throw new BizException(ErrorResult.create(100010, "直播转回放中,请稍后重试"));
+        }
         essayCourseWorkSyllabusInfo.setAfterCoreseNum(essayCourseExercisesQuestions.size());
         essayCourseWorkSyllabusInfo.setBuildType(essayCourseExercisesQuestions.get(0).getType());
 
@@ -438,7 +444,7 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
 
                 //处理批改中提示信息
                 if(essayCourseWorkSyllabusInfo.getBizStatus() == EssayAnswerConstant.EssayAnswerBizStatusEnum.COMMIT.getBizStatus()){
-                    Map<String, Object> orderMap = correctOrderMapper.selectByAnswerCardIdAndType(EssayAnswerCardEnum.TypeEnum.QUESTION.getType(), essayCourseWorkSyllabusInfo.getAnswerCardId());
+                    Map<String, Object> orderMap = correctOrderMapper.selectByAnswerCardIdAndType(EssayAnswerCardEnum.TypeEnum.PAPER.getType(), essayCourseWorkSyllabusInfo.getAnswerCardId());
                     if (null == orderMap || orderMap.isEmpty()) {
                         essayCourseWorkSyllabusInfo.setClickContent(StringUtils.EMPTY);
                     }else{
@@ -447,6 +453,12 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
                 }
             }
         }
+        //默认请求这个接口视为开始做题,减少未读次数
+        String key = CourseCacheKey.getCourseWorkEssayIsAlert(userId);
+        SetOperations<String, Long> setOperations = redisTemplate.opsForSet();
+        if(setOperations.isMember(key, syllabusId)){
+            setOperations.remove(key, syllabusId);
+        }
         return essayCourseWorkSyllabusInfo;
     }
 
@@ -454,21 +466,13 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
      * 处理答题卡信息、单题、多题、套题
      * @param userId
      * @param syllabusId
-     * @param cardId
      * @param essayCourseWorkSyllabusInfo
      */
-    private void essayCourseWorkSyllabusInfo_AnswerInfo(int userId, Long syllabusId, Long cardId, EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo) {
-        if (cardId.longValue() > 0) {
-            Map<String, Object> metaMap = essayExercisesAnswerMetaMapper.getBizStatusByCardId(cardId);
-            if (null != metaMap) {
-                essayCourseWorkSyllabusInfo.setBizStatus(MapUtils.getIntValue(metaMap, "biz_status", EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus()));
-            }
-        }else{
-            Map<String,Object> cardInfoMap = essayExercisesAnswerMetaMapper.getAnswerCardInfoBySyllabusId(userId, syllabusId);
-            if(null != cardInfoMap){
-                essayCourseWorkSyllabusInfo.setAnswerCardId(MapUtils.getLongValue(cardInfoMap, "answer_id", 0));
-                essayCourseWorkSyllabusInfo.setBizStatus(MapUtils.getIntValue(cardInfoMap, "biz_status", 0));
-            }
+    private void essayCourseWorkSyllabusInfo_AnswerInfo(int userId, Long syllabusId, EssayCourseWorkSyllabusInfo essayCourseWorkSyllabusInfo) {
+        Map<String,Object> cardInfoMap = essayExercisesAnswerMetaMapper.getAnswerCardInfoBySyllabusId(userId, syllabusId);
+        if(null != cardInfoMap){
+            essayCourseWorkSyllabusInfo.setAnswerCardId(MapUtils.getLongValue(cardInfoMap, "answer_id", 0));
+            essayCourseWorkSyllabusInfo.setBizStatus(MapUtils.getIntValue(cardInfoMap, "biz_status", 0));
         }
     }
 
@@ -484,5 +488,45 @@ public class UserCourseBizV7ServiceImpl implements UserCourseBizV7Service {
     @Override
     public EssayAnswerCardInfo buildEssayAnswerCardInfo(int userId, long syllabusId) throws BizException {
         return null;
+    }
+
+
+    @Override
+    public void exportData() throws BizException {
+        final String file_path = "/app/logs/course-work/summary.xlsx";
+        List<ExportData> list = Lists.newArrayList();
+        List<Integer> courses =  courseExercisesProcessLogMapper.distinctCourseId();
+        if(CollectionUtils.isEmpty(courses)){
+            return;
+        }
+        for(Integer course : courses){
+            List<HashMap<Integer, Integer>> summarty = courseExercisesProcessLogMapper.summaryData(course);
+            if(CollectionUtils.isEmpty(summarty)){
+                continue;
+            }
+            int count = 0;
+            log.info("select data to export.size{}", summarty.size());
+            for(HashMap map : summarty){
+                Integer lessonId = MapUtils.getInteger(map, "lesson_id");
+                Integer cnt = MapUtils.getInteger(map, "cnt");
+                log.info("select info data:{}, {}", lessonId, cnt);
+                list.add(ExportData.builder().courseId(count > 0 ? "" : String.valueOf(course)).lessonId(lessonId).cnt(cnt).build());
+                count ++;
+            }
+        }
+        try{
+            File tokenFile = new File(file_path);
+            if (!tokenFile.getParentFile().exists()) {
+                tokenFile.getParentFile().mkdirs();
+            }
+            if (tokenFile.exists()) {
+                tokenFile.delete();
+            }
+            tokenFile = new File(file_path);
+            ExcelUtils.getInstance().exportObjects2Excel(list, ExportData.class, file_path);
+        }catch (Exception e){
+            log.error("数据文件导出失败:{}", e.getMessage());
+        }
+
     }
 }

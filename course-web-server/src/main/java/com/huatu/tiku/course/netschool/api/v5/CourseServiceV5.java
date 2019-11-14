@@ -169,7 +169,8 @@ public interface CourseServiceV5 {
      * 课程详情活动促销
      */
     @GetMapping(value = "/v4/common/class/appClass_activity_details")
-    NetSchoolResponse appClassActivityDetails(@RequestParam("classId") int classIds);
+    NetSchoolResponse appClassActivityDetails(@RequestParam("classId") int classIds,
+                                              @RequestParam("terminal") int terminal);
 
     /**
      * 试听列表
@@ -259,7 +260,7 @@ public interface CourseServiceV5 {
                     /**
                      * 可能存在大批量请求数据的情况，比如pageSize = 1000
                      */
-                    Map<String, Object> defaultMap = Maps.newHashMap();
+                    Map<String, Object> defaultMap = Maps.newLinkedHashMap();
                     defaultMap.put("list", Lists.newArrayList());
                     defaultMap.put("netClassName", "");
                     defaultMap.put("next", 0);
@@ -464,8 +465,8 @@ public interface CourseServiceV5 {
                  * @param classIds
                  */
                 @Override
-                public NetSchoolResponse appClassActivityDetails(int classIds) {
-                    log.error("course service v5 appClassActivityDetails fallback,params: {}, fall back reason: {}",classIds, throwable);
+                public NetSchoolResponse appClassActivityDetails(int classIds, int terminal) {
+                    log.error("course service v5 appClassActivityDetails fallback,params - classId: {}, terminal:{}, fall back reason: {}",classIds, terminal, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
 

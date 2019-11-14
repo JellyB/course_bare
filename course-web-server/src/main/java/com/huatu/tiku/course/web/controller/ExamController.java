@@ -40,12 +40,12 @@ public class ExamController {
      * @param pageSize
      * @return
      */
-    @RequestMapping(value = "{type}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "{type}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public Object getArticleList(@PathVariable int type,
                                  @RequestParam(defaultValue = "1") int page,
                                  @RequestParam(defaultValue = "10") int pageSize,
-                                 @Token UserSession userSession) {
-        int subject = userSession.getSubject();
+                                 @Token(check = false, defaultValue = "") UserSession userSession) {
+        int subject = userSession == null ? 1 : userSession.getSubject();
         return examService.getArticleList(type, page, pageSize, subject);
     }
 

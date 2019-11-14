@@ -20,7 +20,7 @@ public class TestServiceFallbackFactory implements Fallback<TestService> {
         return new TestService() {
             @Override
             public String courseDetail(int rid) {
-                log.error("TestService  v1 fallback,params: {}, fall back reason: ",rid,cause);
+                log.error("TestService  v1 fallback,params: {}, fall back reason: {}",rid,cause);
                 return "服务器人太多了....";
             }
         };

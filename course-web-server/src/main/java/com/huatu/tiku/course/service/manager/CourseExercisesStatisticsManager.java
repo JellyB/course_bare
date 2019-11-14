@@ -8,6 +8,7 @@ import com.huatu.tiku.course.bean.NetSchoolResponse;
 import com.huatu.tiku.course.bean.practice.QuestionInfo;
 import com.huatu.tiku.course.bean.practice.QuestionInfoWithStatistics;
 import com.huatu.tiku.course.common.YesOrNoStatus;
+import com.huatu.tiku.course.consts.SimpleCourseLiveBackLog;
 import com.huatu.tiku.course.dao.manual.CourseExercisesQuestionsStatisticsMapper;
 import com.huatu.tiku.course.dao.manual.CourseExercisesChoicesStatisticsMapper;
 import com.huatu.tiku.course.dao.manual.CourseExercisesStatisticsMapper;
@@ -18,7 +19,6 @@ import com.huatu.tiku.course.ztk.api.v4.user.UserServiceV4;
 import com.huatu.tiku.entity.CourseExercisesChoicesStatistics;
 import com.huatu.tiku.entity.CourseExercisesQuestionsStatistics;
 import com.huatu.tiku.entity.CourseExercisesStatistics;
-import com.huatu.tiku.entity.CourseLiveBackLog;
 import com.huatu.tiku.essay.essayEnum.CourseWareTypeEnum;
 import com.huatu.ztk.paper.bean.PracticeCard;
 import com.huatu.ztk.paper.bean.PracticeForCoursePaper;
@@ -41,8 +41,6 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -88,7 +86,7 @@ public class CourseExercisesStatisticsManager {
      * @param answerCard
      * @throws BizException
      */
-    public synchronized void dealCourseExercisesStatistics(final PracticeCard answerCard) throws BizException{
+    public void dealCourseExercisesStatistics(final PracticeCard answerCard) throws BizException{
         try{
             PracticeForCoursePaper practiceForCoursePaper = (PracticeForCoursePaper)answerCard.getPaper();
             String existsKey = CourseCacheKey.getCourseWorkDealData(practiceForCoursePaper.getCourseType(), practiceForCoursePaper.getCourseId());
@@ -100,6 +98,7 @@ public class CourseExercisesStatisticsManager {
              * 如果用户已经提交过不处理
              */
             if(existsHash.hasKey(existsKey, String.valueOf(answerCard.getUserId()))){
+                log.info("not first deal course work info :type:{},courseId:{},cardId:{}",practiceForCoursePaper.getCourseType(), practiceForCoursePaper.getCourseId(), answerCard.getIdStr());
                 return;
             }
 
@@ -125,6 +124,7 @@ public class CourseExercisesStatisticsManager {
                     .andEqualTo("status", YesOrNoStatus.YES.getCode())
                     //默认为0 课后作业
                     .andEqualTo("type", YesOrNoStatus.NO.getCode());
+            example.setForUpdate(true);
             CourseExercisesStatistics courseExercisesStatistics = courseExercisesStatisticsMapper.selectOneByExample(example);
 
             if(null == courseExercisesStatistics){
@@ -151,10 +151,8 @@ public class CourseExercisesStatisticsManager {
             }
 
             // 异步处理详细统计信息
-            ExecutorService executorService = Executors.newSingleThreadExecutor();
             final CourseExercisesStatistics detailStatistics = courseExercisesStatistics;
-            executorService.execute(() -> dealCourseExercisesDetailStatistics(detailStatistics.getId(), answerCard));
-            executorService.shutdown();
+            new Thread(() -> dealCourseExercisesDetailStatistics(detailStatistics.getId(), answerCard)).start();
         }catch (Exception e){
             log.error("处理课后作业统计信息异常!:{}", e);
         }
@@ -368,13 +366,13 @@ public class CourseExercisesStatisticsManager {
                     result.add(param);
                     continue;
                 }else{
-                    CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(bjyRoomId, courseId);
-                    if(null == courseLiveBackLog){
+                    SimpleCourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(bjyRoomId, courseId);
+                    if(null == courseLiveBackLog || null == courseLiveBackLog.getLiveCourseWareId()){
                         param.putAll(defaultResult);
                         result.add(param);
                         continue;
                     }else{
-                        courseId = courseLiveBackLog.getLiveCoursewareId();
+                        courseId = courseLiveBackLog.getLiveCourseWareId();
                         courseType = CourseWareTypeEnum.VideoTypeEnum.LIVE.getVideoType();
                     }
                 }
@@ -498,7 +496,7 @@ public class CourseExercisesStatisticsManager {
      * @return
      * @throws BizException
      */
-    public Map<String, Object> obtainCourseRankInfo(PracticeCard practiceCard)throws BizException{
+    public Map<String, Object> obtainCourseRankInfo(PracticeCard practiceCard, int terminal)throws BizException{
         Map<String, Object> rankInfo = Maps.newHashMap();
         rankInfo.put("avgTimeCost", 0);
         rankInfo.put("avgCorrect", 0);
@@ -541,7 +539,8 @@ public class CourseExercisesStatisticsManager {
                 myRank = zSetOperations.rank(rankKey, String.valueOf(practiceCard.getUserId())) + 1;
             }catch (Exception e){
                 myRank = 0L;
-                log.error("课后作业统计排名异常 rankKey:{}, value:{}, errorMsg:{}", rankKey, practiceCard.getUserId(), e);
+                log.error("课后作业统计排名异常 rankKey:{}, terminal:{}, value:{}, errorMsg:{}", rankKey, terminal, JSONObject.toJSONString(practiceCard), e);
+                e.printStackTrace();
             }
 
             Set<String> userIdRanks = zSetOperations.range(rankKey, START, END);

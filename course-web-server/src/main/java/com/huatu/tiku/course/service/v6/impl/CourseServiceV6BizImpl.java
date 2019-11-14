@@ -6,6 +6,8 @@ import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -18,14 +20,16 @@ import com.huatu.common.utils.web.RequestUtil;
 import com.huatu.springboot.degrade.core.Degrade;
 import com.huatu.tiku.course.common.PracticeStatusEnum;
 import com.huatu.tiku.course.common.SecKillCourseInfo;
+import com.huatu.tiku.course.consts.SimpleCourseLiveBackLog;
 import com.huatu.tiku.course.dao.manual.CoursePracticeQuestionInfoMapper;
+import com.huatu.tiku.course.netschool.api.SearchServiceV1;
 import com.huatu.tiku.course.netschool.api.fall.FallbackCacheHolder;
 import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.course.service.v1.practice.PracticeUserMetaService;
-import com.huatu.tiku.entity.CourseLiveBackLog;
 import com.huatu.tiku.entity.CoursePracticeQuestionInfo;
 import com.huatu.tiku.essay.essayEnum.CourseWareTypeEnum;
 import com.huatu.ztk.paper.common.AnswerCardStatus;
+import javafx.scene.paint.Stop;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -64,6 +68,7 @@ import com.huatu.ztk.paper.bean.PracticeCard;
 import com.huatu.ztk.paper.bean.PracticeForCoursePaper;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StopWatch;
 import tk.mybatis.mapper.entity.Example;
 
 
@@ -96,6 +101,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
     private static final String PAGE_SIZE = "pageSize";
 
     private static final String COURSE_LIST_FALLBACKCACHEHOLDER = "_course_list_static_data_v6";
+
+    @Autowired
+    private SearchServiceV1 searchServiceV1;
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -401,7 +409,7 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         paperInfo.put("questions", practiceCard.getPaper().getQuestions());
         data.put("paper", paperInfo);
         data.put("points", points_);
-        data.putAll(courseExercisesStatisticsManager.obtainCourseRankInfo(practiceCard));
+        data.putAll(courseExercisesStatisticsManager.obtainCourseRankInfo(practiceCard, terminal));
         data.put("tcount", practiceForCoursePaper.getQcount());
         data.put("rcount", practiceCard.getRcount());
         data.put("wcount", practiceCard.getWcount());
@@ -470,9 +478,9 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
         //如果为录播回放，查看回放是否生成
         boolean playBackAvailable = false;
         if(videoTypeEnum == CourseWareTypeEnum.VideoTypeEnum.LIVE_PLAY_BACK){
-            CourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(Long.valueOf(bjyRoomId), courseWareId);
-            if(null != courseLiveBackLog && null != courseLiveBackLog.getLiveCoursewareId()){
-                courseWareId = courseLiveBackLog.getLiveCoursewareId();
+            SimpleCourseLiveBackLog courseLiveBackLog = courseLiveBackLogService.findByRoomIdAndLiveCourseWareIdV2(Long.valueOf(bjyRoomId), courseWareId);
+            if(null != courseLiveBackLog && null != courseLiveBackLog.getLiveCourseWareId()){
+                courseWareId = courseLiveBackLog.getLiveCourseWareId();
                 playBackAvailable = true;
             }
         }
@@ -889,6 +897,11 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
 
     @Override
     public Object getUserCourseStatus(String uname, int netClassId, int collageActivityId) {
+        if(StringUtils.isBlank(uname)){     //游客模式直接返回
+            return new HashMap() {{put("id",netClassId);}};
+        }
+        StopWatch stopWatch = new StopWatch("getUserCourseStatus:"+netClassId);
+        stopWatch.start("1");
         HashMap<String, Object> map = Maps.newHashMap();
         map.put("userName",uname);
         map.put("netClassId",netClassId);
@@ -896,6 +909,32 @@ public class CourseServiceV6BizImpl implements CourseServiceV6Biz {
             map.put("collageActivityId",collageActivityId);
         }
         NetSchoolResponse netSchoolResponse = courseService.userCourseStatus(map);
-        return netSchoolResponse.getData();
+        Map data = (Map)netSchoolResponse.getData();
+        data.put("id",netClassId);
+        stopWatch.stop();
+        log.info(stopWatch.prettyPrint());
+        return data;
+    }
+
+    /**
+     * 更新 key word 排序
+     * @param token
+     * @param keyWord
+     * @return
+     */
+    @Override
+    public Object upSetSearchKeyWord(String token, String keyWord) {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        try{
+            executorService.submit(() ->{
+                searchServiceV1.upSetKeyWord(token, keyWord);
+            });
+            log.debug("update key.word.offset:{}", keyWord);
+        }catch (Exception e){
+            log.error("upset keyWord offset error");
+        }finally {
+            executorService.shutdown();
+        }
+        return SuccessMessage.create("success");
     }
 }

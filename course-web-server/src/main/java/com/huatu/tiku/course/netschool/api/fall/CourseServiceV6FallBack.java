@@ -147,6 +147,22 @@ public class CourseServiceV6FallBack implements CourseServiceV6 {
         }
     }
 
+
+    /**
+     * 查询课程详情
+     *
+     * @param params
+     */
+    @Override
+    public NetSchoolResponse getClassDetail(Map<String, Object> params) {
+        return NetSchoolResponse.DEFAULT;
+    }
+
+    @Override
+    public NetSchoolResponse getBaseClassInfo(Map<String, Object> params) {
+        return NetSchoolResponse.DEFAULT;
+    }
+
     @Getter
     @Setter
     @NoArgsConstructor

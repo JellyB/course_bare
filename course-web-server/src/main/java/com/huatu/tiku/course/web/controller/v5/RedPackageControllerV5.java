@@ -1,5 +1,19 @@
 package com.huatu.tiku.course.web.controller.v5;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.google.common.collect.Maps;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.course.netschool.api.v5.MessageServiceV5;
 import com.huatu.tiku.course.netschool.api.v5.RedPackageDegradeServiceV5;
@@ -7,10 +21,6 @@ import com.huatu.tiku.course.netschool.api.v5.RedPackageServiceV5;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParam;
 import com.huatu.tiku.course.spring.conf.aspect.mapParam.LocalMapParamHandler;
 import com.huatu.tiku.course.util.ResponseUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
 
 /**
  * Created by lijun on 2018/9/28
@@ -76,10 +86,16 @@ public class RedPackageControllerV5 {
     /**
      * 判断用户是否有发起红包或领取红包
      */
-    @LocalMapParam(checkToken = true)
+    @LocalMapParam()
     @GetMapping("checkRedEnv")
     public Object checkRedEnv() {
         HashMap<String, Object> map = LocalMapParamHandler.get();
+		String userName = MapUtils.getString(map, "userName");
+		if (StringUtils.isEmpty(userName)) {
+			Map ret = Maps.newHashMap();
+			ret.put("hasRedEnvelope", 0);
+			return ret;
+		}
         return ResponseUtil.build(redPackageDegradeService.checkRedEnv(map));
     }
 

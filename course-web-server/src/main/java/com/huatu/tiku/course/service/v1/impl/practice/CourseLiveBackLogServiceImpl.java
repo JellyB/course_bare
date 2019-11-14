@@ -3,7 +3,6 @@ package com.huatu.tiku.course.service.v1.impl.practice;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.*;
 
 import com.alibaba.fastjson.JSONObject;
@@ -11,6 +10,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Maps;
 import com.huatu.tiku.course.bean.NetSchoolResponse;
+import com.huatu.tiku.course.consts.SimpleCourseLiveBackLog;
 import com.huatu.tiku.course.netschool.api.v6.LessonServiceV6;
 import com.huatu.tiku.course.util.CourseCacheKey;
 import com.huatu.tiku.course.util.ResponseUtil;
@@ -26,12 +26,11 @@ import com.huatu.tiku.course.service.v1.practice.CourseLiveBackLogService;
 import com.huatu.tiku.entity.CourseLiveBackLog;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.util.StopWatch;
 import service.impl.BaseServiceHelperImpl;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.weekend.WeekendSqls;
 
-import javax.annotation.PostConstruct;
 
 /**
  * 
@@ -53,7 +52,7 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 	@Qualifier(value = "courseExecutorService")
 	private ExecutorService executorService;
 
-	private final Cache<String, CourseLiveBackLog> logCache = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).maximumSize(10000).build();
+	private final Cache<String, SimpleCourseLiveBackLog> logCache = CacheBuilder.newBuilder().expireAfterWrite(20, TimeUnit.DAYS).maximumSize(5000).build();
 
 	public CourseLiveBackLogServiceImpl() {
 		super(CourseLiveBackLog.class);
@@ -162,13 +161,14 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 	 * @return
 	 */
 	@Override
-	public CourseLiveBackLog findByRoomIdAndLiveCourseWareIdV2(final Long roomId, final Long courseWareId) {
+	public SimpleCourseLiveBackLog findByRoomIdAndLiveCourseWareIdV2(final Long roomId, final Long courseWareId) {
 
 		String key = roomId.longValue() + "_" + courseWareId;
 		try {
-			return logCache.get(key, new Callable<CourseLiveBackLog>() {
+			return logCache.get(key, new Callable<SimpleCourseLiveBackLog>() {
 				@Override
-				public CourseLiveBackLog call() throws Exception {
+				public SimpleCourseLiveBackLog call() throws Exception {
+					log.info("logCache.data.size:{}", logCache.size());
 					return findFromDataBase();
 				}
 
@@ -176,7 +176,7 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 				 * 从数据库获取直播课件信息
 				 * @return
 				 */
-				private CourseLiveBackLog findFromDataBase() {
+				private SimpleCourseLiveBackLog findFromDataBase() {
 					WeekendSqls<CourseLiveBackLog> courseLiveBackLogWeekendSql = WeekendSqls.<CourseLiveBackLog>custom()
 							.andEqualTo(CourseLiveBackLog::getRoomId, roomId)
 							.andEqualTo(CourseLiveBackLog::getLiveBackCoursewareId, courseWareId);
@@ -185,9 +185,16 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 					if (CollectionUtils.isNotEmpty(courseLiveBackLogList)) {
 						CourseLiveBackLog courseLiveBackLog = courseLiveBackLogList.get(0);
 						log.debug("get live courseWareId from mysql:roomId:{}, courseWareId:{}", roomId, courseWareId);
-						return courseLiveBackLog;
+						return SimpleCourseLiveBackLog.builder()
+								.liveBackCourseWareId(courseLiveBackLog.getLiveBackCoursewareId())
+								.liveCourseWareId(courseLiveBackLog.getLiveCoursewareId())
+								.roomId(courseLiveBackLog.getRoomId()).build();
 					} else {
-						return findFromPhp();
+						new Thread(() ->findFromPhp()).start();
+						return SimpleCourseLiveBackLog.builder()
+								.liveBackCourseWareId(courseWareId)
+								.liveCourseWareId(null)
+								.roomId(roomId).build();
 					}
 				}
 
@@ -195,12 +202,18 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 				 * PHP 获取数据
 				 * @return
 				 */
-				private CourseLiveBackLog findFromPhp(){
+				private SimpleCourseLiveBackLog findFromPhp(){
+					StopWatch stopwatch = new StopWatch("调用 php 获取直播回放信息");
+					stopwatch.start("start");
+					log.info("new thread request live back info from php:{},{}", courseWareId, roomId);
 					Map<String,Object> params = Maps.newHashMap();
 					params.put("liveBackCoursewareId",courseWareId);
 					params.put("roomId", roomId);
+					log.info("course live back info request from php, courseWareId:{}, roomId:{}", courseWareId, roomId);
 					CourseLiveBackLog courseLiveBackLog = null;
 					NetSchoolResponse netSchoolResponse = lessonService.obtainLiveWareId(params);
+					SimpleCourseLiveBackLog simpleCourseLiveBackLog = SimpleCourseLiveBackLog.builder()
+							.liveBackCourseWareId(courseWareId).liveCourseWareId(null).roomId(roomId).build();
 					if(ResponseUtil.isSuccess(netSchoolResponse)){
 						LinkedHashMap<String,Object> result = (LinkedHashMap<String,Object>) netSchoolResponse.getData();
 						long liveCourseWareId = MapUtils.getLong(result, "liveCoursewareId");
@@ -212,15 +225,20 @@ public class CourseLiveBackLogServiceImpl extends BaseServiceHelperImpl<CourseLi
 							courseLiveBackLog.setLiveBackCoursewareId(courseWareId);
 							courseLiveBackLog.setCreatorId(10L);
 							insert(courseLiveBackLog);
+							logCache.put(key, simpleCourseLiveBackLog);
+							simpleCourseLiveBackLog.setLiveCourseWareId(liveCourseWareId);
 							log.info("get live courseWareId from remote by rest:roomId:{}, coursewareId:{}", roomId, courseWareId);
 						}
 					}
-					return courseLiveBackLog;
+					stopwatch.stop();
+					log.info("调用 php 获取直播回放信息-结果:{}", JSONObject.toJSONString(simpleCourseLiveBackLog));
+					return simpleCourseLiveBackLog;
 				}
 			});
 		} catch (Exception e) {
 			log.error("课后作业数据修正---  guava 获取直播课件信息异常:roomId:{}, wareId:{}, error:{}", roomId, courseWareId, e.getMessage());
-			return null;
+			return SimpleCourseLiveBackLog.builder()
+					.liveBackCourseWareId(courseWareId).liveCourseWareId(null).roomId(roomId).build();
 		}
 	}
 }

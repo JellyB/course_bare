@@ -7,7 +7,6 @@ import com.huatu.tiku.essay.essayEnum.EssayStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 
-import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -26,7 +25,7 @@ public class CourseExercisesProcessEssayLogProvider {
                 .append(tempTable)
                 .append(" ) AS temp_table")
                 .append(" LIMIT ")
-                .append(page -1).append(",").append(size);
+                .append((page -1) * size).append(",").append(size);
         return stringBuilder.toString();
     }
 
@@ -57,6 +56,33 @@ public class CourseExercisesProcessEssayLogProvider {
         //stringBuilder.append(" ORDER BY");
         //stringBuilder.append(" gmt_modify DESC");
         log.info("getEssayCoursePageInfo.sql info: userId:{}", userId);
+        return stringBuilder.toString();
+    }
+
+    /**
+     * 获取多题答题卡状态
+     * @param userId
+     * @param userId
+     * @return
+     */
+    public String selectDistinctSyllabusIdByUserId(@Param(value = "userId") int userId){
+
+        List<Integer> list = Lists.newArrayList(EssayAnswerConstant.EssayAnswerBizStatusEnum.INIT.getBizStatus(),
+                EssayAnswerConstant.EssayAnswerBizStatusEnum.UNFINISHED.getBizStatus(),
+                EssayAnswerConstant.EssayAnswerBizStatusEnum.CORRECT_RETURN.getBizStatus());
+
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" SELECT");
+        stringBuilder.append(" distinct syllabus_id");
+        stringBuilder.append(" FROM");
+        stringBuilder.append(" v_essay_exercises_answer_meta");
+        stringBuilder.append(" WHERE");
+        stringBuilder.append(" biz_status in (");
+        stringBuilder.append(Joiner.on(",").join(list));
+        stringBuilder.append(" )");
+        stringBuilder.append(" AND user_id = ").append(userId);
+        stringBuilder.append(" AND status = ").append(EssayStatusEnum.NORMAL.getCode());
+        log.info("selectDistinctSyllabusIdByUserId.sql info: userId:{}", userId);
         return stringBuilder.toString();
     }
 
@@ -273,7 +299,6 @@ public class CourseExercisesProcessEssayLogProvider {
      * 获取多题答题卡状态
      * @param userId
      * @param syllabusId
-     * @param correctNum
      * @return
      */
     public String selectMultiBizStatusCount(int userId, long syllabusId){
@@ -288,5 +313,4 @@ public class CourseExercisesProcessEssayLogProvider {
         stringBuilder.append(" AND status = ").append(EssayStatusEnum.NORMAL.getCode());
         return stringBuilder.toString();
     }
-    
 }

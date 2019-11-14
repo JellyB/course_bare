@@ -268,7 +268,7 @@ public class CourseControllerV3 {
                                     @RequestParam(required = false, defaultValue = "0") int isTrial,
                                     @RequestParam(required = false, defaultValue = "0") int fatherId,
                                     @RequestHeader("terminal") int terminal,
-                                    @RequestHeader("cv") String cv
+                                    @RequestHeader(value = "cv", defaultValue = "0") String cv
     ) {
         Map<String, Object> params = Maps.newHashMap();
         params.put("rid", rid);
