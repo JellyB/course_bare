@@ -47,12 +47,12 @@ public class MapParamAspect {
     @Autowired
     private RedisTemplate redisTemplate;
 
-    private static final String APP_TYPE = "appType";
-    private static final int APP_TYPE_DEFAULT = 1;
+    private static final String SOURCE_TYPE = "sourceType";
+    private static final int SOURCE_TYPE_DEFAULT = 1;
     /**
      * 需要本地化的 head 请求参数
      */
-    private static final String[] HEARD_PARAM = new String[]{"cv", "terminal", APP_TYPE};
+    private static final String[] HEARD_PARAM = new String[]{"cv", "terminal", "appType"};
 
     /**
      * 参数中排除的对象
@@ -126,7 +126,7 @@ public class MapParamAspect {
                 hashMapBuilder.put(headStr, request.getHeader(headStr));
             }
         }
-        hashMapBuilder.put(APP_TYPE, Strings.isNullOrEmpty(request.getHeader(APP_TYPE)) ? APP_TYPE_DEFAULT :request.getHeader(APP_TYPE));
+        hashMapBuilder.put(SOURCE_TYPE, Strings.isNullOrEmpty(request.getHeader(SOURCE_TYPE)) ? SOURCE_TYPE_DEFAULT :request.getHeader(SOURCE_TYPE));
         //2. build RequestBody
         String className = joinPoint.getTarget().getClass().getName();
         String methodName = joinPoint.getSignature().getName();
