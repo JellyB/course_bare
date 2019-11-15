@@ -228,12 +228,14 @@ public class OrderControllerV3 {
      */
     @PostMapping("/{orderNo}/pay")
     public Object payOrder(@PathVariable String orderNo,
+                           @RequestHeader String appType,
                            @RequestParam int payment,
                            @Token UserSession session, @RequestHeader(required = false) int terminal,
                            @RequestHeader(required = false) String cv) {
         Map<String, Object> params = HashMapBuilder.<String, Object>newBuilder()
                 .put("action", "pay")
                 .put("ordernum", orderNo)
+                .put("appType", appType)
                 .put("payment", payment)
                 .put("username", session.getUname())
                 .build();
