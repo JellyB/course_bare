@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.spring.conf.aspect.mapParam;
 
+import com.google.common.base.Strings;
 import com.huatu.common.ErrorResult;
 import com.huatu.common.exception.BizException;
 import com.huatu.common.utils.collection.HashMapBuilder;
@@ -46,10 +47,12 @@ public class MapParamAspect {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    private static final String APP_TYPE = "appType";
+    private static final int APP_TYPE_DEFAULT = 1;
     /**
      * 需要本地化的 head 请求参数
      */
-    private static final String[] HEARD_PARAM = new String[]{"cv", "terminal", "appType"};
+    private static final String[] HEARD_PARAM = new String[]{"cv", "terminal", APP_TYPE};
 
     /**
      * 参数中排除的对象
@@ -123,6 +126,7 @@ public class MapParamAspect {
                 hashMapBuilder.put(headStr, request.getHeader(headStr));
             }
         }
+        hashMapBuilder.put(APP_TYPE, Strings.isNullOrEmpty(request.getHeader(APP_TYPE)) ? APP_TYPE_DEFAULT :request.getHeader(APP_TYPE));
         //2. build RequestBody
         String className = joinPoint.getTarget().getClass().getName();
         String methodName = joinPoint.getSignature().getName();

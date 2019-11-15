@@ -33,19 +33,24 @@ public class LiveCourseEndNoticeListener {
     @RabbitListener(queues = RabbitMqConstants.LIVE_COURSE_END_NOTICE)
     public void onMessage(String message){
         log.info("定时任务处理申论老师定时发送下课学员信息:{}", message);
+        try{
+            JSONObject data = JSONObject.parseObject(message);
+            int classId = data.getIntValue("classId");
+            long syllabusId = data.getLongValue("syllabusId");
+            int userId = data.getIntValue("userId");
+            int courseWareId = data.getInteger("courseWareId");
 
-        JSONObject data = JSONObject.parseObject(message);
-        int classId = data.getIntValue("classId");
-        long syllabusId = data.getLongValue("syllabusId");
-        int userId = data.getIntValue("userId");
-        int courseWareId = data.getInteger("courseWareId");
+            String key = "essay.live.end" + userId + "" + syllabusId;
+            long time = System.currentTimeMillis();
 
-        String key = "essay.live.end" + userId + "" + syllabusId;
-        long time = System.currentTimeMillis();
-
-        if(redisLockHelper.lock(key, String.valueOf(time), 5 * 1000, TimeUnit.MILLISECONDS)){
-            essayExercisesAnswerMetaManager.createEssayInitUserMeta(userId, syllabusId, CourseWareTypeEnum.TableCourseTypeEnum.LIVE.getType(), courseWareId, classId);
+            if(redisLockHelper.lock(key, String.valueOf(time), 5 * 1000, TimeUnit.MILLISECONDS)){
+                essayExercisesAnswerMetaManager.createEssayInitUserMeta(userId, syllabusId, CourseWareTypeEnum.TableCourseTypeEnum.LIVE.getType(), courseWareId, classId);
+            }
+            redisLockHelper.unlock(key, String.valueOf(time));
+        }catch (Exception e){
+            e.printStackTrace();
+            return;
         }
-        redisLockHelper.unlock(key, String.valueOf(time));
+
     }
 }
