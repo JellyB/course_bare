@@ -60,6 +60,14 @@ public interface OrderServiceV6 {
     @PostMapping(value = "/v5/c/order/recharge_gold")
     NetSchoolResponse reCharge(@RequestParam Map<String, Object> params);
 
+    /**
+     * 华图教师订单列表
+     * @param params
+     * @return
+     */
+    @GetMapping(value = "/v5/c/order/list")
+    NetSchoolResponse list(@RequestParam Map<String, Object> params);
+
     @Component
     @Slf4j
     class OrderServiceV6FallBackFactory implements Fallback<OrderServiceV6>{
@@ -100,6 +108,18 @@ public interface OrderServiceV6 {
                 @Override
                 public NetSchoolResponse reCharge(Map<String, Object> params) {
                     log.error("order service v6. reCharge order failed, params:{}, reason:{}", params, throwable);
+                    return NetSchoolResponse.DEFAULT;
+                }
+
+                /**
+                 * 华图教师订单列表
+                 *
+                 * @param params
+                 * @return
+                 */
+                @Override
+                public NetSchoolResponse list(Map<String, Object> params) {
+                    log.error("order service v6. teacher order list failed, params:{}, reason:{}", params, throwable);
                     return NetSchoolResponse.DEFAULT;
                 }
             };

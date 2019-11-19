@@ -1,5 +1,6 @@
 package com.huatu.tiku.course.web.controller.v6;
 
+import com.huatu.common.exception.BizException;
 import com.huatu.springboot.web.version.mapping.annotation.ApiVersion;
 import com.huatu.tiku.common.bean.user.UserSession;
 import com.huatu.tiku.course.netschool.api.v6.OrderServiceV6;
@@ -180,4 +181,27 @@ public class OrderControllerV6 {
         Map<String,Object> params = LocalMapParamHandler.get();
         return ResponseUtil.build(orderService.reCharge(params));
     }
+
+
+    /**
+     * 华图教师订单列表
+     * @param userSession
+     * @param chooseStatus
+     * @param page
+     * @param pageSize
+     * @return
+     * @throws BizException
+     */
+    @LocalMapParam
+    @GetMapping(value = "list")
+    public Object list(@Token UserSession userSession,
+                       @RequestParam(value = "chooseStatus", required = false) Integer chooseStatus,
+                       @RequestParam(value = "page", defaultValue = "1") Integer page,
+                       @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) throws BizException{
+        Map<String, Object> params = LocalMapParamHandler.get();
+        return ResponseUtil.build(orderService.list(params));
+    }
+
+
+
 }
