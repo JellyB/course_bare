@@ -202,4 +202,15 @@ public class RabbitMqConfig {
 		return new Queue(RabbitConsts.QUEUE_REPORT);
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
+	@Bean
+	public Queue thirdPlatNotify() {
+		return new Queue(RabbitMqConstants.THIRD_PLAT_NOTIFY);
+	}
+	
+	
+	
 }

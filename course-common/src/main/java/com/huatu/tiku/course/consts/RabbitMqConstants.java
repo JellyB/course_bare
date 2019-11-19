@@ -62,5 +62,12 @@ public class RabbitMqConstants {
      * error log 日志
      */
     public static final String DATA_REPORT = "data_report";
+    
+    
+    /**
+     * 三方通知
+     */
+    public static final String THIRD_PLAT_NOTIFY = "third-plat-notify";
+    
 
 }
