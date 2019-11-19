@@ -193,4 +193,13 @@ public class RabbitMqConfig {
 		return manualRabbitContainer;
 	}
 	
+	/**
+	 * 数据上报队列定义
+	 * @return
+	 */
+	@Bean
+	public Queue dataReportQueue() {
+		return new Queue(RabbitConsts.QUEUE_REPORT);
+	}
+	
 }
