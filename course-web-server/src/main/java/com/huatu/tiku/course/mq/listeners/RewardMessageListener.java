@@ -66,6 +66,7 @@ public class RewardMessageListener implements ChannelAwareMessageListener{
             }
 
             if(filter(rewardMessage)){
+                channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
                 return;
             }
 
