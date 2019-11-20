@@ -74,6 +74,15 @@ public interface UserCourseServiceV6 {
     NetSchoolResponse cateList(@RequestParam Map<String, Object> params);
 
 
+	/**
+	 * 老师用
+	 * @param params
+	 * @return
+	 */
+	@GetMapping(value = "/v5/c/class/teacher_cate_list")
+    NetSchoolResponse teacherCateList(@RequestParam Map<String, Object> params);
+
+
     /**
      * 列表设置考试类型
      * @param params

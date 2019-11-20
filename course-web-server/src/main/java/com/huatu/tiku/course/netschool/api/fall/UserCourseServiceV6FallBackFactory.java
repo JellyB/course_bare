@@ -198,6 +198,19 @@ public class UserCourseServiceV6FallBackFactory implements Fallback<UserCourseSe
                 log.error("UserCourseService V6 obtainOne2One fall back params:{}, terminal:{}, fallback reason:{}", p, terminal, throwable);
                 return NetSchoolResponse.DEFAULT;
             }
+
+
+            /**
+             * 老师用
+             *
+             * @param params
+             * @return
+             */
+            @Override
+            public NetSchoolResponse teacherCateList(Map<String, Object> params) {
+                log.error("UserCourseService V6 teacher cate list fall back params:{}, fallback reason:{}", params, throwable);
+                return NetSchoolResponse.DEFAULT;
+            }
         };
     }
 }

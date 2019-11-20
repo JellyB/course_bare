@@ -374,6 +374,19 @@ public class UserCourseControllerV6 {
         return ResponseUtil.build(netSchoolResponse);
     }
 
+    /**
+     * 老师课程所属考试接口
+     * @return
+     */
+    @LocalMapParam
+    @GetMapping(value = "/teacher/cateList")
+    public Object teacherCateList(@RequestHeader(value = "cv") String cv,
+                           @RequestHeader(value = "terminal") int terminal){
+        Map<String,Object> params = LocalMapParamHandler.get();
+        NetSchoolResponse netSchoolResponse = userCourseService.cateList(params);
+        return ResponseUtil.build(netSchoolResponse);
+    }
+
 
     /**
      * 列表设置考试类型
