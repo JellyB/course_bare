@@ -383,7 +383,7 @@ public class UserCourseControllerV6 {
     public Object teacherCateList(@RequestHeader(value = "cv") String cv,
                            @RequestHeader(value = "terminal") int terminal){
         Map<String,Object> params = LocalMapParamHandler.get();
-        NetSchoolResponse netSchoolResponse = userCourseService.cateList(params);
+        NetSchoolResponse netSchoolResponse = userCourseService.teacherCateList(params);
         return ResponseUtil.build(netSchoolResponse);
     }
 
